@@ -13,7 +13,7 @@ TrackerSystematicMisalignments = cms.EDAnalyzer("TrackerSystematicMisalignments"
     ellipticalEpsilon = cms.untracked.double(-999.0), # 5e-4
     skewEpsilon = cms.untracked.double(-999.0), # 5.5e-2                        mm
     sagittaEpsilon = cms.untracked.double(-999.0), #5.0e-4
-
+    zOffsetEpsilon = cms.untracked.double(-999.0), # 1e-3 = 10 um                                               
     #misalignment phases
     #0 <= delta < 2pi, epsilon >= 0 for unique results
     #delta=0 reproduces the old behavior
