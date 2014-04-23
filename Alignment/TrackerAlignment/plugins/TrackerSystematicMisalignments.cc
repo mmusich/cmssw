@@ -48,6 +48,7 @@ TrackerSystematicMisalignments::TrackerSystematicMisalignments(const edm::Parame
 	m_ellipticalEpsilon = cfg.getUntrackedParameter< double > ("ellipticalEpsilon");
 	m_skewEpsilon = cfg.getUntrackedParameter< double > ("skewEpsilon");
 	m_sagittaEpsilon = cfg.getUntrackedParameter< double > ("sagittaEpsilon");
+	m_zOffsetEpsilon = cfg.getUntrackedParameter< double > ("zOffsetEpsilon");
 
 	m_ellipticalDelta = cfg.getUntrackedParameter< double > ("ellipticalDelta");
 	m_skewDelta = cfg.getUntrackedParameter< double > ("skewDelta");
@@ -78,7 +79,10 @@ TrackerSystematicMisalignments::TrackerSystematicMisalignments(const edm::Parame
 		edm::LogWarning("MisalignedTracker") << "Applying skew ...";		
 	}
 	if (m_sagittaEpsilon > -990.0){
-		edm::LogWarning("MisalignedTracker") << "Applying sagitta ...";		
+	        edm::LogWarning("MisalignedTracker") << "Applying sagitta ...";		
+	}
+	if (m_zOffsetEpsilon > -990.0){
+	        edm::LogWarning("MisalignedTracker") << "Applying z-offset ...";		
 	}
 
 	// get flag for suppression of blind movements
@@ -165,28 +169,29 @@ void TrackerSystematicMisalignments::applySystematicMisalignment(Alignable* ali)
 
 	// if suppression of blind mvmts: check if subdet is blind to a certain mode
 	bool blindToZ(false), blindToR(false);
+	const int subdetid = ali->geomDetId().subdetId();
+	
 	if (suppressBlindMvmts)
 	{
-		const int subdetid = ali->geomDetId().subdetId();
-		switch(subdetid)
-		{
-			// TIB/TON blind to z
-			case SiStripDetId::TIB: 
-			case SiStripDetId::TOB: 
-				blindToZ = true; 
-				break;
-			// TID/TEC blind to R
-			case SiStripDetId::TID: 
-			case SiStripDetId::TEC: 
-				blindToR = true; 
-				break;
-			default: 
-				break;
-		}
+	  switch(subdetid)
+	    {
+	      // TIB/TON blind to z
+	    case SiStripDetId::TIB: 
+	    case SiStripDetId::TOB: 
+	      blindToZ = true; 
+	      break;
+	      // TID/TEC blind to R
+	    case SiStripDetId::TID: 
+	    case SiStripDetId::TEC: 
+	      blindToR = true; 
+	      break;
+	    default: 
+	      break;
+	    }
 	}
 
 	const int level = ali->alignableObjectId();	
-	if ((level == 1)||(level == 2)){		
+	if ( ((level == 1)||(level == 2)) && (subdetid==1)){   // only pixel barrel		
 		const align::PositionType gP = ali->globalPosition();
 		const align::GlobalVector gVec = findSystematicMis( gP, blindToZ, blindToR);
 		ali->move( gVec );
@@ -249,7 +254,14 @@ align::GlobalVector TrackerSystematicMisalignments::findSystematicMis( align::Po
 		deltaX += oldR*m_sagittaEpsilon*sin(m_sagittaDelta);
 		deltaY += oldR*m_sagittaEpsilon*cos(m_sagittaDelta);    //Delta y is cos so that delta=0 reflects the old behavior
 	}
-
+	if (m_zOffsetEpsilon > -990.0){
+	  if(oldX>0){
+	    deltaZ += m_zOffsetEpsilon;
+	  } else if(oldX<0){
+	    deltaZ -= m_zOffsetEpsilon;
+	  }
+	}
+	
 	// Compatibility with old version <= 1.5
 	if (oldMinusZconvention) deltaZ = -deltaZ;
 	
