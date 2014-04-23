@@ -1906,3 +1906,62 @@ TrackerCRAFTScenario = copy.deepcopy(Tracker10pbScenario)
 TrackerCRAFTScenario.TIBHalfBarrels = copy.deepcopy(Tracker100pbScenario.TIBHalfBarrels)
 TrackerCRAFTScenario.TOBHalfBarrels = copy.deepcopy(Tracker100pbScenario.TOBHalfBarrels)
 TrackerCRAFTScenario.TPEEndcaps = copy.deepcopy(TrackerSurveyLASOnlyScenario.TPEEndcaps)
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Only z Shifts and Rotations 
+# ----------------------------------------------------------------------
+PixelTrackerOnlyZShift = cms.PSet(MisalignmentScenarioSettings,
+                                  TPBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
+                                                            DetUnits = cms.PSet(dZ = cms.double(0.0015))                                                                                
+                                                            ),
+                                  TPBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                                            DetUnits = cms.PSet(dZ = cms.double(-0.0015))                                                                               
+                                                            )
+                                  )
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Fixed Shifts and Rotations 
+# ----------------------------------------------------------------------
+PixelTrackerFixedShiftsAndRotations = cms.PSet(MisalignmentScenarioSettings,
+                                          TPBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
+                                                                    DetUnits = cms.PSet(dX = cms.double(0.0005),
+                                                                                        dY = cms.double(0.0010),
+                                                                                        dZ = cms.double(0.0015),
+                                                                                        phiX = cms.double(30e-6),
+                                                                                        phiY = cms.double(30e-06),
+                                                                                        phiZ = cms.double(30e-06)
+                                                                                        )
+                                                                    ),
+                                          TPBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                                                    DetUnits = cms.PSet(dX = cms.double(-0.0005),
+                                                                                        dY = cms.double(-0.0010),
+                                                                                        dZ = cms.double(-0.0015),
+                                                                                        phiX = cms.double(-30e-6),
+                                                                                        phiY = cms.double(-30e-06),
+                                                                                        phiZ = cms.double(-30e-06)
+                                                                                        )
+                                                                    )
+                                          )
+
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Random Shifts and Rotations 
+# ----------------------------------------------------------------------
+
+PixelTrackerDicedShiftsAndRotations = cms.PSet(MisalignmentScenarioSettings,
+                                               TPBBarrels = cms.PSet(distribution = cms.string('gaussian'),
+                                                                     scale = cms.double(1.0),
+                                                                     scaleError = cms.double(1.0),
+                                                                     TPBHalfBarrels = cms.PSet(distribution = cms.string('flat'),
+                                                                                               dX = cms.double(0.0005),
+                                                                                               dY = cms.double(0.0010),
+                                                                                               dZ = cms.double(0.0015),
+                                                                                               phiX = cms.double(30e-6),
+                                                                                               phiY = cms.double(30e-06),
+                                                                                               phiZ = cms.double(30e-06)
+                                                                                               )
+                                                                     )
+                                               )
+
+
+                                            
