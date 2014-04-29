@@ -38,7 +38,7 @@ process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
 if options.fromGT:
     process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
     process.GlobalTag.globaltag = 'GR_P_V43D::All' # take your favourite
-    print "Using global tag: %s" % process.GlobalTag.globaltag
+    print "Using global tag: %s" % process.GlobalTag.globaltag._value
 
 ###################################################################
 # Option 2: You need to specify each tag (with unlimited IOV)
@@ -48,7 +48,7 @@ else:
     ## Global Position Record
     ##
     from CondCore.DBCommon.CondDBSetup_cfi import *
-    process.GBLPos = cms.ESSource(
+    process.GLBPos = cms.ESSource(
         "PoolDBESSource",
         CondDBSetup,
         connect = cms.string("frontier://PromptProd/CMS_COND_31X_ALIGNMENT"),
@@ -58,7 +58,7 @@ else:
                           )
         )
     
-    process.es_prefer_GBLPosRcd = cms.ESPrefer("PoolDBESSource", "GBLPos")
+    process.es_prefer_GLBPosRcd = cms.ESPrefer("PoolDBESSource", "GLBPos")
 
     ##
     ## APE
@@ -107,11 +107,13 @@ else:
 
     process.es_prefer_trackerSurfaceDeformations = cms.ESPrefer("PoolDBESSource", "trackerSurfaceDeformations")
 
-    print "Using Sparse Tags!"
-    print "GlobalPosition Rcd from %s %s" % ()
-    print "APE from %s %s" % ()
-    print "Alignment from %s %s" % ()
-    print "SurfaceDeformations from %s %s" % ()
+    print ">>>>>>>>>>>>>>>  Using Sparse Tags!"
+    #print process.GLBPos.connect.__dict__
+    print "GlobalPosition Rcd from %s %s" % (process.GLBPos.connect._value,process.GLBPos.toGet[0].tag._value)
+    print "APE from %s %s" % (process.trackerAPE.connect._value,process.trackerAPE.toGet[0].tag._value)
+    print "Alignment from %s %s" % (process.trackerAlignment.connect._value,process.trackerAlignment.toGet[0].tag._value)
+    print "SurfaceDeformations from %s %s" % (process.trackerSurfaceDeformations.connect._value,process.trackerSurfaceDeformations.toGet[0].tag._value)
+    print "<<<<<<<<<<<<<<<"
 
 ###################################################################
 # This uses the object from the tag and applies the misalignment scenario on top of that object
@@ -160,20 +162,29 @@ process.prod = cms.EDAnalyzer("TestAnalyzer",
 )
 
 ###################################################################
+# Output name
+###################################################################
+outputfilename = None
+scenariolabel  = process.AlignmentProducer.MisalignmentScenario._Labelable__label
+
+###################################################################
 # Source
 ###################################################################
 if options.fromGT:
     process.source = cms.Source("EmptySource",
                                 firstRun = cms.untracked.uint32(210659) # choose your run!
                                 )
+    outputfilename = "testBPIX_HS_PCL_like_"+str(scenariolabel)+"_from"+process.GlobalTag.globaltag._value.replace('::All','')+"_fromRandomTool.db"
 else:
     process.source = cms.Source("EmptySource")
+    outputfilename = "testBPIX_HS_PCL_like_"+str(scenariolabel)+"_fromSparseTags_fromRandomTool.db"
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1) )
 
 ###################################################################
 # Database output service
 ###################################################################
+
 import CondCore.DBCommon.CondDBSetup_cfi
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     CondCore.DBCommon.CondDBSetup_cfi.CondDBSetup,
@@ -183,9 +194,10 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     timetype = cms.untracked.string('runnumber'),
 
     #connect = cms.string('sqlite_file:testBPIX_HS_ZOffset_15um_from_GR_P_V43D_run_GT_210659_fromRandom.db'),                                     
-    #connect = cms.string('sqlite_file:testBPIX_HS_PCL_like_FixedMovements_from_GR_P_V43D_run_GT_210659_fromRandom.db'),
-                                          
-    connect = cms.string('sqlite_file:testBPIX_HS_PCL_like_DicedMovements_from_GR_P_V43D_IOV18_fromRandom_v2.db'),
+    #connect = cms.string('sqlite_file:testBPIX_HS_PCL_like_FixedMovements_from_GR_P_V43D_run_GT_210659_fromRandom.db'),                                     
+    #connect = cms.string('sqlite_file:testBPIX_HS_PCL_like_DicedMovements_from_GR_P_V43D_IOV18_fromRandom_v2.db'),
+
+    connect = cms.string('sqlite_file:'+outputfilename),                                      
     toPut = cms.VPSet(cms.PSet(
         record = cms.string('TrackerAlignmentRcd'),
         tag = cms.string('Alignments')
