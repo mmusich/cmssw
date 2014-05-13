@@ -130,7 +130,7 @@ def customise_harvesting(process):
     process.dqmHarvesting.remove(process.sipixelCertification)
     return (process)        
 
-def customise_condOverRides(process)
+def customise_condOverRides(process):
     process.load('SLHCUpgradeSimulations.Geometry.fakeConditions_Phase1SmallPixel_cff')
     process.trackerTopologyConstants.pxb_layerStartBit = cms.uint32(20)
     process.trackerTopologyConstants.pxb_ladderStartBit = cms.uint32(12)
