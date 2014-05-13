@@ -1,15 +1,14 @@
 import FWCore.ParameterSet.Config as cms
 
 siPixelFakeGainOfflineESSource = cms.ESSource("SiPixelFakeGainOfflineESSource",
-        file = 
-cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseI/SmallPixel/EmptyPixelSkimmedGeometry.txt')
-        )
+                                              file = cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseI/SmallPixel/EmptyPixelSkimmedGeometry.txt')
+                                              )
 es_prefer_fake_gain = cms.ESPrefer("SiPixelFakeGainOfflineESSource","siPixelFakeGainOfflineESSource")
 
 siPixelFakeLorentzAngleESSource = cms.ESSource("SiPixelFakeLorentzAngleESSource",
-        file = 
-cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseI/SmallPixel/PixelSkimmedGeometry.txt')
-        )
+                                               file = cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseI/SmallPixel/PixelSkimmedGeometry.txt')
+                                               )
+
 es_prefer_fake_lorentz = cms.ESPrefer("SiPixelFakeLorentzAngleESSource","siPixelFakeLorentzAngleESSource")
 
 from RecoVertex.BeamSpotProducer.BeamSpotFakeParameters_cfi import *
@@ -39,8 +38,9 @@ mergedtruth.volumeRadius = cms.double(100.0)
 mergedtruth.volumeZ = cms.double(900.0)
 mergedtruth.discardOutVolume = cms.bool(True)
 
-
 #from Geometry.TrackerNumberingBuilder.pixelSLHCGeometryConstants_cfi import *
-from Geometry.TrackerGeometryBuilder.idealForDigiTrackerSLHCGeometry_cff import *
+
+### commenting this out (FIXME: how big pixels should be treated?)
+#from Geometry.TrackerGeometryBuilder.idealForDigiTrackerSLHCGeometry_cff import *
 
 
