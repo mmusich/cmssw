@@ -274,6 +274,4 @@ def customise_Reco(process,pileup):
     process.pixelTracks.FilterPSet.tipMax = cms.double(0.05)
     process.pixelTracks.RegionFactoryPSet.RegionPSet.originRadius =  cms.double(0.02)
 
-
-
     return process
