@@ -19,6 +19,9 @@ from SLHCUpgradeSimulations.Configuration.combinedCustoms_TTI import l1EventCont
 
 from SLHCUpgradeSimulations.Configuration.customise_mixing import customise_NoCrossing
 from SLHCUpgradeSimulations.Configuration.phase1TkCustoms import customise as customisePhase1Tk
+#### add small pixel customize from A. Tricomi (13.05.2014)
+from SLHCUpgradeSimulations.Configuration.phase1TkCustomsSmallPixel import customise as customisePhase1TkSmallPixel
+
 from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1, customise_HcalPhase0, customise_HcalPhase2
 from SLHCUpgradeSimulations.Configuration.gemCustoms import customise as customise_gem
 from SLHCUpgradeSimulations.Configuration.me0Customs import customise as customise_me0
@@ -71,6 +74,14 @@ def cust_phase2_LB4LPS_2L2S(process):#obsolete
 def cust_2017(process):
     process=customisePostLS1(process)
     process=customisePhase1Tk(process)
+    process=customise_HcalPhase0(process)
+#    process=fixRPCConditions(process)
+    return process
+
+#### add small pixel customize from A. Tricomi (13.05.2014)
+def cust_2017SmallPixel(process):
+    process=customisePostLS1(process)
+    process=customisePhase1TkSmallPixel(process)
     process=customise_HcalPhase0(process)
 #    process=fixRPCConditions(process)
     return process
