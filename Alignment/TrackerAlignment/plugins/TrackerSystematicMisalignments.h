@@ -54,12 +54,7 @@ private:
 	double m_twistEpsilon;
 	double m_ellipticalEpsilon;
 	double m_skewEpsilon;
-	double m_sagittaEpsilon;
-
-        //misalignment phases
-        double m_ellipticalDelta;
-        double m_skewDelta;
-        double m_sagittaDelta;
+	double m_saggitaEpsilon;
 
 	// flag to steer suppression of blind movements
 	bool suppressBlindMvmts;

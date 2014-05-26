@@ -7,9 +7,9 @@
 /// Description : calls alignment algorithms
 ///
 ///  \author    : Frederic Ronga
-///  Revision   : $Revision: 1.25 $
-///  last update: $Date: 2012/02/01 13:55:23 $
-///  by         : $Author: mussgill $
+///  Revision   : $Revision: 1.28 $
+///  last update: $Date: 2012/08/10 09:20:09 $
+///  by         : $Author: flucke $
 
 #include <vector>
 
@@ -46,6 +46,7 @@
 
 
 class Alignments;
+class IntegratedCalibrationBase;
 class SurveyErrors;
 namespace edm {
   class Run;
@@ -155,8 +156,9 @@ class AlignmentProducer : public edm::ESProducerLooper
   const SurveyErrors* theSurveyErrors;
 
   AlignmentAlgorithmBase* theAlignmentAlgo;
-  std::vector<AlignmentMonitorBase*> theMonitors;
   AlignmentParameterStore* theAlignmentParameterStore;
+  std::vector<AlignmentMonitorBase*> theMonitors;
+  std::vector<IntegratedCalibrationBase*> theCalibrations;
 
   AlignableExtras* theAlignableExtras;
   AlignableTracker* theAlignableTracker;
@@ -189,7 +191,6 @@ class AlignmentProducer : public edm::ESProducerLooper
   const edm::InputTag tkLasBeamTag_;          // LAS beams in edm::Run (ignore if empty)
   const edm::InputTag clusterValueMapTag_;              // ValueMap containing associtaion cluster - flag
 
-
   // ESWatcher
   edm::ESWatcher<TrackerSurveyRcd> watchTkSurveyRcd_;
   edm::ESWatcher<TrackerSurveyErrorRcd> watchTkSurveyErrRcd_;
@@ -197,7 +198,7 @@ class AlignmentProducer : public edm::ESProducerLooper
   edm::ESWatcher<DTSurveyErrorRcd> watchDTSurveyErrRcd_;
   edm::ESWatcher<CSCSurveyRcd> watchCSCSurveyRcd_;
   edm::ESWatcher<CSCSurveyErrorRcd> watchCSCSurveyErrRcd_;	
-  
+
 };
 
 #endif

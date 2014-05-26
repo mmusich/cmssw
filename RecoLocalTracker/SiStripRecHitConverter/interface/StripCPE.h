@@ -6,6 +6,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "CondFormats/SiStripObjects/interface/SiStripBackPlaneCorrection.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLorentzAngle.h"
 #include "CondFormats/SiStripObjects/interface/SiStripConfObject.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLatency.h"
@@ -22,6 +23,7 @@ public:
 	    const MagneticField&, 
 	    const TrackerGeometry&, 
 	    const SiStripLorentzAngle&,
+            const SiStripBackPlaneCorrection&,
 	    const SiStripConfObject&,
 	    const SiStripLatency&);    
   LocalVector driftDirection(const StripGeomDetUnit* det) const;
@@ -32,7 +34,7 @@ public:
   const TrackerGeometry & geom_;
   const MagneticField& magfield_ ;
   const SiStripLorentzAngle& LorentzAngleMap_;
-  std::vector<double> shift;
+  const SiStripBackPlaneCorrection& BackPlaneCorrectionMap_;
   std::vector<double> xtalk1;
   std::vector<double> xtalk2;
 
@@ -40,6 +42,7 @@ public:
     Param() : topology(0) {}
     StripTopology const * topology;
     LocalVector drift;
+    float backplanecorrection;
     float thickness, pitch_rel_err2, maxLength;
     int nstrips;
     SiStripDetId::ModuleGeometry moduleGeom;
