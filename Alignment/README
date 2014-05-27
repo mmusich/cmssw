@@ -1,0 +1,81 @@
+MILLE-PEDE-BASED TRACKER ALIGNMENT WITH 2012 DATA
+
+This is a recipe how to set up a CMSSW release to perform tracker alignment with
+2012 data using the mille-pede II algorithm.
+
+The current alignment works with the CMSSW_5_3_16_patch1 release, which includes
+the a fix of the hierarchy-constraints implementation. In addition, private
+modifications on top are required to include the Lorentz-angle and backplane
+corrections into the alignment. These modifications are present in the
+`Alignment-MP-53X-Dev' branch (this branch) of the cms-trackeralignment/cmssw
+repository (this repository).
+
+More information on the 2012 alignment can be found at
+https://twiki.cern.ch/twiki/bin/view/CMS/TkAl1403
+
+The working release is set up in the following way:
+
+1. Set up CMSSW_5_3_16_patch1 
+
+     scram p CMSSW CMSSW_5_3_16_patch1
+     cd CMSSW_5_3_16_patch1/src
+     cmsenv
+
+2. Add some subpackages from the release. They will not be modified but are
+   still needed in the working directory for the code to work correctly (not
+   exactly sure why, probably some hard-coded paths somewhere); for example, the
+   mille jobs will crash if Alignment/CommonAlignmentParametrization is not
+   present locally. 
+
+     git cms-addpkg Alignment/CommonAlignmentParametrization
+     git cms-addpkg Alignment/OfflineValidation
+     git cms-addpkg MuonAnalysis/MomentumScaleCalibration
+
+3. Add the subpackages from the release that will be modified later. They need
+   to be present (`sparse checked-out') in the working directory in order to
+   apply the modifications using a checkout from the cms-trackeralignment VO.
+   (In order to avoid having to type in your password for each package, you can
+   put the list of packages into a text file `list.txt', one package per line, and
+   then use `git cms-addpkg -f list.txt'.) 
+
+     git cms-addpkg Alignment/CommonAlignment    
+     git cms-addpkg Alignment/CommonAlignmentAlgorithm    
+     git cms-addpkg Alignment/CommonAlignmentMonitor
+     git cms-addpkg Alignment/CommonAlignmentProducer
+     git cms-addpkg Alignment/MillePedeAlignmentAlgorithm   
+     git cms-addpkg Alignment/ReferenceTrajectories
+     git cms-addpkg Alignment/TrackerAlignment
+     git cms-addpkg CalibTracker/Configuration   
+     git cms-addpkg CalibTracker/Records   
+     git cms-addpkg CalibTracker/SiStripESProducers   
+     git cms-addpkg CondCore/SiStripPlugins   
+     git cms-addpkg CondFormats/DataRecord   
+     git cms-addpkg CondFormats/SiStripObjects   
+     git cms-addpkg RecoLocalTracker/Records   
+     git cms-addpkg RecoLocalTracker/SiPixelRecHits   
+     git cms-addpkg RecoLocalTracker/SiStripRecHitConverter   
+
+4. Now, apply the private modifications. First, you need to add the
+   `cms-trackeralignment/cmssw' repository (this repository) as a remote and then
+   to checkout the `Alignment-MP-53X-Dev' branch (this branch) that contains the
+   modifications.
+
+     git remote add cms-trackeralign git@github.com:cms-trackeralign/cmssw.git
+     git fetch cms-trackeralign
+     git checkout --track cms-trackeralign/Alignment-MP-53X-Dev
+
+5. Your local repository is now at the HEAD of the `Alignment-MP-53X-Dev' branch
+   (this branch). This is useful if you want to add your own modifications; you can
+   do so by committing them to the branch and pushing it to the
+   `cms-trackeralignment/cmssw' remote repository (this repository). On the other hand,
+   in case you just want to use the code for alignment and preferably have a stable,
+   tested, and easily reproducible version of the code, there are tags of snapshots of
+   this branch provided that you can checkout. To checkout the current tag, do 
+
+     git checkout Alignment-MP-5_3_16_patch1_2014-05-28
+
+6. Finally, compile everything 
+
+     scram b -j6
+     rehash    # for csh
+     hash -r   # for sh
