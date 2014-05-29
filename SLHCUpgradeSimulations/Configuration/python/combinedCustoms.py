@@ -29,6 +29,9 @@ from SLHCUpgradeSimulations.Configuration.phase1TkCustomsSmallBeamSpot import cu
 #### add point beamspot customized as in SLHCUpgradeSimulations/Geometry/python/fakeConditions_Phase1SmallPixel_cff.py provided by A. Tricomi (15.05.2014)
 from SLHCUpgradeSimulations.Configuration.phase1TkCustomsPointBeamSpot import customise as customisePhase1TkPointBeamSpot
 
+#### add customs to run with templated pixel hit reconstruction
+from SLHCUpgradeSimulations.Configuration.phase1TkCustomsTemplateHitReco import customise as customisePhase1TkTemplateHitReco
+
 from SLHCUpgradeSimulations.Configuration.HCalCustoms import customise_HcalPhase1, customise_HcalPhase0, customise_HcalPhase2
 from SLHCUpgradeSimulations.Configuration.gemCustoms import customise as customise_gem
 from SLHCUpgradeSimulations.Configuration.me0Customs import customise as customise_me0
@@ -104,6 +107,13 @@ def cust_2017SmallBeamSpot(process):
 def cust_2017PointBeamSpot(process):
     process=customisePostLS1(process)
     process=customisePhase1TkPointBeamSpot(process)
+    process=customise_HcalPhase0(process)
+    return process
+
+#### add customise to run with template hit reco
+def cust_2017TemplateReco(process):
+    process=customisePostLS1(process)
+    process=customisePhase1TkTemplateHitReco(process)
     process=customise_HcalPhase0(process)
     return process
 
