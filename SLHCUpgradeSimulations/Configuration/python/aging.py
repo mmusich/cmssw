@@ -3,6 +3,12 @@ import FWCore.ParameterSet.Config as cms
 def agePixel(process,lumi):
     if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'pixel') and not hasattr(process.mix.digitizers.pixel,'NoAging'):
         process.mix.digitizers.pixel.DoPixelAging = cms.bool(True)
+        if lumi==-5:
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(5.0)
+            
+        if lumi==-10:
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(10.0)
+            
         if lumi>299:
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(1.0)
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.36)
