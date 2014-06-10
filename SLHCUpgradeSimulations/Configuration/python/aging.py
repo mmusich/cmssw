@@ -7,9 +7,21 @@ def agePixel(process,lumi):
         ## Adding customization for tests   
         if lumi==-5:
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(5.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix3 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix4 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix1 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix3 = cms.double(0.0)
             
         if lumi==-10:
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(10.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix3 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix4 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix1 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix3 = cms.double(0.0)
 
         ## M.M. 10 June 2014 
                
