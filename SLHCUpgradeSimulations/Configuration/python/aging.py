@@ -4,7 +4,16 @@ def agePixel(process,lumi):
     if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'pixel') and not hasattr(process.mix.digitizers.pixel,'NoAging'):
         process.mix.digitizers.pixel.DoPixelAging = cms.bool(True)
 
-        ## Adding customization for tests   
+        ## Adding customization for tests
+        if lumi==0:
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix3 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix4 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix1 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix3 = cms.double(0.0)
+        
         if lumi==-5:
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(5.0)
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.0)
@@ -126,6 +135,12 @@ def ageEcal(process,lumi):
 
 ### M.M. 10 June 2014
 ### adding new customization fuctions for test k values
+
+def customise_aging_zero(process):
+
+    process=agePixel(process,0)
+    return process
+
 def customise_aging_test_k_5(process):
 
     process=agePixel(process,-5)
