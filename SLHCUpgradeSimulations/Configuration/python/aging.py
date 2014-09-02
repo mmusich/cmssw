@@ -130,22 +130,10 @@ def ageEcal(process,lumi):
 
 ### M.M. 10 June 2014
 ### adding new customization fuctions for test k values
-
 def customise_aging_zero(process):
 
     process=agePixel(process,0)
     return process
-
-def customise_aging_test_k_5(process):
-
-    process=agePixel(process,-5)
-    return process
-
-def customise_aging_test_k_10(process):
-
-    process=agePixel(process,-10)
-    return process
-####
 
 def customise_aging_100(process):
 
