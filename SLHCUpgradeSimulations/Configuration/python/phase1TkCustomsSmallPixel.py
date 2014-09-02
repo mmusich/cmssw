@@ -60,7 +60,9 @@ def customise_Digi(process):
     process.mix.digitizers.pixel.thePixelColEfficiency_FPix3 = cms.double(0.999)
     process.mix.digitizers.pixel.thePixelEfficiency_FPix3 = cms.double(0.999)
     process.mix.digitizers.pixel.thePixelChipEfficiency_FPix3 = cms.double(0.999)
-    process.mix.digitizers.pixel.AddPixelInefficiencyFromPython = cms.bool(True)
+ #   process.mix.digitizers.pixel.AddPixelInefficiencyFromPython = cms.bool(True)
+ #   False for the small pixel scenario ** Alessia
+    process.mix.digitizers.pixel.AddPixelInefficiencyFromPython = cms.bool(False)
 
     process=customise_pixelMixing_PU(process)
     return process
@@ -129,6 +131,7 @@ def customise_harvesting(process):
     return (process)        
 
 def customise_condOverRides(process):
+    process.load('SLHCUpgradeSimulations.Geometry.fakeConditions_Phase1SmallPixel_cff')
     process.trackerTopologyConstants.pxb_layerStartBit = cms.uint32(20)
     process.trackerTopologyConstants.pxb_ladderStartBit = cms.uint32(12)
     process.trackerTopologyConstants.pxb_moduleStartBit = cms.uint32(2)
@@ -167,6 +170,7 @@ def customise_Reco(process,pileup):
     if pileup>100: nPU=140
     
     #use with latest pixel geometry
+    # Just to remind that I think it should be redone for the small pixel ***Alessia
     process.ClusterShapeHitFilterESProducer.PixelShapeFile = cms.string('RecoPixelVertexing/PixelLowPtUtilities/data/pixelShape_Phase1Tk.par')
     # Need this line to stop error about missing siPixelDigis.
     process.MeasurementTracker.inactivePixelDetectorLabels = cms.VInputTag()
@@ -269,19 +273,5 @@ def customise_Reco(process,pileup):
     process.pixelTracks.FilterPSet.chi2 = cms.double(50.0)
     process.pixelTracks.FilterPSet.tipMax = cms.double(0.05)
     process.pixelTracks.RegionFactoryPSet.RegionPSet.originRadius =  cms.double(0.02)
-
-    # using appropriate number of rows in ROC (for pitch != 100x150 um2)
-    process.siPixelFakeGainOfflineESSource = cms.ESSource("SiPixelFakeGainOfflineESSource",
-                                                          file = cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseI/PixelSkimmedGeometry_phase1.txt')
-                                                          )
-
-    process.es_prefer_fake_gain = cms.ESPrefer("SiPixelFakeGainOfflineESSource","siPixelFakeGainOfflineESSource")
-
-    # using appropriate number of rows in ROC (for pitch != 100x150 um2)   
-    process.siPixelFakeLorentzAngleESSource = cms.ESSource("SiPixelFakeLorentzAngleESSource",
-                                                           file = cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseI/PixelSkimmedGeometry_phase1.txt')
-                                                        )
-    process.es_prefer_fake_lorentz = cms.ESPrefer("SiPixelFakeLorentzAngleESSource","siPixelFakeLorentzAngleESSource")
-    
 
     return process

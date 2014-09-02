@@ -3,6 +3,17 @@ import FWCore.ParameterSet.Config as cms
 def agePixel(process,lumi):
     if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'pixel') and not hasattr(process.mix.digitizers.pixel,'NoAging'):
         process.mix.digitizers.pixel.DoPixelAging = cms.bool(True)
+
+        ## Adding customization for tests M.M. 10 June 2014 
+        if lumi==0:
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix3 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix4 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix1 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix2 = cms.double(0.0)
+            process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix3 = cms.double(0.0)
+
         if lumi>299:#scenario updated with new values E. Migliore et al. 140807
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(0.4)
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.3)
@@ -11,7 +22,7 @@ def agePixel(process,lumi):
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix1 = cms.double(0.36)
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix2 = cms.double(0.36)
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_FPix3 = cms.double(0.36)
-            
+                 
         if lumi>399:#scenario not updated 
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix1 = cms.double(1.2)
             process.mix.digitizers.pixel.thePixelPseudoRadDamage_BPix2 = cms.double(0.43)
@@ -116,6 +127,25 @@ def ageEcal(process,lumi):
         process.g4SimHits.ECalSD.InstLuminosity = cms.double(instLumi)
         process.g4SimHits.ECalSD.DelivLuminosity = cms.double(float(lumi))
     return process
+
+### M.M. 10 June 2014
+### adding new customization fuctions for test k values
+
+def customise_aging_zero(process):
+
+    process=agePixel(process,0)
+    return process
+
+def customise_aging_test_k_5(process):
+
+    process=agePixel(process,-5)
+    return process
+
+def customise_aging_test_k_10(process):
+
+    process=agePixel(process,-10)
+    return process
+####
 
 def customise_aging_100(process):
 

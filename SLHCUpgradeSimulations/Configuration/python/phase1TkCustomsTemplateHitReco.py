@@ -241,22 +241,22 @@ def customise_Reco(process,pileup):
     process.load("SLHCUpgradeSimulations.Geometry.recoFromSimDigis_cff")
     # PixelCPEGeneric #
     process.PixelCPEGenericESProducer.Upgrade = cms.bool(True)
-    process.PixelCPEGenericESProducer.UseErrorsFromTemplates = cms.bool(False)
-    process.PixelCPEGenericESProducer.LoadTemplatesFromDB = cms.bool(False)
-    process.PixelCPEGenericESProducer.TruncatePixelCharge = cms.bool(False)
-    process.PixelCPEGenericESProducer.IrradiationBiasCorrection = False
-    process.PixelCPEGenericESProducer.DoCosmics = False
+    #process.PixelCPEGenericESProducer.UseErrorsFromTemplates = cms.bool(False)
+    #process.PixelCPEGenericESProducer.LoadTemplatesFromDB = cms.bool(False)
+    #process.PixelCPEGenericESProducer.TruncatePixelCharge = cms.bool(False)
+    #process.PixelCPEGenericESProducer.IrradiationBiasCorrection = False
+    #process.PixelCPEGenericESProducer.DoCosmics = False
     # CPE for other steps
-    process.siPixelRecHits.CPE = cms.string('PixelCPEGeneric')
+    #process.siPixelRecHits.CPE = cms.string('PixelCPEGeneric')
     # Turn of template use in tracking (iterative steps handled inside their configs)
-    process.mergedDuplicateTracks.TTRHBuilder = 'WithTrackAngle'
-    process.ctfWithMaterialTracks.TTRHBuilder = 'WithTrackAngle'
-    process.muonSeededSeedsInOut.TrackerRecHitBuilder=cms.string('WithTrackAngle')
-    process.muonSeededTracksInOut.TTRHBuilder=cms.string('WithTrackAngle')
-    process.muonSeededTracksOutIn.TTRHBuilder=cms.string('WithTrackAngle')
-    process.muons1stStep.TrackerKinkFinderParameters.TrackerRecHitBuilder=cms.string('WithTrackAngle')
-    process.regionalCosmicTracks.TTRHBuilder=cms.string('WithTrackAngle')
-    process.cosmicsVetoTracksRaw.TTRHBuilder=cms.string('WithTrackAngle')
+    #process.mergedDuplicateTracks.TTRHBuilder = 'WithTrackAngle'
+    #process.ctfWithMaterialTracks.TTRHBuilder = 'WithTrackAngle'
+    #process.muonSeededSeedsInOut.TrackerRecHitBuilder=cms.string('WithTrackAngle')
+    #process.muonSeededTracksInOut.TTRHBuilder=cms.string('WithTrackAngle')
+    #process.muonSeededTracksOutIn.TTRHBuilder=cms.string('WithTrackAngle')
+    #process.muons1stStep.TrackerKinkFinderParameters.TrackerRecHitBuilder=cms.string('WithTrackAngle')
+    #process.regionalCosmicTracks.TTRHBuilder=cms.string('WithTrackAngle')
+    #process.cosmicsVetoTracksRaw.TTRHBuilder=cms.string('WithTrackAngle')
     # End of pixel template needed section
     
     # Make pixelTracks use quadruplets

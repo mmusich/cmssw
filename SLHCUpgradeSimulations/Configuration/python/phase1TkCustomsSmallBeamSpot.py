@@ -129,6 +129,32 @@ def customise_harvesting(process):
     return (process)        
 
 def customise_condOverRides(process):
+
+    # customise as in SLHCUpgradeSimulations/Geometry/python/fakeConditions_Phase1SmallPixel_cff.py
+    # provided by A. Tricomi
+    
+    from RecoVertex.BeamSpotProducer.BeamSpotFakeParameters_cfi import *
+    BeamSpotFakeConditions.X0 = cms.double(0.0)
+    BeamSpotFakeConditions.Y0 = cms.double(0.0)
+    BeamSpotFakeConditions.Z0 = cms.double(0.0)
+    BeamSpotFakeConditions.dxdz = cms.double(0.0)
+    BeamSpotFakeConditions.dydz = cms.double(0.0)
+    BeamSpotFakeConditions.sigmaZ = cms.double(5.3)
+    BeamSpotFakeConditions.widthX = cms.double(0.015)
+    BeamSpotFakeConditions.widthY = cms.double(0.015)
+    BeamSpotFakeConditions.emittanceX = cms.double(0.)
+    BeamSpotFakeConditions.emittanceY = cms.double(0.)
+    BeamSpotFakeConditions.betaStar = cms.double(0.)
+    BeamSpotFakeConditions.errorX0 = cms.double(0.00208)
+    BeamSpotFakeConditions.errorY0 = cms.double(0.00208)
+    BeamSpotFakeConditions.errorZ0 = cms.double(0.00508)
+    BeamSpotFakeConditions.errordxdz = cms.double(0.0)
+    BeamSpotFakeConditions.errordydz = cms.double(0.0)
+    BeamSpotFakeConditions.errorSigmaZ = cms.double(0.060)
+    BeamSpotFakeConditions.errorWidth = cms.double(0.0013)
+
+    es_prefer_beamspot = cms.ESPrefer("BeamSpotFakeConditions","")
+    
     process.trackerTopologyConstants.pxb_layerStartBit = cms.uint32(20)
     process.trackerTopologyConstants.pxb_ladderStartBit = cms.uint32(12)
     process.trackerTopologyConstants.pxb_moduleStartBit = cms.uint32(2)
