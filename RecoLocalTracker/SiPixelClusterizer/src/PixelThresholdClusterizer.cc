@@ -61,6 +61,9 @@ PixelThresholdClusterizer::PixelThresholdClusterizer
   if ( conf_.exists("FirstStackLayer") ) theFirstStack_=conf_.getParameter<int>("FirstStackLayer");
   else
     theFirstStack_=5;
+  if ( conf_.exists("ElectronPerAdc") ) theGain_ =conf_.getParameter<double>("ElectronPerAdc");
+  else 
+    theGain_=135;
   
   // Get the constants for the miss-calibration studies
   doMissCalibrate=conf_.getUntrackedParameter<bool>("MissCalibrate",true); 
@@ -231,7 +234,6 @@ int PixelThresholdClusterizer::calibrate(int adc, int col, int row)
 	  float DBgain     = theSiPixelGainCalibrationService_->getGain(detid_, col, row);
 	  float DBpedestal = theSiPixelGainCalibrationService_->getPedestal(detid_, col, row) * DBgain;
 	  
-	  
 	  // Roc-6 average
 	  //const float gain = 1./0.313; // 1 ADC = 3.19 VCALs 
 	  //const float pedestal = -6.2 * gain; // -19.8
@@ -257,7 +259,7 @@ int PixelThresholdClusterizer::calibrate(int adc, int col, int row)
   else 
     { // No misscalibration in the digitizer
       // Simple (default) linear gain 
-      const float gain = 135.; // 1 ADC = 135 electrons
+      const float gain = theGain_; //540.; //135.; // 1 ADC = 135 electrons
       const float pedestal = 0.; //
       electrons = int(adc * gain + pedestal);
       if (layer>=theFirstStack_) {
