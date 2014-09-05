@@ -11,6 +11,7 @@ siPixelClusters = cms.EDProducer("SiPixelClusterProducer",
     SplitClusters = cms.bool(False),
     VCaltoElectronGain = cms.int32(65),
     VCaltoElectronOffset = cms.int32(-414),                          
+    ElectronPerAdc = cms.double(135.),
     # **************************************
     # ****  payLoadType Options         ****
     # ****  HLT - column granularity    ****
