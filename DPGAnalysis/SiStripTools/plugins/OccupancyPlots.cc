@@ -317,7 +317,7 @@ OccupancyPlots::endRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
   iSetup.get<SiPixelQualityRcd>().get("",pxlquality);
 
 
-   SiPixelDetInfoFileReader pxlreader(m_fp.fullPath());
+   SiPixelDetInfoFileReader pxlreader(m_fp.fullPath(),true);
 
    const std::vector<uint32_t>& pxldetids = pxlreader.getAllDetIds();
 
