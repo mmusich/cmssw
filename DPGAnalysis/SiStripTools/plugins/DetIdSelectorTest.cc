@@ -150,9 +150,9 @@ DetIdSelectorTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
 
    {
-     edm::FileInPath fp("CalibTracker/SiPixelESProducers/data/PixelSkimmedGeometry.txt");
+     edm::FileInPath fp("SLHCUpgradeSimulations/Geometry/data/PhaseI/PixelSkimmedGeometry.txt");
      
-     SiPixelDetInfoFileReader pxlreader(fp.fullPath());
+     SiPixelDetInfoFileReader pxlreader(fp.fullPath(),true);
      const std::vector<uint32_t>& detids = pxlreader.getAllDetIds();
      
      for(std::vector<uint32_t>::const_iterator detid=detids.begin();detid!=detids.end();++detid) {
