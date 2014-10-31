@@ -211,6 +211,19 @@ def customise_Reco(process,pileup):
     # when linking tracks to HF clusters
     process=customise_PFlow.customise_extendedTrackerBarrel( process )
 
+    # using appropriate number of rows in ROC (for pitch != 100x150 um2)
+    process.siPixelFakeGainOfflineESSource = cms.ESSource("SiPixelFakeGainOfflineESSource",
+                                                          file = cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseII/Pixel10D/PixelSkimmedGeometry_phase1.txt')
+                                                          )
+
+    process.es_prefer_fake_gain = cms.ESPrefer("SiPixelFakeGainOfflineESSource","siPixelFakeGainOfflineESSource")
+
+    # using appropriate number of rows in ROC (for pitch != 100x150 um2)   
+    process.siPixelFakeLorentzAngleESSource = cms.ESSource("SiPixelFakeLorentzAngleESSource",
+                                                           file = cms.FileInPath('SLHCUpgradeSimulations/Geometry/data/PhaseII/Pixel10D/PixelSkimmedGeometry_phase1.txt')
+                                                        )
+    process.es_prefer_fake_lorentz = cms.ESPrefer("SiPixelFakeLorentzAngleESSource","siPixelFakeLorentzAngleESSource")
+    
     return process
 
 def customise_condOverRides(process):
