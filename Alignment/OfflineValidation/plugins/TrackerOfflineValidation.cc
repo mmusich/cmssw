@@ -86,6 +86,8 @@ public:
   
 private:
 
+  TTree* m_tree;
+
   struct ModuleHistos{
     ModuleHistos() :  ResHisto(), NormResHisto(), ResYHisto(), /*NormResYHisto(),*/
 		      ResXprimeHisto(), NormResXprimeHisto(), 
@@ -191,7 +193,9 @@ private:
   // 
   // ------------- private member function -------------
   // 
+  virtual void beginJob();
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void endRun(const edm::Run&,const edm::EventSetup&) override;
   virtual void endJob() override;
   
   virtual void checkBookHists(const edm::EventSetup& setup);
@@ -276,7 +280,6 @@ private:
   std::map<int,TrackerOfflineValidation::ModuleHistos> mTobResiduals_;
   std::map<int,TrackerOfflineValidation::ModuleHistos> mTecResiduals_;
 
-  const edm::EventSetup* lastSetup_;
 };
 
 
@@ -357,8 +360,7 @@ TrackerOfflineValidation::TrackerOfflineValidation(const edm::ParameterSet& iCon
     useFit_(parSet_.getParameter<bool>("useFit")),
     useOverflowForRMS_(parSet_.getParameter<bool>("useOverflowForRMS")),
     dqmMode_(parSet_.getParameter<bool>("useInDqmMode")),
-    moduleDirectory_(parSet_.getParameter<std::string>("moduleDirectoryInOutput")),
-    lastSetup_(nullptr)
+    moduleDirectory_(parSet_.getParameter<std::string>("moduleDirectoryInOutput"))
 {
 }
 
@@ -382,7 +384,6 @@ TrackerOfflineValidation::~TrackerOfflineValidation()
 void
 TrackerOfflineValidation::checkBookHists(const edm::EventSetup& es)
 {
-  lastSetup_ = &es;
   es.get<TrackerDigiGeometryRecord>().get( tkGeom_ );
   const TrackerGeometry *newBareTkGeomPtr = &(*tkGeom_);
   if (newBareTkGeomPtr == bareTkGeomPtr_) return; // already booked hists, nothing changed
@@ -964,6 +965,14 @@ TrackerOfflineValidation::getHistStructFromMap(const DetId& detid)
 }
 
 
+void 
+TrackerOfflineValidation::beginJob()
+{
+  edm::Service<TFileService> fs;
+  m_tree = fs->make<TTree>("TkOffVal","TkOffVal");
+ 
+}
+
 // ------------ method called to for each event  ------------
 void
 TrackerOfflineValidation::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -1203,17 +1212,21 @@ TrackerOfflineValidation::analyze(const edm::Event& iEvent, const edm::EventSetu
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 TrackerOfflineValidation::endJob()
-{
+{    
+}
 
+void
+TrackerOfflineValidation::endRun(const edm::Run& run,const edm::EventSetup& iSetup) {
+ 
   if (!tkGeom_.product()) return;
 
   //Retrieve tracker topology from geometry
   edm::ESHandle<TrackerTopology> tTopoHandle;
-  lastSetup_->get<IdealGeometryRecord>().get(tTopoHandle);
+  iSetup.get<IdealGeometryRecord>().get(tTopoHandle);
   const TrackerTopology* const tTopo = tTopoHandle.product();
 
   AlignableTracker aliTracker(&(*tkGeom_), tTopo);
-  
+ 
   static const int kappadiffindex = this->GetIndex(vTrackHistos_,"h_diff_curvature");
   vTrackHistos_[kappadiffindex]->Add(vTrackHistos_[this->GetIndex(vTrackHistos_,"h_curvature_neg")],
 				     vTrackHistos_[this->GetIndex(vTrackHistos_,"h_curvature_pos")],-1,1);
@@ -1223,30 +1236,28 @@ TrackerOfflineValidation::endJob()
   std::vector<TrackerOfflineValidation::SummaryContainer> vTrackerprofiles;
   DirectoryWrapper f("",moduleDirectory_,dqmMode_);
   this->collateSummaryHists(f,(aliTracker), 0, vTrackerprofiles);
-  
-  if (dqmMode_) return;
-  // Should be excluded in dqmMode, since TTree is not usable
-  // In dqmMode tree operations are are sourced out to the additional module TrackerOfflineValidationSummary
-  
-  edm::Service<TFileService> fs;
-  TTree *tree = fs->make<TTree>("TkOffVal","TkOffVal");
- 
-  TkOffTreeVariables *treeMemPtr = new TkOffTreeVariables;
-  // We create branches for all members of 'TkOffTreeVariables' (even if not needed).
-  // This works because we have a dictionary for 'TkOffTreeVariables'
-  // (see src/classes_def.xml and src/classes.h):
-  tree->Branch("TkOffTreeVariables", &treeMemPtr); // address of pointer!
- 
-  this->fillTree(*tree, mPxbResiduals_, *treeMemPtr, *tkGeom_, tTopo);
-  this->fillTree(*tree, mPxeResiduals_, *treeMemPtr, *tkGeom_, tTopo);
-  this->fillTree(*tree, mTibResiduals_, *treeMemPtr, *tkGeom_, tTopo);
-  this->fillTree(*tree, mTidResiduals_, *treeMemPtr, *tkGeom_, tTopo);
-  this->fillTree(*tree, mTobResiduals_, *treeMemPtr, *tkGeom_, tTopo);
-  this->fillTree(*tree, mTecResiduals_, *treeMemPtr, *tkGeom_, tTopo);
 
-  delete treeMemPtr; treeMemPtr = 0;
+  if (!dqmMode_){
+    // Should be excluded in dqmMode, since TTree is not usable
+    // In dqmMode tree operations are are sourced out to the additional module TrackerOfflineValidationSummary
+
+    TkOffTreeVariables *treeMemPtr = new TkOffTreeVariables;
+    // We create branches for all members of 'TkOffTreeVariables' (even if not needed).
+    // This works because we have a dictionary for 'TkOffTreeVariables'
+    // (see src/classes_def.xml and src/classes.h):
+    m_tree->Branch("TkOffTreeVariables", &treeMemPtr); // address of pointer!
+    
+    this->fillTree(*m_tree, mPxbResiduals_, *treeMemPtr, *tkGeom_, tTopo);
+    this->fillTree(*m_tree, mPxeResiduals_, *treeMemPtr, *tkGeom_, tTopo);
+    this->fillTree(*m_tree, mTibResiduals_, *treeMemPtr, *tkGeom_, tTopo);
+    this->fillTree(*m_tree, mTidResiduals_, *treeMemPtr, *tkGeom_, tTopo);
+    this->fillTree(*m_tree, mTobResiduals_, *treeMemPtr, *tkGeom_, tTopo);
+    this->fillTree(*m_tree, mTecResiduals_, *treeMemPtr, *tkGeom_, tTopo);
+    
+    delete treeMemPtr; treeMemPtr = 0;
+  }
+
 }
-
 
 void
 TrackerOfflineValidation::collateSummaryHists( DirectoryWrapper& tfd, const Alignable& ali, int i, 
