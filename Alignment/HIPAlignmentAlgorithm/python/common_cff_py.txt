@@ -1,8 +1,8 @@
 from CondCore.DBCommon.CondDBSetup_cfi import *
 
 # loading magnetic field and geometry
-#process.load('Configuration.StandardSequences.GeometryExtended_cff')
-process.load("Configuration.StandardSequences.GeometryIdeal_cff")
+#process.load("Configuration.StandardSequences.GeometryIdeal_cff")
+process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
 # loading the alignment producer
@@ -43,14 +43,7 @@ process.GlobalTag.toGet = cms.VPSet(
             ),
    )
 
-process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi") 
-process.MeasurementTrackerEvent.pixelClusterProducer = 'ALCARECOTkAlMinBias'
-process.MeasurementTrackerEvent.stripClusterProducer = 'ALCARECOTkAlMinBias'
-process.MeasurementTrackerEvent.inactivePixelDetectorLabels = cms.VInputTag()
-process.MeasurementTrackerEvent.inactiveStripDetectorLabels = cms.VInputTag()
-
 process.AlignmentProducer.applyDbAlignment = True
-
 
 ### Set parameters to align (all modules in this example)
 

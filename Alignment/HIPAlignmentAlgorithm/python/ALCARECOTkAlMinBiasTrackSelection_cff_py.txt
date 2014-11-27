@@ -41,7 +41,6 @@ process.TrackerTrackHitFilter.TrackAngleCut= 0.17 #~10 degrees
 process.TrackerTrackHitFilter.usePixelQualityFlag= True
 # process.TrackerTrackHitFilter.PxlCorrClusterChargeCut=10000.0
 
-
 # track producer to be run after the alignment hit filter
 import RecoTracker.TrackProducer.CTFFinalFitWithMaterial_cff
 process.ctfProducerCustomised = RecoTracker.TrackProducer.CTFFinalFitWithMaterial_cff.ctfWithMaterialTracks.clone()
@@ -49,7 +48,7 @@ process.ctfProducerCustomised.src = 'TrackerTrackHitFilter'
 ##process.ctfProducerCustomised.beamspot='offlineBeamSpot'
 process.ctfProducerCustomised.TTRHBuilder = 'WithAngleAndTemplate'
 process.ctfProducerCustomised.TrajectoryInEvent = True
-
+process.ctfProducerCustomised.NavigationSchool = ''
 
 # parameters for TrackSelector
 ###process.AlignmentTrackSelector.src = '<SKIM>'
