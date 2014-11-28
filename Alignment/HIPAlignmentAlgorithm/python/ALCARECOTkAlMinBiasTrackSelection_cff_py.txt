@@ -6,7 +6,7 @@ import RecoTracker.TrackProducer.TrackRefitters_cff
 process.TrackRefitter1 = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone()
 #process.TrackRefitter1.src = '<SKIM>'
 process.TrackRefitter1.src = 'initialAlignmentTrackSelector'
-
+process.TrackRefitter1.NavigationSchool = ''
 
 #initial track selector ( new )
 import Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi
