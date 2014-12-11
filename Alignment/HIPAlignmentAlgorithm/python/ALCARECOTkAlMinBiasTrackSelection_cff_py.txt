@@ -48,7 +48,6 @@ process.ctfProducerCustomised.src = 'TrackerTrackHitFilter'
 ##process.ctfProducerCustomised.beamspot='offlineBeamSpot'
 process.ctfProducerCustomised.TTRHBuilder = 'WithAngleAndTemplate'
 process.ctfProducerCustomised.TrajectoryInEvent = True
-process.ctfProducerCustomised.NavigationSchool = ''
 
 # parameters for TrackSelector
 ###process.AlignmentTrackSelector.src = '<SKIM>'
