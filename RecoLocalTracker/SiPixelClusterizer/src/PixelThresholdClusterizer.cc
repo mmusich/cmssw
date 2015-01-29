@@ -282,7 +282,8 @@ int PixelThresholdClusterizer::calibrate(int adc, int col, int row)
 namespace {
 
   struct AccretionCluster {
-    typedef unsigned short UShort;
+
+    typedef ushort_sipixelcluster UShort;
     static constexpr UShort MAXSIZE = 256;
     UShort adc[256];
     UShort x[256];
@@ -299,8 +300,8 @@ namespace {
 
     bool add(SiPixelCluster::PixelPos const & p, UShort const iadc) {
       if (isize==MAXSIZE) return false;
-      xmin=std::min(xmin,(unsigned short)(p.row()));
-      ymin=std::min(ymin,(unsigned short)(p.col()));
+      xmin=std::min(xmin,(UShort)(p.row()));
+      ymin=std::min(ymin,(UShort)(p.col()));
       adc[isize]=iadc;
       x[isize]=p.row();
       y[isize++]=p.col();

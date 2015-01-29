@@ -518,17 +518,17 @@ collect_edge_charges(const SiPixelCluster& cluster,  //!< input, the cluster
 
       //
       // X projection
-      if      ( pixel.x == xmin )       // need to match with tolerance!!! &&&
+      if      ( (int)pixel.x == xmin )       // need to match with tolerance!!! &&&
 	Q_f_X += pix_adc;
-      else if ( pixel.x == xmax ) 
+      else if ( (int)pixel.x == xmax ) 
 	Q_l_X += pix_adc;
       else 
 	Q_m_X += pix_adc;
       //
       // Y projection
-      if      ( pixel.y == ymin ) 
+      if      ( (int)pixel.y == ymin ) 
 	Q_f_Y += pix_adc;
-      else if ( pixel.y == ymax ) 
+      else if ( (int)pixel.y == ymax ) 
 	Q_l_Y += pix_adc;
       else 
 	Q_m_Y += pix_adc;

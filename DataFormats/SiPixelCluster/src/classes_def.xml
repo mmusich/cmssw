@@ -5,6 +5,7 @@
    <version ClassVersion="10" checksum="2468063768"/>
    <version ClassVersion="11" checksum="1473312403"/>
    <version ClassVersion="12" checksum="2042538185"/>
+   <version ClassVersion="13" checksum="3502614164"/>
    <ioread sourceClass="SiPixelCluster" version="[1-10]" targetClass="SiPixelCluster" source="uint16_t theMinPixelCol" target="thePixelCol">
    <![CDATA[thePixelCol = onfile.theMinPixelCol;]]>
    </ioread>  
@@ -15,6 +16,7 @@
   <class name="SiPixelCluster::Pixel" ClassVersion="11">
    <version ClassVersion="10" checksum="387573196"/>
    <version ClassVersion="11" checksum="1898133768"/>
+   <version ClassVersion="12" checksum="1973572127"/>
   </class>
   <class name="SiPixelCluster::Shift" ClassVersion="10">
    <version ClassVersion="10" checksum="4096847861"/>

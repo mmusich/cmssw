@@ -30,6 +30,24 @@
 
 class PixelDigi;
 
+#ifndef PHASE2
+typedef uint32_t uint_sipixelcluster;
+typedef uint16_t ushort_sipixelcluster;
+typedef uint8_t ushortshort_sipixelcluster;
+#define POSBITS_sipixelcluster 10
+#define SPANBITS_sipixelcluster 6
+#define MAXSPAN_sipixelcluster 63
+#define MAXPOS_sipixelcluster 1023
+#else
+typedef uint32_t uint_sipixelcluster;
+typedef uint32_t ushort_sipixelcluster;
+typedef uint16_t ushortshort_sipixelcluster;
+#define POSBITS_sipixelcluster 20
+#define SPANBITS_sipixelcluster 12
+#define MAXSPAN_sipixelcluster 127
+#define MAXPOS_sipixelcluster 2047
+#endif
+
 class SiPixelCluster {
 public:
   
@@ -38,9 +56,9 @@ public:
     constexpr Pixel() : x(0), y(0), adc(0){} // for root
     constexpr Pixel(int pix_x, int pix_y, int pix_adc) :
       x(pix_x), y(pix_y), adc(pix_adc) {}
-    uint16_t  x;
-    uint16_t y;
-    uint16_t adc;
+    ushort_sipixelcluster  x;
+    ushort_sipixelcluster y;
+    ushort_sipixelcluster adc;
   };
   
   //--- Integer shift in x and y directions.
@@ -73,18 +91,19 @@ public:
   typedef std::vector<PixelDigi>::const_iterator   PixelDigiIter;
   typedef std::pair<PixelDigiIter,PixelDigiIter>   PixelDigiRange;
   
-  
+
 #ifndef CMS_NOCXX11
-  static constexpr unsigned int POSBITS=10;
-  static constexpr unsigned int SPANBITS=6;
-  static constexpr unsigned int MAXSPAN=63;
-  static constexpr unsigned int MAXPOS=1023;
+  static constexpr unsigned int POSBITS=POSBITS_sipixelcluster;
+  static constexpr unsigned int SPANBITS=SPANBITS_sipixelcluster;
+  static constexpr unsigned int MAXSPAN=MAXSPAN_sipixelcluster;
+  static constexpr unsigned int MAXPOS=MAXPOS_sipixelcluster;
 #else
-  static const unsigned int POSBITS=10;
-  static const unsigned int SPANBITS=6;
-  static const unsigned int MAXSPAN=63;
-  static const unsigned int MAXPOS=1023;
+  static const unsigned int POSBITS=POSBITS_sipixelcluster;
+  static const unsigned int SPANBITS=SPANBITS_sipixelcluster;
+  static const unsigned int MAXSPAN=MAXSPAN_sipixelcluster;
+  static const unsigned int MAXPOS=MAXPOS_sipixelcluster;
 #endif  
+
   
   /** Construct from a range of digis that form a cluster and from 
    *  a DetID. The range is assumed to be non-empty.
@@ -92,17 +111,17 @@ public:
   
   SiPixelCluster() : thePixelRow(MAXPOS), thePixelCol(MAXPOS), err_x(-99999.9), err_y(-99999.9) {}  // needed by many....
   
-  SiPixelCluster(unsigned int isize, uint16_t const * adcs,
-		 uint16_t const * xpos,  uint16_t const * ypos, 
-		 uint16_t const  xmin,  uint16_t const  ymin) :   
+  SiPixelCluster(unsigned int isize, ushort_sipixelcluster const * adcs,
+		 ushort_sipixelcluster const * xpos,  ushort_sipixelcluster const * ypos, 
+		 ushort_sipixelcluster const  xmin,  ushort_sipixelcluster const  ymin) :   
     thePixelOffset(2*isize), thePixelADC(adcs,adcs+isize), err_x(-99999.9), err_y(-99999.9) {
-    uint16_t maxCol = 0;
-    uint16_t maxRow = 0;
+    ushort_sipixelcluster maxCol = 0;
+    ushort_sipixelcluster maxRow = 0;
     for (unsigned int i=0; i!=isize; ++i) {
-      uint16_t xoffset = xpos[i]-xmin;
-      uint16_t yoffset = ypos[i]-ymin;
-      thePixelOffset[i*2] = std::min(uint16_t(MAXSPAN),xoffset);
-      thePixelOffset[i*2+1] = std::min(uint16_t(MAXSPAN),yoffset);
+      ushort_sipixelcluster xoffset = xpos[i]-xmin;
+      ushort_sipixelcluster yoffset = ypos[i]-ymin;
+      thePixelOffset[i*2] = std::min(ushort_sipixelcluster(MAXSPAN),xoffset);
+      thePixelOffset[i*2+1] = std::min(ushort_sipixelcluster(MAXSPAN),yoffset);
       if (xoffset > maxRow) maxRow = xoffset; 
       if (yoffset > maxCol) maxCol = yoffset; 
     }
@@ -156,8 +175,8 @@ public:
   inline int maxPixelCol() const { verifyVersion(); return minPixelCol() + colSpan();} // The max y index.
   
   
-  const std::vector<uint8_t> & pixelOffset() const { return thePixelOffset;}
-  const std::vector<uint16_t> & pixelADC() const { return thePixelADC;}
+  const std::vector<ushortshort_sipixelcluster> & pixelOffset() const { return thePixelOffset;}
+  const std::vector<ushort_sipixelcluster> & pixelADC() const { return thePixelADC;}
   
   // obsolete, use single pixel access below
   const std::vector<Pixel> pixels() const {
@@ -180,10 +199,10 @@ public:
   
 private:
   
-  static int span_(uint16_t packed) { return packed >> POSBITS;}
-  static int overflow_(uint16_t packed) { return span_(packed)==uint16_t(MAXSPAN);}
-  static uint16_t pack_(uint16_t zmin, unsigned  short zspan) {
-    zspan = std::min(zspan, uint16_t(MAXSPAN));
+  static int span_(uint_sipixelcluster packed) { return packed >> POSBITS;}
+  static int overflow_(uint_sipixelcluster packed) { return span_(packed)==uint_sipixelcluster(MAXSPAN);}
+  static uint_sipixelcluster pack_(uint_sipixelcluster zmin, unsigned int zspan) {
+    zspan = std::min(zspan, uint_sipixelcluster(MAXSPAN));
     return (zspan<<POSBITS) | zmin;
   }
 public:
@@ -199,10 +218,10 @@ public:
   
   bool overflow() const { return  overflowCol() || overflowRow(); }
   
-  void packCol(uint16_t ymin, uint16_t yspan) {
+  void packCol(ushort_sipixelcluster ymin, ushort_sipixelcluster yspan) {
     thePixelCol = pack_(ymin,yspan);
   }
-  void packRow(uint16_t xmin, uint16_t xspan) {
+  void packRow(ushort_sipixelcluster xmin, ushort_sipixelcluster xspan) {
     thePixelRow = pack_(xmin,xspan);
   }
   
@@ -242,12 +261,12 @@ public:
   
 private:
   
-  std::vector<uint8_t>  thePixelOffset;
-  std::vector<uint16_t> thePixelADC;
+  std::vector<ushortshort_sipixelcluster>  thePixelOffset;
+  std::vector<ushort_sipixelcluster> thePixelADC;
   
   
-  uint16_t thePixelRow; // Minimum and span pixel index in the x direction (low edge).
-  uint16_t thePixelCol; // Minimum and span pixel index in the y direction (left edge).
+  ushort_sipixelcluster thePixelRow; // Minimum and span pixel index in the x direction (low edge).
+  ushort_sipixelcluster thePixelCol; // Minimum and span pixel index in the y direction (left edge).
   // Need 10 bits for Postion information. the other 6 used for span
   
   // ggiurgiu@fnal.gov, 01/05/12
