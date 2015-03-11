@@ -13,19 +13,11 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:mc', '')
 
 # ideal geometry and interface
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
+#process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
 # for Muon: include "Geometry/MuonNumbering/data/muonNumberingInitialization.cfi"
 
 # Choose Tracker Geometry
-#process.load("Configuration.Geometry.GeometryReco_cff")
-
-#process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-#process.load("Geometry.TrackerGeometryBuilder.idealForDigiTrackerGeometry_cff")
-#process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
-
-process.load("Geometry.TrackerGeometryBuilder.trackerGeometry_cfi")
-process.load("Geometry.TrackerNumberingBuilder.trackerTopologyConstants_cfi")
-
+process.load("Configuration.Geometry.GeometryDB_cff")
 
 # track selection for alignment
 #process.load("Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi")
@@ -37,9 +29,9 @@ process.AlignmentProducer.algoConfig = ApeSettingAlgorithm
 process.AlignmentProducer.saveApeToDB = True
 process.AlignmentProducer.algoConfig.readApeFromASCII = True
 process.AlignmentProducer.algoConfig.setComposites = False
-process.AlignmentProducer.algoConfig.readLocalNotGlobal = False
+process.AlignmentProducer.algoConfig.readLocalNotGlobal = True
 process.AlignmentProducer.algoConfig.readFullLocalMatrix = True
-process.AlignmentProducer.algoConfig.apeASCIIReadFile = 'Alignment/CommonAlignmentAlgorithm/test/moduleDependent_APE_25nsEnlargeTECRing7_v2.txt'
+process.AlignmentProducer.algoConfig.apeASCIIReadFile = 'Alignment/CommonAlignmentAlgorithm/test/TrackerGeometryErrors_SAFE_prompt_local.txt'
 process.AlignmentProducer.algoConfig.saveApeToASCII = False
 process.AlignmentProducer.algoConfig.saveComposites = False
 process.AlignmentProducer.algoConfig.apeASCIISaveFile = 'myLocalDump.txt'
