@@ -17,7 +17,7 @@ process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
 # for Muon: include "Geometry/MuonNumbering/data/muonNumberingInitialization.cfi"
 
 # Choose Tracker Geometry
-process.load("Configuration.Geometry.GeometryDB_cff")
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
 
 # track selection for alignment
 #process.load("Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi")
