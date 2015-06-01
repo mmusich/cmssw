@@ -5,7 +5,7 @@ ALCARECOMuAlCalIsolatedMuHLT = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLeve
     andOr = True, ## choose logical OR between Triggerbits
     eventSetupPathsKey = 'MuAlCalIsolatedMu',
     throw = False # tolerate triggers not available
-    )
+)
 
 # DCS partitions
 # "EBp","EBm","EEp","EEm","HBHEa","HBHEb","HBHEc","HF","HO","RPC" 
@@ -16,7 +16,7 @@ ALCARECOMuAlCalIsolatedDCSFilter = DPGAnalysis.Skims.skim_detstatus_cfi.dcsstatu
     DetectorType = cms.vstring('DT0','DTp','DTm','CSCp','CSCm'),
     ApplyFilter  = cms.bool(True),
     AndOr        = cms.bool(False), # False = at least one detector from DetectorType map above is ON
-    DebugOn      = cms.untracked.bool(False)
+    DebugOn      = cms.untracked.bool(False),
 )
 
 #________________________________Muon selection____________________________________
