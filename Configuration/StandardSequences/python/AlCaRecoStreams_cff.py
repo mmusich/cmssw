@@ -154,6 +154,7 @@ pathALCARECOMuAlCalIsolatedMu = cms.Path(seqALCARECOMuAlCalIsolatedMu*ALCARECOMu
 pathALCARECOMuAlCalIsolatedMuGeneralTracks = cms.Path(seqALCARECOMuAlCalIsolatedMuGeneralTracks)
 pathALCARECOMuAlZMuMu = cms.Path(seqALCARECOMuAlZMuMu*ALCARECOMuAlZMuMuDQM)
 pathALCARECOMuAlOverlaps = cms.Path(seqALCARECOMuAlOverlaps*ALCARECOMuAlOverlapsDQM)
+pathALCARECOMuAlOverlapsGeneralTracks = cms.Path(seqALCARECOMuAlOverlapsGeneralTracks)
 pathALCARECORpcCalHLT = cms.Path(seqALCARECORpcCalHLT)
 pathALCARECODtCalib = cms.Path(seqALCARECODtCalib*ALCARECODTCalibSynchDQM)
 pathALCARECODtCalibCosmics = cms.Path(seqALCARECODtCalibCosmics*ALCARECODTCalibSynchCosmicsDQM)
@@ -395,7 +396,7 @@ ALCARECOStreamHcalCalIterativePhiSym = cms.FilteredStream(
     )
 
 ALCARECOStreamMuAlCalIsolatedMu = cms.FilteredStream(
-	responsible = 'Javier Fernandez',
+	responsible = 'Yuriy Pakhotin',
 	name = 'MuAlCalIsolatedMu',
 	paths  = (pathALCARECOMuAlCalIsolatedMu, pathALCARECOMuAlCalIsolatedMuGeneralTracks),
 	content = OutALCARECOMuAlCalIsolatedMu.outputCommands,
@@ -404,7 +405,7 @@ ALCARECOStreamMuAlCalIsolatedMu = cms.FilteredStream(
 	)
 
 ALCARECOStreamMuAlZMuMu = cms.FilteredStream(
-	responsible = 'Javier Fernandez',
+	responsible = 'Yuriy Pakhotin',
 	name = 'MuAlZMuMu',
 	paths  = (pathALCARECOMuAlZMuMu),
 	content = OutALCARECOMuAlZMuMu.outputCommands,
@@ -415,7 +416,7 @@ ALCARECOStreamMuAlZMuMu = cms.FilteredStream(
 ALCARECOStreamMuAlOverlaps = cms.FilteredStream(
 	responsible = 'Yuriy Pakhotin',
 	name = 'MuAlOverlaps',
-	paths  = (pathALCARECOMuAlOverlaps),
+	paths  = (pathALCARECOMuAlOverlaps,pathALCARECOMuAlOverlapsGeneralTracks),
 	content = OutALCARECOMuAlOverlaps.outputCommands,
 	selectEvents = OutALCARECOMuAlOverlaps.SelectEvents,
 	dataTier = cms.untracked.string('ALCARECO')
@@ -521,7 +522,7 @@ ALCARECOStreamTkAlBeamHalo = cms.FilteredStream(
 	)
 
 ALCARECOStreamMuAlBeamHalo = cms.FilteredStream(
-	responsible = 'Jim Pivarski',
+	responsible = 'Yuriy Pakhotin',
 	name = 'MuAlBeamHalo',
 	paths  = (pathALCARECOMuAlBeamHalo),
 	content = OutALCARECOMuAlBeamHalo.outputCommands,
@@ -530,7 +531,7 @@ ALCARECOStreamMuAlBeamHalo = cms.FilteredStream(
 	)
 
 ALCARECOStreamMuAlBeamHaloOverlaps = cms.FilteredStream(
-	responsible = 'Jim Pivarski',
+	responsible = 'Yuriy Pakhotin',
 	name = 'MuAlBeamHaloOverlaps',
 	paths  = (pathALCARECOMuAlBeamHaloOverlaps),
 	content = OutALCARECOMuAlBeamHaloOverlaps.outputCommands,
