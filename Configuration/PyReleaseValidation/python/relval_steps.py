@@ -1100,13 +1100,23 @@ steps['ALCAEXP']={'-s':'ALCA:PromptCalibProd',
                   '--eventcontent':'ALCARECO'}
 
 # step4
+<<<<<<< HEAD
 step4Defaults = { '-s'            : 'ALCA:TkAlMuonIsolated+TkAlMinBias+EcalCalZElectron+EcalCalWElectron+HcalCalIsoTrk+MuAlCalIsolatedMu+MuAlZMuMu+MuAlOverlaps',
+=======
+step4Defaults = { 
+                  '-s'            : 'ALCA:TkAlMuonIsolated+TkAlMinBias+HcalCalIsoTrk+MuAlCalIsolatedMu+MuAlZMuMu+MuAlOverlaps',
+>>>>>>> 82a6eb4... Rebased to latest CMSSW_7_5_X and as suggested by @mmusich the path ALCA:MuAlCalIsolatedMu is removed from Cosmics [RECOCOSD, RECOCOS] and Beamhalo [RECOHAL] steps in the relval matrix. Also ALCA:MuAlCalIsolatedMu+MuAlZMuMu added to step4Defaults and step4Up2015Defaults steps.
                   '-n'            : 1000,
                   '--conditions'  : 'auto:run1_mc',
                   '--datatier'    : 'ALCARECO',
                   '--eventcontent': 'ALCARECO',
                   }
+<<<<<<< HEAD
 step4Up2015Defaults = { '-s'            : 'ALCA:TkAlMuonIsolated+TkAlMinBias+EcalCalZElectron+EcalCalWElectron+HcalCalIsoTrk+MuAlCalIsolatedMu+MuAlZMuMu+MuAlOverlaps',
+=======
+step4Up2015Defaults = { 
+                        '-s'            : 'ALCA:TkAlMuonIsolated+TkAlMinBias+HcalCalIsoTrk+MuAlCalIsolatedMu+MuAlZMuMu+MuAlOverlaps',
+>>>>>>> 82a6eb4... Rebased to latest CMSSW_7_5_X and as suggested by @mmusich the path ALCA:MuAlCalIsolatedMu is removed from Cosmics [RECOCOSD, RECOCOS] and Beamhalo [RECOHAL] steps in the relval matrix. Also ALCA:MuAlCalIsolatedMu+MuAlZMuMu added to step4Defaults and step4Up2015Defaults steps.
                         '-n'            : 1000,
                         '--conditions'  : 'auto:run2_mc',
                         '--customise'   : 'SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1',
