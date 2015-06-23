@@ -1113,7 +1113,7 @@ step4Up2015Defaults = { '-s'            : 'ALCA:TkAlMuonIsolated+TkAlMinBias+Eca
                         '--customise'   : 'SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1',
                         '--datatier'    : 'ALCARECO',
                         '--eventcontent': 'ALCARECO',
-                  }
+                        }
 
 steps['RERECOPU']=steps['RERECOPU1']
 
