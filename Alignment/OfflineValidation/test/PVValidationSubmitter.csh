@@ -100,23 +100,23 @@ if(${options} != "--dryRun") then
  echo "Content of working directory is: "
  \ls -lrt
 
- set reply=`eos find -d /store/caf/user/musich/Alignment/PVValidation/${taskname}`
+ set reply=`eos find -d /store/caf/user/$USER/Alignment/PVValidation/${taskname}`
  set word=`echo $reply |awk '{split($0,a," "); print a[1]}'`
 
  if(${word} == "") then
  echo "Creating folder $taskname"
-    cmsMkdir /store/caf/user/musich/Alignment/PVValidation/${taskname} 
+    cmsMkdir /store/caf/user/$USER/Alignment/PVValidation/${taskname} 
  else 
-    echo "Sorry /store/caf/user/musich/Alignment/PVValidation/${taskname} already exists!"
+    echo "Sorry /store/caf/user/$USER/Alignment/PVValidation/${taskname} already exists!"
  endif
 
  if (! -d  ${CMSSW_DIR}/test/PVValResults) then
      mkdir ${CMSSW_DIR}/PVValResults
-     cmsStage -f ${outfile} /store/caf/user/musich/Alignment/PVValidation/${taskname}
+     cmsStage -f ${outfile} /store/caf/user/$USER/Alignment/PVValidation/${taskname}
      #cp ${outfile}   ${CMSSW_DIR}/PVValResults
      cp ${jobname}.out ${CMSSW_DIR}/PVValResults 
  else     
-     cmsStage -f ${outfile} /store/caf/user/musich/Alignment/PVValidation/${taskname}
+     cmsStage -f ${outfile} /store/caf/user/$USER/Alignment/PVValidation/${taskname}
      #cp ${outfile}   ${CMSSW_DIR}/PVValResults
      cp ${jobname}.out ${CMSSW_DIR}/PVValResults 
  endif
