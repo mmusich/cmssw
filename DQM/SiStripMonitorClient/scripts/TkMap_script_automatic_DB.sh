@@ -37,25 +37,25 @@ do
 
     #2015 Commissioning period (since January)
     if [ $Run_numb -gt 232881 ]; then
-	DataLocalDir='Data2015'
-	DataOfflineDir='Run2015'
+        DataLocalDir='Data2015'
+        DataOfflineDir='Commissioning2015'
     else
     #2013 pp run (2.76 GeV)
-	if [ $Run_numb -gt 211658 ]; then
-	    DataLocalDir='Data2013'
-	    DataOfflineDir='Run2013'
-	else
+        if [ $Run_numb -gt 211658 ]; then
+        DataLocalDir='Data2013'
+        DataOfflineDir='Run2013'
+        else
     #2013 HI run
-	    if [ $Run_numb -gt 209634 ]; then
-		DataLocalDir='Data2013'
-		DataOfflineDir='HIRun2013'
-	    else
-		if [ $Run_numb -gt 190450 ]; then
-		    DataLocalDir='Data2012'
-		    DataOfflineDir='Run2012'
-		fi
-	    fi
-	fi
+        if [ $Run_numb -gt 209634 ]; then
+            DataLocalDir='Data2013'
+            DataOfflineDir='HIRun2013'
+        else
+            if [ $Run_numb -gt 190450 ]; then
+            DataLocalDir='Data2012'
+            DataOfflineDir='Run2012'
+            fi
+        fi
+        fi
     fi
     fi
     #loop over datasets
@@ -143,12 +143,7 @@ fi
     fi
 
 #Temporary fix to remove hidden ASCII characters
-<<<<<<< HEAD
     GLOBALTAG=`echo $GLOBALTAG | cut -c 9-${#GLOBALTAG}`
-=======
-#    echo $GLOBALTAG
-    GLOBALTAG=`echo $GLOBALTAG | cut -c 9-16`
->>>>>>> Modifications to add copying of DetId root file to appropriate data directory, incorporate changes from current versions of TkMap creation scripts
 #    GLOBALTAG=`sed -i 's/[\d128-\d255]//g' <<< "${GLOBALTAG}"`
 #    GLOBALTAG=`echo $GLOBALTAG | sed 's/[\d128-\d255]//'`
 #    echo `expr length $GLOBALTAG`
