@@ -29,32 +29,33 @@ do
 
     if [ "$Run_numb" == "$1" ]; then continue; fi
 
-    #2015 Commissioning period (since January)
+    #2015 pp run
     if [ $Run_numb -gt 246841 ]; then
-	DataLocalDir='Data2015'
-	DataOfflineDir='Run2015'
+        DataLocalDir='Data2015'
+        DataOfflineDir='Run2015'
     else
     #2015 Commissioning period (since January)
-	if [ $Run_numb -gt 232881 ]; then
-	    DataLocalDir='Data2015'
-	    DataOfflineDir='Commissioning2015'
-	else
+    if [ $Run_numb -gt 232881 ]; then
+        DataLocalDir='Data2015'
+        DataOfflineDir='Commissioning2015'
+    else
     #2013 pp run (2.76 GeV)
-	if [ $Run_numb -gt 211658 ]; then
-	    DataLocalDir='Data2013'
-	    DataOfflineDir='Run2013'
-	else
+        if [ $Run_numb -gt 211658 ]; then
+        DataLocalDir='Data2013'
+        DataOfflineDir='Run2013'
+        else
     #2013 HI run
-	    if [ $Run_numb -gt 209634 ]; then
-		DataLocalDir='Data2013'
-		DataOfflineDir='HIRun2013'
-	    else
-		if [ $Run_numb -gt 190450 ]; then
-		    DataLocalDir='Data2012'
-		    DataOfflineDir='Run2012'
-		fi
-	    fi
-	fi
+        if [ $Run_numb -gt 209634 ]; then
+            DataLocalDir='Data2013'
+            DataOfflineDir='HIRun2013'
+        else
+            if [ $Run_numb -gt 190450 ]; then
+            DataLocalDir='Data2012'
+            DataOfflineDir='Run2012'
+            fi
+        fi
+        fi
+    fi
     fi
     #loop over datasets
     #if Cosmics, do StreamExpressCosmics as well
