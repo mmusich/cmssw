@@ -57,6 +57,8 @@ void FillTrendPlot(TH1F* trendPlot, TH1F* residualsPlot[100], TString fitPar_, T
 void MakeNiceTrendPlotStyle(TH1 *hist,Int_t color);
 void MakeNicePlotStyle(TH1 *hist);
 void FitPVResiduals(TString namesandlabels,bool stdres=true);
+TH1F* DrawZero(TH1F *hist,Int_t nbins,Double_t lowedge,Double_t highedge);
+void makeNewXAxis (TH1F *h);
 
 void setStyle();
 
@@ -519,6 +521,8 @@ void arrangeCanvas(TCanvas *canv,TH1F* meanplots[100],TH1F* widthplots[100],Int_
   text3->SetTextSize(0.05*extraOverCmsTextSize);
 
   canv->SetFillColor(10);  
+  TPad *myPad = NULL;
+
   if(!onlyBias) {
     canv->Divide(2,1);
     
@@ -531,7 +535,6 @@ void arrangeCanvas(TCanvas *canv,TH1F* meanplots[100],TH1F* widthplots[100],Int_
     canv->cd(2)->SetLeftMargin(0.17);
     canv->cd(2)->SetRightMargin(0.02);
     canv->cd(2)->SetTopMargin(0.06);  
-  
     canv->cd(1);
   } else {
     
@@ -540,7 +543,6 @@ void arrangeCanvas(TCanvas *canv,TH1F* meanplots[100],TH1F* widthplots[100],Int_
     canv->cd()->SetRightMargin(0.02);
     canv->cd()->SetTopMargin(0.06);  
     canv->cd();
-
   }
 
   Double_t absmin(999.);
@@ -555,40 +557,6 @@ void arrangeCanvas(TCanvas *canv,TH1F* meanplots[100],TH1F* widthplots[100],Int_
   Double_t theExtreme=std::max(absmax,TMath::Abs(absmin));
 
   for(Int_t i=0; i<nFiles; i++){
-
-    TString myTitle = meanplots[i]->GetName();
-    float axmin = -999;
-    float axmax = 999.;
-    int ndiv = 510;
-    if(myTitle.Contains("eta")){
-      axmin = -2.5;
-      axmax = 2.5;
-      ndiv = 505;
-    } else if (myTitle.Contains("phi")){
-      axmin = -TMath::Pi();
-      axmax = TMath::Pi();
-      ndiv = 510;
-    } else  {
-      std::cout<<"unrecongnized variable";
-    }
-
-    meanplots[i]->GetXaxis()->SetLabelOffset(999);
-    meanplots[i]->GetXaxis()->SetTickLength(0);
-    
-    // Redraw the new axis 
-    gPad->Update();
-    TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),gPad->GetUymin(),
-				 gPad->GetUxmax(),gPad->GetUymin(),
-				 axmin,
-				 axmax,
-				 //meanplots[i]->GetXaxis()->GetXmin(),
-				 //meanplots[i]->GetXaxis()->GetXmax(),
-				 ndiv,"SDH");
-
-    newaxis->SetLabelOffset(0.02);
-    newaxis->SetLabelFont(42);
-    newaxis->SetLabelSize(.05);
-    newaxis->Draw();
     
     if(i==0){
       //meanplots[i]->GetYaxis()->SetRangeUser(absmin-safeDelta/2.,absmax+safeDelta);
@@ -604,20 +572,29 @@ void arrangeCanvas(TCanvas *canv,TH1F* meanplots[100],TH1F* widthplots[100],Int_
 	}
 	//meanplots[i]->GetYaxis()->SetRangeUser(-theExtreme,theExtreme);
       } 
-      meanplots[i]->GetXaxis()->SetLabelOffset(999);
       meanplots[i]->Draw("e1");
+      makeNewXAxis(meanplots[i]); 
+
+      if(onlyBias){
+	canv->cd();
+	Int_t nbins =  meanplots[i]->GetNbinsX();
+	Double_t lowedge  = meanplots[i]->GetBinLowEdge(1);
+	Double_t highedge = meanplots[i]->GetBinLowEdge(nbins+1);
+	
+	TH1F* hzero = DrawZero(meanplots[i],nbins,lowedge,highedge);
+	hzero->Draw("PLsame");
+	
+      }
     }
     else meanplots[i]->Draw("e1sames");
     lego->AddEntry(meanplots[i],LegLabels[i]); 
   }  
   
-
   //ali->Draw();
   lego->Draw();
   pt->Draw("same");
   pt2->Draw("same");
   pt3->Draw("same");
-
 
   if(!onlyBias){
 
@@ -631,45 +608,16 @@ void arrangeCanvas(TCanvas *canv,TH1F* meanplots[100],TH1F* widthplots[100],Int_
     Double_t safeDelta2=absmax2/3.;
     
     for(Int_t i=0; i<nFiles; i++){
-
-      TString myTitle = widthplots[i]->GetName();
-      float axmin = -999;
-      float axmax = 999.;
-      int ndiv = 510;
-      if(myTitle.Contains("eta")){
-	axmin = -2.5;
-	axmax = 2.5;
-	ndiv = 505;
-      } else if (myTitle.Contains("phi")){
-	axmin = -TMath::Pi();
-	axmax = TMath::Pi();
-	ndiv = 510;
-      } else  {
-	std::cout<<"unrecongnized variable";
-      }
       
       widthplots[i]->GetXaxis()->SetLabelOffset(999);
       widthplots[i]->GetXaxis()->SetTickLength(0);
       
-      // Redraw the new axis 
-      gPad->Update();
-      TGaxis *newaxis2 = new TGaxis(gPad->GetUxmin(),gPad->GetUymin(),
-				    gPad->GetUxmax(),gPad->GetUymin(),
-				    axmin,
-				    axmax,
-				    //widthplots[i]->GetXaxis()->GetXmin(),
-				    //widthplots[i]->GetXaxis()->GetXmax(),
-				    ndiv,"SDH");
-      
-      newaxis2->SetLabelOffset(0.02);
-      newaxis2->SetLabelFont(42);
-      newaxis2->SetLabelSize(.05);
-      newaxis2->Draw();
-      
-      if(i==0) widthplots[i]->Draw("e1");
-      else widthplots[i]->Draw("e1sames");
-      widthplots[i]->SetMinimum(0.5);
-      widthplots[i]->SetMaximum(absmax2+safeDelta2);
+      if(i==0){ 
+	widthplots[i]->SetMinimum(0.5);
+	widthplots[i]->SetMaximum(absmax2+safeDelta2);
+	widthplots[i]->Draw("e1");
+	makeNewXAxis(widthplots[i]);
+      } else widthplots[i]->Draw("e1sames");
     }
     
     lego->Draw();
@@ -1260,7 +1208,7 @@ void MakeNiceTrendPlotStyle(TH1 *hist,Int_t color)
   hist->GetYaxis()->SetTitleFont(42);  
   hist->GetXaxis()->SetTitleSize(0.065);
   hist->GetYaxis()->SetTitleSize(0.065);
-  hist->GetXaxis()->SetTitleOffset(1.0);
+  hist->GetXaxis()->SetTitleOffset(0.9);
   hist->GetYaxis()->SetTitleOffset(1.2);
   hist->GetXaxis()->SetLabelFont(42);
   hist->GetYaxis()->SetLabelFont(42);
@@ -1329,4 +1277,74 @@ void setStyle(){
   gStyle->SetPadBorderMode(0);
   gStyle->SetOptFit(1);
   gStyle->SetNdivisions(510);
+}
+
+/*--------------------------------------------------------------------*/
+TH1F* DrawZero(TH1F *hist,Int_t nbins,Double_t lowedge,Double_t highedge)
+/*--------------------------------------------------------------------*/
+{ 
+
+  TH1F *hzero = new TH1F(Form("hzero_%s",hist->GetName()),"hzero",nbins,lowedge,highedge);
+  for (Int_t i=0;i<hzero->GetNbinsX();i++){
+    hzero->SetBinContent(i,0.);
+    hzero->SetBinError(i,0.);
+  }
+  hzero->SetLineWidth(2);
+  hzero->SetLineStyle(9);
+  hzero->SetLineColor(kRed);
+  
+  return hzero;
+}
+
+/*--------------------------------------------------------------------*/
+void makeNewXAxis (TH1F *h)
+/*--------------------------------------------------------------------*/
+{
+  
+  TString myTitle = h->GetName();
+  float axmin = -999;
+  float axmax = 999.;
+  int ndiv = 510;
+  if(myTitle.Contains("eta")){
+    axmin = -2.5;
+    axmax = 2.5;
+    ndiv = 505;
+  } else if (myTitle.Contains("phi")){
+    axmin = -TMath::Pi();
+    axmax = TMath::Pi();
+    ndiv = 510;
+  } else  {
+    std::cout<<"unrecongnized variable";
+  }
+  
+  // Remove the current axis
+  h->GetXaxis()->SetLabelOffset(999);
+  h->GetXaxis()->SetTickLength(0);
+  
+   // Redraw the new axis
+  gPad->Update();
+  
+  TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),gPad->GetUymin(),
+			       gPad->GetUxmax(),gPad->GetUymin(),
+			       axmin,
+			       axmax,
+			       ndiv,"SDH");
+  
+  TGaxis *newaxisup =  new TGaxis(gPad->GetUxmin(),gPad->GetUymax(),
+                                  gPad->GetUxmax(),gPad->GetUymax(),
+                                  axmin,
+                                  axmax,                          
+                                  ndiv,"-SDH");
+    
+  newaxis->SetLabelOffset(0.02);
+  newaxis->SetLabelFont(42);
+  newaxis->SetLabelSize(0.05);
+  
+  newaxisup->SetLabelOffset(-0.02);
+  newaxisup->SetLabelFont(42);
+  newaxisup->SetLabelSize(0);
+  
+  newaxis->Draw();
+  newaxisup->Draw();
+
 }
