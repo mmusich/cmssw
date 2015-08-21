@@ -1,0 +1,34 @@
+import FWCore.ParameterSet.Config as cms 
+maxEvents = cms.untracked.PSet( 
+input = cms.untracked.int32(-1) 
+) 
+readFiles = cms.untracked.vstring() 
+secFiles = cms.untracked.vstring() 
+source = cms.Source ("PoolSource",fileNames = readFiles, secondaryFileNames = secFiles) 
+readFiles.extend( [ 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/087092D0-8E2C-E511-A3AB-02163E013901.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/1A11D037-9B2C-E511-B792-02163E011DFF.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/225D8DE7-932C-E511-A9D3-02163E01360E.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/243D79B8-952C-E511-AC2D-02163E011861.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/2CB1A187-902C-E511-967B-02163E0140E1.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/329549CC-9B2C-E511-BAF7-02163E013455.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/44469AED-A22C-E511-9BBC-02163E012736.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/4A5FB2BF-992C-E511-A365-02163E0134B7.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/4AA156A9-922C-E511-B11E-02163E0123C0.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/50037C28-952C-E511-A8A2-02163E013724.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/54541E14-8F2C-E511-A8EE-02163E0129DA.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/5C7335CC-9D2C-E511-B017-02163E0128B9.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/6EF61B02-972C-E511-B4BD-02163E012044.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/7E5D8C44-902C-E511-A1B4-02163E013724.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/9CFB4783-8E2C-E511-9362-02163E01415E.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/A4E78189-8C2C-E511-95C4-02163E0133D1.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/B2498C19-A02C-E511-8DCD-02163E01399F.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/B6F246D3-972C-E511-A2D0-02163E01354D.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/BEFBA2FD-8C2C-E511-A891-02163E012934.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/C8A3990C-DA2C-E511-8CB5-02163E013553.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/D27258AE-962C-E511-B575-02163E0138EC.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/D490235D-932C-E511-B9D7-02163E0124BA.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/E0201B62-912C-E511-A0C5-02163E014181.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/EE2D324F-8B2C-E511-8512-02163E01340A.root', 
+'/store/data/Run2015B/HLTPhysics/ALCARECO/TkAlMinBias-PromptReco-v1/000/251/643/00000/FEF9FF9D-8D2C-E511-8FE1-02163E0146EB.root', 
+] ); 
