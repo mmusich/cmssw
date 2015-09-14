@@ -80,19 +80,11 @@ SiStripApvGain * SiStripGainFromAsciiFile::getNewObject(){
     }
     
     std::vector<float> DetGainsVector;
-    
-    if (nApvPair==2){
-      DetGainsVector.push_back(FG.fiber[0]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[0]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[2]/referenceValue_);        
-      DetGainsVector.push_back(FG.fiber[2]/referenceValue_);  
-    } else if (nApvPair==3){   		   		   		  
-      DetGainsVector.push_back(FG.fiber[0]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[0]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[1]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[1]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[2]/referenceValue_);  
-      DetGainsVector.push_back(FG.fiber[2]/referenceValue_);  
+   
+    if ( nAprPair==2 || nApvPair==3){ 
+      for (unsigned int i=0;i<2*nApvPair; i++){ 
+	DetGainsVector.push_back(MG.apv[i]/referenceValue_); 
+      }
     } else {
       edm::LogError("SiStripGainFromAsciiFile") << " SiStripGainFromAsciiFile::getNewObject] ERROR for detid " << *it << " not expected number of APV pairs " << nApvPair <<std::endl;
     }

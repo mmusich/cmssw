@@ -114,12 +114,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
             }
             double                   ChargeOverPath = (double)Charge / Path ;
 
-            if(FirstStrip==0                                  )Overlapping=true;
-            if(FirstStrip==128                                )Overlapping=true;
-            if(FirstStrip==256                                )Overlapping=true;
-            if(FirstStrip==384                                )Overlapping=true;
-            if(FirstStrip==512                                )Overlapping=true;
-            if(FirstStrip==640                                )Overlapping=true;
+	    if(FirstStrip%128==0) Overlapping=true;
 
             if(FirstStrip<=127 && FirstStrip+Ampls.size()>127)Overlapping=true;
             if(FirstStrip<=255 && FirstStrip+Ampls.size()>255)Overlapping=true;
@@ -127,12 +122,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
             if(FirstStrip<=511 && FirstStrip+Ampls.size()>511)Overlapping=true;
             if(FirstStrip<=639 && FirstStrip+Ampls.size()>639)Overlapping=true;
 
-            if(FirstStrip+Ampls.size()==127                   )Overlapping=true;
-            if(FirstStrip+Ampls.size()==255                   )Overlapping=true;
-            if(FirstStrip+Ampls.size()==383                   )Overlapping=true;
-            if(FirstStrip+Ampls.size()==511                   )Overlapping=true;
-            if(FirstStrip+Ampls.size()==639                   )Overlapping=true;
-            if(FirstStrip+Ampls.size()==767                   )Overlapping=true;
+	    if((FirstStrip+Ampls.size()+1)%128==0) Overlapping=true;
 
             trackindex    ->push_back( shallow::findTrackIndex(tracks, track) ); 
             rawid         ->push_back( DetId );         
