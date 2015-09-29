@@ -194,11 +194,11 @@ else:
 ####################################################################
 # Load and Configure Measurement Tracker Event
 ####################################################################
-process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi") 
-process.MeasurementTrackerEvent.pixelClusterProducer = 'ALCARECOTkAlMinBias'
-process.MeasurementTrackerEvent.stripClusterProducer = 'ALCARECOTkAlMinBias'
-process.MeasurementTrackerEvent.inactivePixelDetectorLabels = cms.VInputTag()
-process.MeasurementTrackerEvent.inactiveStripDetectorLabels = cms.VInputTag()
+#process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi") 
+#process.MeasurementTrackerEvent.pixelClusterProducer = 'ALCARECOTkAlMinBias'
+#process.MeasurementTrackerEvent.stripClusterProducer = 'ALCARECOTkAlMinBias'
+#process.MeasurementTrackerEvent.inactivePixelDetectorLabels = cms.VInputTag()
+#process.MeasurementTrackerEvent.inactiveStripDetectorLabels = cms.VInputTag()
 
 ####################################################################
 # Load and Configure TrackRefitter
@@ -208,6 +208,7 @@ import RecoTracker.TrackProducer.TrackRefitters_cff
 process.TrackRefitter = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone()
 process.TrackRefitter.src = "TRACKTYPETEMPLATE"
 process.TrackRefitter.TrajectoryInEvent = True
+process.TrackRefitter.NavigationSchool = ''
 process.TrackRefitter.TTRHBuilder = "WithAngleAndTemplate"
 
 ####################################################################
@@ -290,6 +291,6 @@ else:
 ####################################################################
 process.p = cms.Path(process.goodvertexSkim*
                      process.offlineBeamSpot*
-                     process.MeasurementTrackerEvent*
+                     #process.MeasurementTrackerEvent*
                      process.TrackRefitter*
                      process.PVValidation)
