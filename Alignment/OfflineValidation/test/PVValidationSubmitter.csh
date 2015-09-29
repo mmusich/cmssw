@@ -15,13 +15,16 @@ if ($#argv < 1) then
 endif
 
 set inputsource=$1
+echo $inputsource
 set taskname=$2
+echo $taskname
 set options=$3
+#echo $option
 
 #setenv STAGE_SVCCLASS cmscaf 
 source /afs/cern.ch/cms/caf/setup.csh
 
-setenv CMSSW_DIR ${CMSSW_BASE}/src/Alignment/OfflineValidation/test
+setenv CMSSW_DIR ${CMSSW_BASE}/src/Alignment/OfflineValidation/test/
 setenv LXBATCH_DIR `pwd`
 
 cd $CMSSW_DIR
@@ -40,6 +43,7 @@ set applycorrs=`more ${inputsource} | grep applycorrs | awk '{print $2}'`
 set datasetpath=`more ${inputsource} | grep datasetpath | awk '{print $2}'`
 set maxevents=`more ${inputsource} | grep maxevents | awk '{print $2}'`
 set globaltag=`more ${inputsource} | grep globaltag | awk '{print $2}'`
+set allfromGT=`more ${inputsource} | grep allFromGT | awk '{print $2}'`
 set alignobj=`more ${inputsource} | grep alignobj | awk '{print $2}'`
 set taggeom=`more ${inputsource} | grep taggeom | awk '{print $2}'`
 set apeobj=`more ${inputsource} | grep apeobj | awk '{print $2}'`
@@ -62,7 +66,7 @@ echo ${validationtype}
 if(${validationtype} == "PrimaryVertexValidation") then
    echo "1 Vertex Validation"
    cp ${CMSSW_DIR}/PVValidation_TEMPL_cfg.py .
-   cat PVValidation_TEMPL_cfg.py | sed "s?ISMCTEMPLATE?${ismc}?g"  | sed "s?RUNCONTROLTEMPLATE?${runcontrol}?g" | sed "s?RUNBOUNDARYTEMPLATE?${runnumber}?g" | sed "s?APPLYBOWSTEMPLATE?${applybows}?g" | sed "s?DATASETTEMPLATE?${datasetpath}?g" | sed "s?MAXEVENTSTEMPLATE?${maxevents}?g" | sed "s?GLOBALTAGTEMPLATE?${globaltag}?g" | sed "s?ALIGNOBJTEMPLATE?${alignobj}?g" | sed "s?GEOMTAGTEMPLATE?${taggeom}?g" | sed "s?APEOBJTEMPLATE?${apeobj}?g" | sed "s?ERRORTAGTEMPLATE?${tagape}?g" | sed "s?VALIDATIONMODULETEMPLATE?${validationtype}?g" | sed "s?TRACKTYPETEMPLATE?${tracktype}?g" | sed "s?OUTFILETEMPLATE?${outfile}?g" | sed "s?VERTEXTYPETEMPLATE?${vertextype}?g" | sed "s?LUMILISTTEMPLATE?${lumilist}?g" | sed "s?PTCUTTEMPLATE?${ptcut}?g" >! ${jobname}_cfg
+   cat PVValidation_TEMPL_cfg.py | sed "s?ISMCTEMPLATE?${ismc}?g"  | sed "s?RUNCONTROLTEMPLATE?${runcontrol}?g" | sed "s?RUNBOUNDARYTEMPLATE?${runnumber}?g" | sed "s?APPLYBOWSTEMPLATE?${applybows}?g" | sed "s?DATASETTEMPLATE?${datasetpath}?g" | sed "s?MAXEVENTSTEMPLATE?${maxevents}?g" | sed "s?GLOBALTAGTEMPLATE?${globaltag}?g" | sed "s?ALLFROMGTTEMPLATE?${allFromGT}?g" | sed "s?ALIGNOBJTEMPLATE?${alignobj}?g" | sed "s?GEOMTAGTEMPLATE?${taggeom}?g" | sed "s?APEOBJTEMPLATE?${apeobj}?g" | sed "s?ERRORTAGTEMPLATE?${tagape}?g" | sed "s?VALIDATIONMODULETEMPLATE?${validationtype}?g" | sed "s?TRACKTYPETEMPLATE?${tracktype}?g" | sed "s?OUTFILETEMPLATE?${outfile}?g" | sed "s?VERTEXTYPETEMPLATE?${vertextype}?g" | sed "s?LUMILISTTEMPLATE?${lumilist}?g" | sed "s?PTCUTTEMPLATE?${ptcut}?g" >! ${jobname}_cfg
     if(${applybows} == "True") then
 	cat ${jobname}_cfg | sed "s?BOWSOBJECTTEMPLATE?${bowsobj}?g" | sed "s?BOWSTAGTEMPLATE?${tagbows}?g"  >! ${jobname}_cfg.py
     else 
@@ -71,7 +75,7 @@ if(${validationtype} == "PrimaryVertexValidation") then
 else
    echo "Multi Vertex Validation"
    cp ${CMSSW_DIR}/PVValidation_TEMPL_cfg.py .
-   cat PVValidation_TEMPL_cfg.py | sed "s?ISDATEMPLATE?${isda}?g" | sed "s?ISMCTEMPLATE?${ismc}?g" | sed "s?RUNCONTROLTEMPLATE?${runcontrol}?g"  | sed "s?RUNBOUNDARYTEMPLATE?${runnumber}?g" | sed "s?APPLYBOWSTEMPLATE?${applybows}?g" | sed "s?EXTRACONDTEMPLATE?${applycorrs}?g" | sed "s?DATASETTEMPLATE?${datasetpath}?g" | sed "s?MAXEVENTSTEMPLATE?${maxevents}?g" | sed "s?GLOBALTAGTEMPLATE?${globaltag}?g" | sed "s?ALIGNOBJTEMPLATE?${alignobj}?g" | sed "s?GEOMTAGTEMPLATE?${taggeom}?g" | sed "s?APEOBJTEMPLATE?${apeobj}?g" | sed "s?ERRORTAGTEMPLATE?${tagape}?g" | sed "s?VALIDATIONMODULETEMPLATE?${validationtype}?g" | sed "s?TRACKTYPETEMPLATE?${tracktype}?g" | sed "s?OUTFILETEMPLATE?${outfile}?g" | sed "s?VERTEXTYPETEMPLATE?${vertextype}?g" | sed "s?LUMILISTTEMPLATE?${lumilist}?g" | sed "s?PTCUTTEMPLATE?${ptcut}?g" >! ${jobname}_cfg
+   cat PVValidation_TEMPL_cfg.py | sed "s?ISDATEMPLATE?${isda}?g" | sed "s?ISMCTEMPLATE?${ismc}?g" | sed "s?RUNCONTROLTEMPLATE?${runcontrol}?g"  | sed "s?RUNBOUNDARYTEMPLATE?${runnumber}?g" | sed "s?APPLYBOWSTEMPLATE?${applybows}?g" | sed "s?EXTRACONDTEMPLATE?${applycorrs}?g" | sed "s?DATASETTEMPLATE?${datasetpath}?g" | sed "s?MAXEVENTSTEMPLATE?${maxevents}?g" | sed "s?GLOBALTAGTEMPLATE?${globaltag}?g"  | sed "s?ALLFROMGTTEMPLATE?${allFromGT}?g" | sed "s?ALIGNOBJTEMPLATE?${alignobj}?g" | sed "s?GEOMTAGTEMPLATE?${taggeom}?g" | sed "s?APEOBJTEMPLATE?${apeobj}?g" | sed "s?ERRORTAGTEMPLATE?${tagape}?g" | sed "s?VALIDATIONMODULETEMPLATE?${validationtype}?g" | sed "s?TRACKTYPETEMPLATE?${tracktype}?g" | sed "s?OUTFILETEMPLATE?${outfile}?g" | sed "s?VERTEXTYPETEMPLATE?${vertextype}?g" | sed "s?LUMILISTTEMPLATE?${lumilist}?g" | sed "s?PTCUTTEMPLATE?${ptcut}?g" >! ${jobname}_cfg
    if(${applybows} == "True") then
 	cat ${jobname}_cfg | sed "s?BOWSOBJECTTEMPLATE?${bowsobj}?g" | sed "s?BOWSTAGTEMPLATE?${tagbows}?g"  >! ${jobname}_cfg.py
 	rm ${jobname}_cfg
