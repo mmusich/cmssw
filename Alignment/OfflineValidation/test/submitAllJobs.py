@@ -4,9 +4,21 @@ import datetime,time
 import os,sys
 import copy
 import string, re
-import subprocess
 import ConfigParser, json
 from optparse import OptionParser
+from subprocess import Popen, PIPE
+
+##############################################
+def to_bool(value):
+##############################################
+    """
+       Converts 'something' to boolean. Raises exception for invalid formats
+           Possible True  values: 1, True, "1", "TRue", "yes", "y", "t"
+           Possible False values: 0, False, None, [], {}, "", "0", "faLse", "no", "n", "f", 0.0, ...
+    """
+    if str(value).lower() in ("yes", "y", "true",  "t", "1"): return True
+    if str(value).lower() in ("no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}"): return False
+    raise Exception('Invalid value for boolean conversion: ' + str(value))
 
 ####################--- Classes ---############################
 class BetterConfigParser(ConfigParser.ConfigParser):
@@ -354,14 +366,16 @@ def main():
     sys.path.append(lib_path)
 
     ## N.B.: this is dediced here once and for all
-    from sources_cff import MinBiasSrc
-    srcFiles        = [MinBiasSrc]
+    srcFiles        = []
 
     desc="""This is a description of %prog."""
     parser = OptionParser(description=desc,version='%prog version 0.1')
-    parser.add_option('-s','--submit',  help='job submitted', dest='submit', action='store_true', default=False)
-    parser.add_option('-j','--jobname', help='task name', dest='taskname', action='store', default='')
-    parser.add_option('-i','--input',help='set input configuration (overrides default)',dest='inputconfig',action='store',default=None)
+    parser.add_option('-s','--submit',    help='job submitted',    dest='submit',     action='store_true',  default=False)
+    parser.add_option('-j','--jobname',   help='task name',        dest='taskname',   action='store',       default='')
+    parser.add_option('-D','--dataset',   help='selected dataset', dest='data',       action='store'      , default='')
+    parser.add_option('-r','--doRunBased',help='selected dataset', dest='doRunBased', action='store_true' , default=False)
+    parser.add_option('-i','--input',     help='set input configuration (overrides default)', dest='inputconfig',action='store',default=None)
+   
     (opts, args) = parser.parse_args()
 
     now = datetime.datetime.now()
@@ -377,6 +391,7 @@ def main():
     jobName         = None
     isMC            = None
     isDA            = None
+    doRunBased      = None
     maxevents       = None
 
     gt              = None
@@ -419,6 +434,7 @@ def main():
         jobName          = [ConfigSectionMap(config,"Job")['jobname']]
         isDA             = [ConfigSectionMap(config,"Job")['isda']]
         isMC             = [ConfigSectionMap(config,"Job")['ismc']]
+        doRunBased       = opts.doRunBased
         maxevents        = [ConfigSectionMap(config,"Job")['maxevents']]
 
         gt               = [ConfigSectionMap(config,"Conditions")['gt']]
@@ -450,6 +466,7 @@ def main():
         jobName         = ['MinBiasQCD_CSA14Ali_CSA14APE']
         isDA            = ['True']   
         isMC            = ['True']
+        doRunBased      = opts.doRunBased
         maxevents       = ['10000']
         
         gt              = ['START53_V7A::All']       
@@ -483,6 +500,7 @@ def main():
     print "- Jobname     : ",jobName           
     print "- use DA      : ",isDA            
     print "- is MC       : ",isMC            
+    print "- is run-based: ",doRunBased
     print "- evts/job    : ",maxevents                    
     print "- GlobatTag   : ",gt              
     print "- extraCond?  : ",applyEXTRACOND
@@ -501,7 +519,10 @@ def main():
     print "- run=          ",runboundary     
     print "- JSON        : ",lumilist        
 
-    for iConf in range(len(srcFiles)):
+    print "Will run on ",len(jobName),"workflows"
+
+    for iConf in range(len(jobName)):
+        print iConf
 
     # for hadd script
         scripts_dir = os.path.join(AnalysisStep_dir,"scripts")
@@ -514,12 +535,55 @@ def main():
         output_file_list2=list()
         output_file_list2.append("hadd ")
             
-        for jobN,theSrcFiles in enumerate(split(srcFiles[iConf],1)):
-            #print jobN
-            aJob = Job(jobN,
+        inputFiles = []
+        myRuns = []
+        
+        if (to_bool(isMC[iConf])):
+            print "this is MC"
+            cmd = 'das_client.py --limit=0 --query \'file dataset='+opts.data+'\''
+            s = Popen(cmd3 , shell=True, stdout=PIPE, stderr=PIPE)
+            out,err = s.communicate()
+            mylist = out.split('\n')
+            mylist.pop()
+            inputFiles = mylist
+            myRuns.append(1)
+
+            inputFiles = split(srcFiles[iConf],1)
+            
+        else:
+            print "this is Data"
+            print "doing run based selection"
+            cmd = 'das_client.py --limit=0 --query \'run dataset='+opts.data+'\''
+            p = Popen(cmd , shell=True, stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate()
+            listOfRuns=out.split('\n')
+            listOfRuns.pop()
+            listOfRuns.sort()
+            myRuns = listOfRuns
+            print "Will run on ",len(listOfRuns), " runs"
+            print listOfRuns
+
+            for run in listOfRuns:
+                print "preparing run",run
+                cmd2 = ' das_client.py --limit=0 --query \'file run='+run+' dataset='+opts.data+'\''
+                q = Popen(cmd2 , shell=True, stdout=PIPE, stderr=PIPE)
+                out2, err2 = q.communicate()
+                mylist = out2.split('\n')
+                mylist.pop()
+                inputFiles.append(mylist)
+            
+        for jobN,theSrcFiles in enumerate(inputFiles):
+            print jobN,"run",myRuns[jobN],theSrcFiles
+            thejobIndex=None
+            if(to_bool(isMC[iConf]) and (not to_bool(doRunBased))):
+                thejobIndex=jobN
+            else:
+                thejobIndex=myRuns[jobN]
+
+            aJob = Job(thejobIndex,
                        jobName[iConf],isDA[iConf],isMC[iConf],
                        applyBOWS[iConf], applyEXTRACOND[iConf],conditions[iConf],
-                       runboundary[iConf], lumilist[iConf], maxevents[iConf],
+                       myRuns[jobN], lumilist[iConf], maxevents[iConf],
                        gt[iConf],
                        alignmentDB[iConf], alignmentTAG[iConf],
                        apeDB[iConf], apeTAG[iConf],
