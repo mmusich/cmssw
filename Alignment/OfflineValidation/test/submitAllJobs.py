@@ -139,7 +139,7 @@ class Job:
         self.applyBOWS         = applyBOWS
         self.applyEXTRACOND    = applyEXTRACOND
         self.extraCondVect     = extraconditions
-        self.runboundary       = runboundary          
+        self.runboundary       = runboundary         
         self.lumilist          = lumilist         
         self.maxevents         = maxevents
         self.gt                = gt
@@ -541,15 +541,17 @@ def main():
         if (to_bool(isMC[iConf])):
             print "this is MC"
             cmd = 'das_client.py --limit=0 --query \'file dataset='+opts.data+'\''
-            s = Popen(cmd3 , shell=True, stdout=PIPE, stderr=PIPE)
+            s = Popen(cmd , shell=True, stdout=PIPE, stderr=PIPE)
             out,err = s.communicate()
             mylist = out.split('\n')
             mylist.pop()
-            inputFiles = mylist
-            myRuns.append(1)
+            #print mylist
+           
+            splitList = split(mylist,10)
+            for files in splitList:
+                inputFiles.append(files)
+                myRuns.append(str(1))
 
-            inputFiles = split(srcFiles[iConf],1)
-            
         else:
             print "this is Data"
             print "doing run based selection"
@@ -575,7 +577,8 @@ def main():
         for jobN,theSrcFiles in enumerate(inputFiles):
             print jobN,"run",myRuns[jobN],theSrcFiles
             thejobIndex=None
-            if(to_bool(isMC[iConf]) and (not to_bool(doRunBased))):
+            #if(to_bool(isMC[iConf]) and (not to_bool(doRunBased))):
+            if(to_bool(isMC[iConf])):
                 thejobIndex=jobN
             else:
                 thejobIndex=myRuns[jobN]
