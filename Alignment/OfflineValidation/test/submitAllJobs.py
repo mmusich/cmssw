@@ -9,6 +9,20 @@ from optparse import OptionParser
 from subprocess import Popen, PIPE
 
 ##############################################
+def getCommandOutput(command):
+##############################################
+    """This function executes `command` and returns it output.
+    Arguments:
+    - `command`: Shell command to be invoked by this function.
+    """
+    child = os.popen(command)
+    data = child.read()
+    err = child.close()
+    if err:
+        print '%s failed w/ exit code %d' % (command, err)
+    return data
+
+##############################################
 def to_bool(value):
 ##############################################
     """
@@ -129,7 +143,7 @@ def split(sequence, size):
 class Job:
 #############
 
-    def __init__(self, job_id, job_name, isDA, isMC, applyBOWS, applyEXTRACOND, extraconditions, runboundary, lumilist, maxevents, gt, alignmentDB, alignmentTAG, apeDB, apeTAG, bowDB, bowTAG, vertextype, tracktype, applyruncontrol, ptcut, CMSSW_dir ,the_dir):
+    def __init__(self, job_id, job_name, isDA, isMC, applyBOWS, applyEXTRACOND, extraconditions, runboundary, lumilist, maxevents, gt, allFromGT, alignmentDB, alignmentTAG, apeDB, apeTAG, bowDB, bowTAG, vertextype, tracktype, applyruncontrol, ptcut, CMSSW_dir ,the_dir):
 ###############################
         self.job_id=job_id          
         self.job_name=job_name
@@ -143,6 +157,7 @@ class Job:
         self.lumilist          = lumilist         
         self.maxevents         = maxevents
         self.gt                = gt
+        self.allFromGT         = allFromGT
         self.alignmentDB       = alignmentDB      
         self.alignmentTAG      = alignmentTAG     
         self.apeDB             = apeDB            
@@ -238,6 +253,8 @@ class Job:
                     line=line.replace("MAXEVENTSTEMPLATE",self.maxevents)
                 if line.find("GLOBALTAGTEMPLATE")!=-1:
                     line=line.replace("GLOBALTAGTEMPLATE",self.gt)    
+                if line.find("ALLFROMGTTEMPLATE")!=-1:
+                    line=line.replace("ALLFROMGTTEMPLATE",self.allFromGT)    
                 if line.find("ALIGNOBJTEMPLATE")!=-1:
                     line=line.replace("ALIGNOBJTEMPLATE",self.alignmentDB)
                 if line.find("GEOMTAGTEMPLATE")!=-1:
@@ -275,6 +292,8 @@ class Job:
                     line=line.replace("MAXEVENTSTEMPLATE",self.maxevents)
                 if line.find("GLOBALTAGTEMPLATE")!=-1:
                     line=line.replace("GLOBALTAGTEMPLATE",self.gt) 
+                if line.find("ALLFROMGTTEMPLATE")!=-1:
+                    line=line.replace("ALLFROMGTTEMPLATE",self.allFromGT)    
                 if line.find("ALIGNOBJTEMPLATE")!=-1:
                     line=line.replace("ALIGNOBJTEMPLATE",self.alignmentDB)
                 if line.find("GEOMTAGTEMPLATE")!=-1:
@@ -395,6 +414,7 @@ def main():
     maxevents       = None
 
     gt              = None
+    allFromGT       = None
     applyEXTRACOND  = None
     extraCondVect   = None      
     alignmentDB     = None
@@ -438,6 +458,7 @@ def main():
         maxevents        = [ConfigSectionMap(config,"Job")['maxevents']]
 
         gt               = [ConfigSectionMap(config,"Conditions")['gt']]
+        allFromGT        = [ConfigSectionMap(config,"Conditions")['allFromGT']]
         applyEXTRACOND   = [ConfigSectionMap(config,"Conditions")['applyextracond']]
         conditions       = [config.getResultingSection("ExtraConditions")]
 
@@ -470,6 +491,7 @@ def main():
         maxevents       = ['10000']
         
         gt              = ['START53_V7A::All']       
+        allFromGT       = ['False']
         applyEXTRACOND  = ['False']
         conditions      = [[('SiPixelTemplateDBObjectRcd','frontier://FrontierProd/CMS_COND_31X_PIXEL','SiPixelTemplates38T_2010_2011_mc'),
                             ('SiPixelQualityFromDBRcd','frontier://FrontierProd/CMS_COND_31X_PIXEL','SiPixelQuality_v20_mc')]]
@@ -502,7 +524,8 @@ def main():
     print "- is MC       : ",isMC            
     print "- is run-based: ",doRunBased
     print "- evts/job    : ",maxevents                    
-    print "- GlobatTag   : ",gt              
+    print "- GlobatTag   : ",gt      
+    print "- allFromGT?  : ",allFromGT
     print "- extraCond?  : ",applyEXTRACOND
     print "- extraCond   : ",conditions                 
     print "- Align db    : ",alignmentDB     
@@ -585,9 +608,9 @@ def main():
 
             aJob = Job(thejobIndex,
                        jobName[iConf],isDA[iConf],isMC[iConf],
-                       applyBOWS[iConf], applyEXTRACOND[iConf],conditions[iConf],
+                       applyBOWS[iConf],applyEXTRACOND[iConf],conditions[iConf],
                        myRuns[jobN], lumilist[iConf], maxevents[iConf],
-                       gt[iConf],
+                       gt[iConf],allFromGT[iConf],
                        alignmentDB[iConf], alignmentTAG[iConf],
                        apeDB[iConf], apeTAG[iConf],
                        bowDB[iConf], bowTAG[iConf],
