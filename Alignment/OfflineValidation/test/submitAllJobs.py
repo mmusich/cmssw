@@ -145,7 +145,8 @@ class Job:
 
     def __init__(self, job_id, job_name, isDA, isMC, applyBOWS, applyEXTRACOND, extraconditions, runboundary, lumilist, maxevents, gt, allFromGT, alignmentDB, alignmentTAG, apeDB, apeTAG, bowDB, bowTAG, vertextype, tracktype, applyruncontrol, ptcut, CMSSW_dir ,the_dir):
 ###############################
-        self.job_id=job_id          
+        self.job_id=job_id    
+        self.batch_job_id = None 
         self.job_name=job_name
         
         self.isDA              = isDA             
@@ -370,8 +371,13 @@ class Job:
         job_name = self.output_full_name
         submitcommand1 = "chmod u+x " + os.path.join(self.LSF_dir,self.output_LSF_name)
         child1  = os.system(submitcommand1)
-        submitcommand2 = "bsub < "+os.path.join(self.LSF_dir,self.output_LSF_name)
-        child2  = os.system(submitcommand2)
+        #submitcommand2 = "bsub < "+os.path.join(self.LSF_dir,self.output_LSF_name)
+        #child2  = os.system(submitcommand2)
+        self.batch_job_id = getCommandOutput("bsub < "+os.path.join(self.LSF_dir,self.output_LSF_name))
+
+    def getBatchjobId(self):    
+############################################
+       return self.batch_job_id.split("<")[1].split(">")[0] 
 
 ##############################################
 def main():
@@ -551,7 +557,7 @@ def main():
         scripts_dir = os.path.join(AnalysisStep_dir,"scripts")
         if not os.path.exists(scripts_dir):
             os.makedirs(scripts_dir)
-        hadd_script_file = os.path.join(scripts_dir,jobName[iConf])
+        hadd_script_file = os.path.join(scripts_dir,jobName[iConf]+".sh")
         fout = open(hadd_script_file,'w')
 
         output_file_list1=list()      
@@ -600,6 +606,8 @@ def main():
         for jobN,theSrcFiles in enumerate(inputFiles):
             print jobN,"run",myRuns[jobN],theSrcFiles
             thejobIndex=None
+            batchJobIds = []
+
             #if(to_bool(isMC[iConf]) and (not to_bool(doRunBased))):
             if(to_bool(isMC[iConf])):
                 thejobIndex=jobN
@@ -622,17 +630,42 @@ def main():
             aJob.createTheCfgFile(theSrcFiles)
             aJob.createTheLSFFile()
 
-            output_file_list1.append("cmsStage "+aJob.getOutputFileName()+" . \n")
+            output_file_list1.append("cmsStage "+aJob.getOutputFileName()+" /tmp/$USER/"+opts.taskname+" \n")
             if jobN == 0:
-                output_file_list2.append(aJob.getOutputBaseName()+".root ")
-            output_file_list2.append(os.path.split(aJob.getOutputFileName())[1]+" ")    
+                output_file_list2.append("/tmp/$USER/"+opts.taskname+"/"+aJob.getOutputBaseName()+".root ")
+            output_file_list2.append("/tmp/$USER/"+opts.taskname+"/"+os.path.split(aJob.getOutputFileName())[1]+" ")    
    
             if opts.submit:
                 aJob.submit()
+                batchJobIds.append(ajob.getBatchjobId())
             del aJob
 
+        if opts.submit:
+            print "********************************************************"
+            for theBatchJobId in batchJobIds:
+                print "theBatchJobId is: ",theBatchJobId
+
+        fout.write("#!/bin/bash \n")
+        fout.write("MAIL = $USER@mail.cern.ch \n")
+        fout.write("OUT_DIR = "+eosdir+ "\n")
+        fout.write("echo $HOST | mail -s \"Harvesting job started\" $USER@mail.cern.ch \n")
+        fout.write("cd "+os.path.join(input_CMSSW_BASE,"src")+"\n")
+        fout.write("eval `scram r -sh` \n")
+        fout.write("mkdir -p /tmp/$USER/"+opts.taskname+" \n")
         fout.writelines(output_file_list1)
         fout.writelines(output_file_list2)
+        fout.write("cmsStage -f $FILE $OUT_DIR \n")
+        fout.write("echo \"Harvesting for complete; please find output at $OUT_DIR \" | mail -s \"Harvesting for" +opts.taskname +" compled\" $MAIL \n")
+
+        os.system("chmod u+x "+hadd_script_file)
+
+        conditions = '"' + " && ".join(["ended(" + jobId + ")" for jobId in batchJobIds]) + '"'
+        print conditions
+        lastJobCommand = "bsub -o harvester"+opts.taskname+".tmp -q 1nh -w "+conditions+" "+hadd_script_file
+        print lastJobCommand
+        if opts.submit:
+            lastJobOutput = getCommandOutput(lastJobCommand)
+            print lastJobOutput
 
         fout.close()
         del output_file_list1
