@@ -911,11 +911,11 @@ void PrimaryVertexValidation::beginJob()
 
   h_probePt_         = ProbeFeatures.make<TH1F>("h_probePt","p_{T} of probe track;track p_{T} (GeV); tracks",100,0.,50.);   
   h_probeP_          = ProbeFeatures.make<TH1F>("h_probeP","momentum of probe track;track p (GeV); tracks",100,0.,100.);   
-  h_probeEta_        = ProbeFeatures.make<TH1F>("h_probeEta","#phi of the probe vs #eta of the probe;#eta of probe track;track #eta;tracks",54,-2.7,2.7);  
-  h_probePhi_        = ProbeFeatures.make<TH1F>("h_probePhi","#p_{T} of the probe vs #eta of the probe;#phi of probe track;track #phi (rad);tracks",100,-3.15,3.15);  
+  h_probeEta_        = ProbeFeatures.make<TH1F>("h_probeEta","#eta of the probe track;track #eta;tracks",54,-2.7,2.7);  
+  h_probePhi_        = ProbeFeatures.make<TH1F>("h_probePhi","#phi of probe track;track #phi (rad);tracks",100,-3.15,3.15);  
 
-  h2_probeEtaPhi_    = ProbeFeatures.make<TH2F>("h2_probeEtaPhi","#eta of probe track;track #phi of probe track (rad); tracks",54,-2.7,2.7,100,-3.15,3.15);  
-  h2_probeEtaPt_     = ProbeFeatures.make<TH2F>("h2_probeEtaPt","#eta of probe track;track p_{T} (GeV); tracks",54,-2.7,2.7,100,0.,50.);    
+  h2_probeEtaPhi_    = ProbeFeatures.make<TH2F>("h2_probeEtaPhi","probe track #phi vs #eta;#eta of probe track;track #phi of probe track (rad); tracks",54,-2.7,2.7,100,-3.15,3.15);  
+  h2_probeEtaPt_     = ProbeFeatures.make<TH2F>("h2_probeEtaPt","probe track p_{T} vs #eta;#eta of probe track;track p_{T} (GeV); tracks",54,-2.7,2.7,100,0.,50.);    
 
   h_probeChi2_       = ProbeFeatures.make<TH1F>("h_probeChi2","#chi^{2} of probe track;track #chi^{2}; tracks",100,0.,100.); 
   h_probeNormChi2_   = ProbeFeatures.make<TH1F>("h_probeNormChi2"," normalized #chi^{2} of probe track;track #chi^{2}/ndof; tracks",100,0.,10.);
