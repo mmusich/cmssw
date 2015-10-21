@@ -14,17 +14,17 @@ autoCond = {
     # GlobalTag for MC production with pessimistic alignment and calibrations for Run2
     'run2_mc_50ns'      :   '76X_mcRun2_startup_v8',
     #GlobalTag for MC production with optimistic alignment and calibrations for Run2
-    'run2_mc'           :   '76X_mcRun2_asymptotic_v8',
+    'run2_mc'           :   'Strip_Tests_76X_mcRun2_asymptotic_Queue',
     # GlobalTag for MC production (Heavy Ions collisions) with optimistic alignment and calibrations for Run2
     'run2_mc_hi'        :   '76X_mcRun2_HeavyIon_v8',
     # GlobalTag for Run1 data reprocessing
     'run1_data'         :   '76X_dataRun1_v7',
     # GlobalTag for Run2 data reprocessing
-    'run2_data'         :   '76X_dataRun2_v7',
+    'run2_data'         :   'Strip_Tests_76X_dataRun2_Queue',
     # GlobalTag for Run1 HLT: it points to the online GT
     'run1_hlt'          :   '76X_dataRun1_HLT_frozen_v7',
     # GlobalTag for Run2 HLT: it points to the online GT
-    'run2_hlt'          :   '76X_dataRun2_HLT_frozen_v7',
+    'run2_hlt'          :   'Strip_Tests_76X_dataRun2_HLT_Queue',
     # GlobalTag for MC production with perfectly aligned and calibrated detector for Phase1 2017
     'phase1_2017_design' :  '76X_upgrade2017_design_v4',
     # GlobalTag for MC production with perfectly aligned and calibrated detector for Phase1 2019
