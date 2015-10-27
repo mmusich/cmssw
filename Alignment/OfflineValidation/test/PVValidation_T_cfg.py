@@ -12,14 +12,14 @@ process = cms.Process("Demo")
 ###################################################################
 # Event source and run selection
 ###################################################################
-# readFiles = cms.untracked.vstring()
-# readFiles.extend(FILESOURCETEMPLATE)
-# process.source = cms.Source("PoolSource",
-#                             fileNames = readFiles ,
-#                             duplicateCheckMode = cms.untracked.string('checkAllFilesOpened')
-#                             )
+readFiles = cms.untracked.vstring()
+readFiles.extend(FILESOURCETEMPLATE)
+process.source = cms.Source("PoolSource",
+                            fileNames = readFiles ,
+                            duplicateCheckMode = cms.untracked.string('checkAllFilesOpened')
+                            )
 
-process.load("Alignment.OfflineValidation.DATASETTEMPLATE");
+#process.load("Alignment.OfflineValidation.DATASETTEMPLATE");
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.destinations = ['cout', 'cerr']
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -132,38 +132,27 @@ else:
      else:
           print ">>>>>>>>>> testPVValidation_cfg.py: msg%-i: MultiPVValidation: Not applying TrackerSurfaceDeformations!"
 
-          ####################################################################
-          # Extra corrections not included in the GT
-          ####################################################################
-          if applyExtraConditions:
-               print ">>>>>>>>>> testPVValidation_cfg.py: msg%-i: Applying extra calibration constants!"
+     ####################################################################
+     # Extra corrections not included in the GT
+     ####################################################################
+     if applyExtraConditions:
 
-               ### this is just an example 
-               import CalibTracker.Configuration.Common.PoolDBESSource_cfi
-               process.SiPixelTemplates = cms.ESSource("PoolDBESSource",CondDBSetup,
-                                                       connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                                       timetype = cms.string("runnumber"),
-                                                       toGet = cms.VPSet(cms.PSet(record = cms.string('SiPixelTemplateDBObjectRcd'),
-                                                                                  tag = cms.string('SiPixelTemplateDBObject_38T_v6_offline')
-                                                                                  )
-                                                                         )
-                                                       )
-               process.es_prefer_SiPixelTemplates = cms.ESPrefer("PoolDBESSource", "SiPixelTemplates") 
-
-               ## END OF EXTRA CONDITIONS
-               
-          else:
-               print ">>>>>>>>>> testPVValidation_cfg.py: msg%-i: Not applying extra calibration constants!"
-               
+          import CalibTracker.Configuration.Common.PoolDBESSource_cfi
+          ##### END OF EXTRA CONDITIONS
+ 
+     else:
+          print ">>>>>>>>>> testPVValidation_cfg.py: msg%-i: Not applying extra calibration constants!"
      
 ####################################################################
 # Load and Configure event selection
 ####################################################################
+#from RecoMET.METFilters.primaryVertexFilter_cfi import *
+
 process.primaryVertexFilter = cms.EDFilter("VertexSelector",
-                                           src = cms.InputTag("VERTEXTYPETEMPLATE"),
-                                           cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.Rho <= 2"),
-                                           filter = cms.bool(True)
-                                           )
+                                             src = cms.InputTag("VERTEXTYPETEMPLATE"),
+                                             cut = cms.string("!isFake && ndof > 4 && abs(z) <= 24 && position.Rho <= 2"),
+                                             filter = cms.bool(True)
+                                             )
 
 process.noscraping = cms.EDFilter("FilterOutScraping",
                                   applyfilter = cms.untracked.bool(True),
@@ -180,7 +169,7 @@ process.noslowpt = cms.EDFilter("FilterOutLowPt",
                                 numtrack = cms.untracked.uint32(0),
                                 thresh = cms.untracked.int32(1),
                                 ptmin  = cms.untracked.double(PTCUTTEMPLATE),
-                                runControl = cms.untracked.bool(RUNCONTROLTEMPLATE),
+                                runControl = cms.untracked.bool(True),
                                 runControlNumber = cms.untracked.uint32(int(runboundary))
                                 )
 
@@ -194,11 +183,11 @@ else:
 ####################################################################
 # Load and Configure Measurement Tracker Event
 ####################################################################
-#process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi") 
-#process.MeasurementTrackerEvent.pixelClusterProducer = 'ALCARECOTkAlMinBias'
-#process.MeasurementTrackerEvent.stripClusterProducer = 'ALCARECOTkAlMinBias'
-#process.MeasurementTrackerEvent.inactivePixelDetectorLabels = cms.VInputTag()
-#process.MeasurementTrackerEvent.inactiveStripDetectorLabels = cms.VInputTag()
+# process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi") 
+# process.MeasurementTrackerEvent.pixelClusterProducer = 'ALCARECOTkAlMinBias'
+# process.MeasurementTrackerEvent.stripClusterProducer = 'ALCARECOTkAlMinBias'
+# process.MeasurementTrackerEvent.inactivePixelDetectorLabels = cms.VInputTag()
+# process.MeasurementTrackerEvent.inactiveStripDetectorLabels = cms.VInputTag()
 
 ####################################################################
 # Load and Configure TrackRefitter
