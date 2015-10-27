@@ -96,6 +96,9 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
   edm::InputTag VertexCollectionTag_ = iConfig.getParameter<edm::InputTag>("VertexCollectionTag");
   theVertexCollectionToken = consumes<reco::VertexCollection>(VertexCollectionTag_);
 
+  edm::InputTag BeamspotTag_ = edm::InputTag("offlineBeamSpot");
+  theBeamspotToken = consumes<reco::BeamSpot>(BeamspotTag_);
+
   // select and configure the track filter 
   theTrackFilter_= new TrackFilterForPVFinding(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters") );
   // select and configure the track clusterizer  
@@ -313,7 +316,7 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   BeamSpot beamSpot;
   edm::Handle<BeamSpot> beamSpotHandle;
-  iEvent.getByLabel("offlineBeamSpot", beamSpotHandle);
+  iEvent.getByToken(theBeamspotToken, beamSpotHandle);
     
   if ( beamSpotHandle.isValid() ) {
     beamSpot = *beamSpotHandle;

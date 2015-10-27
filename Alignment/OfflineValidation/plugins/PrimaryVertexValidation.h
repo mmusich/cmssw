@@ -131,7 +131,8 @@ class PrimaryVertexValidation : public edm::EDAnalyzer {
 
   edm::EDGetTokenT<reco::TrackCollection>  theTrackCollectionToken; 
   edm::EDGetTokenT<reco::VertexCollection> theVertexCollectionToken; 
-  
+  edm::EDGetTokenT<reco::BeamSpot>         theBeamspotToken;
+
   TTree* rootTree_;
   
   // Root-Tuple variables :
