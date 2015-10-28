@@ -37,9 +37,12 @@ FilterOutLowPt::FilterOutLowPt(const edm::ParameterSet& iConfig)
   thresh      = iConfig.getUntrackedParameter<int>("thresh",1);
   numtrack    = iConfig.getUntrackedParameter<unsigned int>("numtrack",0);
   ptmin       = iConfig.getUntrackedParameter<double>("ptmin",3);
-  tracks_     = iConfig.getUntrackedParameter<edm::InputTag>("src",edm::InputTag("generalTracks"));
   runControl_ = iConfig.getUntrackedParameter<bool>("runControl",false);
   runControlNumber_ = iConfig.getUntrackedParameter<unsigned int>("runControlNumber",0);
+
+  edm::InputTag TrackCollectionTag_ = iConfig.getUntrackedParameter<edm::InputTag>("src",edm::InputTag("generalTracks"));
+  theTrackCollectionToken = consumes<reco::TrackCollection>(TrackCollectionTag_);
+  
 }
 
 FilterOutLowPt::~FilterOutLowPt()
@@ -70,7 +73,7 @@ bool FilterOutLowPt::filter( edm::Event& iEvent, const edm::EventSetup& iSetup)
   // get GeneralTracks collection
 
   edm::Handle<reco::TrackCollection> tkRef;
-  iEvent.getByLabel(tracks_,tkRef);    
+  iEvent.getByToken(theTrackCollectionToken,tkRef);    
   const reco::TrackCollection* tkColl = tkRef.product();
 
   //std::cout << "Total Number of Tracks " << tkColl->size() << std::endl;

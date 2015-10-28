@@ -25,6 +25,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 
 //
 // class declaration
@@ -53,6 +54,8 @@ private:
   std::map<unsigned int,std::pair<int,int>> eventsInRun_;
 
   reco::TrackBase::TrackQuality _trackQuality;
+  edm::EDGetTokenT<reco::TrackCollection>  theTrackCollectionToken; 
+
 };
 
 #endif
