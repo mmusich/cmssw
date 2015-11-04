@@ -8,7 +8,7 @@ applycorrs True
 datasetpath PVValidation_HLTPhysics2015B_TkAlMinBias_cff
 maxevents 10000
 globaltag 74X_dataRun2_Prompt_v0 
-allfromGT False
+allFromGT False
 alignobj sqlite_file:/afs/cern.ch/cms/CAF/CMSALCA/ALCA_TRACKERALIGN2/HIP/cayou/CMSSW_7_4_6_patch5/src/Alignment/HIPAlignmentAlgorithm/hp1388/alignments_iter20.db
 taggeom Alignments
 apeobj frontier://FrontierProd/CMS_CONDITIONS
