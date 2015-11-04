@@ -1,0 +1,17 @@
+jobname PVValidation_pp2015B-HLTPhysics-hp1388e_251028
+isda True   
+ismc False
+runcontrol True
+runnumber 251028
+applybows False
+applycorrs False
+datasetpath PVValidation_HLTPhysics2015B_TkAlMinBias_cff
+maxevents 10000
+globaltag 74X_dataRun2_Express_v3 
+allFromGT True
+validationtype MultiPVValidation
+tracktype ALCARECOTkAlMinBias
+outfile PVValidation_pp2015B-HLTPhysics-hp1388e_251028.root
+vertextype offlinePrimaryVertices
+lumilist 
+ptcut 3.

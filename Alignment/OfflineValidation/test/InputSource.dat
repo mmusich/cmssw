@@ -19,5 +19,5 @@ validationtype MultiPVValidation
 tracktype ALCARECOTkAlMinBias
 outfile PVValidation_pp2015B-HLTPhysics-hp1388e_251028.root
 vertextype offlinePrimaryVertices
-lumilist /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY.txt 
+lumilist /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY.txt  
 ptcut 3.
