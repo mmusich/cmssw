@@ -44,8 +44,9 @@ else:
      #process.source.lumisToProcess.extend(myLumis)
 
      ## working recipe for CMSSW_5_X_Y
-     import FWCore.PythonUtilities.LumiList as LumiList
-     process.source.lumisToProcess = LumiList.LumiList(filename ='LUMILISTTEMPLATE').getVLuminosityBlockRange()
+     if ("LUMILISTTEMPLATE" is not None):
+          import FWCore.PythonUtilities.LumiList as LumiList
+          process.source.lumisToProcess = LumiList.LumiList(filename ='LUMILISTTEMPLATE').getVLuminosityBlockRange()
 
 ###################################################################
 # Messages
