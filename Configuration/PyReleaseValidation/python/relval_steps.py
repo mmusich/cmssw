@@ -945,6 +945,13 @@ steps['TIER0EXP']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,EI,ALCAPRODUCER:@allForExpr
                           '--customise':'Configuration/DataProcessing/RecoTLR.customiseExpress',
                           },steps['TIER0']])
 
+steps['TIER0EXPHI']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,EI,ALCAPRODUCER:@allForExpressHI,DQM,ENDJOB',
+                            '--datatier':'ALCARECO,DQMIO',
+                            '--eventcontent':'ALCARECO,DQM',
+                            '--customise':'Configuration/DataProcessing/RecoTLR.customiseExpress',
+                            '--scenario':'HeavyIons'
+                            },steps['TIER0']])
+
 steps['RECOCOSD']=merge([{'--scenario':'cosmics',
                           '-s':'RAW2DIGI,L1Reco,RECO,DQM,ALCA:MuAlCalIsolatedMu+DtCalib',
                           '--datatier':'RECO,DQMIO',     # no miniAOD for cosmics
@@ -1092,10 +1099,16 @@ steps['ALCAPROMPT']={'-s':'ALCA:PromptCalibProd',
                      '--conditions':'auto:run1_data',
                      '--datatier':'ALCARECO',
                      '--eventcontent':'ALCARECO'}
+
 steps['ALCAEXP']={'-s':'ALCA:PromptCalibProd+PromptCalibProdSiStrip+PromptCalibProdSiStripGains+PromptCalibProdSiPixelAli',
                   '--conditions':'auto:run1_data',
                   '--datatier':'ALCARECO',
                   '--eventcontent':'ALCARECO'}
+
+steps['ALCAEXPHI']={'-s':'ALCA:PromptCalibProdHI',
+                    '--conditions':'auto:run1_data',
+                    '--datatier':'ALCARECO',
+                    '--eventcontent':'ALCARECO'}
 
 # step4
 step4Defaults = { 
@@ -1130,6 +1143,11 @@ steps['ALCAHARVD']={'-s':'ALCAHARVEST:BeamSpotByRun+BeamSpotByLumi+SiStripQualit
                     '--data':'',
                     '--filein':'file:PromptCalibProd.root'}
 
+steps['ALCAHARVDHI']={'-s':'ALCAHARVEST:BeamSpotByRun+BeamSpotByLumi', # for the moment +SiStripQuality',
+                      '--conditions':'auto:run1_data',
+                      '--scenario':'HeavyIons',
+                      '--data':'',
+                      '--filein':'file:PromptCalibProd.root'}
 
 steps['ALCAHARVD1']={'-s':'ALCAHARVEST:BeamSpotByRun+BeamSpotByLumi+SiStripQuality',
                     '--conditions':'auto:run1_data',

@@ -1,4 +1,5 @@
 AlCaRecoMatrix = {'ExpressCosmics' : 'SiStripCalZeroBias+TkAlCosmics0T',
+                  'StreamExpressHI': 'TkAlMinBiasHI',
                   'StreamExpress'  : 'SiStripCalZeroBias+TkAlMinBias+SiStripPCLHistos+SiStripCalMinBias+DtCalib+Hotline',
                   'MinimumBias'    : 'SiStripCalMinBias+TkAlMinBias',
                   'Commissioning'  : 'HcalCalIsoTrk',
@@ -37,6 +38,7 @@ def buildList(pdList, matrix):
 # Update the lists anytime a new PD is added to the matrix
 autoAlca = { 'allForPrompt'         : buildList(['MinimumBias', 'Commissioning', 'SingleMu', 'DoubleMu', 'MuOnia', 'DoubleMuParked', 'MuOniaParked', 'SingleElectron', 'DoubleElectron', 'HcalNZS'], AlCaRecoMatrix),
              'allForExpress'        : buildList(['StreamExpress'], AlCaRecoMatrix),
+             'allForExpressHI'      : buildList(['StreamExpressHI'],AlCaRecoMatrix),
              'allForPromptCosmics'  : buildList(['Cosmics'], AlCaRecoMatrix),
              'allForExpressCosmics' : buildList(['ExpressCosmics'], AlCaRecoMatrix) }
 autoAlca.update(AlCaRecoMatrix)
