@@ -16,7 +16,7 @@ process.load('Configuration.StandardSequences.AlCaHarvesting_cff')
 process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 #process.load('Configuration.StandardSequences.Reconstruction_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -52,7 +52,7 @@ process.configurationMetadata = cms.untracked.PSet(
 process.PoolDBOutputService.toPut.append(process.ALCAHARVESTSiStripGains_dbOutput)
 process.pclMetadataWriter.recordsToMap.append(process.ALCAHARVESTSiStripGains_metadata)
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_75_V1', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 
 # Path and EndPath definitions
 process.BeamSpotByRun = cms.Path(process.ALCAHARVESTBeamSpotByRun)
@@ -68,6 +68,7 @@ process.TFileService = cms.Service("TFileService",
 # Schedule definition
 process.schedule = cms.Schedule(process.SiStripGains,process.ALCAHARVESTDQMSaveAndMetadataWriter)
 
+process.alcaSiStripGainsHarvester.calibrationMode = cms.untracked.string("IsoBunch")
 
 
 
