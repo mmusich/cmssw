@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 # ------------------------------------------------------------------------------
 # configure a filter to run only on the events selected by TkAlMinBias AlcaReco
 import copy
-from CalibTracker.SiStripCommon.SiStripBFieldFilter_cfi import *
+#from CalibTracker.SiStripCommon.SiStripBFieldFilter_cfi import *
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
 ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap = copy.deepcopy(hltHighLevel)
 ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap.HLTPaths = ['pathALCARECOSiStripCalMinBiasAfterAbortGap']
@@ -77,10 +77,10 @@ ALCARECOTrackFilterRefitAAG = cms.Sequence(ALCARECOCalibrationTracksAAG +
 from CalibTracker.SiStripCommon.ShallowEventDataProducer_cfi import shallowEventRun
 from CalibTracker.SiStripCommon.ShallowTracksProducer_cfi import shallowTracks
 from CalibTracker.SiStripCommon.ShallowGainCalibration_cfi import shallowGainCalibration
-ALCARECOShallowEventRun = shallowEventRun.clone()
+ALCARECOShallowEventRunAAG = shallowEventRun.clone()
 ALCARECOShallowTracksAAG = shallowTracks.clone(Tracks=cms.InputTag('ALCARECOCalibrationTracksRefitAAG'))
 ALCARECOShallowGainCalibrationAAG = shallowGainCalibration.clone(Tracks=cms.InputTag('ALCARECOCalibrationTracksRefitAAG'))
-ALCARECOShallowSequenceAAG = cms.Sequence(ALCARECOShallowEventRun*ALCARECOShallowTracksAAG*ALCARECOShallowGainCalibrationAAG)
+ALCARECOShallowSequenceAAG = cms.Sequence(ALCARECOShallowEventRunAAG*ALCARECOShallowTracksAAG*ALCARECOShallowGainCalibrationAAG)
 
 # ------------------------------------------------------------------------------
 # This is the module actually doing the calibration
@@ -94,7 +94,7 @@ ALCARECOSiStripCalibAfterAbortGap.harvestingMode      = cms.untracked.bool(False
 ALCARECOSiStripCalibAfterAbortGap.calibrationMode     = cms.untracked.string('FaABunch')
 ALCARECOSiStripCalibAfterAbortGap.doStoreOnDB         = cms.bool(False)
 ALCARECOSiStripCalibAfterAbortGap.gain.label          = cms.untracked.string('ALCARECOShallowGainCalibrationAAG')
-ALCARECOSiStripCalibAfterAbortGap.evtinfo.label       = cms.untracked.string('ALCARECOShallowEventRun')
+ALCARECOSiStripCalibAfterAbortGap.evtinfo.label       = cms.untracked.string('ALCARECOShallowEventRunAAG')
 ALCARECOSiStripCalibAfterAbortGap.tracks.label        = cms.untracked.string('ALCARECOShallowTracksAAG')
 # ----------------------------------------------------------------------------
 

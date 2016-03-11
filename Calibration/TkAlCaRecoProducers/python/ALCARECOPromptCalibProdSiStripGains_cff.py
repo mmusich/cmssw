@@ -87,10 +87,10 @@ ALCARECOShallowSequence = cms.Sequence(ALCARECOShallowEventRun*ALCARECOShallowTr
 from CalibTracker.SiStripChannelGain.computeGain_cff import SiStripCalib
 ALCARECOSiStripCalib = SiStripCalib.clone()
 ALCARECOSiStripCalib.AlgoMode            = cms.untracked.string('PCL')
-ALCARECOSiStripCalib.Tracks              = cms.untracked.InputTag('ALCARECOCalibrationTracksRefit')
+#ALCARECOSiStripCalib.Tracks              = cms.untracked.InputTag('ALCARECOCalibrationTracksRefit')
 ALCARECOSiStripCalib.FirstSetOfConstants = cms.untracked.bool(False)
 ALCARECOSiStripCalib.harvestingMode      = cms.untracked.bool(False)
-ALCARECOSiStripCalib.calibrationMode     = cms.untracked.string('StdBunch')
+#ALCARECOSiStripCalib.calibrationMode     = cms.untracked.string('StdBunch')
 ALCARECOSiStripCalib.doStoreOnDB         = cms.bool(False)
 ALCARECOSiStripCalib.gain.label          = cms.untracked.string('ALCARECOShallowGainCalibration')
 ALCARECOSiStripCalib.evtinfo.label       = cms.untracked.string('ALCARECOShallowEventRun')
@@ -109,13 +109,12 @@ MEtoEDMConvertSiStripGains = cms.EDProducer("MEtoEDMConverter",
                                             Frequency = cms.untracked.int32(50),
                                             MEPathToSave = cms.untracked.string('AlCaReco/SiStripGains'),
                                             deleteAfterCopy = cms.untracked.bool(False)
-)
+                                            )
 
 # The actual sequence
-seqALCARECOPromptCalibProdSiStripGains = cms.Sequence(
-   ALCARECOCalMinBiasFilterForSiStripGains *
-   ALCARECOTrackFilterRefit *
-   ALCARECOShallowSequence *
-   ALCARECOSiStripCalib *
-   MEtoEDMConvertSiStripGains
-)
+seqALCARECOPromptCalibProdSiStripGains = cms.Sequence(ALCARECOCalMinBiasFilterForSiStripGains*
+                                                      ALCARECOTrackFilterRefit *
+                                                      ALCARECOShallowSequence *
+                                                      ALCARECOSiStripCalib *
+                                                      MEtoEDMConvertSiStripGains
+                                                      )

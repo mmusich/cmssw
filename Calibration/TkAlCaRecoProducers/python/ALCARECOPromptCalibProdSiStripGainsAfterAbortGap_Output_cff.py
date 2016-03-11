@@ -1,8 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-
-
-
 OutALCARECOPromptCalibProdSiStripGainsAfterAbortGap_noDrop = cms.PSet(
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring(

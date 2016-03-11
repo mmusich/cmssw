@@ -27,7 +27,6 @@ SiStripCalib = cms.EDAnalyzer(
     GoodFracForTagProd  = cms.untracked.double(0.98),
     NClustersForTagProd = cms.untracked.double(1E8),
     
-
     SinceAppendMode     = cms.bool(True),
     TimeFromEndRun      = cms.untracked.bool(True),
     IOVMode             = cms.string('Job'),
