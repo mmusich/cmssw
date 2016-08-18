@@ -259,6 +259,8 @@ done
 
 cp .oO[CMSSW_BASE]Oo./src/Alignment/OfflineValidation/macros/FitPVResiduals.C .
 cp .oO[CMSSW_BASE]Oo./src/Alignment/OfflineValidation/macros/TkAlStyle.cc .
+cp .oO[CMSSW_BASE]Oo./src/Alignment/OfflineValidation/macros/CMS_lumi.C .
+cp .oO[CMSSW_BASE]Oo./src/Alignment/OfflineValidation/macros/CMS_lumi.h .
 
  if [[ .oO[pvvalidationreference]Oo. == *store* ]]; then xrdcp -f .oO[pvvalidationreference]Oo. PVValidation_reference.root; else ln -fs .oO[pvvalidationreference]Oo. ./PVValidation_reference.root; fi
  
@@ -347,7 +349,7 @@ done
 
 for PngOutputFile in $(ls *png ); do
     xrdcp -f ${PngOutputFile}  root://eoscms//eos/cms/store/caf/user/$USER/.oO[eosdir]Oo./plots/
-    rfcp ${PngOutputFile}  .oO[datadri]Oo.
+    rfcp ${PngOutputFile}  .oO[datadir]Oo.
 done
 
 """
