@@ -26,6 +26,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TF1.h"
+#include "TString.h"
 #include "TVector3.h"
 #include "TFile.h"
 #include "TMath.h"
@@ -39,6 +40,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
+#include "DataFormats/SiPixelDetId/interface/PXBDetId.h"
+#include "DataFormats/SiPixelDetId/interface/PXFDetId.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHitCollection.h"
@@ -696,6 +699,22 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 		n_dxyVsEta->Fill(tracketa,dxyFromMyVertex/s_ip2dpv_err); 
 		n_dzVsEta->Fill(tracketa,z0/z0_error); 
  
+		std::pair<unsigned int,unsigned int> packedTopo = getLadderAndModule((*theTTrack));
+		//std::cout<<" ladder: "<< packedTopo.first << " module: " << packedTopo.second << std::endl;
+
+		h_probePXBLadder_->Fill(packedTopo.first);
+		h_probePXBModule_->Fill(packedTopo.second);
+
+		// fill the residuals by module index
+		fillByIndex(h_dxy_Ladder_,packedTopo.first,dxyFromMyVertex*cmToum);
+		fillByIndex(h_dxy_Module_,packedTopo.second,dxyFromMyVertex*cmToum);
+		fillByIndex(h_dz_Ladder_,packedTopo.first,dzFromMyVertex*cmToum);
+		fillByIndex(h_dz_Module_,packedTopo.second,dzFromMyVertex*cmToum);
+		fillByIndex(h_norm_dxy_Ladder_,packedTopo.first,dxyFromMyVertex/s_ip2dpv_err);
+		fillByIndex(h_norm_dxy_Module_,packedTopo.second,dxyFromMyVertex/s_ip2dpv_err);
+		fillByIndex(h_norm_dz_Ladder_,packedTopo.first,dzFromMyVertex/dz_err);
+		fillByIndex(h_norm_dz_Module_,packedTopo.second,dzFromMyVertex/dz_err);
+
 		// filling the binned distributions
 		for(int i=0; i<nBins_; i++){
 		  
@@ -824,6 +843,29 @@ bool PrimaryVertexValidation::isHit2D(const TrackingRecHit &hit) const
     }
   }
   // never reached...
+}
+
+// ------------ returns the ladder and module number -------------------
+std::pair<unsigned int,unsigned int>  PrimaryVertexValidation::getLadderAndModule(const reco::TransientTrack track)
+{
+  for (trackingRecHit_iterator iHit = track.recHitsBegin(); iHit != track.recHitsEnd(); ++iHit) {
+    if((*iHit)->isValid()) {
+      int type =(*iHit)->geographicalId().subdetId();
+      unsigned int rawId = (*iHit)->geographicalId().rawId();
+      if(type==PixelSubdetector::PixelBarrel){
+	if(PXBDetId(rawId).layer()==0){
+	  return std::make_pair(PXBDetId(rawId).ladder(),PXBDetId(rawId).module());
+	} else {
+	  return std::make_pair(21,9);
+	}
+      } else if (type==PixelSubdetector::PixelEndcap){
+	return std::make_pair(22,10);
+      } else {
+	return std::make_pair(0,0);
+      }
+    }
+  }
+  return std::make_pair(0,0);
 }
 
 // ------------ method to check the presence of pixel hits  ------------
@@ -965,6 +1007,31 @@ void PrimaryVertexValidation::beginJob()
   // probe track histograms
   TFileDirectory ProbeFeatures = fs->mkdir("ProbeTrackFeatures");
 
+  h_probePXBLadder_  = ProbeFeatures.make<TH1F>("h_probePXBLadder","ladder n. of first layer hit;ladder n. ;tracks",23,-0.5,102.5);
+  h_probePXBModule_  = ProbeFeatures.make<TH1F>("h_probePXBModule","module n. of first layer hit;module n. ;tracks",23,-0.5,102.5);
+
+  // put the labels
+  
+  for (int ty=0;ty<23;ty++){
+    if(ty==0){
+      h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,"other");
+      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"other");
+    } else if (ty==21){
+      h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,"BPix >1");
+      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"BPix >1");
+    } else if (ty==22){
+      h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,"FPix");
+      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"FPix");
+    } else {
+
+      char ladNum[20];
+      sprintf(ladNum,"%i",ty);
+
+      h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,ladNum);
+      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,ladNum);
+    }
+  }
+ 
   h_probePt_         = ProbeFeatures.make<TH1F>("h_probePt","p_{T} of probe track;track p_{T} (GeV); tracks",100,0.,50.);   
   h_probeP_          = ProbeFeatures.make<TH1F>("h_probeP","momentum of probe track;track p (GeV); tracks",100,0.,100.);   
   h_probeEta_        = ProbeFeatures.make<TH1F>("h_probeEta","#eta of the probe track;track #eta;tracks",54,-2.7,2.7);  
@@ -1075,6 +1142,32 @@ void PrimaryVertexValidation::beginJob()
 
   TFileDirectory AbsDoubleDiffRes   = fs->mkdir("Abs_DoubleDiffResiduals");
   TFileDirectory NormDoubleDiffRes  = fs->mkdir("Norm_DoubleDiffResiduals");
+
+  // additional residuals
+
+  TFileDirectory AbsTransLadderRes  = fs->mkdir("Abs_Transv_Ladder_Residuals");
+  h_dxy_Ladder_ = bookResidualsHistogram(AbsTransLadderRes,20,"dxy","ladder");
+
+  TFileDirectory AbsTransModuleRes  = fs->mkdir("Abs_Transv_Module_Residuals");
+  h_dxy_Module_ = bookResidualsHistogram(AbsTransModuleRes,20,"dxy","module");
+		 					  
+  TFileDirectory AbsLongLadderRes   = fs->mkdir("Abs_Long_Ladder_Residuals");
+  h_dz_Ladder_  = bookResidualsHistogram(AbsLongLadderRes,20,"dz","ladder");
+
+  TFileDirectory AbsLongModuleRes   = fs->mkdir("Abs_Long_Module_Residuals");
+  h_dz_Module_  = bookResidualsHistogram(AbsLongModuleRes,20,"dz","module");
+
+  TFileDirectory NormTransLadderRes = fs->mkdir("Norm_Transv_Ladder_Residuals");
+  h_norm_dxy_Ladder_ = bookResidualsHistogram(NormTransLadderRes,20,"norm_dxy","ladder");
+
+  TFileDirectory NormTransModuleRes = fs->mkdir("Norm_Transv_Module_Residuals");
+  h_norm_dxy_Module_ = bookResidualsHistogram(NormTransModuleRes,20,"norm_dxy","module");
+					  
+  TFileDirectory NormLongLadderRes  = fs->mkdir("Norm_Long_Ladder_Residuals");
+  h_norm_dz_Ladder_  = bookResidualsHistogram(NormLongLadderRes,20,"norm_dz","ladder");
+
+  TFileDirectory NormLongModuleRes  = fs->mkdir("Norm_Long_Module_Residuals");
+  h_norm_dz_Module_  = bookResidualsHistogram(NormLongModuleRes,20,"norm_dz","module");
 
   for ( int i=0; i<nBins_; ++i ) {
 
@@ -1273,7 +1366,7 @@ void PrimaryVertexValidation::beginJob()
   Double_t highedge=nBins_-0.5;
   Double_t lowedge=-0.5;
 
-  // means and widths from the fit
+  // means and widths from the fit (phi and eta)
 
   a_dxyPhiMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_phi",
 						 "#LT d_{xy} #GT vs #phi sector;#varphi (sector) [degrees];#LT d_{xy} #GT [#mum]",
@@ -1338,6 +1431,71 @@ void PrimaryVertexValidation::beginJob()
 						 "width(d_{z}/#sigma_{d_{z}}) vs #eta sector;#eta (sector);width(d_{z}/#sigma_{d_{z}})",
 						 nBins_,lowedge,highedge);                        
   
+  // means and widhts ladder and module
+
+  a_dxyLadderMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_ladder",
+						    "#LT d_{xy} #GT vs ladder;ladder n.;#LT d_{xy} #GT [#mum]",
+						    20,0.5,20.5); 
+  
+  a_dxyLadderWidthTrend = WidthTrendsDir.make<TH1F>("widths_dxy_ladder",
+						    "#sigma_{d_{xy}} vs ladder;ladder n.;#sigma_{d_{xy}} [#mum]",
+						    20,0.5,20.5);
+  
+  a_dzLadderMeanTrend   = MeanTrendsDir.make<TH1F> ("means_dz_ladder",
+						    "#LT d_{z} #GT vs ladder;ladder n.;#LT d_{z} #GT [#mum]",
+						    20,0.5,20.5); 
+  
+  a_dzLadderWidthTrend  = WidthTrendsDir.make<TH1F>("widths_dz_ladder","#sigma_{d_{z}} vs ladder;ladder n.;#sigma_{d_{z}} [#mum]",
+						    20,0.5,20.5);
+  
+  a_dxyModuleMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_module",
+						    "#LT d_{xy} #GT vs module;module n.;#LT d_{xy} #GT [#mum]",
+						    8,0.5,8.5);
+  
+  a_dxyModuleWidthTrend = WidthTrendsDir.make<TH1F>("widths_dxy_module",
+						    "#sigma_{d_{xy}} vs module;module n.;#sigma_{d_{xy}} [#mum]",
+						    8,0.5,8.5);
+  
+  a_dzModuleMeanTrend   = MeanTrendsDir.make<TH1F> ("means_dz_module",
+						    "#LT d_{z} #GT vs module;module n.;#LT d_{z} #GT [#mum]"
+						    ,8,0.5,8.5); 
+  
+  a_dzModuleWidthTrend  = WidthTrendsDir.make<TH1F>("widths_dz_module",
+						    "#sigma_{d_{xy}} vs module;module n.;#sigma_{d_{z}} [#mum]",
+						    8,0.5,8.5);
+  
+  n_dxyLadderMeanTrend  = MeanTrendsDir.make<TH1F> ("norm_means_dxy_ladder",
+						    "#LT d_{xy}/#sigma_{d_{xy}} #GT vs ladder;ladder n.;#LT d_{xy}/#sigma_{d_{xy}} #GT",
+						    20,0.5,20.5);
+  
+  n_dxyLadderWidthTrend = WidthTrendsDir.make<TH1F>("norm_widths_dxy_ladder",
+						    "width(d_{xy}/#sigma_{d_{xy}}) vs ladder;ladder n.; width(d_{xy}/#sigma_{d_{xy}})",
+						    20,0.5,20.5);
+  
+  n_dzLadderMeanTrend   = MeanTrendsDir.make<TH1F> ("norm_means_dz_ladder",
+						    "#LT d_{z}/#sigma_{d_{z}} #GT vs ladder;ladder n.;#LT d_{z}/#sigma_{d_{z}} #GT",
+						    20,0.5,20.5); 
+  
+  n_dzLadderWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_ladder",
+						    "width(d_{z}/#sigma_{d_{z}}) vs ladder;ladder n.;width(d_{z}/#sigma_{d_{z}})",
+						    20,0.5,20.5);
+  
+  n_dxyModuleMeanTrend  = MeanTrendsDir.make<TH1F> ("norm_means_dxy_module",
+						    "#LT d_{xy}/#sigma_{d_{xy}} #GT vs module;module n.;#LT d_{xy}/#sigma_{d_{z}} #GT",
+						    8,0.5,8.5);
+  
+  n_dxyModuleWidthTrend = WidthTrendsDir.make<TH1F>("norm_widths_dxy_module",
+						    "width(d_{xy}/#sigma_{d_{xy}}) vs module;module n.;width(d_{xy}/#sigma_{d_{z}})",
+						    8,0.5,8.5);
+  
+  n_dzModuleMeanTrend   = MeanTrendsDir.make<TH1F> ("norm_means_dz_module",
+						    "#LT d_{z}/#sigma_{d_{z}} #GT vs module;module n.;#LT d_{z}/#sigma_{d_{z}} #GT",
+						    8,0.5,8.5);  
+  
+  n_dzModuleWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_module",
+						    "width(d_{z}/#sigma_{d_{z}}) vs module;module n.;width(d_{z}/#sigma_{d_{z}})",
+						    8,0.5,8.5);                       
+
   // 2D maps
 
   a_dxyMeanMap       =  Mean2DMapsDir.make<TH2F>  ("means_dxy_map",
@@ -1769,6 +1927,8 @@ void PrimaryVertexValidation::endJob()
    
   }
 
+  // vs phi and eta
+
   fillTrendPlot(a_dxyPhiMeanTrend ,a_dxyPhiResiduals,"mean","phi");  
   fillTrendPlot(a_dxyPhiWidthTrend,a_dxyPhiResiduals,"width","phi");
   fillTrendPlot(a_dzPhiMeanTrend  ,a_dzPhiResiduals ,"mean","phi");   
@@ -1789,6 +1949,28 @@ void PrimaryVertexValidation::endJob()
   fillTrendPlot(n_dzEtaMeanTrend  ,n_dzEtaResiduals ,"mean","eta"); 
   fillTrendPlot(n_dzEtaWidthTrend ,n_dzEtaResiduals ,"width","eta");
     
+  // vs ladder and module
+
+  fillTrendPlotByIndex(a_dxyLadderMeanTrend ,h_dxy_Ladder_,"mean","phi");  
+  fillTrendPlotByIndex(a_dxyLadderWidthTrend,h_dxy_Ladder_,"width","phi");
+  fillTrendPlotByIndex(a_dzLadderMeanTrend  ,h_dz_Ladder_,"mean","phi");   
+  fillTrendPlotByIndex(a_dzLadderWidthTrend ,h_dz_Ladder_,"width","phi");  
+  
+  fillTrendPlotByIndex(a_dxyModuleMeanTrend ,h_dxy_Module_,"mean","eta"); 
+  fillTrendPlotByIndex(a_dxyModuleWidthTrend,h_dxy_Module_,"width","eta");
+  fillTrendPlotByIndex(a_dzModuleMeanTrend  ,h_dz_Module_,"mean","eta"); 
+  fillTrendPlotByIndex(a_dzModuleWidthTrend ,h_dz_Module_,"width","eta");
+  
+  fillTrendPlotByIndex(n_dxyLadderMeanTrend ,h_norm_dxy_Ladder_,"mean","phi"); 
+  fillTrendPlotByIndex(n_dxyLadderWidthTrend,h_norm_dxy_Ladder_,"width","phi");
+  fillTrendPlotByIndex(n_dzLadderMeanTrend  ,h_norm_dz_Ladder_,"mean","phi"); 
+  fillTrendPlotByIndex(n_dzLadderWidthTrend ,h_norm_dz_Ladder_,"width","phi");
+  
+  fillTrendPlotByIndex(n_dxyModuleMeanTrend ,h_norm_dxy_Module_,"mean","eta"); 
+  fillTrendPlotByIndex(n_dxyModuleWidthTrend,h_norm_dxy_Module_,"width","eta");
+  fillTrendPlotByIndex(n_dzModuleMeanTrend  ,h_norm_dz_Module_,"mean","eta"); 
+  fillTrendPlotByIndex(n_dzModuleWidthTrend ,h_norm_dz_Module_,"width","eta");
+
   // medians and MADs	  
   
   fillTrendPlot(a_dxyPhiMedianTrend,a_dxyPhiResiduals,"median","phi");  
@@ -1901,7 +2083,7 @@ void PrimaryVertexValidation::SetVarToZero()
 }
 
 //*************************************************************
-std::pair<Double_t,Double_t> PrimaryVertexValidation::getMedian(TH1F *histo)
+std::pair<Double_t,Double_t> PrimaryVertexValidation::getMedian(TH1 *histo)
 //*************************************************************
 {
   Double_t median = 999;
@@ -1927,7 +2109,7 @@ std::pair<Double_t,Double_t> PrimaryVertexValidation::getMedian(TH1F *histo)
 }
 
 //*************************************************************
-std::pair<Double_t,Double_t> PrimaryVertexValidation::getMAD(TH1F *histo)
+std::pair<Double_t,Double_t> PrimaryVertexValidation::getMAD(TH1 *histo)
 //*************************************************************
 {
 
@@ -2000,6 +2182,44 @@ std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > PrimaryV
   
   result = std::make_pair(resultM,resultW);
   return result;
+}
+
+
+//*************************************************************
+void PrimaryVertexValidation::fillTrendPlotByIndex(TH1F* trendPlot,std::map<unsigned int, TH1*>& h, TString fitPar_, TString var_)
+//*************************************************************
+{
+   
+  for(auto iterator = h.begin(); iterator != h.end(); iterator++) {
+    
+    unsigned int bin = iterator->first;
+    std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > myFit = fitResiduals(iterator->second);
+    
+    if(fitPar_=="mean"){
+      float mean_      = myFit.first.first;
+      float meanErr_   = myFit.first.second;
+      trendPlot->SetBinContent(bin,mean_);
+      trendPlot->SetBinError(bin,meanErr_);
+    } else if (fitPar_=="width"){
+      float width_     = myFit.second.first;
+      float widthErr_  = myFit.second.second;
+      trendPlot->SetBinContent(bin,width_);
+      trendPlot->SetBinError(bin,widthErr_);
+    } else if (fitPar_=="median"){
+      float median_    = getMedian(iterator->second).first;
+      float medianErr_ = getMedian(iterator->second).second;
+      trendPlot->SetBinContent(bin,median_);
+      trendPlot->SetBinError(bin,medianErr_);
+    } else if (fitPar_=="mad"){
+      float mad_       = getMAD(iterator->second).first; 
+      float madErr_    = getMAD(iterator->second).second;
+      trendPlot->SetBinContent(bin,mad_);
+      trendPlot->SetBinError(bin,madErr_);
+    } else {
+      std::cout<<"PrimaryVertexValidation::fillTrendPlot() "<<fitPar_<<" unknown estimator!"<<std::endl;
+    }
+  }
+
 }
 
 //*************************************************************
@@ -2191,6 +2411,51 @@ std::map<std::string, TH1*> PrimaryVertexValidation::bookVertexHistograms(TFileD
 }
 
 //*************************************************************
+// Generic booker function
+//*************************************************************
+std::map<unsigned int, TH1*> PrimaryVertexValidation::bookResidualsHistogram(TFileDirectory dir,
+									     unsigned int theNOfBins,
+									     TString resType,
+									     TString varType){
+  TH1F::SetDefaultSumw2(kTRUE);
+  
+  Double_t up   = 1000;
+  Double_t down = -up;
+  
+  if(resType.Contains("norm")){
+    up = up*(1/100);
+    down = down*(1/100);
+  }
+
+  std::map<unsigned int, TH1*> h;
+  
+  const char* auxResType = (resType.ReplaceAll("_","")).Data();
+
+  for(unsigned int i=1; i<=theNOfBins;i++){
+    h[i] = dir.make<TH1F>(Form("histo_%s_%s_plot%i",resType.Data(),varType.Data(),i),
+			  Form("%s vs %s - bin %i;%s;tracks",auxResType,varType.Data(),i,auxResType),
+			  500,down,up); 
+  }
+
+  return h;
+  
+}
+
+// //*************************************************************
+// // Generic filler function
+// //*************************************************************
+// void PrimaryVertexValidation::fillResHistos(std::map<int,TH1*> &h,const reco::TransientTrack * tt,const reco::Vertex & v, const reco::BeamSpot & beamSpot){
+  
+//   std::pair<unsigned int,unsigned int> packedTopo = getLadderAndModule((*theTTrack));
+//   for(auto iterator = h.begin(); iterator != h.end(); iterator++) {
+//     // iterator->first = key
+//     // iterator->second = value
+//     // Repeat if you also want to iterate through the second map.
+//   }  
+
+// }
+
+//*************************************************************
 void PrimaryVertexValidation::fillTrackHistos(std::map<std::string, TH1*> & h, const std::string & ttype, const reco::TransientTrack * tt,const reco::Vertex & v, const reco::BeamSpot & beamSpot, double fBfield_)
 //*************************************************************
 {
@@ -2323,6 +2588,16 @@ void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h, std::string s
   }
   h[s]->Fill(x);
 }
+
+//*************************************************************
+void PrimaryVertexValidation::fillByIndex(std::map<unsigned int, TH1*>& h, unsigned int index, double x)
+//*************************************************************
+{
+  if(h.count(index)!=0){
+    h[index]->Fill(x);
+  }
+}
+
 
 //*************************************************************
 void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h, std::string s, double x, double y)

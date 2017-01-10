@@ -3445,3 +3445,86 @@ MisalignmentScenario_PhaseI_PseudoAsymptotic = MisalignmentScenarioSettings.clon
     ),
   ),
 )
+
+
+MisalignmentScenario_Phase1_V6 = cms.PSet(
+    MisalignmentScenarioSettings, # --> Gaussian distribution
+    scale = cms.double(0.0001), # shifts in 1um
+
+    P1PXBBarrels = cms.PSet(
+        distribution = cms.string("flat"),
+        dXlocal = cms.double(500),
+        dYlocal = cms.double(500),
+        dZlocal = cms.double(1000),
+        P1PXBHalfBarrels = cms.PSet(
+            dXlocal = cms.double(100),
+            dYlocal = cms.double(100),
+            dZlocal = cms.double(100),
+            P1PXBLadders = cms.PSet(
+                dXlocal = cms.double(500),
+                dYlocal = cms.double(500),
+                dZlocal = cms.double(500),
+                DetUnits = cms.PSet(
+                    distribution = cms.string("gaussian"),
+                    dXlocal = cms.double(100),
+                    dYlocal = cms.double(100),
+                    dZlocal = cms.double(100),
+                ),
+            ),
+        ),
+    ),
+
+    P1PXECEndcap1 = cms.PSet(
+        distribution = cms.string("fixed"),
+        P1PXECHalfCylinder1 = cms.PSet(
+            dXlocal = cms.double(250),
+            dYlocal = cms.double(250),
+            dZlocal = cms.double(-680),
+        ),
+        P1PXECHalfCylinder2 = cms.PSet(
+            dXlocal = cms.double(250),
+            dYlocal = cms.double(-250),
+            dZlocal = cms.double(-720),
+        ),
+    ),
+    P1PXECEndcap2 = cms.PSet(
+        distribution = cms.string("fixed"),
+        P1PXECHalfCylinder1 = cms.PSet(
+            dXlocal = cms.double(250),
+            dYlocal = cms.double(250),
+            dZlocal = cms.double(3940),
+        ),
+        P1PXECHalfCylinder2 = cms.PSet(
+            dXlocal = cms.double(-250),
+            dYlocal = cms.double(250),
+            dZlocal = cms.double(4020),
+        ),
+    ),
+
+    P1PXECHalfDisks = cms.PSet(
+        distribution = cms.string("flat"),
+        dXlocal = cms.double(250),
+        dYlocal = cms.double(500),
+        dZlocal = cms.double(100),
+        P1PXECBlades = cms.PSet(
+            distribution = cms.string("gaussian"),
+            dXlocal = cms.double(300),
+            dYlocal = cms.double(300),
+            dZlocal = cms.double(200),
+            DetUnits = cms.PSet(
+                dXlocal = cms.double(200),
+                dYlocal = cms.double(200),
+                dZlocal = cms.double(50),
+            ),
+        ),
+    ),
+
+    Strips = cms.PSet(
+        distribution = cms.string("gaussian"),
+        DetUnits = cms.PSet(
+            dXlocal = cms.double(20),
+            dYlocal = cms.double(20),
+            dZlocal = cms.double(20),
+        ),
+    ),
+)

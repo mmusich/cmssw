@@ -69,17 +69,22 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   virtual void endJob();
   bool isHit2D(const TrackingRecHit &hit) const;
   bool hasFirstLayerPixelHits(const reco::TransientTrack track);
-  std::pair<Double_t,Double_t> getMedian(TH1F *histo);
-  std::pair<Double_t,Double_t> getMAD(TH1F *histo);
+  std::pair<unsigned int,unsigned int> getLadderAndModule(const reco::TransientTrack track);
+  std::pair<Double_t,Double_t> getMedian(TH1 *histo);
+  std::pair<Double_t,Double_t> getMAD(TH1 *histo);
   std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t> > fitResiduals(TH1 *hist);
   void fillTrendPlot(TH1F* trendPlot, TH1F *residualsPlot[100], TString fitPar_, TString var_);
+  void fillTrendPlotByIndex(TH1F* trendPlot,std::map<unsigned int, TH1*>& h, TString fitPar_, TString var_);
+  
   static bool vtxSort( const reco::Vertex &  a, const reco::Vertex & b );
   bool passesTrackCuts(const reco::Track & track, const reco::Vertex & vertex,std::string qualityString_, double dxyErrMax_,double dzErrMax_, double ptErrMax_);
+  std::map<unsigned int, TH1*> bookResidualsHistogram(TFileDirectory dir,unsigned int theNOfBins,TString resType,TString varType);
   std::map<std::string, TH1*> bookVertexHistograms(TFileDirectory dir);
   void fillTrackHistos(std::map<std::string, TH1*> & h, const std::string & ttype, const reco::TransientTrack *tt, const reco::Vertex & v,const reco::BeamSpot & beamSpot, double fBfield);
   void add(std::map<std::string, TH1*>& h, TH1* hist);
   void fill(std::map<std::string, TH1*>& h, std::string s, double x);
   void fill(std::map<std::string, TH1*>& h, std::string s, double x, double y);
+  void fillByIndex(std::map<unsigned int, TH1*>& h, unsigned int index, double x);
   void fillMap(TH2F* trendMap, TH1F* residualsMapPlot[100][100], TString fitPar_);
   
   inline double square(double x){
@@ -259,7 +264,7 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   TH1F* n_dzResidualsMap[nMaxBins_][nMaxBins_];
   TH1F* n_d3DResidualsMap[nMaxBins_][nMaxBins_];
   
-  // ---- trends as function of phi
+  // ---- trends as function of phi and eta
   
   TH1F* a_dxyPhiMeanTrend;
   TH1F* a_dxyPhiWidthTrend;
@@ -280,6 +285,28 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   TH1F* n_dxyEtaWidthTrend;
   TH1F* n_dzEtaMeanTrend;
   TH1F* n_dzEtaWidthTrend;
+
+  // ---- trends as a function of ladder and module
+  
+  TH1F* a_dxyLadderMeanTrend;
+  TH1F* a_dxyLadderWidthTrend;
+  TH1F* a_dzLadderMeanTrend;
+  TH1F* a_dzLadderWidthTrend;
+
+  TH1F* a_dxyModuleMeanTrend;
+  TH1F* a_dxyModuleWidthTrend;
+  TH1F* a_dzModuleMeanTrend;
+  TH1F* a_dzModuleWidthTrend;
+
+  TH1F* n_dxyLadderMeanTrend;
+  TH1F* n_dxyLadderWidthTrend;
+  TH1F* n_dzLadderMeanTrend;
+  TH1F* n_dzLadderWidthTrend;
+
+  TH1F* n_dxyModuleMeanTrend;
+  TH1F* n_dxyModuleWidthTrend;
+  TH1F* n_dzModuleMeanTrend;
+  TH1F* n_dzModuleWidthTrend;
 
   // ---- medians and MAD
 
@@ -478,6 +505,9 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   TH1F* h_probeHitsInBPIX_; 
   TH1F* h_probeHitsInFPIX_; 
 
+  TH1F* h_probePXBLadder_;
+  TH1F* h_probePXBModule_;
+
   // check vertex
 
   TH1F* h_fitVtxNdof_;
@@ -494,6 +524,16 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   TH1F* h_recoVtxSumPt_;   
 
   std::map<std::string, TH1*> hDA;
+
+  std::map<unsigned int,TH1*> h_dxy_Ladder_;
+  std::map<unsigned int,TH1*> h_dz_Ladder_;
+  std::map<unsigned int,TH1*> h_norm_dxy_Ladder_;
+  std::map<unsigned int,TH1*> h_norm_dz_Ladder_;
+
+  std::map<unsigned int,TH1*> h_dxy_Module_;
+  std::map<unsigned int,TH1*> h_dz_Module_;
+  std::map<unsigned int,TH1*> h_norm_dxy_Module_;
+  std::map<unsigned int,TH1*> h_norm_dz_Module_;
 
 };
 
