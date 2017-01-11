@@ -92,6 +92,9 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
 
   phiSect_ = (2*TMath::Pi())/nBins_;
   etaSect_ = 5./nBins_;
+  
+  // default is phase0
+  isPhase1_=false;
 
   edm::InputTag TrackCollectionTag_ = iConfig.getParameter<edm::InputTag>("TrackCollectionTag");
   theTrackCollectionToken = consumes<reco::TrackCollection>(TrackCollectionTag_);
@@ -176,6 +179,25 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   edm::ESHandle<GlobalTrackingGeometry> theTrackingGeometry;
   iSetup.get<GlobalTrackingGeometryRecord>().get( theTrackingGeometry );
+
+  //=======================================================
+  // Retrieve geometry information
+  //=======================================================
+ 
+  edm::LogInfo("read tracker geometry...");
+  edm::ESHandle<TrackerGeometry> pDD;
+  iSetup.get<TrackerDigiGeometryRecord>().get( pDD );
+  edm::LogInfo("tracker geometry read")<<"There are: "<< pDD->dets().size() <<" detectors";
+  
+  // switch on the phase1 
+  if( (pDD->isThere(GeomDetEnumerators::P1PXB)) || 
+      (pDD->isThere(GeomDetEnumerators::P1PXEC)) ) {
+    isPhase1_ = true;
+    edm::LogInfo("PrimaryVertexValidation")<<" pixel phase1 setup ";
+  } else {
+    isPhase1_ = false;
+    edm::LogInfo("PrimaryVertexValidation")<<" pixel phase0 setup ";
+  }
 
   //=======================================================
   // Retrieve the Transient Track Builder information
@@ -699,7 +721,7 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 		n_dxyVsEta->Fill(tracketa,dxyFromMyVertex/s_ip2dpv_err); 
 		n_dzVsEta->Fill(tracketa,z0/z0_error); 
  
-		std::pair<unsigned int,unsigned int> packedTopo = getLadderAndModule((*theTTrack));
+		std::pair<unsigned int,unsigned int> packedTopo = getLadderAndModule((*theTTrack),isPhase1_);
 		//std::cout<<" ladder: "<< packedTopo.first << " module: " << packedTopo.second << std::endl;
 
 		h_probePXBLadder_->Fill(packedTopo.first);
@@ -846,15 +868,26 @@ bool PrimaryVertexValidation::isHit2D(const TrackingRecHit &hit) const
 }
 
 // ------------ returns the ladder and module number -------------------
-std::pair<unsigned int,unsigned int>  PrimaryVertexValidation::getLadderAndModule(const reco::TransientTrack track)
+std::pair<unsigned int,unsigned int>  PrimaryVertexValidation::getLadderAndModule(const reco::TransientTrack track,bool isPhase1)
 {
+  
+  int normFactor = 1;
+  unsigned int layerToMatch = 1;
+  if(isPhase1){
+    layerToMatch = 0;
+    normFactor=16;
+  }
+
   for (trackingRecHit_iterator iHit = track.recHitsBegin(); iHit != track.recHitsEnd(); ++iHit) {
     if((*iHit)->isValid()) {
       int type =(*iHit)->geographicalId().subdetId();
       unsigned int rawId = (*iHit)->geographicalId().rawId();
       if(type==PixelSubdetector::PixelBarrel){
-	if(PXBDetId(rawId).layer()==0){
-	  return std::make_pair(PXBDetId(rawId).ladder(),PXBDetId(rawId).module());
+	
+	//std::cout<< PXBDetId(rawId) << std::endl;
+
+	if(PXBDetId(rawId).layer()==layerToMatch){
+	  return std::make_pair(PXBDetId(rawId).ladder()/normFactor,PXBDetId(rawId).module());
 	} else {
 	  return std::make_pair(21,9);
 	}
@@ -1007,28 +1040,33 @@ void PrimaryVertexValidation::beginJob()
   // probe track histograms
   TFileDirectory ProbeFeatures = fs->mkdir("ProbeTrackFeatures");
 
-  h_probePXBLadder_  = ProbeFeatures.make<TH1F>("h_probePXBLadder","ladder n. of first layer hit;ladder n. ;tracks",23,-0.5,102.5);
-  h_probePXBModule_  = ProbeFeatures.make<TH1F>("h_probePXBModule","module n. of first layer hit;module n. ;tracks",23,-0.5,102.5);
+  h_probePXBLadder_  = ProbeFeatures.make<TH1F>("h_probePXBLadder","ladder n. of first layer hit;ladder n. ;tracks",23,-0.5,22.5);
+  h_probePXBModule_  = ProbeFeatures.make<TH1F>("h_probePXBModule","module n. of first layer hit;module n. ;tracks",11,-0.5,10.5);
 
   // put the labels
   
   for (int ty=0;ty<23;ty++){
+    
+    char ladNum[20];
+    sprintf(ladNum,"%i",ty);
+      
     if(ty==0){
       h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,"other");
       h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"other");
+    } else if (ty==9){
+      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"BPix >1");
+      h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,ladNum);
+    } else if (ty==10){
+      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"FPix");
+      h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,ladNum);
     } else if (ty==21){
       h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,"BPix >1");
-      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"BPix >1");
     } else if (ty==22){
       h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,"FPix");
-      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,"FPix");
     } else {
-
-      char ladNum[20];
-      sprintf(ladNum,"%i",ty);
-
       h_probePXBLadder_->GetXaxis()->SetBinLabel(ty+1,ladNum);
-      h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,ladNum);
+      if(ty<=8)
+	h_probePXBModule_->GetXaxis()->SetBinLabel(ty+1,ladNum);
     }
   }
  

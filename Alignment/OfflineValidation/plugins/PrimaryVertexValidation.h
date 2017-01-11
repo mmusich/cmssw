@@ -69,7 +69,7 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   virtual void endJob();
   bool isHit2D(const TrackingRecHit &hit) const;
   bool hasFirstLayerPixelHits(const reco::TransientTrack track);
-  std::pair<unsigned int,unsigned int> getLadderAndModule(const reco::TransientTrack track);
+  std::pair<unsigned int,unsigned int> getLadderAndModule(const reco::TransientTrack track, bool isPhase1);
   std::pair<Double_t,Double_t> getMedian(TH1 *histo);
   std::pair<Double_t,Double_t> getMAD(TH1 *histo);
   std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t> > fitResiduals(TH1 *hist);
@@ -113,6 +113,7 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   bool    askFirstLayerHit_;  // ask hit in the first layer of pixels 
   double  ptOfProbe_;
   double  etaOfProbe_; 
+  bool    isPhase1_; 
   int nBins_;                 // actual number of histograms     
   std::vector<unsigned int> runControlNumbers_;
 
