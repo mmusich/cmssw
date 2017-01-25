@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 from Calibration.TkAlCaRecoProducers.AlcaBeamSpotHarvester_cff import *
 from Calibration.TkAlCaRecoProducers.AlcaSiStripQualityHarvester_cff import *
 from Calibration.TkAlCaRecoProducers.AlcaSiStripGainsHarvester_cff import *
-from Calibration.TkAlCaRecoProducers.AlcaSiStripGainsAfterAbortGapHarvester_cff import *
+from Calibration.TkAlCaRecoProducers.AlcaSiStripGainsAAGHarvester_cff import *
 from Alignment.CommonAlignmentProducer.AlcaSiPixelAliHarvester_cff import *
 
 from Calibration.TkAlCaRecoProducers.PCLMetadataWriter_cfi import *
@@ -67,11 +67,11 @@ ALCAHARVESTSiStripGains_dbOutput = cms.PSet(record = cms.string('SiStripApvGainR
                                             timetype   = cms.untracked.string('runnumber')
                                             )
 
-# SiStrip Gains (AfterAbortGap)
-ALCAHARVESTSiStripGainsAfterAbortGap_metadata = cms.PSet(record = cms.untracked.string('SiStripApvGainRcdAfterAbortGap'))
+# SiStrip Gains (AAG)
+ALCAHARVESTSiStripGainsAAG_metadata = cms.PSet(record = cms.untracked.string('SiStripApvGainRcdAAG'))
 
-ALCAHARVESTSiStripGainsAfterAbortGap_dbOutput = cms.PSet(record = cms.string('SiStripApvGainRcdAfterAbortGap'),
-                                                         tag = cms.string('SiStripApvGainAfterAbortGap_pcl'),
+ALCAHARVESTSiStripGainsAAG_dbOutput = cms.PSet(record = cms.string('SiStripApvGainRcdAAG'),
+                                                         tag = cms.string('SiStripApvGainAAG_pcl'),
                                                          timetype   = cms.untracked.string('runnumber')
                                                          )
 
@@ -89,7 +89,7 @@ BeamSpotByLumi = cms.Path(ALCAHARVESTBeamSpotByLumi)
 SiStripQuality = cms.Path(ALCAHARVESTSiStripQuality)
 SiStripGains   = cms.Path(ALCAHARVESTSiStripGains)
 SiPixelAli     = cms.Path(ALCAHARVESTSiPixelAli)
-SiStripGainsAfterAbortGap = cms.Path(ALCAHARVESTSiStripGainsAfterAbortGap)
+SiStripGainsAAG = cms.Path(ALCAHARVESTSiStripGainsAAG)
 
 ALCAHARVESTDQMSaveAndMetadataWriter = cms.Path(dqmSaver+pclMetadataWriter)
 
