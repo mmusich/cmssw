@@ -6,8 +6,8 @@ import DQMOffline.Alignment.TkAlCaRecoMonitor_cfi
 # AlCaReco DQM #
 #---------------
 
-__selectionName = 'SiStripCalMinBiasAfterAbortGap'
-ALCARECOSiStripCalMinBiasAfterAbortGapTrackingDQM = DQM.TrackingMonitor.TrackingMonitor_cfi.TrackMon.clone(
+__selectionName = 'SiStripCalMinBiasAAG'
+ALCARECOSiStripCalMinBiasAAGTrackingDQM = DQM.TrackingMonitor.TrackingMonitor_cfi.TrackMon.clone(
 #names and desigantions
     TrackProducer = 'ALCARECO'+__selectionName,
     SeedProducer = 'hiPixelTrackSeeds',
@@ -24,7 +24,7 @@ ALCARECOSiStripCalMinBiasAfterAbortGapTrackingDQM = DQM.TrackingMonitor.Tracking
     TrackPtMax = 30
 )
 
-ALCARECOSiStripCalMinBiasAfterAbortGapTrackerDQM = DQMOffline.Alignment.TkAlCaRecoMonitor_cfi.TkAlCaRecoMonitor.clone(
+ALCARECOSiStripCalMinBiasAAGTrackerDQM = DQMOffline.Alignment.TkAlCaRecoMonitor_cfi.TkAlCaRecoMonitor.clone(
 #names and desigantions
     TrackProducer = 'ALCARECO'+__selectionName,
     AlgoName = 'ALCARECO'+__selectionName,
@@ -43,5 +43,5 @@ ALCARECOSiStripCalMinBiasAfterAbortGapTrackerDQM = DQMOffline.Alignment.TkAlCaRe
 # Sequence #
 #------------
 
-ALCARECOSiStripCalMinBiasAfterAbortGapDQM = cms.Sequence( ALCARECOSiStripCalMinBiasAfterAbortGapTrackingDQM + 
-                                                          ALCARECOSiStripCalMinBiasAfterAbortGapTrackerDQM)
+ALCARECOSiStripCalMinBiasAAGDQM = cms.Sequence( ALCARECOSiStripCalMinBiasAAGTrackingDQM + 
+                                                          ALCARECOSiStripCalMinBiasAAGTrackerDQM)

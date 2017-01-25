@@ -5,10 +5,10 @@ import FWCore.ParameterSet.Config as cms
 import copy
 from CalibTracker.SiStripCommon.SiStripBFieldFilter_cfi import *
 from HLTrigger.HLTfilters.hltHighLevel_cfi import *
-ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap = copy.deepcopy(hltHighLevel)
-ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap.HLTPaths = ['pathALCARECOSiStripCalMinBiasAfterAbortGap']
-ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap.throw = True ## dont throw on unknown path names
-ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap.TriggerResultsTag = cms.InputTag("TriggerResults","","RECO")
+ALCARECOCalMinBiasFilterForSiStripGainsAAG = copy.deepcopy(hltHighLevel)
+ALCARECOCalMinBiasFilterForSiStripGainsAAG.HLTPaths = ['pathALCARECOSiStripCalMinBiasAAG']
+ALCARECOCalMinBiasFilterForSiStripGainsAAG.throw = True ## dont throw on unknown path names
+ALCARECOCalMinBiasFilterForSiStripGainsAAG.TriggerResultsTag = cms.InputTag("TriggerResults","","RECO")
 #process.TkAlMinBiasFilterForBS.eventSetupPathsKey = 'pathALCARECOTkAlMinBias:RECO'
 #ALCARECODtCalibHLTFilter.andOr = True ## choose logical OR between Triggerbits
 
@@ -47,7 +47,7 @@ ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap.TriggerResultsTag = cms.Inp
 from Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi import *
 ALCARECOCalibrationTracksAAG = AlignmentTrackSelector.clone(
     #    src = 'generalTracks',
-    src = 'ALCARECOSiStripCalMinBiasAfterAbortGap',
+    src = 'ALCARECOSiStripCalMinBiasAAG',
     filter = True,
     applyBasicCuts = True,
     ptMin = 0.8,
@@ -86,37 +86,37 @@ ALCARECOShallowSequenceAAG = cms.Sequence(ALCARECOShallowEventRunAAG*ALCARECOSha
 # This is the module actually doing the calibration
 
 from CalibTracker.SiStripChannelGain.computeGain_cff import SiStripCalib
-ALCARECOSiStripCalibAfterAbortGap = SiStripCalib.clone()
-ALCARECOSiStripCalibAfterAbortGap.AlgoMode            = cms.untracked.string('PCL')
-ALCARECOSiStripCalibAfterAbortGap.FirstSetOfConstants = cms.untracked.bool(False)
-ALCARECOSiStripCalibAfterAbortGap.harvestingMode      = cms.untracked.bool(False)
-ALCARECOSiStripCalibAfterAbortGap.calibrationMode     = cms.untracked.string('AagBunch')
-ALCARECOSiStripCalibAfterAbortGap.DQMdir              = cms.untracked.string('AlCaReco/SiStripGainsAfterAbortGap')
-ALCARECOSiStripCalibAfterAbortGap.doStoreOnDB         = cms.bool(False)
-ALCARECOSiStripCalibAfterAbortGap.gain.label          = cms.untracked.string('ALCARECOShallowGainCalibrationAAG')
-ALCARECOSiStripCalibAfterAbortGap.evtinfo.label       = cms.untracked.string('ALCARECOShallowEventRunAAG')
-ALCARECOSiStripCalibAfterAbortGap.tracks.label        = cms.untracked.string('ALCARECOShallowTracksAAG')
+ALCARECOSiStripCalibAAG = SiStripCalib.clone()
+ALCARECOSiStripCalibAAG.AlgoMode            = cms.untracked.string('PCL')
+ALCARECOSiStripCalibAAG.FirstSetOfConstants = cms.untracked.bool(False)
+ALCARECOSiStripCalibAAG.harvestingMode      = cms.untracked.bool(False)
+ALCARECOSiStripCalibAAG.calibrationMode     = cms.untracked.string('AagBunch')
+ALCARECOSiStripCalibAAG.DQMdir              = cms.untracked.string('AlCaReco/SiStripGainsAAG')
+ALCARECOSiStripCalibAAG.doStoreOnDB         = cms.bool(False)
+ALCARECOSiStripCalibAAG.gain.label          = cms.untracked.string('ALCARECOShallowGainCalibrationAAG')
+ALCARECOSiStripCalibAAG.evtinfo.label       = cms.untracked.string('ALCARECOShallowEventRunAAG')
+ALCARECOSiStripCalibAAG.tracks.label        = cms.untracked.string('ALCARECOShallowTracksAAG')
 # ----------------------------------------------------------------------------
 
 
 # ****************************************************************************
 # ** Conversion for the SiStripGain DQM dir not used for split statistics   **
 # ****************************************************************************
-MEtoEDMConvertSiStripGainsAfterAbortGap = cms.EDProducer("MEtoEDMConverter",
+MEtoEDMConvertSiStripGainsAAG = cms.EDProducer("MEtoEDMConverter",
                                             Name = cms.untracked.string('MEtoEDMConverter'),
                                             Verbosity = cms.untracked.int32(1), # 0 provides no output
                                             # 1 provides basic output
                                             # 2 provide more detailed output
                                             Frequency = cms.untracked.int32(50),
-                                            MEPathToSave = cms.untracked.string('AlCaReco/SiStripGainsAfterAbortGap'),
+                                            MEPathToSave = cms.untracked.string('AlCaReco/SiStripGainsAAG'),
                                             deleteAfterCopy = cms.untracked.bool(True)
 )
 
 # The actual sequence
-seqALCARECOPromptCalibProdSiStripGainsAfterAbortGap = cms.Sequence(
-   ALCARECOCalMinBiasFilterForSiStripGainsAfterAbortGap *
+seqALCARECOPromptCalibProdSiStripGainsAAG = cms.Sequence(
+   ALCARECOCalMinBiasFilterForSiStripGainsAAG *
    ALCARECOTrackFilterRefitAAG *
    ALCARECOShallowSequenceAAG *
-   ALCARECOSiStripCalibAfterAbortGap *
-   MEtoEDMConvertSiStripGainsAfterAbortGap
+   ALCARECOSiStripCalibAAG *
+   MEtoEDMConvertSiStripGainsAAG
 )
