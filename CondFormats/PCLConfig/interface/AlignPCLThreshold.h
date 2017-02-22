@@ -8,8 +8,9 @@ class AlignPCLThreshold
  public:
   virtual ~AlignPCLThreshold(){}
 
-  AlignPCLThreshold(double Xcut=5.0,double tXcut=30.0, double Ycut=10.0, double tYcut=30.0, double Zcut=15.0, double tZcut=30.0, double maxMoveCut=200.0, double maxErrorCut=10.0 );
+  AlignPCLThreshold(double sigCut=2.5,double Xcut=5.0,double tXcut=30.0, double Ycut=10.0, double tYcut=30.0, double Zcut=15.0, double tZcut=30.0, double maxMoveCut=200.0, double maxErrorCut=10.0 );
 
+  double getSigCut()      const {return m_sigCut;}
   double getXcut()        const {return m_Xcut;}
   double getThetaXcut()   const {return m_tXcut;}
   double getYcut()        const {return m_Ycut;}
@@ -20,6 +21,7 @@ class AlignPCLThreshold
   double getMaxErrorCut() const {return m_maxErrorCut;}
     
  private:
+  double m_sigCut;
   double m_Xcut;
   double m_tXcut;
   double m_Ycut;

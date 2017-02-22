@@ -28,6 +28,12 @@ AlignPCLThreshold& AlignPCLThresholds::getAlignPCLThreshold(unsigned int id) {
   return m_thresholds[id];
 }
 
+double AlignPCLThresholds::getSigCut(unsigned int id) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(id);
+  double sig= a.getSigCut();
+  return sig;
+}
+
 double AlignPCLThresholds::getXcut(unsigned int id) const {
   AlignPCLThreshold a = getAlignPCLThreshold(id);
   double x= a.getXcut();

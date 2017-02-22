@@ -24,6 +24,7 @@ class AlignPCLThresholds{
   AlignPCLThreshold   getAlignPCLThreshold(unsigned int AlignableId) const;
   AlignPCLThreshold & getAlignPCLThreshold(unsigned int AlignableId);
   
+  double getSigCut(unsigned int AlignableId) const;
   double getXcut (unsigned int AlignableId) const;
   double getThetaXcut (unsigned int AlignableId) const;
   double getYcut (unsigned int AlignableId) const;

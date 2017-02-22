@@ -104,7 +104,7 @@ AlignPCLThresholdsWriter::analyze(const edm::Event& iEvent, const edm::EventSetu
      
      for(unsigned int i=0;i<m_alignableid.size();i++){
 
-       AlignPCLThreshold a(5.0,30.0,10.0,30.0,15.0,30.0,200.0,10.0);
+       AlignPCLThreshold a(2.5,5.0,30.0,10.0,30.0,15.0,30.0,200.0,10.0);
        myThresholds->setAlignPCLThreshold(m_alignableid[i],a);
        
      }
@@ -113,8 +113,9 @@ AlignPCLThresholdsWriter::analyze(const edm::Event& iEvent, const edm::EventSetu
      const AlignPCLThresholds::threshold_map & mymap = myThresholds->getThreshold_Map();
      
      std::cout<<"Content of myThresholds "<<std::endl;
-     for(AlignPCLThresholds::threshold_map::const_iterator it = mymap.begin(); it != mymap.end() ; ++it)
+     for(AlignPCLThresholds::threshold_map::const_iterator it = mymap.begin(); it != mymap.end() ; ++it){
        std::cout<<"keys : " << it->first <<std::endl
+		<<"- sigCut    : " << (it->second).getSigCut()     << std::endl
 		<<"- Xcut      : " << (it->second).getXcut()       <<" um"     << std::endl
 		<<"- thetaXcut : " << (it->second).getThetaXcut()  <<" urad"   << std::endl
 		<<"- Ycut      : " << (it->second).getYcut()       <<" um"     << std::endl
@@ -124,6 +125,7 @@ AlignPCLThresholdsWriter::analyze(const edm::Event& iEvent, const edm::EventSetu
 		<<"- MaxMove   : " << (it->second).getMaxMoveCut() <<" um/rad" << std::endl
 		<<"- MaxError  : " << (it->second).getMaxErrorCut()<<" um/rad" << std::endl
 		<<std::endl;
+     }
      
      // Form the data here
      edm::Service<cond::service::PoolDBOutputService> poolDbService;
