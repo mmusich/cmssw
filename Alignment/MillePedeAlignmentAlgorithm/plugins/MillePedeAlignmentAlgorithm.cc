@@ -322,8 +322,6 @@ bool MillePedeAlignmentAlgorithm::storeAlignments()
 {
   if (isMode(myPedeRunBit)) {
     if (runAtPCL_) {
-
-      std::cout<<"MillePedeAlignmentAlgorithm::storeAlignments()" <<  theThresholds->getSigCut(1)<< std::endl;
       
       auto myThresholds = new AlignPCLThresholds();
       myThresholds->setAlignPCLThresholds(theThresholds->getThreshold_Map());
