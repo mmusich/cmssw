@@ -10,7 +10,7 @@
 
 /*** Alignment ***/
 #include "Alignment/MillePedeAlignmentAlgorithm/interface/PedeLabelerBase.h"
-
+#include "CondFormats/PCLConfig/interface/AlignPCLThresholds.h"
 
 class MillePedeFileReader {
 
@@ -18,7 +18,9 @@ class MillePedeFileReader {
   public: //====================================================================
 
     explicit MillePedeFileReader(const edm::ParameterSet&,
-                                 const std::shared_ptr<const PedeLabelerBase>&);
+                                 const std::shared_ptr<const PedeLabelerBase>&,
+				 const std::shared_ptr<const AlignPCLThresholds>&);
+
     virtual ~MillePedeFileReader() = default;
 
     void read();
@@ -63,6 +65,9 @@ class MillePedeFileReader {
 
     // pede labeler plugin
     const std::shared_ptr<const PedeLabelerBase> pedeLabeler_;
+
+    // thresholds from DB
+    const std::shared_ptr<const AlignPCLThresholds> theThresholds_;
 
     // file-names
     const std::string millePedeLogFile_;

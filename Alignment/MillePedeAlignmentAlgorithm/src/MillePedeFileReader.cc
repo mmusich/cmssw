@@ -11,6 +11,7 @@
 /*** Alignment ***/
 #include "Alignment/TrackerAlignment/interface/AlignableTracker.h"
 
+#include "CondFormats/PCLConfig/interface/AlignPCLThresholds.h"
 
 //=============================================================================
 //===   PUBLIC METHOD IMPLEMENTATION                                        ===
@@ -18,20 +19,21 @@
 
 MillePedeFileReader
 ::MillePedeFileReader(const edm::ParameterSet& config,
-                      const std::shared_ptr<const PedeLabelerBase>& pedeLabeler) :
+                      const std::shared_ptr<const PedeLabelerBase>& pedeLabeler,
+		      const std::shared_ptr<const AlignPCLThresholds>& theThresholds) :
   pedeLabeler_(pedeLabeler),
+  theThresholds_(theThresholds),
   millePedeLogFile_(config.getParameter<std::string>("millePedeLogFile")),
   millePedeResFile_(config.getParameter<std::string>("millePedeResFile")),
-
-  sigCut_     (config.getParameter<double>("sigCut")),
-  Xcut_       (config.getParameter<double>("Xcut")),
-  tXcut_      (config.getParameter<double>("tXcut")),
-  Ycut_       (config.getParameter<double>("Ycut")),
-  tYcut_      (config.getParameter<double>("tYcut")),
-  Zcut_       (config.getParameter<double>("Zcut")),
-  tZcut_      (config.getParameter<double>("tZcut")),
-  maxMoveCut_ (config.getParameter<double>("maxMoveCut")),
-  maxErrorCut_(config.getParameter<double>("maxErrorCut"))
+  sigCut_     (theThresholds_->getSigCut(1)),
+  Xcut_       (theThresholds_->getXcut(1)),
+  tXcut_      (theThresholds_->getThetaXcut(1)),
+  Ycut_       (theThresholds_->getYcut(1)),
+  tYcut_      (theThresholds_->getThetaYcut(1)),
+  Zcut_       (theThresholds_->getZcut(1)),
+  tZcut_      (theThresholds_->getThetaZcut(1)),
+  maxMoveCut_ (theThresholds_->getMaxMoveCut(1)),
+  maxErrorCut_(theThresholds_->getMaxErrorCut(1))
 {
 }
 

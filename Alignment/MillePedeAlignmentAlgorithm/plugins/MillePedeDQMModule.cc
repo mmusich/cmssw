@@ -28,23 +28,14 @@
 #include "Alignment/MillePedeAlignmentAlgorithm/interface/PedeLabelerPluginFactory.h"
 #include "Alignment/TrackerAlignment/interface/AlignableTracker.h"
 
-
+/*** Thresholds from DB ***/
+#include "CondFormats/DataRecord/interface/AlignPCLThresholdsRcd.h"
 
 MillePedeDQMModule
 ::MillePedeDQMModule(const edm::ParameterSet& config) :
   mpReaderConfig_(
     config.getParameter<edm::ParameterSet>("MillePedeFileReader")
-  ),
-
-  sigCut_     (mpReaderConfig_.getParameter<double>("sigCut")),
-  Xcut_       (mpReaderConfig_.getParameter<double>("Xcut")),
-  tXcut_      (mpReaderConfig_.getParameter<double>("tXcut")),
-  Ycut_       (mpReaderConfig_.getParameter<double>("Ycut")),
-  tYcut_      (mpReaderConfig_.getParameter<double>("tYcut")),
-  Zcut_       (mpReaderConfig_.getParameter<double>("Zcut")),
-  tZcut_      (mpReaderConfig_.getParameter<double>("tZcut")),
-  maxMoveCut_ (mpReaderConfig_.getParameter<double>("maxMoveCut")),
-  maxErrorCut_ (mpReaderConfig_.getParameter<double>("maxErrorCut"))
+  )
 {
 }
 
@@ -108,6 +99,13 @@ void MillePedeDQMModule
   edm::ESHandle<PTrackerParameters> ptp;
   setup.get<PTrackerParametersRcd>().get(ptp);
 
+  edm::ESHandle<AlignPCLThresholds> thresholdHandle;
+  setup.get<AlignPCLThresholdsRcd>().get(thresholdHandle);
+  const AlignPCLThresholds* theThresholds = thresholdHandle.product();
+
+  auto myThresholds = new AlignPCLThresholds();
+  myThresholds->setAlignPCLThresholds(theThresholds->getThreshold_Map());
+
   TrackerGeomBuilderFromGeometricDet builder;
 
   const auto trackerGeometry = builder.build(&(*geometricDet), *ptp, &(*tTopo));
@@ -125,7 +123,18 @@ void MillePedeDQMModule
               labelerConfig)
   };
 
-  mpReader_ = std::make_unique<MillePedeFileReader>(mpReaderConfig_, pedeLabeler);
+  mpReader_ = std::make_unique<MillePedeFileReader>(mpReaderConfig_, pedeLabeler, std::shared_ptr<const AlignPCLThresholds>(myThresholds));
+
+  sigCut_     = theThresholds->getSigCut(1);
+  Xcut_       = theThresholds->getXcut(1);
+  tXcut_      = theThresholds->getThetaXcut(1);
+  Ycut_       = theThresholds->getYcut(1);
+  tYcut_      = theThresholds->getThetaYcut(1);
+  Zcut_       = theThresholds->getZcut(1);
+  tZcut_      = theThresholds->getThetaZcut(1);
+  maxMoveCut_ = theThresholds->getMaxMoveCut(1);
+  maxErrorCut_= theThresholds->getMaxErrorCut(1);
+
 }
 
 
