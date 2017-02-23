@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Package:    Calibration/TkAlCaRecoProducers
+// Package:    CondFormats/PCLConfig
 // Class:      AlignPCLThresholdsWriter
 // 
 /**\class AlignPCLThresholdsWriter AlignPCLThresholdsWriter.cc CondFormats/PCLConfig/plugins/AlignPCLThresholdsWriter.cc
