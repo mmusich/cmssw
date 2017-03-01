@@ -9,6 +9,7 @@ import DQMOffline.Alignment.TkAlCaRecoMonitor_cfi
 __selectionName = 'TkAlZMuMu'
 ALCARECOTkAlZMuMuTrackingDQM = DQM.TrackingMonitor.TrackingMonitor_cfi.TrackMon.clone(
 #names and desigantions
+    doAllPlots = False,
     TrackProducer = 'ALCARECO'+__selectionName,
     AlgoName = 'ALCARECO'+__selectionName,
     FolderName = "AlCaReco/"+__selectionName,
@@ -23,7 +24,6 @@ ALCARECOTkAlZMuMuTrackingDQM = DQM.TrackingMonitor.TrackingMonitor_cfi.TrackMon.
     TrackPtMin = 0,
     TrackPtMax = 150,
 #choose histos from TrackingMonitor
-    doAllPlots = True
 )
 
 ALCARECOTkAlZMuMuTkAlDQM =  DQMOffline.Alignment.TkAlCaRecoMonitor_cfi.TkAlCaRecoMonitor.clone(

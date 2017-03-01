@@ -13,6 +13,7 @@ from TrackingTools.GeomPropagators.SmartPropagator_cff import *
 ##########################################################
 ALCARECOMuAlGlobalCosmicsInCollisionsTrackingDQM = _TrackMon.TrackMon.clone(
     #names & designations    
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlGlobalCosmicsInCollisions:GlobalMuon',
     AlgoName = 'ALCARECOMuAlGlobalCosmicsInCollisions',
     FolderName = 'AlCaReco/MuAlGlobalCosmicsInCollisions',
@@ -43,7 +44,8 @@ ALCARECOMuAlGlobalCosmicsInCollisionsDQM = cms.Sequence( ALCARECOMuAlGlobalCosmi
 #MuAlGlobalCosmics
 ##########################################################
 ALCARECOMuAlGlobalCosmicsTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations    
+    #names & designations   
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlGlobalCosmics:GlobalMuon',
     AlgoName = 'ALCARECOMuAlGlobalCosmics',
     FolderName = 'AlCaReco/MuAlGlobalCosmics',
@@ -73,7 +75,8 @@ ALCARECOMuAlGlobalCosmicsDQM = cms.Sequence( ALCARECOMuAlGlobalCosmicsTrackingDQ
 ################## MuAlBeamHalo ##########################
 ##########################################################
 ALCARECOMuAlBeamHaloTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlBeamHalo',
     AlgoName = 'ALCARECOMuAlBeamHalo',
     FolderName = 'AlCaReco/MuAlBeamHalo',
@@ -104,7 +107,8 @@ ALCARECOMuAlBeamHaloDQM = cms.Sequence( ALCARECOMuAlBeamHaloTrackingDQM)
 ################# MuAlBeamHaloOverlaps ###################
 ##########################################################
 ALCARECOMuAlBeamHaloOverlapsTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlBeamHaloOverlaps',
     AlgoName = 'ALCARECOMuAlBeamHaloOverlaps',
     FolderName= 'AlCaReco/MuAlBeamHaloOverlaps',
@@ -134,7 +138,8 @@ ALCARECOMuAlBeamHaloOverlapsDQM = cms.Sequence( ALCARECOMuAlBeamHaloOverlapsTrac
 ################ MuAlCalIsolatedMu #######################
 ##########################################################
 ALCARECOMuAlCalIsolatedMuTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlCalIsolatedMu:GlobalMuon',
     AlgoName = 'ALCARECOMuAlCalIsolatedMu',
     FolderName = 'AlCaReco/MuAlCalIsolatedMu',
@@ -150,7 +155,8 @@ ALCARECOMuAlCalIsolatedMuTrackingDQM = _TrackMon.TrackMon.clone(
     TrackPtMax = 100
     )
 ALCARECOMuAlCalIsolatedMuGeneralTracksTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlCalIsolatedMuGeneralTracks',
     AlgoName = 'ALCARECOMuAlCalIsolatedMuGeneralTracks',
     FolderName = 'AlCaReco/MuAlCalIsolatedMuGeneralTracks',
@@ -192,7 +198,8 @@ ALCARECOMuAlCalIsolatedMuGeneralTracksDQM = cms.Sequence( ALCARECOMuAlCalIsolate
 #################### MuAlOverlaps ########################
 ##########################################################
 ALCARECOMuAlOverlapsTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlOverlaps',
     AlgoName = 'ALCARECOMuAlOverlaps',
     FolderName = 'AlCaReco/MuAlOverlaps',
@@ -208,7 +215,8 @@ ALCARECOMuAlOverlapsTrackingDQM = _TrackMon.TrackMon.clone(
     TrackPtMax = 30
     )
 ALCARECOMuAlOverlapsGeneralTracksTrackingDQM = _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlOverlapsGeneralTracks',
     AlgoName = 'ALCARECOMuAlOverlapsGeneralTracks',
     FolderName = 'AlCaReco/MuAlOverlapsGeneralTracks',
@@ -239,7 +247,8 @@ ALCARECOMuAlOverlapsGeneralTracksDQM = cms.Sequence( ALCARECOMuAlOverlapsGeneral
 ############### MuAlZMuMu ################################
 ##########################################################
 ALCARECOMuAlZMuMuTrackingDQM= _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlZMuMu:StandAlone',
     AlgoName = 'ALCARECOMuAlZMuMu',
     FolderName = 'AlCaReco/MuAlZMuMu',
@@ -255,7 +264,8 @@ ALCARECOMuAlZMuMuTrackingDQM= _TrackMon.TrackMon.clone(
     TrackPtMax = 100
     )
 ALCARECOMuAlZMuMuGeneralTracksTrackingDQM= _TrackMon.TrackMon.clone(
-    #names & designations  
+    #names & designations
+    doAllPlots = False,
     TrackProducer = 'ALCARECOMuAlZMuMuGeneralTracks',
     AlgoName = 'ALCARECOMuAlZMuMuGeneralTracks',
     FolderName = 'AlCaReco/MuAlZMuMuGeneralTracks',
