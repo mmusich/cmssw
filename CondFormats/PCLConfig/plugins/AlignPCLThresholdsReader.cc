@@ -56,19 +56,21 @@ namespace edmtest
     const AlignPCLThresholds::threshold_map & mymap = thresholds->getThreshold_Map();
      
     std::cout<<"Content of myThresholds "<<std::endl;
-    for(AlignPCLThresholds::threshold_map::const_iterator it = mymap.begin(); it != mymap.end() ; ++it){
-      std::cout<<"keys : " << it->first <<std::endl
-	       <<"- sigCut    : " << (it->second).getSigCut()     << std::endl
-	       <<"- Xcut      : " << (it->second).getXcut()       <<" um"     << std::endl
-	       <<"- thetaXcut : " << (it->second).getThetaXcut()  <<" urad"   << std::endl
-	       <<"- Ycut      : " << (it->second).getYcut()       <<" um"     << std::endl
-	       <<"- thetaYcut : " << (it->second).getThetaYcut()  <<" urad"   << std::endl
-	       <<"- Zcut      : " << (it->second).getZcut()       <<" um"     << std::endl
-	       <<"- thetaZcut : " << (it->second).getThetaZcut()  <<" urad"   << std::endl
-	       <<"- MaxMove   : " << (it->second).getMaxMoveCut() <<" um/rad" << std::endl
-	       <<"- MaxError  : " << (it->second).getMaxErrorCut()<<" um/rad" << std::endl
-	       <<std::endl;
-    }
+    thresholds->printAll();
+
+    // for(AlignPCLThresholds::threshold_map::const_iterator it = mymap.begin(); it != mymap.end() ; ++it){
+    //   std::cout<<"keys : " << it->first <<std::endl
+    // 	       <<"- sigCut    : " << (it->second).getSigCut()     << std::endl
+    // 	       <<"- Xcut      : " << (it->second).getXcut()       <<" um"     << std::endl
+    // 	       <<"- thetaXcut : " << (it->second).getThetaXcut()  <<" urad"   << std::endl
+    // 	       <<"- Ycut      : " << (it->second).getYcut()       <<" um"     << std::endl
+    // 	       <<"- thetaYcut : " << (it->second).getThetaYcut()  <<" urad"   << std::endl
+    // 	       <<"- Zcut      : " << (it->second).getZcut()       <<" um"     << std::endl
+    // 	       <<"- thetaZcut : " << (it->second).getThetaZcut()  <<" urad"   << std::endl
+    // 	       <<"- MaxMove   : " << (it->second).getMaxMoveCut() <<" um/rad" << std::endl
+    // 	       <<"- MaxError  : " << (it->second).getMaxErrorCut()<<" um/rad" << std::endl
+    // 	       <<std::endl;
+    // }
   }
   DEFINE_FWK_MODULE(AlignPCLThresholdsReader);
 }

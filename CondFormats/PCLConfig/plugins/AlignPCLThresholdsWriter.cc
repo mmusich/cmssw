@@ -53,7 +53,7 @@ class AlignPCLThresholdsWriter : public edm::one::EDAnalyzer<edm::one::SharedRes
 
       // ----------member data ---------------------------
       std::string m_record;
-      std::vector<unsigned int> m_alignableid;
+      const std::vector<edm::ParameterSet> parameters;
 };
 
 //
@@ -69,7 +69,7 @@ class AlignPCLThresholdsWriter : public edm::one::EDAnalyzer<edm::one::SharedRes
 //
 AlignPCLThresholdsWriter::AlignPCLThresholdsWriter(const edm::ParameterSet& iConfig):
   m_record(iConfig.getParameter<std::string>("record")),
-  m_alignableid(iConfig.getParameter<std::vector<unsigned int>>("AlignableIDVec"))
+  parameters(iConfig.getParameter<std::vector<edm::ParameterSet> >("thresholds"))
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
@@ -95,45 +95,88 @@ void
 AlignPCLThresholdsWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
+  
+   AlignPCLThresholds* myThresholds = new AlignPCLThresholds();
+   std::cout<<"Size of myThresholds obj  "<< myThresholds->size() <<std::endl<<std::endl;
+   
+   // loop on the PSet and insert the conditions 
 
-   if (m_alignableid.size()!=0){
-     /////// set from a pair of vectors (rpids and rpdistances) --> from xml
+   for(auto& thePSet : parameters){
      
-     AlignPCLThresholds* myThresholds = new AlignPCLThresholds();
-     std::cout<<"Size of myThresholds obj  "<< myThresholds->size() <<std::endl<<std::endl;
-     
-     for(unsigned int i=0;i<m_alignableid.size();i++){
+     const unsigned int alignableId(thePSet.getParameter<unsigned int>("alignableId"));
+	  
+     const double Xcut(thePSet.getParameter<double>("Xcut"));
+     const double sigXcut(thePSet.getParameter<double>("sigXcut"));
+     const double maxMoveXcut(thePSet.getParameter<double>("maxMoveXcut"));
+     const double maxErrorXcut(thePSet.getParameter<double>("maxErrorXcut"));
+	  
+     const double tXcut(thePSet.getParameter<double>("thetaXcut"));
+     const double sigtXcut(thePSet.getParameter<double>("sigThetaXcut"));
+     const double maxMovetXcut(thePSet.getParameter<double>("maxMoveThetaXcut"));
+     const double maxErrortXcut(thePSet.getParameter<double>("maxErrorThetaXcut"));
 
-       AlignPCLThreshold a(2.5,5.0,30.0,10.0,30.0,15.0,30.0,200.0,10.0);
-       myThresholds->setAlignPCLThreshold(m_alignableid[i],a);
-       
-     }
+     const double Ycut(thePSet.getParameter<double>("Ycut"));
+     const double sigYcut(thePSet.getParameter<double>("sigYcut"));
+     const double maxMoveYcut(thePSet.getParameter<double>("maxMoveYcut"));
+     const double maxErrorYcut(thePSet.getParameter<double>("maxErrorYcut"));
+
+     const double tYcut(thePSet.getParameter<double>("thetaYcut"));
+     const double sigtYcut(thePSet.getParameter<double>("sigThetaYcut"));
+     const double maxMovetYcut(thePSet.getParameter<double>("maxMoveThetaYcut"));
+     const double maxErrortYcut(thePSet.getParameter<double>("maxErrorThetaYcut"));
+
+     const double Zcut(thePSet.getParameter<double>("Zcut"));
+     const double sigZcut(thePSet.getParameter<double>("sigZcut"));
+     const double maxMoveZcut(thePSet.getParameter<double>("maxMoveZcut"));
+     const double maxErrorZcut(thePSet.getParameter<double>("maxErrorZcut"));
+
+     const double tZcut(thePSet.getParameter<double>("thetaZcut"));
+     const double sigtZcut(thePSet.getParameter<double>("sigThetaZcut"));
+     const double maxMovetZcut(thePSet.getParameter<double>("maxMoveThetaZcut"));
+     const double maxErrortZcut(thePSet.getParameter<double>("maxErrorThetaZcut"));
+
+     // create the objects 
+  
+     AlignPCLThreshold::coordThresholds my_X;
+     //my_X.setThresholds(5.0,2.5,10.,200.);
+     my_X.setThresholds(Xcut,sigXcut,maxErrorXcut,maxMoveXcut);
+
+     AlignPCLThreshold::coordThresholds my_Y;
+     //my_Y.setThresholds(10.0,2.5,10.,200.);
+     my_Y.setThresholds(Ycut,sigYcut,maxErrorYcut,maxMoveYcut);
+	  
+     AlignPCLThreshold::coordThresholds my_Z;
+     //my_Z.setThresholds(15.0,2.5,10.,200.);
+     my_Z.setThresholds(Zcut,sigZcut,maxErrorZcut,maxMoveZcut);
+	  
+     AlignPCLThreshold::coordThresholds my_tX;
+     //my_tX.setThresholds(30.0,2.5,10.,200.);
+     my_tX.setThresholds(tXcut,sigtXcut,maxErrortXcut,maxMovetXcut);
+
+     AlignPCLThreshold::coordThresholds my_tY;
+     //my_tY.setThresholds(30.0,2.5,10.,200.);
+     my_tY.setThresholds(tYcut,sigtYcut,maxErrortYcut,maxMovetYcut);
+
+     AlignPCLThreshold::coordThresholds my_tZ;
+     //my_tZ.setThresholds(30.0,2.5,10.,200.);
+     my_tZ.setThresholds(tZcut,sigtZcut,maxErrortZcut,maxMovetZcut);
+     
+     AlignPCLThreshold a(my_X,my_tX,my_Y,my_tY,my_Z,my_tZ);
+     myThresholds->setAlignPCLThreshold(alignableId,a);
      
      std::cout<<"Size of myThresholds obj  "<<myThresholds->size() <<std::endl;
-     const AlignPCLThresholds::threshold_map & mymap = myThresholds->getThreshold_Map();
-     
-     std::cout<<"Content of myThresholds "<<std::endl;
-     for(AlignPCLThresholds::threshold_map::const_iterator it = mymap.begin(); it != mymap.end() ; ++it){
-       std::cout<<"keys : " << it->first <<std::endl
-		<<"- sigCut    : " << (it->second).getSigCut()     << std::endl
-		<<"- Xcut      : " << (it->second).getXcut()       <<" um"     << std::endl
-		<<"- thetaXcut : " << (it->second).getThetaXcut()  <<" urad"   << std::endl
-		<<"- Ycut      : " << (it->second).getYcut()       <<" um"     << std::endl
-		<<"- thetaYcut : " << (it->second).getThetaYcut()  <<" urad"   << std::endl
-		<<"- Zcut      : " << (it->second).getZcut()       <<" um"     << std::endl
-		<<"- thetaZcut : " << (it->second).getThetaZcut()  <<" urad"   << std::endl
-		<<"- MaxMove   : " << (it->second).getMaxMoveCut() <<" um/rad" << std::endl
-		<<"- MaxError  : " << (it->second).getMaxErrorCut()<<" um/rad" << std::endl
-		<<std::endl;
-     }
-     
-     // Form the data here
-     edm::Service<cond::service::PoolDBOutputService> poolDbService;
-     if( poolDbService.isAvailable() ){
-       cond::Time_t valid_time = poolDbService->currentTime(); 
-       // this writes the payload to begin in current run defined in cfg
-       poolDbService->writeOne(myThresholds,valid_time, m_record  );
-     }
+     // const AlignPCLThresholds::threshold_map & mymap = myThresholds->getThreshold_Map();
+   }
+   
+   std::cout<<"Content of myThresholds "<<std::endl;
+   myThresholds->printAll();
+
+   // Form the data here
+   edm::Service<cond::service::PoolDBOutputService> poolDbService;
+   if( poolDbService.isAvailable() ){
+     cond::Time_t valid_time = poolDbService->currentTime(); 
+     // this writes the payload to begin in current run defined in cfg
+     poolDbService->writeOne(myThresholds,valid_time, m_record  );
    }
 }
    

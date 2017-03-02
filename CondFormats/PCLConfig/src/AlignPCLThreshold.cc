@@ -1,19 +1,17 @@
 #include "CondFormats/PCLConfig/interface/AlignPCLThreshold.h"
 
-AlignPCLThreshold:: AlignPCLThreshold(double sigCut,
-				      double Xcut,double tXcut, 
-				      double Ycut,double tYcut, 
-				      double Zcut,double tZcut, 
-				      double maxMoveCut,double maxErrorCut 
+AlignPCLThreshold:: AlignPCLThreshold(coordThresholds X,
+				      coordThresholds tX,
+				      coordThresholds Y,
+				      coordThresholds tY,
+				      coordThresholds Z, 
+				      coordThresholds tZ 
 				      ){
-  m_sigCut      = sigCut;
-  m_Xcut        = Xcut;              
-  m_tXcut       = tXcut;      
-  m_Ycut        = Ycut;       
-  m_tYcut       = tYcut;      
-  m_Zcut        = Zcut;       
-  m_tZcut       = tZcut;      
-  m_maxMoveCut  = maxMoveCut; 
-  m_maxErrorCut = maxErrorCut;
+  m_xCoord      = X;	 
+  m_yCoord      = Y;
+  m_zCoord      = Z;	 
+  m_thetaXCoord = tX;
+  m_thetaYCoord = tY;
+  m_thetaZCoord = tZ;
 
 };
