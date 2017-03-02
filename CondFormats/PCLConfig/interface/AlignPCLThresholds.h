@@ -12,6 +12,7 @@ using namespace std;
 class AlignPCLThresholds{
  public:
   typedef map<unsigned int,AlignPCLThreshold> threshold_map;
+  enum coordType {X, Y, Z, theta_X, theta_Y, theta_Z, endOfTypes}; 
 
   AlignPCLThresholds(){}
   virtual ~AlignPCLThresholds(){}
@@ -24,17 +25,14 @@ class AlignPCLThresholds{
   AlignPCLThreshold   getAlignPCLThreshold(unsigned int AlignableId) const;
   AlignPCLThreshold & getAlignPCLThreshold(unsigned int AlignableId);
   
-  double getSigCut(unsigned int AlignableId) const;
-  double getXcut (unsigned int AlignableId) const;
-  double getThetaXcut (unsigned int AlignableId) const;
-  double getYcut (unsigned int AlignableId) const;
-  double getThetaYcut (unsigned int AlignableId) const;
-  double getZcut (unsigned int AlignableId) const;
-  double getThetaZcut (unsigned int AlignableId) const;  
-  double getMaxMoveCut (unsigned int AlignableId) const; 
-  double getMaxErrorCut (unsigned int AlignableId) const;
+  float getSigCut     (unsigned int AlignableId,coordType type) const;
+  float getCut        (unsigned int AlignableId,coordType type) const;
+  float getMaxMoveCut (unsigned int AlignableId,coordType type) const; 
+  float getMaxErrorCut(unsigned int AlignableId,coordType type) const;
 
   double size()const {return m_thresholds.size();}
+
+  void printAll() const;
 
  private:
 

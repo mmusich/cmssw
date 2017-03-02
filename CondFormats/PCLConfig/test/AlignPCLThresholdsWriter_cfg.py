@@ -26,7 +26,64 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
 
 process.WriteInDB = cms.EDAnalyzer("AlignPCLThresholdsWriter",
                                    record= cms.string('AlignPCLThresholdsRcd'),
-                                   AlignableIDVec = cms.vuint32(1,2)
+                                   thresholds = cms.VPSet(cms.PSet(alignableId        = cms.uint32(1),
+                                                                   Xcut               = cms.double(5.0),
+                                                                   sigXcut            = cms.double(2.5),
+                                                                   maxMoveXcut        = cms.double(200.0),
+                                                                   maxErrorXcut       = cms.double(10.0),                                                               
+
+                                                                   thetaXcut          = cms.double(30.0),
+                                                                   sigThetaXcut       = cms.double(2.5),
+                                                                   maxMoveThetaXcut   = cms.double(200.0),
+                                                                   maxErrorThetaXcut  = cms.double(10.0),
+
+                                                                   Ycut               = cms.double(10.0),
+                                                                   sigYcut            = cms.double(2.5),
+                                                                   maxMoveYcut        = cms.double(200.0),
+                                                                   maxErrorYcut       = cms.double(10.0),                       
+
+                                                                   thetaYcut          = cms.double(30.0),
+                                                                   sigThetaYcut       = cms.double(2.5),
+                                                                   maxMoveThetaYcut   = cms.double(200.0),
+                                                                   maxErrorThetaYcut  = cms.double(10.0),
+
+                                                                   Zcut               = cms.double(15.0),
+                                                                   sigZcut            = cms.double(2.5),
+                                                                   maxMoveZcut        = cms.double(200.0),
+                                                                   maxErrorZcut       = cms.double(10.0),
+
+                                                                   thetaZcut          = cms.double(30.0),
+                                                                   sigThetaZcut       = cms.double(2.5),
+                                                                   maxMoveThetaZcut   = cms.double(200.0),
+                                                                   maxErrorThetaZcut  = cms.double(10.0)                         
+                                                                   ),
+                                                          cms.PSet(alignableId        = cms.uint32(2),
+                                                                   Xcut               = cms.double(5.0),
+                                                                   sigXcut            = cms.double(2.5),
+                                                                   maxMoveXcut        = cms.double(200.0),
+                                                                   maxErrorXcut       = cms.double(10.0),                                                               
+                                                                   thetaXcut          = cms.double(30.0),
+                                                                   sigThetaXcut       = cms.double(2.5),
+                                                                   maxMoveThetaXcut   = cms.double(200.0),
+                                                                   maxErrorThetaXcut  = cms.double(10.0),
+                                                                   Ycut               = cms.double(10.0),
+                                                                   sigYcut            = cms.double(2.5),
+                                                                   maxMoveYcut        = cms.double(200.0),
+                                                                   maxErrorYcut       = cms.double(10.0),                       
+                                                                   thetaYcut          = cms.double(30.0),
+                                                                   sigThetaYcut       = cms.double(2.5),
+                                                                   maxMoveThetaYcut   = cms.double(200.0),
+                                                                   maxErrorThetaYcut  = cms.double(10.0),
+                                                                   Zcut               = cms.double(15.0),
+                                                                   sigZcut            = cms.double(2.5),
+                                                                   maxMoveZcut        = cms.double(200.0),
+                                                                   maxErrorZcut       = cms.double(10.0),
+                                                                   thetaZcut          = cms.double(30.0),
+                                                                   sigThetaZcut       = cms.double(2.5),
+                                                                   maxMoveThetaZcut   = cms.double(200.0),
+                                                                   maxErrorThetaZcut  = cms.double(10.0)                         
+                                                                   )
+                                                          )
                                    )
 
 process.p = cms.Path(process.WriteInDB)
