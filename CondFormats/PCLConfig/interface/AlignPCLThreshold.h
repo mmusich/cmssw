@@ -5,32 +5,75 @@
 
 class AlignPCLThreshold
 {
- public:
-  virtual ~AlignPCLThreshold(){}
+public:
+  
+  struct coordThresholds{
+    coordThresholds(){
+      m_Cut=5.;
+      m_sigCut=2.5;
+      m_errorCut=10.;
+      m_maxMoveCut=200;
+    }
+    ~coordThresholds(){}
+    void setThresholds(float theCut,float theSigCut,float theErrorCut,float theMaxMoveCut){
+      m_Cut=theCut;
+      m_sigCut=theSigCut;
+      m_errorCut=theErrorCut;
+      m_maxMoveCut=theMaxMoveCut;
+    }
 
-  AlignPCLThreshold(double sigCut=2.5,double Xcut=5.0,double tXcut=30.0, double Ycut=10.0, double tYcut=30.0, double Zcut=15.0, double tZcut=30.0, double maxMoveCut=200.0, double maxErrorCut=10.0 );
+    float m_Cut;
+    float m_sigCut;
+    float m_errorCut;
+    float m_maxMoveCut;
 
-  double getSigCut()      const {return m_sigCut;}
-  double getXcut()        const {return m_Xcut;}
-  double getThetaXcut()   const {return m_tXcut;}
-  double getYcut()        const {return m_Ycut;}
-  double getThetaYcut()   const {return m_tYcut;}
-  double getZcut()        const {return m_Zcut;}
-  double getThetaZcut()   const {return m_tZcut;}
-  double getMaxMoveCut()  const {return m_maxMoveCut;}
-  double getMaxErrorCut() const {return m_maxErrorCut;}
+    COND_SERIALIZABLE;
     
- private:
-  double m_sigCut;
-  double m_Xcut;
-  double m_tXcut;
-  double m_Ycut;
-  double m_tYcut;
-  double m_Zcut;
-  double m_tZcut;
-  double m_maxMoveCut;
-  double m_maxErrorCut;
+  };
+  
+  virtual ~AlignPCLThreshold(){}
+  
+  AlignPCLThreshold(coordThresholds X=coordThresholds(),coordThresholds tX=coordThresholds(),
+		    coordThresholds Y=coordThresholds(),coordThresholds tY=coordThresholds(),
+		    coordThresholds Z=coordThresholds(),coordThresholds tZ=coordThresholds());
 
+  float getXcut()      const {return m_xCoord.m_Cut;}
+  float getYcut()      const {return m_yCoord.m_Cut;}
+  float getZcut()      const {return m_zCoord.m_Cut;}
+  float getThetaXcut() const {return m_thetaXCoord.m_Cut;}
+  float getThetaYcut() const {return m_thetaYCoord.m_Cut;}
+  float getThetaZcut() const {return m_thetaZCoord.m_Cut;}
+
+  float getSigXcut()       const {return m_xCoord.m_sigCut;}
+  float getSigYcut()       const {return m_yCoord.m_sigCut;}
+  float getSigZcut()       const {return m_zCoord.m_sigCut;}
+  float getSigThetaXcut()  const {return m_thetaXCoord.m_sigCut;}
+  float getSigThetaYcut()  const {return m_thetaYCoord.m_sigCut;}
+  float getSigThetaZcut()  const {return m_thetaZCoord.m_sigCut;}
+
+  float getErrorXcut()       const {return m_xCoord.m_errorCut;}
+  float getErrorYcut()       const {return m_yCoord.m_errorCut;}
+  float getErrorZcut()       const {return m_zCoord.m_errorCut;}
+  float getErrorThetaXcut()  const {return m_thetaXCoord.m_errorCut;}
+  float getErrorThetaYcut()  const {return m_thetaYCoord.m_errorCut;}
+  float getErrorThetaZcut()  const {return m_thetaZCoord.m_errorCut;}
+
+  float getMaxMoveXcut()       const {return m_xCoord.m_maxMoveCut;}
+  float getMaxMoveYcut()       const {return m_yCoord.m_maxMoveCut;}
+  float getMaxMoveZcut()       const {return m_zCoord.m_maxMoveCut;}
+  float getMaxMoveThetaXcut()  const {return m_thetaXCoord.m_maxMoveCut;}
+  float getMaxMoveThetaYcut()  const {return m_thetaYCoord.m_maxMoveCut;}
+  float getMaxMoveThetaZcut()  const {return m_thetaZCoord.m_maxMoveCut;}
+
+private:
+
+  coordThresholds  m_xCoord;
+  coordThresholds  m_yCoord;
+  coordThresholds  m_zCoord;
+  coordThresholds  m_thetaXCoord;
+  coordThresholds  m_thetaYCoord;
+  coordThresholds  m_thetaZCoord;
+  
   COND_SERIALIZABLE;
 
 };
