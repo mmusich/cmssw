@@ -5,32 +5,40 @@
 #include "CondFormats/Serialization/interface/Serializable.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 using namespace std;
 
 class AlignPCLThresholds{
  public:
-  typedef map<unsigned int,AlignPCLThreshold> threshold_map;
+  typedef map<string,AlignPCLThreshold> threshold_map;
   enum coordType {X, Y, Z, theta_X, theta_Y, theta_Z, endOfTypes}; 
 
   AlignPCLThresholds(){}
   virtual ~AlignPCLThresholds(){}
 
-  void setAlignPCLThreshold(unsigned int AlignableId, const AlignPCLThreshold & Threshold);
+  void setAlignPCLThreshold(string AlignableId, const AlignPCLThreshold & Threshold);
   void setAlignPCLThresholds(const threshold_map &Thresholds);
-
+                  
   const threshold_map& getThreshold_Map () const  {return m_thresholds;}
 
-  AlignPCLThreshold   getAlignPCLThreshold(unsigned int AlignableId) const;
-  AlignPCLThreshold & getAlignPCLThreshold(unsigned int AlignableId);
+  AlignPCLThreshold   getAlignPCLThreshold(string AlignableId) const;
+  AlignPCLThreshold & getAlignPCLThreshold(string AlignableId);
   
-  float getSigCut     (unsigned int AlignableId,coordType type) const;
-  float getCut        (unsigned int AlignableId,coordType type) const;
-  float getMaxMoveCut (unsigned int AlignableId,coordType type) const; 
-  float getMaxErrorCut(unsigned int AlignableId,coordType type) const;
+  float getSigCut     (string AlignableId,coordType type) const;
+  float getCut        (string AlignableId,coordType type) const;
+  float getMaxMoveCut (string AlignableId,coordType type) const; 
+  float getMaxErrorCut(string AlignableId,coordType type) const;                     
+
+  // overloaded methods to get all the coordinates
+  array<float,6> getSigCut     (string AlignableId) const;
+  array<float,6> getCut        (string AlignableId) const;
+  array<float,6> getMaxMoveCut (string AlignableId) const; 
+  array<float,6> getMaxErrorCut(string AlignableId) const;
 
   double size()const {return m_thresholds.size();}
+  vector<string> getAlignableList() const;
 
   void printAll() const;
 

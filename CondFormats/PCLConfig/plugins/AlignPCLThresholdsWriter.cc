@@ -103,7 +103,7 @@ AlignPCLThresholdsWriter::analyze(const edm::Event& iEvent, const edm::EventSetu
 
    for(auto& thePSet : parameters){
      
-     const unsigned int alignableId(thePSet.getParameter<unsigned int>("alignableId"));
+     const std::string alignableId(thePSet.getParameter<std::string>("alignableId"));
 	  
      const double Xcut(thePSet.getParameter<double>("Xcut"));
      const double sigXcut(thePSet.getParameter<double>("sigXcut"));
