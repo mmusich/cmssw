@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>      // std::setw
 
-void AlignPCLThresholds::setAlignPCLThreshold(unsigned int AlignableId, const AlignPCLThreshold & Threshold) {
+void AlignPCLThresholds::setAlignPCLThreshold(string AlignableId, const AlignPCLThreshold & Threshold) {
   m_thresholds[AlignableId]=Threshold;
 }
 
@@ -13,22 +13,22 @@ void AlignPCLThresholds::setAlignPCLThresholds(const threshold_map & AlignPCLThr
 }
 
 
-AlignPCLThreshold AlignPCLThresholds::getAlignPCLThreshold(unsigned int id) const {
-  threshold_map::const_iterator it = m_thresholds.find(id);
+AlignPCLThreshold AlignPCLThresholds::getAlignPCLThreshold(string AlignableId) const {
+  threshold_map::const_iterator it = m_thresholds.find(AlignableId);
 
   if (it != m_thresholds.end()){
     return it->second;
   } else {
-    throw cms::Exception("AlignPCLThresholds")<< "No Thresholds defined for Alignable id " << id << "\n";
+    throw cms::Exception("AlignPCLThresholds")<< "No Thresholds defined for Alignable id " << AlignableId << "\n";
   }
 }
 
-AlignPCLThreshold& AlignPCLThresholds::getAlignPCLThreshold(unsigned int id) {
-  return m_thresholds[id];
+AlignPCLThreshold& AlignPCLThresholds::getAlignPCLThreshold(string AlignableId) {
+  return m_thresholds[AlignableId];
 }
 
-float AlignPCLThresholds::getSigCut(unsigned int id,coordType type) const {
-  AlignPCLThreshold a = getAlignPCLThreshold(id);
+float AlignPCLThresholds::getSigCut(string AlignableId,coordType type) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
   switch(type){
   case X:
     return a.getSigXcut();
@@ -47,8 +47,14 @@ float AlignPCLThresholds::getSigCut(unsigned int id,coordType type) const {
   }
 }
 
-float AlignPCLThresholds::getCut(unsigned int id,coordType type) const {
-  AlignPCLThreshold a = getAlignPCLThreshold(id);
+// overloaded method
+array<float,6> AlignPCLThresholds::getSigCut(string AlignableId) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
+  return {{a.getSigXcut(),a.getSigYcut(), a.getSigZcut(), a.getSigThetaXcut(), a.getSigThetaYcut(),a.getSigThetaZcut()}};
+}
+
+float AlignPCLThresholds::getCut(string AlignableId,coordType type) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
   switch(type){
   case X:
     return a.getXcut();
@@ -67,8 +73,14 @@ float AlignPCLThresholds::getCut(unsigned int id,coordType type) const {
   }
 }
 
-float AlignPCLThresholds::getMaxMoveCut(unsigned int id,coordType type) const {
-  AlignPCLThreshold a = getAlignPCLThreshold(id);
+// overloaded method
+array<float,6> AlignPCLThresholds::getCut(string AlignableId) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
+  return {{a.getXcut(),a.getYcut(), a.getZcut(), a.getThetaXcut(), a.getThetaYcut(),a.getThetaZcut()}};
+}
+
+float AlignPCLThresholds::getMaxMoveCut(string AlignableId,coordType type) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
   switch(type){
   case X:
     return a.getMaxMoveXcut();
@@ -87,8 +99,15 @@ float AlignPCLThresholds::getMaxMoveCut(unsigned int id,coordType type) const {
   }
 }
 
-float AlignPCLThresholds::getMaxErrorCut(unsigned int id,coordType type) const {
-  AlignPCLThreshold a = getAlignPCLThreshold(id);
+// overloaded method
+array<float,6> AlignPCLThresholds::getMaxMoveCut(string AlignableId) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
+  return {{a.getMaxMoveXcut(),a.getMaxMoveYcut(), a.getMaxMoveZcut(), a.getMaxMoveThetaXcut(), a.getMaxMoveThetaYcut(),a.getMaxMoveThetaZcut()}};
+}
+
+
+float AlignPCLThresholds::getMaxErrorCut(string AlignableId,coordType type) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
    switch(type){
    case X:
      return a.getErrorXcut();
@@ -107,12 +126,18 @@ float AlignPCLThresholds::getMaxErrorCut(unsigned int id,coordType type) const {
    }
 }
 
+// overloaded method
+array<float,6> AlignPCLThresholds::getMaxErrorCut(string AlignableId) const {
+  AlignPCLThreshold a = getAlignPCLThreshold(AlignableId);
+  return {{a.getErrorXcut(),a.getErrorYcut(), a.getErrorZcut(), a.getErrorThetaXcut(), a.getErrorThetaYcut(),a.getErrorThetaZcut()}};
+}
+
 void AlignPCLThresholds::printAll() const {
   
   std::cout<<"AlignPCLThresholds::printAll()"<<std::endl;
   for(auto it = m_thresholds.begin(); it != m_thresholds.end() ; ++it){
     std::cout<<" =================================================================================================================== " << std::endl;
-    std::cout<<"keys : " << it->first <<std::endl 
+    std::cout<<"key : " << it->first <<std::endl 
 	     <<"- Xcut             : " <<std::setw(4)<< (it->second).getXcut()            <<std::setw(5)<<"   um" 
 	     <<"| sigXcut          : " <<std::setw(4)<< (it->second).getSigXcut()         <<std::setw(1)<<" "
 	     <<"| maxMoveXcut      : " <<std::setw(4)<< (it->second).getMaxMoveXcut()     <<std::setw(5)<<"   um"
@@ -147,4 +172,12 @@ void AlignPCLThresholds::printAll() const {
   }
 }
 
+vector<string> AlignPCLThresholds::getAlignableList() const {
+  vector<string> alignables_;
+  alignables_.reserve(m_thresholds.size());
 
+  for(auto it = m_thresholds.begin(); it != m_thresholds.end() ; ++it){
+    alignables_.push_back(it->first);
+  }
+  return alignables_;
+}
