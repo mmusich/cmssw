@@ -36,7 +36,7 @@ public:
   AlignPCLThreshold(coordThresholds X=coordThresholds(),coordThresholds tX=coordThresholds(),
 		    coordThresholds Y=coordThresholds(),coordThresholds tY=coordThresholds(),
 		    coordThresholds Z=coordThresholds(),coordThresholds tZ=coordThresholds());
-
+  
   float getXcut()      const {return m_xCoord.m_Cut;}
   float getYcut()      const {return m_yCoord.m_Cut;}
   float getZcut()      const {return m_zCoord.m_Cut;}

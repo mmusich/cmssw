@@ -154,9 +154,9 @@ void AlignPCLThresholds::printAll() const {
 	     <<"| ErrorYcut        : " <<std::setw(4)<< (it->second).getErrorYcut()       <<std::setw(5)<<"   um" << std::endl
 
 	     <<"- thetaYcut        : " <<std::setw(4)<< (it->second).getThetaYcut()       <<std::setw(5)<<" urad" 
-      	     <<"| sigthetaYcut     : " <<std::setw(4)<< (it->second).getSigThetaYcut()    <<std::setw(1)<<" "
-	     <<"| maxMovethetaYcut : " <<std::setw(4)<< (it->second).getMaxMoveThetaYcut()<<std::setw(5)<<" urad"
-	     <<"| ErrorthetaYcut   : " <<std::setw(4)<< (it->second).getErrorThetaYcut()  <<std::setw(5)<<" urad" << std::endl
+      	     <<"| sigThetaYcut     : " <<std::setw(4)<< (it->second).getSigThetaYcut()    <<std::setw(1)<<" "
+	     <<"| maxMoveThetaYcut : " <<std::setw(4)<< (it->second).getMaxMoveThetaYcut()<<std::setw(5)<<" urad"
+	     <<"| ErrorThetaYcut   : " <<std::setw(4)<< (it->second).getErrorThetaYcut()  <<std::setw(5)<<" urad" << std::endl
 
 	     <<"- Zcut             : " <<std::setw(4)<< (it->second).getZcut()            <<std::setw(5)<<"   um"	     
       	     <<"| sigZcut          : " <<std::setw(4)<< (it->second).getSigZcut()         <<std::setw(1)<<" "	     
