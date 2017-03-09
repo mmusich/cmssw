@@ -52,12 +52,11 @@ namespace edmtest
     std::cout<< "print  pointer address : " ;
     std::cout << thresholds << std::endl;
 
-    std::cout << "Size "  <<  thresholds->size() << std::endl;
-    const AlignPCLThresholds::threshold_map & mymap = thresholds->getThreshold_Map();
-     
+    std::cout << "Size "  <<  thresholds->size() << std::endl;     
     std::cout<<"Content of myThresholds "<<std::endl;
     thresholds->printAll();
 
+    // const AlignPCLThresholds::threshold_map & mymap = thresholds->getThreshold_Map();	
     // for(AlignPCLThresholds::threshold_map::const_iterator it = mymap.begin(); it != mymap.end() ; ++it){
     //   std::cout<<"keys : " << it->first <<std::endl
     // 	       <<"- sigCut    : " << (it->second).getSigCut()     << std::endl
