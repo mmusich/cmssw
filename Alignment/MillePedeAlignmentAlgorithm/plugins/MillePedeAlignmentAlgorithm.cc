@@ -345,7 +345,7 @@ bool MillePedeAlignmentAlgorithm::storeAlignments()
       myThresholds->setAlignPCLThresholds(theThresholds->getThreshold_Map());
 
       MillePedeFileReader mpReader(theConfig.getParameter<edm::ParameterSet>("MillePedeFileReader"),
-                                   thePedeLabels,
+				   thePedeLabels,
 				   std::shared_ptr<const AlignPCLThresholds>(myThresholds));
       mpReader.read();
       return mpReader.storeAlignments();
