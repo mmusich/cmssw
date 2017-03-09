@@ -73,43 +73,7 @@ class MillePedeFileReader {
     // file-names
     const std::string millePedeLogFile_;
     const std::string millePedeResFile_;
-
-   /* 
-
-    // signifiance of movement must be above
-    const std::array<double,6> sigXcut_;
-    const std::array<double,6> sigtXcut_;
-    const std::array<double,6> sigYcut_;
-    const std::array<double,6> sigtYcut_;
-    const std::array<double,6> sigZcut_;
-    const std::array<double,6> sigtZcut_;
-
-    // cutoff in micro-meter & micro-rad
-    const std::array<double,6> Xcut_;
-    const std::array<double,6> tXcut_;
-    const std::array<double,6> Ycut_;
-    const std::array<double,6> tYcut_;
-    const std::array<double,6> Zcut_;
-    const std::array<double,6> tZcut_;
-
-    // maximum movement in micro-meter/rad
-    const std::array<double,6> maxMoveXcut_;
-    const std::array<double,6> maxMoveYcut_; 
-    const std::array<double,6> maxMoveZcut_;
-    const std::array<double,6> maxMovetXcut_;
-    const std::array<double,6> maxMovetYcut_; 
-    const std::array<double,6> maxMovetZcut_;
-
-    // maximum movement error in micro-meter/rad
-    const std::array<double,6> maxErrorXcut_;
-    const std::array<double,6> maxErrorYcut_; 
-    const std::array<double,6> maxErrorZcut_;
-    const std::array<double,6> maxErrortXcut_;
-    const std::array<double,6> maxErrortYcut_; 
-    const std::array<double,6> maxErrortZcut_;
-
-   */
-   
+ 
     // conversion factors: cm to um & rad to urad
     static constexpr std::array<double, 6> multiplier_ = {{ 10000.,      // X
                                                             10000.,      // Y
