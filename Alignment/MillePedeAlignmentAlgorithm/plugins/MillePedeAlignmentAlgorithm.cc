@@ -342,7 +342,7 @@ bool MillePedeAlignmentAlgorithm::storeAlignments()
     if (runAtPCL_) {
 
       auto myThresholds = new AlignPCLThresholds();
-      myThresholds->setAlignPCLThresholds(theThresholds->getThreshold_Map());
+      myThresholds->setAlignPCLThresholds(theThresholds->getNrecords(),theThresholds->getThreshold_Map());
 
       MillePedeFileReader mpReader(theConfig.getParameter<edm::ParameterSet>("MillePedeFileReader"),
 				   thePedeLabels,

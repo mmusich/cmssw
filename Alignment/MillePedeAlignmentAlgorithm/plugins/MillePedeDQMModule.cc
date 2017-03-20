@@ -115,7 +115,7 @@ void MillePedeDQMModule
   const AlignPCLThresholds* theThresholds = thresholdHandle.product();
 
   auto myThresholds = new AlignPCLThresholds();
-  myThresholds->setAlignPCLThresholds(theThresholds->getThreshold_Map());
+  myThresholds->setAlignPCLThresholds(theThresholds->getNrecords(),theThresholds->getThreshold_Map());
 
   TrackerGeomBuilderFromGeometricDet builder;
 

@@ -62,7 +62,7 @@ void MillePedeFileReader
         std::string trash;
         iss >> trash >> trash >> Nrec_;
 
-        if (Nrec_ < 25000) {
+        if (Nrec_ < theThresholds_->getNrecords() ) {
           updateDB_   = false;
         }
       }
