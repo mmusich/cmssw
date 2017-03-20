@@ -18,10 +18,12 @@ class AlignPCLThresholds{
   AlignPCLThresholds(){}
   virtual ~AlignPCLThresholds(){}
 
-  void setAlignPCLThreshold(string AlignableId, const AlignPCLThreshold & Threshold);
-  void setAlignPCLThresholds(const threshold_map &Thresholds);
+  void setAlignPCLThreshold(string AlignableId, const AlignPCLThreshold &Threshold);
+  void setAlignPCLThresholds(const int &Nrecords,const threshold_map &Thresholds);
+  void setNRecords(const int &Nrecords);
                   
   const threshold_map& getThreshold_Map () const  {return m_thresholds;}
+  const int& getNrecords() const {return m_nrecords;}
 
   AlignPCLThreshold   getAlignPCLThreshold(string AlignableId) const;
   AlignPCLThreshold & getAlignPCLThreshold(string AlignableId);
@@ -45,6 +47,7 @@ class AlignPCLThresholds{
  private:
 
   threshold_map m_thresholds;
+  int m_nrecords;
 
   COND_SERIALIZABLE;
 

@@ -8,10 +8,14 @@ void AlignPCLThresholds::setAlignPCLThreshold(string AlignableId, const AlignPCL
   m_thresholds[AlignableId]=Threshold;
 }
 
-void AlignPCLThresholds::setAlignPCLThresholds(const threshold_map & AlignPCLThresholds){
+void AlignPCLThresholds::setAlignPCLThresholds(const int & Nrecords,const threshold_map & AlignPCLThresholds){
+  m_nrecords=Nrecords;
   m_thresholds=AlignPCLThresholds;
 }
 
+void AlignPCLThresholds::setNRecords(const int &Nrecords){
+  m_nrecords=Nrecords;
+}
 
 AlignPCLThreshold AlignPCLThresholds::getAlignPCLThreshold(string AlignableId) const {
   threshold_map::const_iterator it = m_thresholds.find(AlignableId);
@@ -135,6 +139,8 @@ array<float,6> AlignPCLThresholds::getMaxErrorCut(string AlignableId) const {
 void AlignPCLThresholds::printAll() const {
   
   std::cout<<"AlignPCLThresholds::printAll()"<<std::endl;
+  std::cout<<" =================================================================================================================== " << std::endl;
+  std::cout<<"N records cut: "<<this->getNrecords()<<std::endl;    
   for(auto it = m_thresholds.begin(); it != m_thresholds.end() ; ++it){
     std::cout<<" =================================================================================================================== " << std::endl;
     std::cout<<"key : " << it->first <<std::endl 

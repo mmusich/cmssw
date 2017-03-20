@@ -53,6 +53,7 @@ class AlignPCLThresholdsWriter : public edm::one::EDAnalyzer<edm::one::SharedRes
 
       // ----------member data ---------------------------
       std::string m_record;
+      unsigned int m_minNrecords;
       const std::vector<edm::ParameterSet> parameters;
 };
 
@@ -69,6 +70,7 @@ class AlignPCLThresholdsWriter : public edm::one::EDAnalyzer<edm::one::SharedRes
 //
 AlignPCLThresholdsWriter::AlignPCLThresholdsWriter(const edm::ParameterSet& iConfig):
   m_record(iConfig.getParameter<std::string>("record")),
+  m_minNrecords(iConfig.getParameter<unsigned int>("minNRecords")),
   parameters(iConfig.getParameter<std::vector<edm::ParameterSet> >("thresholds"))
 {
    //now do what ever initialization is needed
@@ -168,6 +170,8 @@ AlignPCLThresholdsWriter::analyze(const edm::Event& iEvent, const edm::EventSetu
      // const AlignPCLThresholds::threshold_map & mymap = myThresholds->getThreshold_Map();
    }
    
+   myThresholds->setNRecords(m_minNrecords);
+
    std::cout<<"Content of myThresholds "<<std::endl;
    myThresholds->printAll();
 

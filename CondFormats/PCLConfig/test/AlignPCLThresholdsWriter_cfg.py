@@ -26,6 +26,7 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
 
 process.WriteInDB = cms.EDAnalyzer("AlignPCLThresholdsWriter",
                                    record= cms.string('AlignPCLThresholdsRcd'),
+                                   minNRecords = cms.uint32(25000),
                                    thresholds = cms.VPSet(cms.PSet(#### Barrel Pixel HB X- 
                                                                    alignableId        = cms.string("TPBHalfBarrelXminus"),
                                                                    Xcut               = cms.double(5.0),
