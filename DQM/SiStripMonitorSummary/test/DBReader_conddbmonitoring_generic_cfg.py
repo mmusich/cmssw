@@ -178,7 +178,21 @@ process.source = cms.Source("EmptyIOVSource",
 )
 
 #process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-process.load('Configuration.Geometry.GeometryExtended_cff')
+#process.load('Configuration.Geometry.GeometryExtended_cff')
+
+process.PTrackerParametersDBReader = cms.ESSource("PoolDBESSource",
+                                                  BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
+                                                  DBParameters = cms.PSet(messageLevel = cms.untracked.int32(0),
+                                                                          authenticationPath = cms.untracked.string('')
+                                                                          ),
+                                                  connect = cms.string('frontier://PromptProd/CMS_CONDITIONS'),
+                                                  toGet = cms.VPSet(cms.PSet(record = cms.string('PTrackerParametersRcd'),
+                                                                             tag = cms.string('PTrackerParameters_Geometry_v1_hlt')
+                                                                             )
+                                                                    )
+                                                  )
+process.es_prefer_CablingReader = cms.ESPrefer("PoolDBESSource","PTrackerParametersDBReader") 
+
 process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
 
 process.poolDBESSource = cms.ESSource("PoolDBESSource",
@@ -316,11 +330,10 @@ if options.QualityMon == True:
                                                       PrintDebugOutput = cms.bool(False),
                                                       UseEmptyRunInfo = cms.bool(False),
                                                       ListOfRecordToMerge = cms.VPSet(cms.PSet(
-        record = cms.string(options.recordName),
-        tag = cms.string('')
-        ))
-                                                      )
-
+                record = cms.string(options.recordName),
+                tag = cms.string('')
+                ))
+                                                      
 # this module is almost useless since SiStripQualityDQM does all the job. If we want to remove it the log file has to be filled with SiStripQualityDQM
     process.stat = cms.EDAnalyzer("SiStripQualityStatistics",
                                   TkMapFileName = cms.untracked.string(''),
@@ -335,11 +348,10 @@ if options.CablingMon == True:
                                                       PrintDebugOutput = cms.bool(False),
                                                       UseEmptyRunInfo = cms.bool(False),
                                                       ListOfRecordToMerge = cms.VPSet(cms.PSet(
-        record = cms.string(options.recordForQualityName),
-        tag = cms.string('')
-        ))
+                    record = cms.string(options.recordForQualityName),
+                    tag = cms.string('')
+                    ))
                                                       )
-
     process.sistripconn = cms.ESProducer("SiStripConnectivity")
 
     process.stat = cms.EDAnalyzer("SiStripQualityStatistics",
