@@ -25,6 +25,12 @@ def _overridesFor50ns(process):
     
     return process
 
+def _trimStripDQM(process):
+    if hasattr(process, 'pathALCARECOSiStripCalZeroBias'):
+        process.SiStripCalZeroBiasMonitorCluster.Mod_On = cms.bool(False)
+    
+    return process
+
 ##############################################################################
 # post-era customizations
 # these are here instead of generating Data-specific eras
@@ -89,6 +95,7 @@ def customiseExpress(process):
 def customisePrompt(process):
     process= customisePPData(process)
     process = _addLumiProducer(process)
+    process = _trimStripDQM(process)
 
     return process
 
