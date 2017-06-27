@@ -7,7 +7,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing()
 
 options.register('conditionGT',
-                 "auto:run2_data",
+                 "92X_upgrade2017_realistic_v1",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "condition global tag for the job (\"auto:run2_data\" is default)")
@@ -19,7 +19,7 @@ options.register('conditionOverwrite',
                  "configuration to overwrite the condition into the GT (\"\" is default)")
 
 options.register('inputCollection',
-                 "ALCARECOSiStripCalMinBias",
+                 "generalTracks",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "collections to be used for input (\"ALCARECOSiStripCalMinBias\" is default)")
@@ -30,13 +30,19 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  "name for the output root file (\"calibTreeTest.root\" is default)")
 
+
+#readFiles = cms.vstring()
+
 options.register('inputFiles',
-                 "/store/data/Run2015D/ZeroBias/ALCARECO/SiStripCalMinBias-16Dec2015-v1/60007/869EE593-1FAB-E511-AF99-0025905A60B4.root",
-#                  '/store/data/Run2015D/ZeroBias/ALCARECO/SiStripCalMinBias-16Dec2015-v1/60009/0C35C6BF-D3AA-E511-9BC9-0CC47A4C8E16.root',
-#                  '/store/data/Run2015D/ZeroBias/ALCARECO/SiStripCalMinBias-16Dec2015-v1/60009/38B847F9-05AA-E511-AB78-00259074AE82.root',
-#                  '/store/data/Run2015D/ZeroBias/ALCARECO/SiStripCalMinBias-16Dec2015-v1/60009/D0BAD20B-09AB-E511-B073-0026189438F6.root',
-#                  '/store/data/Run2015D/ZeroBias/ALCARECO/SiStripCalMinBias-16Dec2015-v1/60009/DEFA8704-CCAA-E511-8203-0CC47A4D7634.root',
-#                  '/store/data/Run2015D/ZeroBias/ALCARECO/SiStripCalMinBias-16Dec2015-v1/60009/FE24690A-2DAA-E511-A96A-00259074AE3E.root',
+                 "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/16F7F59A-4051-E711-BAC0-0CC47A4C8ED8.root",
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/3270D178-6051-E711-B323-0025905B8590.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/500DC555-4351-E711-B8F1-0025905B85C0.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/70C300B1-4451-E711-B723-0025905A60D0.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/78A70796-3F51-E711-9A4C-0CC47A7C35F4.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/E2431272-3E51-E711-BFA5-0025905A6126.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/E600437E-4551-E711-8EDA-0025905A60A6.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/F4F082FF-3F51-E711-858B-0CC47A78A2F6.root
+                 # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/FCE94075-6051-E711-A961-0CC47A7C3428.root
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
                  "file to process")
@@ -47,13 +53,8 @@ options.register('maxEvents',
                  VarParsing.VarParsing.varType.int,
                  "number of events to process (\"-1\" for all)")
 
-
-
-
 # To use the prompt reco dataset please use 'generalTracks' as inputCollection
 # To use the cosmic reco dataset please use 'ctfWithMaterialTracksP5' as inputCollection
-
-
 
 options.parseArguments()
 
@@ -63,8 +64,6 @@ print "inputCollection   : ", options.inputCollection
 print "maxEvents         : ", options.maxEvents
 print "outputFile        : ", options.outputFile
 print "inputFiles        : ", options.inputFiles
-
-
 
 process = cms.Process('CALIB')
 process.load('CalibTracker.Configuration.setupCalibrationTree_cff')
@@ -87,19 +86,43 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 #    fileNames = cms.untracked.vstring(options.inputFiles)
 #    )
 
+
+readFiles = cms.untracked.vstring()
+
+readFiles.extend([
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/3EFD6013-B54D-E711-B6E6-0CC47A7C3434.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/4A756F39-BB4D-E711-AFBD-0CC47A7C356A.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/4A88FA63-294E-E711-8F45-0025905A4964.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/523AFFD6-C04D-E711-910C-0CC47A4D76CC.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/5ED1F6E0-C14D-E711-8BE6-0025905B8592.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/7C9ADC20-BA4D-E711-8481-0CC47A7C347E.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/96895A7E-BC4D-E711-B61C-0025905B855E.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/A46F487E-BC4D-E711-8538-0025905A60D0.root",
+        "/store/relval/CMSSW_9_2_2/RelValTTbar_13/GEN-SIM-RECO/PU25ns_92X_upgrade2017_realistic_v1-v1/10000/ECFEA1BD-BF4D-E711-A404-0CC47A7C345C.root"
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/16F7F59A-4051-E711-BAC0-0CC47A4C8ED8.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/3270D178-6051-E711-B323-0025905B8590.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/500DC555-4351-E711-B8F1-0025905B85C0.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/70C300B1-4451-E711-B723-0025905A60D0.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/78A70796-3F51-E711-9A4C-0CC47A7C35F4.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/E2431272-3E51-E711-BFA5-0025905A6126.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/E600437E-4551-E711-8EDA-0025905A60A6.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/F4F082FF-3F51-E711-858B-0CC47A78A2F6.root",
+        # "/store/relval/CMSSW_9_2_3/RelValTTbar_13/GEN-SIM-RECO/PUpmx25ns_92X_upgrade2017_realistic_v2_earlyBS2017-v1/10000/FCE94075-6051-E711-A961-0CC47A7C3428.root"
+        ])
+
 #import runs
 process.source = cms.Source (
-  "PoolSource",
-  fileNames = cms.untracked.vstring( options.inputFiles )
+    "PoolSource",
+    #fileNames = cms.untracked.vstring( options.inputFiles )
+    fileNames = readFiles
     )
 
-
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 #definition of input collection
-process.CalibrationTracks.src = 'ALCARECOSiStripCalMinBias' #cms.InputTag( options.inputCollection )
-process.shallowTracks.Tracks  = 'ALCARECOSiStripCalMinBias' #cms.InputTag( options.inputCollection )
+process.CalibrationTracks.src = cms.InputTag( options.inputCollection )
+process.shallowTracks.Tracks  = cms.InputTag( options.inputCollection )
 #process.shallowGainCalibrationAllBunch   = 'ALCARECOSiStripCalMinBias' #cms.InputTag( options.inputCollection )
 #process.shallowGainCalibrationAllBunch0T = 'ALCARECOSiStripCalMinBias' #cms.InputTag( options.inputCollection )
 
@@ -119,42 +142,43 @@ process.TkCalPath_IsoMuon    = cms.Path(process.TkCalSeq_IsoMuon)
 process.TkCalPath_IsoMuon0T  = cms.Path(process.TkCalSeq_IsoMuon0T)
 process.TkCalPath_AagBunch   = cms.Path(process.TkCalSeq_AagBunch)
 process.TkCalPath_AagBunch0T = cms.Path(process.TkCalSeq_AagBunch0T)
+process.TkCalPath_HitEffOnly = cms.Path(process.TkCalSeq_HitEffOnly)
 
-
-process.schedule = cms.Schedule( process.TkCalPath_StdBunch, 
-                                 process.TkCalPath_StdBunch0T,
-                                 process.TkCalPath_IsoMuon,
-                                 process.TkCalPath_IsoMuon0T,
-                                 process.TkCalPath_AagBunch,
-                                 process.TkCalPath_AagBunch0T,
-                               )
+process.schedule = cms.Schedule( #process.TkCalPath_StdBunch, 
+                                 #process.TkCalPath_StdBunch0T,
+                                 #process.TkCalPath_IsoMuon,
+                                 #process.TkCalPath_IsoMuon0T,
+                                 #process.TkCalPath_AagBunch,
+                                 #process.TkCalPath_AagBunch0T,
+                                 process.TkCalPath_HitEffOnly
+                                 )
 
 
 process.options = cms.untracked.PSet(
     Rethrow = cms.untracked.vstring('OtherCMS', 
-        'StdException', 
-        'Unknown', 
-        'BadAlloc', 
-        'BadExceptionType', 
-        'ProductNotFound', 
-        'DictionaryNotFound', 
-        'InsertFailure', 
-        'Configuration', 
-        'LogicError', 
-        'UnimplementedFeature', 
-        'InvalidReference', 
-        'NullPointerError', 
-        'NoProductSpecified', 
-        'EventTimeout', 
-        'EventCorruption', 
-        'ScheduleExecutionFailure', 
-        'EventProcessorFailure', 
-        'FileInPathError', 
-        'FileOpenError', 
-        'FileReadError', 
-        'FatalRootError', 
-        'MismatchedInputFiles', 
-        'ProductDoesNotSupportViews', 
-        'ProductDoesNotSupportPtr', 
-        'NotFound')
-)
+                                    'StdException', 
+                                    'Unknown', 
+                                    'BadAlloc', 
+                                    'BadExceptionType', 
+                                    'ProductNotFound', 
+                                    'DictionaryNotFound', 
+                                    'InsertFailure', 
+                                    'Configuration', 
+                                    'LogicError', 
+                                    'UnimplementedFeature', 
+                                    'InvalidReference', 
+                                    'NullPointerError', 
+                                    'NoProductSpecified', 
+                                    'EventTimeout', 
+                                    'EventCorruption', 
+                                    'ScheduleExecutionFailure', 
+                                    'EventProcessorFailure', 
+                                    'FileInPathError', 
+                                    'FileOpenError', 
+                                    'FileReadError', 
+                                    'FatalRootError', 
+                                    'MismatchedInputFiles', 
+                                    'ProductDoesNotSupportViews', 
+                                    'ProductDoesNotSupportPtr', 
+                                    'NotFound')
+    )
