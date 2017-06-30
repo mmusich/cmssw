@@ -108,7 +108,7 @@ namespace {
   
       double xmax(100.),ymax(100.);
 
-      TH2D *h2D = new TH2D("h2D","Example",100,0.,xmax,100,0.,ymax);
+      std::unique_ptr<TH2D> h2D = std::unique_ptr<TH2D>(new TH2D("h2D","Example",100,0.,xmax,100,0.,ymax));
 
       if( payload.get() ){
 	std::cout <<" size="<<payload->m_vec.size()<<std::endl;
@@ -122,7 +122,7 @@ namespace {
 	}
       }
          
-      TCanvas *c = new TCanvas("c","",10,10,900,500);
+      std::unique_ptr<TCanvas> c = std::unique_ptr<TCanvas>(new TCanvas("c","",10,10,900,500));
       c->cd();
       c->SetLogz();
       h2D->SetNdivisions(18, "X");
