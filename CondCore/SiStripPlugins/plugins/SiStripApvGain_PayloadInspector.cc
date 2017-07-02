@@ -1,3 +1,11 @@
+/*!
+  \file SiStripApvGains_PayloadInspector
+  \Payload Inspector Plugin for SiStrip Gain
+  \author M. Musich
+  \version $Revision: 1.0 $
+  \date $Date: 2017/07/02 17:59:56 $
+*/
+
 #include "CondCore/Utilities/interface/PayloadInspectorModule.h"
 #include "CondCore/Utilities/interface/PayloadInspector.h"
 #include "CondCore/CondDB/interface/Time.h"
@@ -97,9 +105,9 @@ namespace {
   /************************************************
     TrackerMap of SiStripApvGains (ratio with previous gain per detid)
   *************************************************/
-  class SiStripApvGainsRatioWithPrevTrackerMap : public cond::payloadInspector::PlotImage<SiStripApvGain> {
+  class SiStripApvGainsRatioWithPreviousIOVTrackerMap : public cond::payloadInspector::PlotImage<SiStripApvGain> {
   public:
-    SiStripApvGainsRatioWithPrevTrackerMap() : cond::payloadInspector::PlotImage<SiStripApvGain>( "Tracker Map of ratio of SiStripGains with previous IOV" ){
+    SiStripApvGainsRatioWithPreviousIOVTrackerMap() : cond::payloadInspector::PlotImage<SiStripApvGain>( "Tracker Map of ratio of SiStripGains with previous IOV" ){
       setSingleIov( false );
     }
 
@@ -107,16 +115,21 @@ namespace {
       
       auto firstiov  = iovs.front();
       auto lastiov   = iovs.back();
-
-      std::cout<<"last  IOV = "<< std::get<1>(lastiov) << " time:"<<std::get<0>(lastiov)<<std::endl;
-      std::cout<<"first IOV = "<< std::get<1>(firstiov)<< " time:"<<std::get<0>(firstiov)<<"\n"<<std::endl;
       
+      /*
+	std::cout<<"last  IOV = "<< std::get<1>(lastiov) << " time:"<<std::get<0>(lastiov)<<std::endl;
+	std::cout<<"first IOV = "<< std::get<1>(firstiov)<< " time:"<<std::get<0>(firstiov)<<"\n"<<std::endl;
+      */      
+
       std::shared_ptr<SiStripApvGain> last_payload  = fetchPayload( std::get<1>(lastiov) );
       std::shared_ptr<SiStripApvGain> first_payload = fetchPayload( std::get<1>(firstiov) );
-
+      
       std::string titleMap = "SiStrip APV Gain ratio per module (IOV: ";
-      titleMap+=std::get<0>(firstiov)+"/ IOV: ";
-      titleMap+=std::get<0>(lastiov)+")";
+
+      titleMap+=std::to_string(std::get<0>(firstiov));
+      titleMap+="/ IOV:";
+      titleMap+=std::to_string(std::get<0>(lastiov));
+      titleMap+=")";
 
       std::unique_ptr<TrackerMap> tmap = std::unique_ptr<TrackerMap>(new TrackerMap("SiStripApvGains"));
       tmap->setTitle(titleMap.c_str());
@@ -155,8 +168,8 @@ namespace {
       
       for(const auto &d : detid){
 	float ratio = firstmap[d]/lastmap[d];
-	std::cout<<"detid:"<<d<<" firstGain: "<<std::setw(8)<<firstmap[d]<<" lastGain:"<<std::setw(8)<<lastmap[d]<< " ratio" <<std::setw(8)<< ratio <<std::endl;
-	tmap->fill(d,ratio);
+	//	if(ratio>2.) std::cout<<"detid:"<<d<<" firstGain: "<<std::setw(8)<<firstmap[d]<<" lastGain:"<<std::setw(8)<<lastmap[d]<< " ratio" <<std::setw(8)<< ratio <<std::endl;
+	if (std::abs(ratio-1)<0.5) tmap->fill(d,std::abs(ratio-1));
       }
       
       //=========================
@@ -431,7 +444,7 @@ PAYLOAD_INSPECTOR_MODULE(SiStripApvGain){
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsAverageTrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsMaximumTrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsMinimumTrackerMap);
-  PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsRatioWithPrevTrackerMap);
+  PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsRatioWithPreviousIOVTrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainByRunMeans);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvTIBGainByRunMeans);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvTIDGainByRunMeans);
