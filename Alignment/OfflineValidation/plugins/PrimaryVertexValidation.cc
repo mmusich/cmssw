@@ -18,6 +18,7 @@
 // system include files
 #include <memory>
 #include <vector>
+#include <cassert>
 
 // user include files
 #include "Alignment/OfflineValidation/plugins/PrimaryVertexValidation.h"
@@ -37,7 +38,6 @@
 
 // CMSSW includes
 #include "CondFormats/RunInfo/interface/RunInfo.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -46,7 +46,6 @@
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHitCollection.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
 #include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
 #include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
@@ -88,7 +87,7 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
   // initialize phase space boundaries
   
   usesResource(TFileService::kSharedResource);
-
+  
   std::vector<unsigned int> defaultRuns;
   defaultRuns.push_back(0);
   runControlNumbers_ = iConfig.getUntrackedParameter<std::vector<unsigned int> >("runControlNumber",defaultRuns);
@@ -204,13 +203,28 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
   if( (pDD->isThere(GeomDetEnumerators::P1PXB)) || 
       (pDD->isThere(GeomDetEnumerators::P1PXEC)) ) {
     isPhase1_ = true;
+    nLadders_ = 12;
+                        
+    if(h_dxy_ladderOverlap_.size()!=12){
+      shrinkHistVectorToFit(h_dxy_ladderOverlap_,12);
+      shrinkHistVectorToFit(h_dxy_ladderNoOverlap_,12);
+      shrinkHistVectorToFit(h_dxy_ladder_,12);	  
+      shrinkHistVectorToFit(h_dz_ladder_,12);	  
+      shrinkHistVectorToFit(h_norm_dxy_ladder_,12);  
+      shrinkHistVectorToFit(h_norm_dz_ladder_,12);   
+
+      std::cout<<"checking size:"<<h_dxy_ladder_.size()<<std::endl;
+
+    }
+
     if (debug_){
-      edm::LogInfo("PrimaryVertexValidation")<<" pixel phase1 setup ";
+      edm::LogInfo("PrimaryVertexValidation")<<" pixel phase1 setup, nLadders: "<<nLadders_;
     }
   } else {
     isPhase1_ = false;
+    nLadders_ = 20;
     if (debug_){
-      edm::LogInfo("PrimaryVertexValidation")<<" pixel phase0 setup ";
+      edm::LogInfo("PrimaryVertexValidation")<<" pixel phase0 setup, nLadders: "<<nLadders_;
     }
   }
 
@@ -746,7 +760,6 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 	      h_probeL1Module_->Fill(module_num);
 	      h_probeHasBPixL1Overlap_->Fill(L1BPixHitCount);
 
-	      
 	      // filling the pT-binned distributions
 
 	      for(int ipTBin=0; ipTBin<nPtBins_; ipTBin++){
@@ -868,12 +881,16 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 		if( ladder_num > 0 && module_num > 0 ) {
 		  
+		  //std::cout<<" ladder_num"<<ladder_num <<" module_num"<<module_num <<std::endl;
+
 		  fillByIndex(h_dxy_modZ_,module_num-1,dxyFromMyVertex*cmToum);
 		  fillByIndex(h_dz_modZ_,module_num-1,dzFromMyVertex*cmToum);	  
 		  fillByIndex(h_norm_dxy_modZ_,module_num-1,dxyFromMyVertex/s_ip2dpv_err);	  
 		  fillByIndex(h_norm_dz_modZ_,module_num-1,dzFromMyVertex/dz_err);	  
 		  
 		  fillByIndex(h_dxy_ladder_,ladder_num-1,dxyFromMyVertex*cmToum);	  
+
+		  // std::cout<<"h_dxy_ladder size:" <<h_dxy_ladder_.size() << std::endl;
 
 		  if(L1BPixHitCount==1){
 		    fillByIndex(h_dxy_ladderNoOverlap_,ladder_num-1,dxyFromMyVertex*cmToum);	  
@@ -1070,7 +1087,6 @@ void PrimaryVertexValidation::beginJob()
   Nevt_    = 0;
   
   //  rootFile_ = new TFile(filename_.c_str(),"recreate");
-  edm::Service<TFileService> fs;
   rootTree_ = fs->make<TTree>("tree","PV Validation tree");
  
   // Track Paramters 
@@ -1235,7 +1251,7 @@ void PrimaryVertexValidation::beginJob()
   h_probeHitsInBPIX_ = ProbeFeatures.make<TH1F>("h_probeNRechitsBPIX","N_{hits} BPIX;N_{hits} BPIX;tracks",40,-0.5,39.5);
   h_probeHitsInFPIX_ = ProbeFeatures.make<TH1F>("h_probeNRechitsFPIX","N_{hits} FPIX;N_{hits} FPIX;tracks",40,-0.5,39.5);
 
-  h_probeL1Ladder_         = ProbeFeatures.make<TH1F>("h_probeL1Ladder","Ladder number (L1 hit); ladder number",14,-1.5,12.5); 
+  h_probeL1Ladder_         = ProbeFeatures.make<TH1F>("h_probeL1Ladder","Ladder number (L1 hit); ladder number",22,-1.5,20.5); 
   h_probeL1Module_         = ProbeFeatures.make<TH1F>("h_probeL1Module","Module number (L1 hit); module number",10,-1.5,8.5);
   h_probeHasBPixL1Overlap_ = ProbeFeatures.make<TH1I>("h_probeHasBPixL1Overlap","n. hits in L1;n. L1-BPix hits;tracks",5,0,5);
 
@@ -1350,25 +1366,23 @@ void PrimaryVertexValidation::beginJob()
   TFileDirectory NormLongModZRes  = fs->mkdir("Norm_Long_modZ_Residuals"); 
   h_norm_dz_modZ_  = bookResidualsHistogram(NormLongModZRes,8,"norm_dz","modZ");	       
 
-  // book residuals vs ladder
-               
   TFileDirectory AbsTransLadderRes  = fs->mkdir("Abs_Transv_ladder_Residuals"); 
-  h_dxy_ladder_ = bookResidualsHistogram(AbsTransLadderRes,12,"dxy","ladder");
+  h_dxy_ladder_ = bookResidualsHistogram(AbsTransLadderRes,nLadders_,"dxy","ladder");
 
   TFileDirectory AbsTransLadderResOverlap  = fs->mkdir("Abs_Transv_ladderOverlap_Residuals"); 
-  h_dxy_ladderOverlap_ = bookResidualsHistogram(AbsTransLadderResOverlap,12,"dxy","ladder");       
+  h_dxy_ladderOverlap_ = bookResidualsHistogram(AbsTransLadderResOverlap,nLadders_,"dxy","ladder");       
 
   TFileDirectory AbsTransLadderResNoOverlap  = fs->mkdir("Abs_Transv_ladderNoOverlap_Residuals"); 
-  h_dxy_ladderNoOverlap_ = bookResidualsHistogram(AbsTransLadderResNoOverlap,12,"dxy","ladder");       
+  h_dxy_ladderNoOverlap_ = bookResidualsHistogram(AbsTransLadderResNoOverlap,nLadders_,"dxy","ladder");       
 
   TFileDirectory AbsLongLadderRes   = fs->mkdir("Abs_Long_ladder_Residuals"); 
-  h_dz_ladder_  = bookResidualsHistogram(AbsLongLadderRes,12,"dz","ladder");	       
+  h_dz_ladder_  = bookResidualsHistogram(AbsLongLadderRes,nLadders_,"dz","ladder");	       
 
   TFileDirectory NormTransLadderRes = fs->mkdir("Norm_Transv_ladder_Residuals"); 
-  h_norm_dxy_ladder_ = bookResidualsHistogram(NormTransLadderRes,12,"norm_dxy","ladder");  
+  h_norm_dxy_ladder_ = bookResidualsHistogram(NormTransLadderRes,nLadders_,"norm_dxy","ladder");  
 
   TFileDirectory NormLongLadderRes  = fs->mkdir("Norm_Long_ladder_Residuals"); 
-  h_norm_dz_ladder_  = bookResidualsHistogram(NormLongLadderRes,12,"norm_dz","ladder");   
+  h_norm_dz_ladder_  = bookResidualsHistogram(NormLongLadderRes,nLadders_,"norm_dz","ladder");   
 
 
   // book residuals as function of phi and eta
@@ -1592,13 +1606,13 @@ void PrimaryVertexValidation::beginJob()
   n_dzVsEta  = BiasVsParameter.make<TH2F>("h2_n_dz_vs_eta","d_{z}/#sigma_{d_{z}} vs track #eta;track #eta;track d_{z}(PV)/#sigma_{d_{z}}",
 					  48,-etaOfProbe_,etaOfProbe_,mybins_,-dzmax_eta/100.,dzmax_eta/100.);   
 
-  TFileDirectory MeanTrendsDir   = fs->mkdir("MeanTrends");
-  TFileDirectory WidthTrendsDir  = fs->mkdir("WidthTrends");
-  TFileDirectory MedianTrendsDir = fs->mkdir("MedianTrends");
-  TFileDirectory MADTrendsDir    = fs->mkdir("MADTrends");
+  MeanTrendsDir   = fs->mkdir("MeanTrends");
+  WidthTrendsDir  = fs->mkdir("WidthTrends");
+  MedianTrendsDir = fs->mkdir("MedianTrends");
+  MADTrendsDir    = fs->mkdir("MADTrends");
 
-  TFileDirectory Mean2DMapsDir   = fs->mkdir("MeanMaps");
-  TFileDirectory Width2DMapsDir  = fs->mkdir("WidthMaps");
+  Mean2DMapsDir   = fs->mkdir("MeanMaps");
+  Width2DMapsDir  = fs->mkdir("WidthMaps");
 
   double highedge=nBins_-0.5;
   double lowedge=-0.5;
@@ -1733,72 +1747,6 @@ void PrimaryVertexValidation::beginJob()
   n_dzpTCentralWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_pTCentral",
 						       "width(d_{z}/#sigma_{d_{z}}) vs p_{T};p_{T}(|#eta|<1.) [GeV];width(d_{z}/#sigma_{d_{z}})",
 						       48,mypT_bins_); 
-
-  // means and widhts vs ladder and module number
-  
-  a_dxymodZMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_modZ",
-						  "#LT d_{xy} #GT vs modZ;module number (Z);#LT d_{xy} #GT [#mum]",
-						  8,0.,8.); 
-  
-  a_dxymodZWidthTrend = WidthTrendsDir.make<TH1F>("widths_dxy_modZ",
-						  "#sigma_{d_{xy}} vs modZ;module number (Z);#sigma_{d_{xy}} [#mum]",
-						  8,0.,8.);
-  
-  a_dzmodZMeanTrend   = MeanTrendsDir.make<TH1F> ("means_dz_modZ",
-						  "#LT d_{z} #GT vs modZ;module number (Z);#LT d_{z} #GT [#mum]",
-						  8,0.,8.); 
-  
-  a_dzmodZWidthTrend  = WidthTrendsDir.make<TH1F>("widths_dz_modZ",
-						  "#sigma_{d_{z}} vs modZ;module number (Z);#sigma_{d_{z}} [#mum]",
-						  8,0.,8.);
- 
-  a_dxyladderMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_ladder",
-						    "#LT d_{xy} #GT vs ladder;ladder number (#phi);#LT d_{xy} #GT [#mum]",
-						    12,0.,12.);
-  
-  a_dxyladderWidthTrend = WidthTrendsDir.make<TH1F>("widths_dxy_ladder",
-						    "#sigma_{d_{xy}} vs ladder;ladder number (#phi);#sigma_{d_{xy}} [#mum]",
-						    12,0.,12.);
-  
-  a_dzladderMeanTrend   = MeanTrendsDir.make<TH1F> ("means_dz_ladder",
-						    "#LT d_{z} #GT vs ladder;ladder number (#phi);#LT d_{z} #GT [#mum]"
-						    ,12,0.,12.); 
-  
-  a_dzladderWidthTrend  = WidthTrendsDir.make<TH1F>("widths_dz_ladder",
-						    "#sigma_{d_{z}} vs ladder;ladder number (#phi);#sigma_{d_{z}} [#mum]",
-						    12,0.,12.);
-  
-  n_dxymodZMeanTrend  = MeanTrendsDir.make<TH1F> ("norm_means_dxy_modZ",
-						  "#LT d_{xy}/#sigma_{d_{xy}} #GT vs modZ;module number (Z);#LT d_{xy}/#sigma_{d_{xy}} #GT",
-						  8,0.,8.);
-  
-  n_dxymodZWidthTrend = WidthTrendsDir.make<TH1F>("norm_widths_dxy_modZ",
-						  "width(d_{xy}/#sigma_{d_{xy}}) vs modZ;module number (Z); width(d_{xy}/#sigma_{d_{xy}})",
-						  8,0.,8.);
-  
-  n_dzmodZMeanTrend   = MeanTrendsDir.make<TH1F> ("norm_means_dz_modZ",
-						  "#LT d_{z}/#sigma_{d_{z}} #GT vs modZ;module number (Z);#LT d_{z}/#sigma_{d_{z}} #GT",
-						  8,0.,8.); 
-  
-  n_dzmodZWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_modZ",
-						  "width(d_{z}/#sigma_{d_{z}}) vs pT;module number (Z);width(d_{z}/#sigma_{d_{z}})",
-						  8,0.,8.);
-  
-  n_dxyladderMeanTrend  = MeanTrendsDir.make<TH1F> ("norm_means_dxy_ladder",
-						    "#LT d_{xy}/#sigma_{d_{xy}} #GT vs ladder;ladder number (#phi);#LT d_{xy}/#sigma_{d_{z}} #GT",
-						    12,0.,12.);
-  
-  n_dxyladderWidthTrend = WidthTrendsDir.make<TH1F>("norm_widths_dxy_ladder",
-						    "width(d_{xy}/#sigma_{d_{xy}}) vs ladder;ladder number (#phi);width(d_{xy}/#sigma_{d_{z}})",
-						    12,0.,12.);
-  
-  n_dzladderMeanTrend   = MeanTrendsDir.make<TH1F> ("norm_means_dz_ladder",
-						    "#LT d_{z}/#sigma_{d_{z}} #GT vs ladder;ladder number (#phi);#LT d_{z}/#sigma_{d_{z}} #GT",
-						    12,0.,12.);  
-  
-  n_dzladderWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_ladder",
-						    "width(d_{z}/#sigma_{d_{z}}) vs ladder;ladder number (#phi);width(d_{z}/#sigma_{d_{z}})",
-						    12,0.,12.); 
 
   // 2D maps
 
@@ -2172,6 +2120,72 @@ void PrimaryVertexValidation::endJob()
     <<"# PrimaryVertexValidation::endJob()\n" 
     <<"# Number of analyzed events: "<<Nevt_<<"\n"
     <<"######################################";
+
+  // means and widhts vs ladder and module number
+  
+  a_dxymodZMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_modZ",
+						  "#LT d_{xy} #GT vs modZ;module number (Z);#LT d_{xy} #GT [#mum]",
+						  8,0.,8.); 
+  
+  a_dxymodZWidthTrend = WidthTrendsDir.make<TH1F>("widths_dxy_modZ",
+						  "#sigma_{d_{xy}} vs modZ;module number (Z);#sigma_{d_{xy}} [#mum]",
+						  8,0.,8.);
+  
+  a_dzmodZMeanTrend   = MeanTrendsDir.make<TH1F> ("means_dz_modZ",
+						  "#LT d_{z} #GT vs modZ;module number (Z);#LT d_{z} #GT [#mum]",
+						  8,0.,8.); 
+  
+  a_dzmodZWidthTrend  = WidthTrendsDir.make<TH1F>("widths_dz_modZ",
+						  "#sigma_{d_{z}} vs modZ;module number (Z);#sigma_{d_{z}} [#mum]",
+						  8,0.,8.);
+ 
+  a_dxyladderMeanTrend  = MeanTrendsDir.make<TH1F> ("means_dxy_ladder",
+						    "#LT d_{xy} #GT vs ladder;ladder number (#phi);#LT d_{xy} #GT [#mum]",
+						    nLadders_,0.,nLadders_);
+  
+  a_dxyladderWidthTrend = WidthTrendsDir.make<TH1F>("widths_dxy_ladder",
+						    "#sigma_{d_{xy}} vs ladder;ladder number (#phi);#sigma_{d_{xy}} [#mum]",
+						    nLadders_,0.,nLadders_);
+  
+  a_dzladderMeanTrend   = MeanTrendsDir.make<TH1F> ("means_dz_ladder",
+						    "#LT d_{z} #GT vs ladder;ladder number (#phi);#LT d_{z} #GT [#mum]"
+						    ,nLadders_,0.,nLadders_); 
+  
+  a_dzladderWidthTrend  = WidthTrendsDir.make<TH1F>("widths_dz_ladder",
+						    "#sigma_{d_{z}} vs ladder;ladder number (#phi);#sigma_{d_{z}} [#mum]",
+						    nLadders_,0.,nLadders_);
+  
+  n_dxymodZMeanTrend  = MeanTrendsDir.make<TH1F> ("norm_means_dxy_modZ",
+						  "#LT d_{xy}/#sigma_{d_{xy}} #GT vs modZ;module number (Z);#LT d_{xy}/#sigma_{d_{xy}} #GT",
+						  8,0.,8.);
+  
+  n_dxymodZWidthTrend = WidthTrendsDir.make<TH1F>("norm_widths_dxy_modZ",
+						  "width(d_{xy}/#sigma_{d_{xy}}) vs modZ;module number (Z); width(d_{xy}/#sigma_{d_{xy}})",
+						  8,0.,8.);
+  
+  n_dzmodZMeanTrend   = MeanTrendsDir.make<TH1F> ("norm_means_dz_modZ",
+						  "#LT d_{z}/#sigma_{d_{z}} #GT vs modZ;module number (Z);#LT d_{z}/#sigma_{d_{z}} #GT",
+						  8,0.,8.); 
+  
+  n_dzmodZWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_modZ",
+						  "width(d_{z}/#sigma_{d_{z}}) vs pT;module number (Z);width(d_{z}/#sigma_{d_{z}})",
+						  8,0.,8.);
+  
+  n_dxyladderMeanTrend  = MeanTrendsDir.make<TH1F> ("norm_means_dxy_ladder",
+						    "#LT d_{xy}/#sigma_{d_{xy}} #GT vs ladder;ladder number (#phi);#LT d_{xy}/#sigma_{d_{z}} #GT",
+						    nLadders_,0.,nLadders_);
+  
+  n_dxyladderWidthTrend = WidthTrendsDir.make<TH1F>("norm_widths_dxy_ladder",
+						    "width(d_{xy}/#sigma_{d_{xy}}) vs ladder;ladder number (#phi);width(d_{xy}/#sigma_{d_{z}})",
+						    nLadders_,0.,nLadders_);
+  
+  n_dzladderMeanTrend   = MeanTrendsDir.make<TH1F> ("norm_means_dz_ladder",
+						    "#LT d_{z}/#sigma_{d_{z}} #GT vs ladder;ladder number (#phi);#LT d_{z}/#sigma_{d_{z}} #GT",
+						    nLadders_,0.,nLadders_);  
+  
+  n_dzladderWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_ladder",
+						    "width(d_{z}/#sigma_{d_{z}}) vs ladder;ladder number (#phi);width(d_{z}/#sigma_{d_{z}})",
+						    nLadders_,0.,nLadders_); 
 
   if(useTracksFromRecoVtx_){
 
@@ -2805,7 +2819,13 @@ std::vector<TH1F*> PrimaryVertexValidation::bookResidualsHistogram(TFileDirector
   
   std::vector<TH1F*> h;
   h.reserve(theNOfBins);
+
   
+  if (theNOfBins==0) {
+    edm::LogError("PrimaryVertexValidation") <<"bookResidualsHistogram() The number of bins cannot be identically 0" << std::endl;
+    assert(false);
+  }
+    
   const char* auxResType = (resType.ReplaceAll("_","")).Data();
   
   for(unsigned int i=0; i<theNOfBins;i++){
@@ -2970,10 +2990,20 @@ void PrimaryVertexValidation::fillByIndex(std::vector<TH1F*>& h, unsigned int in
   if(index <= h.size()){
     h[index]->Fill(x);
   } else {
-    edm::LogWarning("PrimaryVertexValidation") << "Trying to fill non-existing Histogram with index " << index << std::endl;
+    edm::LogWarning("PrimaryVertexValidation") << "Trying to fill non-existing Histogram with index " << index << " for array with size: "<<h.size()<< std::endl;
     return;
   }
 }
 
+//*************************************************************
+void PrimaryVertexValidation::shrinkHistVectorToFit(std::vector<TH1F*>&h, unsigned int desired_size)
+//*************************************************************
+{
+  h.erase(h.begin()+desired_size,h.end()); 
+}
+
+
 //define this as a plug-in
 DEFINE_FWK_MODULE(PrimaryVertexValidation);
+
+
