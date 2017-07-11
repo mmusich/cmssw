@@ -1063,7 +1063,7 @@ bool PrimaryVertexValidation::isHit2D(const TrackingRecHit &hit) const
 
 
 // ------------ method to check the presence of pixel hits  ------------
-std::pair<bool,bool> PrimaryVertexValidation::pixelHitsCheck(const reco::TransientTrack track){
+std::pair<bool,bool> PrimaryVertexValidation::pixelHitsCheck(const reco::TransientTrack& track){
   
   bool hasBPixHits = false;
   bool hasFPixHits = false;
@@ -1081,7 +1081,7 @@ std::pair<bool,bool> PrimaryVertexValidation::pixelHitsCheck(const reco::Transie
 
 
 // ------------ method to check the presence of pixel hits  ------------
-bool PrimaryVertexValidation::hasFirstLayerPixelHits(const reco::TransientTrack track)
+bool PrimaryVertexValidation::hasFirstLayerPixelHits(const reco::TransientTrack& track)
 {
   using namespace reco;
   const HitPattern& p = track.hitPattern();      
@@ -1638,28 +1638,28 @@ void PrimaryVertexValidation::beginJob()
   TFileDirectory BiasVsParameter = fs->mkdir("BiasVsParameter");
 
   a_dxyVsPhi = BiasVsParameter.make<TH2F>("h2_dxy_vs_phi","d_{xy} vs track #phi;track #phi [rad];track d_{xy}(PV) [#mum]",
-					  48,-TMath::Pi(),TMath::Pi(),mybins_,-dxymax_phi,dxymax_phi); 
+					  nBins_,-TMath::Pi(),TMath::Pi(),theDetails_.histobins,-dxymax_phi,dxymax_phi); 
  
   a_dzVsPhi  = BiasVsParameter.make<TH2F>("h2_dz_vs_phi","d_{z} vs track #phi;track #phi [rad];track d_{z}(PV) [#mum]",
-					  48,-TMath::Pi(),TMath::Pi(),mybins_,-dzmax_phi,dzmax_phi);   
+					  nBins_,-TMath::Pi(),TMath::Pi(),theDetails_.histobins,-dzmax_phi,dzmax_phi);   
                
   n_dxyVsPhi = BiasVsParameter.make<TH2F>("h2_n_dxy_vs_phi","d_{xy}/#sigma_{d_{xy}} vs track #phi;track #phi [rad];track d_{xy}(PV)/#sigma_{d_{xy}}",
-					  48,-TMath::Pi(),TMath::Pi(),mybins_,-dxymax_phi/100.,dxymax_phi/100.); 
+					  nBins_,-TMath::Pi(),TMath::Pi(),theDetails_.histobins,-dxymax_phi/100.,dxymax_phi/100.); 
   
   n_dzVsPhi  = BiasVsParameter.make<TH2F>("h2_n_dz_vs_phi","d_{z}/#sigma_{d_{z}} vs track #phi;track #phi [rad];track d_{z}(PV)/#sigma_{d_{z}}",
-					  48,-TMath::Pi(),TMath::Pi(),mybins_,-dzmax_phi/100.,dzmax_phi/100.);   
+					  nBins_,-TMath::Pi(),TMath::Pi(),theDetails_.histobins,-dzmax_phi/100.,dzmax_phi/100.);   
                
   a_dxyVsEta = BiasVsParameter.make<TH2F>("h2_dxy_vs_eta","d_{xy} vs track #eta;track #eta;track d_{xy}(PV) [#mum]",
-					  48,-etaOfProbe_,etaOfProbe_,mybins_,-dxymax_eta,dzmax_eta);
+					  nBins_,-etaOfProbe_,etaOfProbe_,theDetails_.histobins,-dxymax_eta,dzmax_eta);
   
   a_dzVsEta  = BiasVsParameter.make<TH2F>("h2_dz_vs_eta","d_{z} vs track #eta;track #eta;track d_{z}(PV) [#mum]",
-					  48,-etaOfProbe_,etaOfProbe_,mybins_,-dzmax_eta,dzmax_eta);   
+					  nBins_,-etaOfProbe_,etaOfProbe_,theDetails_.histobins,-dzmax_eta,dzmax_eta);   
                
   n_dxyVsEta = BiasVsParameter.make<TH2F>("h2_n_dxy_vs_eta","d_{xy}/#sigma_{d_{xy}} vs track #eta;track #eta;track d_{xy}(PV)/#sigma_{d_{xy}}",
-					  48,-etaOfProbe_,etaOfProbe_,mybins_,-dxymax_eta/100.,dxymax_eta/100.);  
+					  nBins_,-etaOfProbe_,etaOfProbe_,theDetails_.histobins,-dxymax_eta/100.,dxymax_eta/100.);  
 
   n_dzVsEta  = BiasVsParameter.make<TH2F>("h2_n_dz_vs_eta","d_{z}/#sigma_{d_{z}} vs track #eta;track #eta;track d_{z}(PV)/#sigma_{d_{z}}",
-					  48,-etaOfProbe_,etaOfProbe_,mybins_,-dzmax_eta/100.,dzmax_eta/100.);   
+					  nBins_,-etaOfProbe_,etaOfProbe_,theDetails_.histobins,-dzmax_eta/100.,dzmax_eta/100.);   
 
   MeanTrendsDir   = fs->mkdir("MeanTrends");
   WidthTrendsDir  = fs->mkdir("WidthTrends");
@@ -2508,8 +2508,8 @@ Measurement1D PrimaryVertexValidation::getMedian(TH1F *histo)
   }
   median = TMath::Median(nbins, x, y);
   
-  delete[] x; x = 0;
-  delete[] y; y = 0;  
+  delete[] x; x = nullptr;
+  delete[] y; y = nullptr;  
 
   Measurement1D result(median,median/TMath::Sqrt(histo->GetEntries()));
 
@@ -2539,8 +2539,8 @@ Measurement1D PrimaryVertexValidation::getMAD(TH1F *histo)
   
   double theMAD = (getMedian(newHisto).value())*1.4826;
   
-  delete[] residuals; residuals=0;
-  delete[] weights; weights=0;
+  delete[] residuals; residuals=nullptr;
+  delete[] weights; weights=nullptr;
   newHisto->Delete("");
   
   Measurement1D result(theMAD,theMAD/histo->GetEntries());
@@ -2589,7 +2589,7 @@ std::pair<Measurement1D, Measurement1D> PrimaryVertexValidation::fitResiduals(TH
 }
 
 //*************************************************************
-void PrimaryVertexValidation::fillTrendPlot(TH1F* trendPlot, TH1F* residualsPlot[100], pvparams::estimator fitPar_, TString var_)
+void PrimaryVertexValidation::fillTrendPlot(TH1F* trendPlot, TH1F* residualsPlot[100], pvparams::estimator fitPar_, const std::string& var_)
 //*************************************************************
 {
    
@@ -2643,9 +2643,9 @@ void PrimaryVertexValidation::fillTrendPlot(TH1F* trendPlot, TH1F* residualsPlot
 	break;
       }
 
-    if(var_=="eta"){
+    if(var_.find("eta") != std::string::npos){
       trendPlot->GetXaxis()->SetBinLabel(i+1,etapositionString); 
-    } else if(var_=="phi"){
+    } else if(var_.find("phi") != std::string::npos){
       trendPlot->GetXaxis()->SetBinLabel(i+1,phipositionString); 
     } else {
       std::cout<<"PrimaryVertexValidation::fillTrendPlot() "<<var_<<" unknown track parameter!"<<std::endl;
@@ -2778,7 +2778,7 @@ bool PrimaryVertexValidation::vtxSort( const reco::Vertex & a, const reco::Verte
 }
 
 //*************************************************************
-bool PrimaryVertexValidation::passesTrackCuts(const reco::Track & track, const reco::Vertex & vertex,std::string qualityString_, double dxyErrMax_,double dzErrMax_, double ptErrMax_)
+bool PrimaryVertexValidation::passesTrackCuts(const reco::Track & track, const reco::Vertex & vertex,const std::string& qualityString_, double dxyErrMax_,double dzErrMax_, double ptErrMax_)
 //*************************************************************
 {
  
@@ -2805,7 +2805,7 @@ bool PrimaryVertexValidation::passesTrackCuts(const reco::Track & track, const r
 
 
 //*************************************************************
-std::map<std::string, TH1*> PrimaryVertexValidation::bookVertexHistograms(TFileDirectory dir)
+std::map<std::string, TH1*> PrimaryVertexValidation::bookVertexHistograms(const TFileDirectory& dir)
 //*************************************************************
 {
 
@@ -3025,7 +3025,7 @@ void PrimaryVertexValidation::add(std::map<std::string, TH1*>& h, TH1* hist)
 }
 
 //*************************************************************
-void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h, std::string s, double x)
+void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h,const std::string& s, double x)
 //*************************************************************
 {
   if(h.count(s)==0){
@@ -3036,7 +3036,7 @@ void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h, std::string s
 }
 
 //*************************************************************
-void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h, std::string s, double x, double y)
+void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h,const std::string& s, double x, double y)
 //*************************************************************
 {
   if(h.count(s)==0){
@@ -3050,7 +3050,7 @@ void PrimaryVertexValidation::fill(std::map<std::string, TH1*>& h, std::string s
 void PrimaryVertexValidation::fillByIndex(std::vector<TH1F*>& h, unsigned int index, double x,std::string tag)
 //*************************************************************
 {
-  //assert(!h.empty());
+  assert(!h.empty());
   if(index <= h.size()){
     h[index]->Fill(x);
   } else {
