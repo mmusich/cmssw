@@ -586,10 +586,12 @@ bool SiStripGainsPCLHarvester::produceTagFilter(const MonitorElement* Charge_Vs_
   
   
   float integral = (Charge_Vs_Index)->getTH2S()->Integral();
-  if( (Charge_Vs_Index)->getTH2S()->Integral(0,NStripAPVs+1, 0, 99999 ) < tagCondition_NClusters) {
+  float integralStrip = (Charge_Vs_Index)->getTH2S()->Integral(0,NStripAPVs+1, 0, 99999 );
+  if( integralStrip < tagCondition_NClusters) {
     edm::LogWarning("SiStripGainsPCLHarvester") 
       << "calibrationMode  -> " << m_calibrationMode << "\n"
-      << "produceTagFilter -> Return false: Statistics is too low : " << integral << std::endl;
+      << "produceTagFilter -> Return false: Statistics is too low : " << integralStrip << " SiStrip clusters, out of " 
+      << integral << " total clusters"<< std::endl;
     return false;
   }
   if((1.0 * GOOD) / (GOOD+BAD) < tagCondition_GoodFrac) {

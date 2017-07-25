@@ -1557,10 +1557,12 @@ bool SiStripGainFromCalibTree::produceTagFilter(){
 
 
     float integral = (Charge_Vs_Index[elepos])->getTH2S()->Integral();
-    if( (Charge_Vs_Index[elepos])->getTH2S()->Integral(0,NStripAPVs+1, 0, 99999 ) < tagCondition_NClusters) {
+    float integralStrip = (Charge_Vs_Index[elepos])->getTH2S()->Integral(0,NStripAPVs+1, 0, 99999 );
+    if( integralStrip < tagCondition_NClusters) {
         edm::LogWarning("SiStripGainFromCalibTree") 
-                                     << "calibrationMode  -> " << m_calibrationMode << "\n"
-                                     << "produceTagFilter -> Return false: Statistics is too low : " << integral << endl;
+	  << "calibrationMode  -> " << m_calibrationMode << "\n"
+	  << "produceTagFilter -> Return false: Statistics is too low : " << integralStrip << " SiStrip clusters, out of " 
+	  << integral << " total clusters"<< std::endl;
         return false;
     }
     if((1.0 * GOOD) / (GOOD+BAD) < tagCondition_GoodFrac) {
