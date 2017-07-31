@@ -46,6 +46,14 @@ class PrimaryVertexValidation(GenericValidationData_CTSR, ValidationWithPlots):
     @property
     def use_d0cut(self):
         return False
+    
+    @property
+    def isPVValidation(self):
+        return True
+
+    @property
+    def usePixelQualityFlag(self):
+        return False
 
     @property
     def ProcessName(self):
