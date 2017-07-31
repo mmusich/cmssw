@@ -1,9 +1,8 @@
 import sys
 import FWCore.ParameterSet.Config as cms
 
-
-
 def getSequence(process, collection,
+                isPVValidation = False,
                 saveCPU = False,
                 TTRHBuilder = "WithAngleAndTemplate",
                 usePixelQualityFlag = None,
@@ -251,6 +250,24 @@ def getSequence(process, collection,
                                              "clone": True})]
         if isCosmics: mods = mods[1:] # skip high purity selector for cosmics
 
+    ########################
+    ## PV Validation tune ##                 
+    ########################
+        if isPVValidation:
+            options["TrackSelector"]["HighPurity"].update({
+                    "trackQualities": [""],
+                    "pMin": 0.
+                    })
+            options["TrackSelector"]["Alignment"].update({
+                    "pMin" :      0.,      
+                    "ptMin" :     0.,       
+                    "nHitMin2D" : 0,       
+                    "nHitMin"   : 0,       
+                    "d0Min" : -999999.0,
+                    "d0Max" :  999999.0,
+                    "dzMin" : -999999.0,
+                    "dzMax" :  999999.0
+                    })
 
     ################################
     ## apply momentum constraint? ##
