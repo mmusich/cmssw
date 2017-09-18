@@ -29,13 +29,15 @@ l1Menus= {
     'PRef'         : ( ','.join( [ 'L1Menu_Collisions2015_5TeV_pp_reference_v5_uGT_v2_mc_xml',l1tMenuRecord,connectionString,l1tMenuLabel, "2016-03-04 15:00:00.000"] ), ),
 }
 
+L1TCaloParamsStage1 =  (','.join( ['L1TCaloParams_collisions_v1_mc','L1TCaloParamsRcd',connectionString,'','2017-09-15 12:00:00.000'] ), )
+
 hltGTs = {
 
 #   'symbolic GT'            : ('base GT',[('payload1',payload2')])
 
     'run1_mc_Fake'           : ('run1_mc'              ,l1Menus['Fake']),
     'run2_mc_Fake'           : ('run2_mc'              ,l1Menus['Fake']),
-    'run2_mc_Fake1'          : ('run2_mc_l1stage1'     ,l1Menus['Fake1']),
+    'run2_mc_Fake1'          : ('run2_mc'              ,l1Menus['Fake1']+L1TCaloParamsStage1),
     'run2_mc_Fake2'          : ('run2_mc'              ,l1Menus['Fake2']),
     'run2_mc_2e34v22'        : ('phase1_2017_realistic',l1Menus['2e34v22']),
     'run2_mc_2e34v30'        : ('phase1_2017_realistic',l1Menus['2e34v30']),
