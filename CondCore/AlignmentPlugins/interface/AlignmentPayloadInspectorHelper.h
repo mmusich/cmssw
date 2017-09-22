@@ -65,59 +65,51 @@ namespace AlignmentPI {
     TIBL3i,    //23 Inner Barrel Layer 3 inner  
     TIBL4o,    //24 Inner Barrel Layer 4 outer
     TIBL4i,    //25 Inner Barrel Layer 4 inner
-    TOBL1Ro,   //26 Outer Barrel Layer 1 Rphi outer  
-    TOBL1Ri,   //27 Outer Barrel Layer 1 Rphi inner  
-    TOBL1So,   //28 Outer Barrel Layer 1 Stereo outer
-    TOBL1Si,   //29 Outer Barrel Layer 1 Stereo inner
-    TOBL2Ro,   //30 Outer Barrel Layer 2 Rphi outer  
-    TOBL2Ri,   //31 Outer Barrel Layer 2 Rphi inner  
-    TOBL2So,   //32 Outer Barrel Layer 2 Stereo outer
-    TOBL2Si,   //33 Outer Barrel Layer 2 Stereo inner
-    TOBL3o,    //34 Outer Barrel Layer 3 outer
-    TOBL3i,    //35 Outer Barrel Layer 3 inner
-    TOBL4o,    //36 Outer Barrel Layer 4 outer
-    TOBL4i,    //37 Outer Barrel Layer 4 inner
-    TOBL5o,    //38 Outer Barrel Layer 5 outer
-    TOBL5i,    //39 Outer Barrel Layer 5 inner
-    TOBL6o,    //40 Outer Barrel Layer 6 outer
-    TOBL6i,    //41 Outer Barrel Layer 6 inner
-    TIDmR1R,   //42 Inner Disk Minus side Ring 1 Rphi
-    TIDmR1S,   //43 Inner Disk Minus side Ring 1 Stereo
-    TIDmR2R,   //44 Inner Disk Minus side Ring 2 Rphi  
-    TIDmR2S,   //45 Inner Disk Minus side Ring 2 Stereo
-    TIDmR3,    //46 Inner Disk Minus side Ring 3 
-    TIDpR1R,   //47 Inner Disk Plus side Ring 1 Rphi  
-    TIDpR1S,   //48 Inner Disk Plus side Ring 1 Stereo
-    TIDpR2R,   //49 Inner Disk Plus side Ring 2 Rphi  
-    TIDpR2S,   //50 Inner Disk Plus side Ring 2 Stereo
-    TIDpR3,    //51 Inner Disk Plus side Ring 3
-    TECmR1R,   //52 Endcaps Minus side Ring 1 Rphi
-    TECmR1S,   //53 Endcaps Minus side Ring 1 Stereo
-    TECmR2R,   //54 Encdaps Minus side Ring 2 Rphi
-    TECmR2S,   //55 Endcaps Minus side Ring 2 Stereo
-    TECmR3,    //56 Endcaps Minus side Ring 3
-    TECmR4,    //57 Endcaps Minus side Ring 4
-    TECmR5,    //58 Endcaps Minus side Ring 5
-    TECmR6,    //59 Endcaps Minus side Ring 6
-    TECmR7,    //60 Endcaps Minus side Ring 7        
-    TECpR1R,   //61 Endcaps Plus side Ring 1 Rphi   
-    TECpR1S,   //62 Endcaps Plus side Ring 1 Stereo 
-    TECpR2R,   //63 Encdaps Plus side Ring 2 Rphi   
-    TECpR2S,   //64 Endcaps Plus side Ring 2 Stereo 
-    TECpR3,    //65 Endcaps Plus side Ring 3	     
-    TECpR4,    //66 Endcaps Plus side Ring 4	     
-    TECpR5,    //67 Endcaps Plus side Ring 5	     
-    TECpR6,    //68 Endcaps Plus side Ring 6	     
-    TECpR7,    //67 Endcaps Plus side Ring 7        
-    StripDoubleSide, // 70 -- not to be considered
-    NUM_OF_REGIONS   // 71 -- default
+    TOBL1R,    //26 Outer Barrel Layer 1 Rphi  
+    TOBL1S,    //27 Outer Barrel Layer 1 Stereo 
+    TOBL2R,    //28 Outer Barrel Layer 2 Rphi   
+    TOBL2S,    //29 Outer Barrel Layer 2 Stereo 
+    TOBL3,     //30 Outer Barrel Layer 3 
+    TOBL4,     //31 Outer Barrel Layer 4 
+    TOBL5,     //32 Outer Barrel Layer 5 
+    TOBL6,     //33 Outer Barrel Layer 6 
+    TIDmR1R,   //34 Inner Disk Minus side Ring 1 Rphi
+    TIDmR1S,   //35 Inner Disk Minus side Ring 1 Stereo
+    TIDmR2R,   //36 Inner Disk Minus side Ring 2 Rphi  
+    TIDmR2S,   //37 Inner Disk Minus side Ring 2 Stereo
+    TIDmR3,    //38 Inner Disk Minus side Ring 3 
+    TIDpR1R,   //39 Inner Disk Plus side Ring 1 Rphi  
+    TIDpR1S,   //40 Inner Disk Plus side Ring 1 Stereo
+    TIDpR2R,   //41 Inner Disk Plus side Ring 2 Rphi  
+    TIDpR2S,   //41 Inner Disk Plus side Ring 2 Stereo
+    TIDpR3,    //43 Inner Disk Plus side Ring 3
+    TECmR1R,   //44 Endcaps Minus side Ring 1 Rphi
+    TECmR1S,   //45 Endcaps Minus side Ring 1 Stereo
+    TECmR2R,   //46 Encdaps Minus side Ring 2 Rphi
+    TECmR2S,   //47 Endcaps Minus side Ring 2 Stereo
+    TECmR3,    //48 Endcaps Minus side Ring 3
+    TECmR4,    //49 Endcaps Minus side Ring 4
+    TECmR5,    //50 Endcaps Minus side Ring 5
+    TECmR6,    //51 Endcaps Minus side Ring 6
+    TECmR7,    //52 Endcaps Minus side Ring 7        
+    TECpR1R,   //53 Endcaps Plus side Ring 1 Rphi   
+    TECpR1S,   //54 Endcaps Plus side Ring 1 Stereo 
+    TECpR2R,   //55 Encdaps Plus side Ring 2 Rphi   
+    TECpR2S,   //56 Endcaps Plus side Ring 2 Stereo 
+    TECpR3,    //57 Endcaps Plus side Ring 3	     
+    TECpR4,    //58 Endcaps Plus side Ring 4	     
+    TECpR5,    //59 Endcaps Plus side Ring 5	     
+    TECpR6,    //60 Endcaps Plus side Ring 6	     
+    TECpR7,    //61 Endcaps Plus side Ring 7        
+    StripDoubleSide, // 62 -- not to be considered
+    NUM_OF_REGIONS   // 63 -- default
   };
   
   std::map<AlignmentPI::partitions,std::pair<AlignmentPI::regions,AlignmentPI::regions> > partLimits =
     {{AlignmentPI::BPix,std::make_pair(AlignmentPI::BPixL1o,AlignmentPI::BPixL4i)},
      {AlignmentPI::FPix,std::make_pair(AlignmentPI::FPixmL1,AlignmentPI::FPixpL3)},
      {AlignmentPI::TIB, std::make_pair(AlignmentPI::TIBL1Ro,AlignmentPI::TIBL4i)},
-     {AlignmentPI::TOB, std::make_pair(AlignmentPI::TOBL1Ro,AlignmentPI::TOBL6i)},
+     {AlignmentPI::TOB, std::make_pair(AlignmentPI::TOBL1R,AlignmentPI::TOBL6)},
      {AlignmentPI::TID, std::make_pair(AlignmentPI::TIDmR1R,AlignmentPI::TIDpR3)},
      {AlignmentPI::TEC, std::make_pair(AlignmentPI::TECmR1R,AlignmentPI::TECpR7)}};
 
@@ -153,22 +145,14 @@ namespace AlignmentPI {
     case AlignmentPI::TIBL3i  : return "TIBL3i";  
     case AlignmentPI::TIBL4o  : return "TIBL4o";  
     case AlignmentPI::TIBL4i  : return "TIBL4i";  
-    case AlignmentPI::TOBL1Ro : return "TOBL1Ro"; 
-    case AlignmentPI::TOBL1Ri : return "TOBL1Ri"; 
-    case AlignmentPI::TOBL1So : return "TOBL1So"; 
-    case AlignmentPI::TOBL1Si : return "TOBL1Si"; 
-    case AlignmentPI::TOBL2Ro : return "TOBL2Ro"; 
-    case AlignmentPI::TOBL2Ri : return "TOBL2Ri"; 
-    case AlignmentPI::TOBL2So : return "TOBL2So"; 
-    case AlignmentPI::TOBL2Si : return "TOBL2Si"; 
-    case AlignmentPI::TOBL3o  : return "TOBL3o";  
-    case AlignmentPI::TOBL3i  : return "TOBL3i";  
-    case AlignmentPI::TOBL4o  : return "TOBL4o";  
-    case AlignmentPI::TOBL4i  : return "TOBL4i";  
-    case AlignmentPI::TOBL5o  : return "TOBL5o";  
-    case AlignmentPI::TOBL5i  : return "TOBL5i";  
-    case AlignmentPI::TOBL6o  : return "TOBL6o";  
-    case AlignmentPI::TOBL6i  : return "TOBL6i";  
+    case AlignmentPI::TOBL1R  : return "TOBL1R"; 
+    case AlignmentPI::TOBL1S  : return "TOBL1S"; 
+    case AlignmentPI::TOBL2R  : return "TOBL2R"; 
+    case AlignmentPI::TOBL2S  : return "TOBL2S"; 
+    case AlignmentPI::TOBL3   : return "TOBL3";  
+    case AlignmentPI::TOBL4   : return "TOBL4";  
+    case AlignmentPI::TOBL5   : return "TOBL5";  
+    case AlignmentPI::TOBL6   : return "TOBL6";  
     case AlignmentPI::TIDmR1R : return "TIDmR1R"; 
     case AlignmentPI::TIDmR1S : return "TIDmR1S"; 
     case AlignmentPI::TIDmR2R : return "TIDmR2R"; 
@@ -425,30 +409,22 @@ namespace AlignmentPI {
       switch(m_layer)
 	{
 	case 1:
-	  if(m_isRphi){
-	    m_isInternal > 0 ? ret = AlignmentPI::TOBL1Ro  : ret = AlignmentPI::TOBL1Ri;
-	  } else {
-	    m_isInternal > 0 ? ret = AlignmentPI::TOBL1So  : ret = AlignmentPI::TOBL1Si;
-	  }
+	  m_isRphi ? ret = AlignmentPI::TOBL1R : ret = AlignmentPI::TOBL1S;
 	  break;
 	case 2:
-	  if(m_isRphi){
-	    m_isInternal > 0 ? ret = AlignmentPI::TOBL2Ro  : ret = AlignmentPI::TOBL2Ri;
-	  } else {
-	    m_isInternal > 0 ? ret = AlignmentPI::TOBL2So  : ret = AlignmentPI::TOBL2Si;
-	  }
+	  m_isRphi ? ret = AlignmentPI::TOBL2R : ret = AlignmentPI::TOBL2S;
 	  break;
 	case 3:
-	  m_isInternal > 0 ? ret = AlignmentPI::TOBL3o  : ret = AlignmentPI::TOBL3i;
+	  ret = AlignmentPI::TOBL3;
 	  break;
 	case 4:
-	  m_isInternal > 0 ? ret = AlignmentPI::TOBL4o  : ret = AlignmentPI::TOBL4i;
+	  ret = AlignmentPI::TOBL4;
 	  break;
 	case 5:
-	  m_isInternal > 0 ? ret = AlignmentPI::TOBL5o  : ret = AlignmentPI::TOBL5i;
+	  ret = AlignmentPI::TOBL5;
 	  break;
 	case 6:
-	  m_isInternal > 0 ? ret = AlignmentPI::TOBL6o  : ret = AlignmentPI::TOBL6i;
+	  ret = AlignmentPI::TOBL6;
 	  break;
 	default:
 	  edm::LogWarning("LogicError") << "Unknow TOB layer: " <<  m_layer;
