@@ -92,10 +92,17 @@ namespace {
       std::vector<int> boundaries;
       AlignmentPI::partitions currentPart = AlignmentPI::BPix;
       for(unsigned int i=0;i<=ref_ali.size();i++){
+
+	if(DetId(ref_ali[i].rawId()).det() != DetId::Tracker){
+	  edm::LogWarning("TrackerAlignmentErrorExtended_PayloadInspector") << "Encountered invalid Tracker DetId:" << ref_ali[i].rawId() <<" - terminating ";
+	  return false;
+	}
+
 	if(ref_ali[i].rawId() == target_ali[i].rawId()){
 
 	  counter++;
 	  int subid = DetId(ref_ali[i].rawId()).subdetId();
+
 	  auto thePart = static_cast<AlignmentPI::partitions>(subid);
 	  if( thePart != currentPart ){
 	    currentPart=thePart;
@@ -243,6 +250,12 @@ namespace {
       }
 
       for(unsigned int i=0;i<=ref_ali.size();i++){
+
+	if(DetId(ref_ali[i].rawId()).det() != DetId::Tracker){
+	  edm::LogWarning("TrackerAlignmentErrorExtended_PayloadInspector") << "Encountered invalid Tracker DetId:" << ref_ali[i].rawId() <<" - terminating ";
+	  return false;
+	}
+
 	if(ref_ali[i].rawId() == target_ali[i].rawId()){
 	  
 	  int subid = DetId(ref_ali[i].rawId()).subdetId();
@@ -344,6 +357,12 @@ namespace {
       float barycenter=0.;
       float nmodules(0.);
       for(const auto& ali : alignments ){
+
+	if(DetId(ali.rawId()).det() != DetId::Tracker){
+	  edm::LogWarning("TrackerAlignmentErrorExtended_PayloadInspector") << "Encountered invalid Tracker DetId:" << ali.rawId() <<" - terminating ";
+	  return false;
+	}
+
 	int subid = DetId(ali.rawId()).subdetId();
 	if(subid!=PixelSubdetector::PixelBarrel) continue;
 	
@@ -364,7 +383,8 @@ namespace {
 	} // switch on the coordinate (only X,Y,Z are interesting)
       } // ends loop on the alignments
 
-      std::cout<<"barycenter ("<<barycenter<<")/n. modules ("<< nmodules << ") =  "<< barycenter/nmodules << std::endl;
+      //std::cout<<"barycenter ("<<barycenter<<")/n. modules ("<< nmodules << ") =  "<< barycenter/nmodules << std::endl;
+
       // take the mean
       barycenter/=nmodules;
 
