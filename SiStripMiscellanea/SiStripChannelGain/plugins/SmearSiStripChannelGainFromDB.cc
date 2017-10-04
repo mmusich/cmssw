@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
 // Package:    SiStripMiscellanea/SiStripChannelGain
-// Class:      CreateSiStripChannelGain
+// Class:      SmearSiStripChannelGainFromDB
 // 
-/**\class CreateSiStripChannelGain CreateSiStripChannelGain.cc SiStripMiscellanea/SiStripChannelGain/plugins/CreateSiStripChannelGain.cc
+/**\class SmearSiStripChannelGainFromDB SmearSiStripChannelGainFromDB.cc SiStripMiscellanea/SiStripChannelGain/plugins/SmearSiStripChannelGainFromDB.cc
 
  Description: [one line class summary]
 
@@ -39,6 +39,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "DataFormats/SiStripDetId/interface/StripSubdetector.h" 
+
 
 #include "TRandom3.h"
 
@@ -46,16 +48,41 @@
 // class declaration
 //
 
+namespace ApvGain {
+  struct GainSmearings{
+    GainSmearings(){
+      m_doScale = false;
+      m_doSmear = false;
+      m_scaleFactor = 1.;
+      m_smearFactor = 0.;
+    }
+    ~GainSmearings(){}
+    
+    void setSmearing(bool doScale,bool doSmear,double the_scaleFactor,double the_smearFactor){
+      m_doScale = doScale;
+      m_doSmear = doSmear;
+      m_scaleFactor = the_scaleFactor;
+      m_smearFactor = the_smearFactor;
+    }
+    
+    bool m_doScale;
+    bool m_doSmear;
+    double m_scaleFactor;
+    double m_smearFactor;
+  };
+
+}
+
 // If the analyzer does not use TFileService, please remove
 // the template argument to the base class so the class inherits
 // from  edm::one::EDAnalyzer<> and also remove the line from
 // constructor "usesResource("TFileService");"
 // This will improve performance in multithreaded jobs.
 
-class CreateSiStripChannelGain : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class SmearSiStripChannelGainFromDB : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
-      explicit CreateSiStripChannelGain(const edm::ParameterSet&);
-      ~CreateSiStripChannelGain();
+      explicit SmearSiStripChannelGainFromDB(const edm::ParameterSet&);
+      ~SmearSiStripChannelGainFromDB();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -63,15 +90,13 @@ class CreateSiStripChannelGain : public edm::one::EDAnalyzer<edm::one::SharedRes
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       std::unique_ptr<SiStripApvGain> getNewObject(const std::map<std::pair<uint32_t,int>,float>& theMap);
+      StripSubdetector::SubDetector getSubdetFromString(std::string sub);
       virtual void endJob() override;
 
       // ----------member data ---------------------------
       std::string m_Record;  
       uint32_t m_gainType;
-      bool m_doScale;
-      bool m_doSmear;
-      double m_scaleFactor;
-      double m_smearFactor;
+      std::vector<edm::ParameterSet> m_parameters;
 };
 
 //
@@ -85,20 +110,17 @@ class CreateSiStripChannelGain : public edm::one::EDAnalyzer<edm::one::SharedRes
 //
 // constructors and destructor
 //
-CreateSiStripChannelGain::CreateSiStripChannelGain(const edm::ParameterSet& iConfig)
+SmearSiStripChannelGainFromDB::SmearSiStripChannelGainFromDB(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
    usesResource("TFileService");
    m_Record  = iConfig.getUntrackedParameter<std::string> ("Record" , "SiStripApvGainRcd");
    m_gainType = iConfig.getUntrackedParameter<uint32_t>("gainType",1);
-   m_doScale   = iConfig.getUntrackedParameter<bool>("doScale",false);
-   m_doSmear   = iConfig.getUntrackedParameter<bool>("doSmear",false);
-   m_scaleFactor = iConfig.getUntrackedParameter<double>("scaleFactor",1.);
-   m_smearFactor = iConfig.getUntrackedParameter<double>("smearFactor",0.);
+   m_parameters = iConfig.getParameter<std::vector<edm::ParameterSet> >("thresholds");
 }
 
 
-CreateSiStripChannelGain::~CreateSiStripChannelGain()
+SmearSiStripChannelGainFromDB::~SmearSiStripChannelGainFromDB()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -113,9 +135,38 @@ CreateSiStripChannelGain::~CreateSiStripChannelGain()
 
 // ------------ method called for each event  ------------
 void
-CreateSiStripChannelGain::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+SmearSiStripChannelGainFromDB::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
+
+   std::vector<std::string> partitions;
+
+   // fill the list of alignables
+   for(auto& thePSet : m_parameters){
+     const std::string partition(thePSet.getParameter<std::string>("partition"));
+     // only if it is not yet in the list
+     if(std::find(partitions.begin(), partitions.end(), partition) == partitions.end()) {
+       partitions.push_back(partition);
+     }
+   }
+
+   std::map<StripSubdetector::SubDetector,ApvGain::GainSmearings> mapOfSmearings;
+
+    for(auto& thePSet : m_parameters){
+     
+       const std::string partition(thePSet.getParameter<std::string>("partition"));
+       StripSubdetector::SubDetector sub = this->getSubdetFromString(partition);
+       
+       bool    m_doScale(thePSet.getParameter<bool>("doScale"));
+       bool    m_doSmear(thePSet.getParameter<bool>("doSmear"));
+       double  m_scaleFactor(thePSet.getParameter<double>("scaleFactor"));
+       double  m_smearFactor(thePSet.getParameter<double>("smearFactor"));
+    
+       ApvGain::GainSmearings params = ApvGain::GainSmearings();
+       params.setSmearing(m_doScale,m_doSmear,m_scaleFactor,m_smearFactor);
+       mapOfSmearings[sub]=params;
+    }
+
 
    edm::ESHandle<SiStripGain> SiStripApvGain_;
    iSetup.get<SiStripGainRcd>().get(SiStripApvGain_);
@@ -128,17 +179,21 @@ CreateSiStripChannelGain::analyze(const edm::Event& iEvent, const edm::EventSetu
    for (const auto & d : detid) {
      SiStripApvGain::Range range=SiStripApvGain_->getRange(d,m_gainType);
      float nAPV=0;
+
+     StripSubdetector::SubDetector subid =  static_cast<StripSubdetector::SubDetector>(DetId(d).subdetId()); 
+     ApvGain::GainSmearings params =  mapOfSmearings[subid];
+
      for(int it=0;it<range.second-range.first;it++){
        nAPV+=1;
        float Gain=SiStripApvGain_->getApvGain(it,range);
        std::pair<uint32_t,int> index = std::make_pair(d,nAPV);
        
-       if(m_doScale){
-	 Gain*=m_scaleFactor;
+       if(params.m_doScale){
+	 Gain*=params.m_scaleFactor;
        }
        
-       if(m_doSmear){
-	 float smearedGain = random->Gaus(Gain,m_smearFactor);
+       if(params.m_doSmear){
+	 float smearedGain = random->Gaus(Gain,params.m_smearFactor);
 	 Gain=smearedGain;
        }
 
@@ -162,19 +217,19 @@ CreateSiStripChannelGain::analyze(const edm::Event& iEvent, const edm::EventSetu
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-CreateSiStripChannelGain::beginJob()
+SmearSiStripChannelGainFromDB::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-CreateSiStripChannelGain::endJob() 
+SmearSiStripChannelGainFromDB::endJob() 
 {
 }
 
 //********************************************************************************//
 std::unique_ptr<SiStripApvGain>
-CreateSiStripChannelGain::getNewObject(const std::map<std::pair<uint32_t,int>,float>& theMap) 
+SmearSiStripChannelGainFromDB::getNewObject(const std::map<std::pair<uint32_t,int>,float>& theMap) 
 {
   std::unique_ptr<SiStripApvGain> obj = std::unique_ptr<SiStripApvGain>(new SiStripApvGain());
   
@@ -192,10 +247,10 @@ CreateSiStripChannelGain::getNewObject(const std::map<std::pair<uint32_t,int>,fl
     }
     theSiStripVector.push_back(element.second);
     
-    edm::LogInfo("CreateSiStripChannelGain")<<" DetId: "<<DetId 
-					    <<" APV:   "<<element.first.second
-					    <<" Gain:  "<<element.second
-					    <<std::endl;
+    edm::LogInfo("SmearSiStripChannelGainFromDB")<<" DetId: "<<DetId 
+						 <<" APV:   "<<element.first.second
+						 <<" Gain:  "<<element.second
+						 <<std::endl;
   }
   
   if(!theSiStripVector.empty()){
@@ -209,7 +264,7 @@ CreateSiStripChannelGain::getNewObject(const std::map<std::pair<uint32_t,int>,fl
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-CreateSiStripChannelGain::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+SmearSiStripChannelGainFromDB::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -217,5 +272,24 @@ CreateSiStripChannelGain::fillDescriptions(edm::ConfigurationDescriptions& descr
   descriptions.addDefault(desc);
 }
 
+/*--------------------------------------------------------------------*/
+StripSubdetector::SubDetector SmearSiStripChannelGainFromDB::getSubdetFromString(std::string sub)
+/*--------------------------------------------------------------------*/
+{
+  if(sub.find("TIB")!=std::string::npos){
+    return StripSubdetector::TIB ;
+  } else if(sub.find("TOB")!=std::string::npos){ 
+    return StripSubdetector::TOB ;
+  } else if(sub.find("TID")!=std::string::npos){   
+    return StripSubdetector::TID ;
+  } else if(sub.find("TEC")!=std::string::npos) {
+    return StripSubdetector::TEC ;
+  } else {
+    edm::LogError("LogicError") << "Unknown partition: " << sub;
+    throw cms::Exception("Invalid Partition passed"); 
+  }  
+}
+
+
 //define this as a plug-in
-DEFINE_FWK_MODULE(CreateSiStripChannelGain);
+DEFINE_FWK_MODULE(SmearSiStripChannelGainFromDB);
