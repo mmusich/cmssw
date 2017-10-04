@@ -9,13 +9,45 @@ eval `scram run -sh`;
 # Go back to original working directory
 cd $W_DIR;
 # Run get payload data script
-/afs/cern.ch/user/c/condbpro/public/BROWSER_PI/getPayloadData.py \
-        --plugin pluginSiStripApvGain_PayloadInspector \
-        --plot plot_SiStripApvGains_TIB_PerLayer \
-        --tag SiStripApvGain_FromParticles_GR10_v1_express \
-        --time_type Run \
-        --iovs '{"start_iov": "286042", "end_iov": "286042"}' \
-        --db Prod \
-        --test;
 
-#        --image_plot True \
+rm *.png
+mkdir $W_DIR/results/
+
+for i in `seq 2 12`;
+do
+    echo $i
+    mkdir $W_DIR/results/Comparison_1_$i
+
+    /afs/cern.ch/user/m/musich/public/forStripDBcontacts/getPayloadDataFromLocalDB.py \
+	--plugin pluginSiStripApvGain_PayloadInspector \
+	--plot plot_SiStripApvGainsComparator \
+	--tag g2_for_testMatrix \
+	--time_type Run \
+	--iovs '{"start_iov": "1", "end_iov": "'$i'"}' \
+	--db sqlite_file:toInspect.db \
+	--test;
+
+    mv *.png  $W_DIR/results/Comparison_1_$i/SiStripApvGainsComparator.png
+    
+    /afs/cern.ch/user/m/musich/public/forStripDBcontacts/getPayloadDataFromLocalDB.py \
+	--plugin pluginSiStripApvGain_PayloadInspector \
+	--plot plot_SiStripApvGainsComparatorByPartition \
+	--tag g2_for_testMatrix \
+	--time_type Run \
+	--iovs '{"start_iov": "1", "end_iov": "'$i'"}' \
+	--db sqlite_file:toInspect.db \
+	--test;
+
+    mv *.png  $W_DIR/results/Comparison_1_$i/SiStripApvGainsComparatorByPartition.png
+    
+    /afs/cern.ch/user/m/musich/public/forStripDBcontacts/getPayloadDataFromLocalDB.py \
+	--plugin pluginSiStripApvGain_PayloadInspector \
+	--plot plot_SiStripApvGainsRatioWithPreviousIOVTrackerMap \
+	--tag g2_for_testMatrix \
+	--time_type Run \
+	--iovs '{"start_iov": "1", "end_iov": "'$i'"}' \
+	--db sqlite_file:toInspect.db \
+	--test;
+    
+    mv *.png  $W_DIR/results/Comparison_1_$i/SiStripApvGainsRatioWithPreviousIOVTrackerMap.png
+done

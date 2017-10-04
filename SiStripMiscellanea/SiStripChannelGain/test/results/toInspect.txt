@@ -1,0 +1,9 @@
+{
+    "destinationDatabase": "oracle://cms_orcoff_prep/CMS_CONDITIONS", 
+    "destinationTags": {
+        "G2_variations_onIOV_303014": {}
+    }, 
+    "inputTag": "g2_for_testMatrix", 
+    "since": null, 
+    "userText": "Test variations on the scale and width of the gain distribution of the 2017 data IOV 303014"
+}
