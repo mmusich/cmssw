@@ -22,7 +22,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -87,8 +87,7 @@
 
 using namespace std;
 
-
-class SiStripHitResolution : public edm::EDAnalyzer {
+class SiStripHitResolution : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 public:
   typedef vector<Trajectory> TrajectoryCollection;
   typedef vector<reco::Track> TrackCollection;
@@ -121,13 +120,15 @@ private:
   
   TrackerHitAssociator::Config* helper;
   TrackerHitAssociator* associator;
-  AnalyticalPropagator * propagator;
+  AnalyticalPropagator* propagator;
   TrajectoryStateCombiner combiner_;
 
   edm::EDGetTokenT< edm::DetSetVector<StripDigiSimLink> > stripdigi_token_;
   edm::EDGetTokenT<TrackCollection> tkToken_;
   edm::EDGetTokenT<TrajectoryCollection> tjToken_;
  
+  edm::Service<TFileService> fs;
+
   edm::FileInPath FileInPath_;
   TTree* rootTree_;
   bool   genTruth;
@@ -152,7 +153,6 @@ private:
   float        hitDX;
   float        trackDX;
   float        trackDXE;
-
   float        trackParamX    ;
   float        trackParamY    ;
   float        trackParamDXDZ ;
@@ -179,7 +179,6 @@ private:
 //
 
 using std::vector;
-using std::cout;
 using std::endl;
 //
 // constructors and destructor
@@ -196,16 +195,18 @@ SiStripHitResolution::SiStripHitResolution(const edm::ParameterSet& iConfig) :
   pairsOnly(iConfig.getParameter<bool>("pairsOnly")),
   minMomentum(iConfig.getParameter<double>("minMomentum"))
 {
+
+  usesResource(TFileService::kSharedResource);
+  
   tjToken_=consumes<TrajectoryCollection>(iConfig.getParameter<edm::InputTag>("trajectories"));
   tkToken_=consumes<TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
   stripdigi_token_=consumes< edm::DetSetVector<StripDigiSimLink> >(iConfig.getParameter<edm::InputTag>("stripSimLinkSrc"));
-  helper= new TrackerHitAssociator::Config(config_,consumesCollector());
+  helper = new TrackerHitAssociator::Config(config_,consumesCollector());
 
   //now do what ever initialization is needed
   trackTag_ = iConfig.getParameter<edm::InputTag>("tracks");
-  reader=new SiStripDetInfoFileReader(FileInPath_.fullPath());
+  reader =new SiStripDetInfoFileReader(FileInPath_.fullPath());
  
-  edm::Service<TFileService> fs;
   //
   // root output
   //
@@ -319,7 +320,7 @@ SiStripHitResolution::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
   // loop over trajectories from refit
   for ( TrajectoryCollection::const_iterator it=trajectoryCollection->begin();
-  it!=trajectoryCollection->end(); ++it ){
+	it!=trajectoryCollection->end(); ++it ){
     
     vector < TrajectoryMeasurement > tmColl = it->measurements(); // vector of the hits along the fitted track
     for (vector < TrajectoryMeasurement >::const_iterator itTraj = tmColl.begin();
@@ -739,6 +740,10 @@ SiStripHitResolution::endJob() {
     rootTree_->Write();
     delete rootTree_;
   }
+  delete associator;
+  delete propagator;
+  delete helper;
+  delete reader;
 }
 
 //define this as a plug-in
