@@ -244,7 +244,7 @@ SiStripHitResolution::SiStripHitResolution(const edm::ParameterSet& iConfig) :
   rootTrackTree_ = fs->make<TTree>("tracks","Tracks");
   rootTrackTree_->Branch("momentum"  ,&track_momentum  ,"momentum/F");
   rootTrackTree_->Branch("trackChi2" ,&track_trackChi2 ,"trackChi2/F");
-  rootTrackTree_->Branch("trackChi2_2" ,&track_trackChi2_2 ,"trackChi2_2/F");
+  //rootTrackTree_->Branch("trackChi2_2" ,&track_trackChi2_2 ,"trackChi2_2/F");
   rootTrackTree_->Branch("eta" ,&track_eta ,"eta/F");
    
 }
@@ -308,15 +308,14 @@ SiStripHitResolution::analyze(const edm::Event& iEvent, const edm::EventSetup& i
 
   load(iEvent,iSetup);
 
-  for(unsigned int iT = 0; iT < tracks->size(); ++iT){
-    track_momentum = tracks->at(iT).pt();
-    track_eta = tracks->at(iT).eta();
-    track_trackChi2   = ChiSquaredProbability((double)( tracks->at(iT).chi2() ),(double)( tracks->at(iT).ndof() ));
-    track_trackChi2_2 = TMath::Prob(tracks->at(iT).chi2(),(int)tracks->at(iT).ndof());
+  for(const auto &track : *tracks) {
+    track_momentum = track.pt();
+    track_eta = track.eta();
+    track_trackChi2   = ChiSquaredProbability((double)(track.chi2()),(double)( track.ndof() ));
+    //track_trackChi2_2 = TMath::Prob(tracks->at(iT).chi2(),(int)tracks->at(iT).ndof());
     
     rootTrackTree_->Fill();
   }
-
 
   // loop over trajectories from refit
   for ( TrajectoryCollection::const_iterator it=trajectoryCollection->begin();
@@ -741,7 +740,6 @@ SiStripHitResolution::endJob() {
     delete rootTree_;
   }
   delete associator;
-  delete propagator;
   delete helper;
   delete reader;
 }
