@@ -94,13 +94,13 @@ public:
   typedef vector<reco::Track> TrackCollection;
   
   explicit SiStripHitResolution(const edm::ParameterSet&);
-  ~SiStripHitResolution();
+  ~SiStripHitResolution() override;
 
 private:
   typedef TransientTrackingRecHit::ConstRecHitPointer ConstRecHitPointer;
   void load(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-  virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void endJob() ;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override ;
 
   void getHitParameters(const TransientTrackingRecHit::ConstRecHitPointer& hit, const LocalVector& trackDirection, unsigned int * detID, unsigned int * clusterWidth, float * expWidth, float * res, bool * atEdge, float *pitch);
   float getSimHitRes(const GeomDetUnit * det, const LocalVector& trackdirection, const TrackingRecHit& recHit, float * trackWidth, float *pitch);
@@ -186,12 +186,12 @@ using std::endl;
 //
 SiStripHitResolution::SiStripHitResolution(const edm::ParameterSet& iConfig) :
   config_(iConfig),
-  trackerGeometry_(0),
-  magField_(0),
-  associator(0),
-  propagator(0),
+  trackerGeometry_(nullptr),
+  magField_(nullptr),
+  associator(nullptr),
+  propagator(nullptr),
   FileInPath_("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat"),
-  rootTree_(0),
+  rootTree_(nullptr),
   genTruth(iConfig.getParameter<bool>("genTruth")),
   pairsOnly(iConfig.getParameter<bool>("pairsOnly")),
   minMomentum(iConfig.getParameter<double>("minMomentum"))
@@ -374,7 +374,7 @@ SiStripHitResolution::analyze(const edm::Event& iEvent, const edm::EventSetup& i
         detID2          = 0;
         clusterW2       = 0;
         expectedW2      = 0;
-        atEdge2         = 0;
+        atEdge2         = false;
         pairPath        = 0;
         hitDX           = 0;
         trackDX         = 0;
@@ -580,7 +580,7 @@ double SiStripHitResolution::getSimpleRes(const TrajectoryMeasurement* traj1){
     return -100;
   }
   
-  const TransientTrackingRecHit::ConstRecHitPointer firstRecHit = traj1->recHit();
+  const TransientTrackingRecHit::ConstRecHitPointer& firstRecHit = traj1->recHit();
   double recHitX_1 = firstRecHit->localPosition().x();
   return (theCombinedPredictedState.localPosition().x() - recHitX_1);
   
@@ -605,11 +605,11 @@ bool SiStripHitResolution::getPairParameters(const TrajectoryMeasurement* traj1,
 
 
   // backward predicted state at module 1
-  TrajectoryStateOnSurface bwdPred1 = traj1->backwardPredictedState();
+  const TrajectoryStateOnSurface& bwdPred1 = traj1->backwardPredictedState();
   if ( !bwdPred1.isValid() )  return false;
   //edm::LogInfo("SiStripHitResolution") << "momentum from backward predicted state = " << bwdPred1.globalMomentum().mag() << endl;
   // forward predicted state at module 2
-  TrajectoryStateOnSurface fwdPred2 = traj2->forwardPredictedState();
+  const TrajectoryStateOnSurface& fwdPred2 = traj2->forwardPredictedState();
   //edm::LogInfo("SiStripHitResolution") << "momentum from forward predicted state = " << fwdPred2.globalMomentum().mag() << endl;
   if ( !fwdPred2.isValid() )  return false;
   // extrapolate fwdPred2 to module 1
@@ -686,8 +686,8 @@ bool SiStripHitResolution::getPairParameters(const TrajectoryMeasurement* traj1,
 
   (*trackDX) = predX1 + relativeXSign_*predX2;
 
-  const TransientTrackingRecHit::ConstRecHitPointer firstRecHit = traj1->recHit();
-  const TransientTrackingRecHit::ConstRecHitPointer secondRecHit = traj2->recHit();
+  const TransientTrackingRecHit::ConstRecHitPointer& firstRecHit = traj1->recHit();
+  const TransientTrackingRecHit::ConstRecHitPointer& secondRecHit = traj2->recHit();
   double recHitX_1 = firstRecHit->localPosition().x();
   double recHitX_2 = secondRecHit->localPosition().x();
   //  if (abs(recHitX_1)>5) edm::LogInfo("SiStripHitResolution") << "BAD: Bad hit position: Id = " << firstRecHit->geographicalId().rawId() << endl;
