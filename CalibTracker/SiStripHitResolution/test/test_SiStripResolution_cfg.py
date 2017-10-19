@@ -25,7 +25,7 @@ process.source = cms.Source("PoolSource",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '92X_dataRun2_Express_v7', '')
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string('HitRes_data_alcareco.root')
@@ -44,7 +44,7 @@ process.analysis = cms.EDAnalyzer("SiStripHitResolution",
                                   associateStrip = cms.bool(False),
                                   associateRecoTracks = cms.bool(False),    
                                   pairsOnly = cms.bool(False),
-                                  minMomentum = cms.double(10),
+                                  minMomentum = cms.double(3.),
                                   genTruth = cms.bool(False),
                                   ROUList = cms.vstring('g4SimHitsTrackerHitsTIBLowTof', 
                                                         'g4SimHitsTrackerHitsTIBHighTof', 
