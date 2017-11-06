@@ -972,6 +972,10 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 		  PVValHelper::fillByIndex(h_norm_dxy_ladder_,ladder_num-1,dxyFromMyVertex/s_ip2dpv_err);  
 		  PVValHelper::fillByIndex(h_norm_dz_ladder_,ladder_num-1,dzFromMyVertex/dz_err);   
 		  
+		  a_dxyL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dxyFromMyVertex*cmToum);
+		  a_dzL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dzFromMyVertex*cmToum); 
+		  n_dxyL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dxyFromMyVertex/s_ip2dpv_err);			    
+		  n_dzL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dzFromMyVertex/dz_err); 
 		}
 
 		// filling the binned distributions
@@ -1437,7 +1441,10 @@ void PrimaryVertexValidation::beginJob()
 
   TFileDirectory AbsDoubleDiffRes   = fs->mkdir("Abs_DoubleDiffResiduals");
   TFileDirectory NormDoubleDiffRes  = fs->mkdir("Norm_DoubleDiffResiduals");
-  
+
+  TFileDirectory AbsL1Map   = fs->mkdir("Abs_L1Residuals");
+  TFileDirectory NormL1Map  = fs->mkdir("Norm_L1Residuals");
+
   // book residuals vs pT histograms
   
   TFileDirectory AbsTranspTRes  = fs->mkdir("Abs_Transv_pT_Residuals"); 
@@ -1505,6 +1512,29 @@ void PrimaryVertexValidation::beginJob()
   TFileDirectory NormLongLadderRes  = fs->mkdir("Norm_Long_ladder_Residuals"); 
   h_norm_dz_ladder_  = bookResidualsHistogram(NormLongLadderRes,nLadders_,PVValHelper::norm_dz,PVValHelper::ladder,true);   
 
+  // book residuals as function of nLadders and nModules
+  
+  for(unsigned int iLadder=0;iLadder<nLadders_;iLadder++){
+    for(unsigned int iModule=0;iModule<8;iModule++){
+      
+      a_dxyL1ResidualsMap[iLadder][iModule] = AbsL1Map.make<TH1F>(Form("histo_dxy_ladder%i_module%i",iLadder,iModule),
+								  Form("d_{xy} ladder=%i module=%i;d_{xy} [#mum];tracks",iLadder,iModule),
+								  theDetails_.histobins,-dzmax_eta,dzmax_eta);
+      
+      a_dzL1ResidualsMap[iLadder][iModule]  = AbsL1Map.make<TH1F>(Form("histo_dz_ladder%i_module%i",iLadder,iModule),
+								  Form("d_{z} ladder=%i module=%i;d_{z} [#mum];tracks",iLadder,iModule),
+								  theDetails_.histobins,-dzmax_eta,dzmax_eta);
+
+      n_dxyL1ResidualsMap[iLadder][iModule] = NormL1Map.make<TH1F>(Form("histo_norm_dxy_ladder%i_module%i",iLadder,iModule),
+								   Form("d_{xy} ladder=%i module=%i;d_{xy}/#sigma_{d_{xy}};tracks",iLadder,iModule),
+								   theDetails_.histobins,-dzmax_eta/100,dzmax_eta/100);
+      
+      n_dzL1ResidualsMap[iLadder][iModule]  = NormL1Map.make<TH1F>(Form("histo_norm_dz_ladder%i_module%i",iLadder,iModule),
+								   Form("d_{z} ladder=%i module=%i;d_{z}/#sigma_{d_{z}};tracks",iLadder,iModule),
+								   theDetails_.histobins,-dzmax_eta/100,dzmax_eta/100);
+
+    }
+  }
 
   // book residuals as function of phi and eta
 
@@ -1754,6 +1784,41 @@ void PrimaryVertexValidation::beginJob()
   n_dzWidthMap       =  Width2DMapsDir.make<TH2F> ("norm_widths_dz_map",
 						   "width(d_{z}/#sigma_{d_{z}}) map;#eta (sector);#varphi (sector) [degrees]",
 						   nBins_,lowedge,highedge,nBins_,lowedge,highedge);
+
+
+  // 2D maps of residuals in bins of L1 modules
+  
+  a_dxyL1MeanMap       =  Mean2DMapsDir.make<TH2F>  ("means_dxy_l1map",
+						     "#LT d_{xy} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  a_dzL1MeanMap        =  Mean2DMapsDir.make<TH2F>  ("means_dz_l1map",
+						     "#LT d_{z} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  		     
+  n_dxyL1MeanMap       =  Mean2DMapsDir.make<TH2F>  ("norm_means_dxy_l1map",
+						     "#LT d_{xy}/#sigma_{d_{xy}} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  n_dzL1MeanMap        =  Mean2DMapsDir.make<TH2F>  ("norm_means_dz_l1map",
+						     "#LT d_{z}/#sigma_{d_{z}} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  		     
+  a_dxyL1WidthMap      =  Width2DMapsDir.make<TH2F> ("widths_dxy_l1map",
+						     "#sigma_{d_{xy}} map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  a_dzL1WidthMap       =  Width2DMapsDir.make<TH2F> ("widths_dz_l1map",
+						     "#sigma_{d_{z}} map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  		     
+  n_dxyL1WidthMap      =  Width2DMapsDir.make<TH2F> ("norm_widths_dxy_l1map",
+						     "width(d_{xy}/#sigma_{d_{xy}}) map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  n_dzL1WidthMap       =  Width2DMapsDir.make<TH2F> ("norm_widths_dz_l1map",
+						     "width(d_{z}/#sigma_{d_{z}}) map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
 
   // medians and MADs
 
@@ -2186,15 +2251,15 @@ void PrimaryVertexValidation::endJob()
    
     // 2d Maps
 
-    fillMap(a_dxyMeanBiasMap ,a_dxyBiasResidualsMap,PVValHelper::MEAN); 
-    fillMap(a_dxyWidthBiasMap,a_dxyBiasResidualsMap,PVValHelper::WIDTH);
-    fillMap(a_dzMeanBiasMap  ,a_dzBiasResidualsMap,PVValHelper::MEAN); 
-    fillMap(a_dzWidthBiasMap ,a_dzBiasResidualsMap,PVValHelper::WIDTH);
+    fillMap(a_dxyMeanBiasMap ,a_dxyBiasResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+    fillMap(a_dxyWidthBiasMap,a_dxyBiasResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
+    fillMap(a_dzMeanBiasMap  ,a_dzBiasResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+    fillMap(a_dzWidthBiasMap ,a_dzBiasResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
 
-    fillMap(n_dxyMeanBiasMap ,n_dxyBiasResidualsMap,PVValHelper::MEAN); 
-    fillMap(n_dxyWidthBiasMap,n_dxyBiasResidualsMap,PVValHelper::WIDTH);
-    fillMap(n_dzMeanBiasMap  ,n_dzBiasResidualsMap,PVValHelper::MEAN); 
-    fillMap(n_dzWidthBiasMap ,n_dzBiasResidualsMap,PVValHelper::WIDTH);
+    fillMap(n_dxyMeanBiasMap ,n_dxyBiasResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+    fillMap(n_dxyWidthBiasMap,n_dxyBiasResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
+    fillMap(n_dzMeanBiasMap  ,n_dzBiasResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+    fillMap(n_dzWidthBiasMap ,n_dzBiasResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
    
   }
 
@@ -2289,15 +2354,27 @@ void PrimaryVertexValidation::endJob()
     
   // 2D Maps
 
-  fillMap(a_dxyMeanMap ,a_dxyResidualsMap,PVValHelper::MEAN); 
-  fillMap(a_dxyWidthMap,a_dxyResidualsMap,PVValHelper::WIDTH);
-  fillMap(a_dzMeanMap  ,a_dzResidualsMap,PVValHelper::MEAN); 
-  fillMap(a_dzWidthMap ,a_dzResidualsMap,PVValHelper::WIDTH);
+  fillMap(a_dxyMeanMap ,a_dxyResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+  fillMap(a_dxyWidthMap,a_dxyResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
+  fillMap(a_dzMeanMap  ,a_dzResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+  fillMap(a_dzWidthMap ,a_dzResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
   
-  fillMap(n_dxyMeanMap ,n_dxyResidualsMap,PVValHelper::MEAN); 
-  fillMap(n_dxyWidthMap,n_dxyResidualsMap,PVValHelper::WIDTH);
-  fillMap(n_dzMeanMap  ,n_dzResidualsMap,PVValHelper::MEAN); 
-  fillMap(n_dzWidthMap ,n_dzResidualsMap,PVValHelper::WIDTH);
+  fillMap(n_dxyMeanMap ,n_dxyResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+  fillMap(n_dxyWidthMap,n_dxyResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
+  fillMap(n_dzMeanMap  ,n_dzResidualsMap,PVValHelper::MEAN,nBins_,nBins_); 
+  fillMap(n_dzWidthMap ,n_dzResidualsMap,PVValHelper::WIDTH,nBins_,nBins_);
+
+  // 2D Maps of residuals in bins of L1 modules
+
+  fillMap(a_dxyL1MeanMap ,a_dxyL1ResidualsMap,PVValHelper::MEAN,8,nLadders_); 
+  fillMap(a_dxyL1WidthMap,a_dxyL1ResidualsMap,PVValHelper::WIDTH,8,nLadders_);
+  fillMap(a_dzL1MeanMap  ,a_dzL1ResidualsMap,PVValHelper::MEAN,8,nLadders_); 
+  fillMap(a_dzL1WidthMap ,a_dzL1ResidualsMap,PVValHelper::WIDTH,8,nLadders_);
+  
+  fillMap(n_dxyL1MeanMap ,n_dxyL1ResidualsMap,PVValHelper::MEAN,8,nLadders_); 
+  fillMap(n_dxyL1WidthMap,n_dxyL1ResidualsMap,PVValHelper::WIDTH,8,nLadders_);
+  fillMap(n_dzL1MeanMap  ,n_dzL1ResidualsMap,PVValHelper::MEAN,8,nLadders_); 
+  fillMap(n_dzL1WidthMap ,n_dzL1ResidualsMap,PVValHelper::WIDTH,8,nLadders_);
 
 }
 
@@ -2521,11 +2598,11 @@ void PrimaryVertexValidation::fillTrendPlotByIndex(TH1F* trendPlot,std::vector<T
 }
 
 //*************************************************************
-void PrimaryVertexValidation::fillMap(TH2F* trendMap, TH1F* residualsMapPlot[100][100],  PVValHelper::estimator fitPar_)
+void PrimaryVertexValidation::fillMap(TH2F* trendMap, TH1F* residualsMapPlot[100][100],  PVValHelper::estimator fitPar_,const int nXBins_, const int nYBins_)
 //*************************************************************
 {
  
-  for ( int i=0; i<nBins_; ++i ) {
+  for ( int i=0; i<nYBins_; ++i ) {
    
     char phibincenter[129];
     auto phiBins = theDetails_.trendbins[PVValHelper::phi];
@@ -2533,7 +2610,7 @@ void PrimaryVertexValidation::fillMap(TH2F* trendMap, TH1F* residualsMapPlot[100
 
     trendMap->GetYaxis()->SetBinLabel(i+1,phibincenter); 
 
-    for ( int j=0; j<nBins_; ++j ) {
+    for ( int j=0; j<nXBins_; ++j ) {
       
       char etabincenter[129];
       auto etaBins = theDetails_.trendbins[PVValHelper::eta];
