@@ -621,6 +621,8 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
 
   TH1F* h_probeL1Ladder_;
   TH1F* h_probeL1Module_;
+  TH2F* h2_probeLayer1Map_;
+  TH2F* h2_probePassingLayer1Map_;
   TH1I* h_probeHasBPixL1Overlap_;  
 
   // check vertex

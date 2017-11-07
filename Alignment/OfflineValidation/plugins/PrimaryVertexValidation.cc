@@ -829,7 +829,16 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 	      h_probeL1Ladder_->Fill(ladder_num);
 	      h_probeL1Module_->Fill(module_num);
+	      h2_probeLayer1Map_->Fill(module_num,ladder_num);
 	      h_probeHasBPixL1Overlap_->Fill(L1BPixHitCount);
+
+	      // residuals vs ladder and module number for map
+	      if(module_num > 0 && ladder_num > 0){ // only if we are on BPix Layer 1
+		a_dxyL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dxyFromMyVertex*cmToum);
+		a_dzL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dzFromMyVertex*cmToum); 
+		n_dxyL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dxyFromMyVertex/s_ip2dpv_err);			    
+		n_dzL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dzFromMyVertex/dz_err); 
+	      }
 
 	      // filling the pT-binned distributions
 
@@ -972,10 +981,8 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 		  PVValHelper::fillByIndex(h_norm_dxy_ladder_,ladder_num-1,dxyFromMyVertex/s_ip2dpv_err);  
 		  PVValHelper::fillByIndex(h_norm_dz_ladder_,ladder_num-1,dzFromMyVertex/dz_err);   
 		  
-		  a_dxyL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dxyFromMyVertex*cmToum);
-		  a_dzL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dzFromMyVertex*cmToum); 
-		  n_dxyL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dxyFromMyVertex/s_ip2dpv_err);			    
-		  n_dzL1ResidualsMap[ladder_num-1][module_num-1]->Fill(dzFromMyVertex/dz_err); 
+		  h2_probePassingLayer1Map_->Fill(module_num,ladder_num);
+
 		}
 
 		// filling the binned distributions
@@ -1334,7 +1341,10 @@ void PrimaryVertexValidation::beginJob()
 
   h_probeL1Ladder_         = ProbeFeatures.make<TH1F>("h_probeL1Ladder","Ladder number (L1 hit); ladder number",22,-1.5,20.5); 
   h_probeL1Module_         = ProbeFeatures.make<TH1F>("h_probeL1Module","Module number (L1 hit); module number",10,-1.5,8.5);
-  h_probeHasBPixL1Overlap_ = ProbeFeatures.make<TH1I>("h_probeHasBPixL1Overlap","n. hits in L1;n. L1-BPix hits;tracks",5,0,5);
+  h2_probeLayer1Map_       = ProbeFeatures.make<TH2F>("h2_probeLayer1Map","Position in Layer 1 of first hit;module number;ladder number",8,0.5,8.5,12,0.5,12.5);
+  h2_probePassingLayer1Map_= ProbeFeatures.make<TH2F>("h2_probePassingLayer1Map","Position in Layer 1 of first hit;module number;ladder number",8,0.5,8.5,12,0.5,12.5);
+
+  h_probeHasBPixL1Overlap_ = ProbeFeatures.make<TH1I>("h_probeHasBPixL1Overlap","n. hits in L1;n. L1-BPix hits;tracks",5,-0.5,4.5);
 
   // refit vertex features
   TFileDirectory RefitVertexFeatures = fs->mkdir("RefitVertexFeatures");
@@ -1785,41 +1795,6 @@ void PrimaryVertexValidation::beginJob()
 						   "width(d_{z}/#sigma_{d_{z}}) map;#eta (sector);#varphi (sector) [degrees]",
 						   nBins_,lowedge,highedge,nBins_,lowedge,highedge);
 
-
-  // 2D maps of residuals in bins of L1 modules
-  
-  a_dxyL1MeanMap       =  Mean2DMapsDir.make<TH2F>  ("means_dxy_l1map",
-						     "#LT d_{xy} #GT map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  
-  a_dzL1MeanMap        =  Mean2DMapsDir.make<TH2F>  ("means_dz_l1map",
-						     "#LT d_{z} #GT map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  		     
-  n_dxyL1MeanMap       =  Mean2DMapsDir.make<TH2F>  ("norm_means_dxy_l1map",
-						     "#LT d_{xy}/#sigma_{d_{xy}} #GT map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  
-  n_dzL1MeanMap        =  Mean2DMapsDir.make<TH2F>  ("norm_means_dz_l1map",
-						     "#LT d_{z}/#sigma_{d_{z}} #GT map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  		     
-  a_dxyL1WidthMap      =  Width2DMapsDir.make<TH2F> ("widths_dxy_l1map",
-						     "#sigma_{d_{xy}} map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  
-  a_dzL1WidthMap       =  Width2DMapsDir.make<TH2F> ("widths_dz_l1map",
-						     "#sigma_{d_{z}} map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  		     
-  n_dxyL1WidthMap      =  Width2DMapsDir.make<TH2F> ("norm_widths_dxy_l1map",
-						     "width(d_{xy}/#sigma_{d_{xy}}) map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-  
-  n_dzL1WidthMap       =  Width2DMapsDir.make<TH2F> ("norm_widths_dz_l1map",
-						     "width(d_{z}/#sigma_{d_{z}}) map;module number [z];ladder number [#varphi]",
-						     8,0.,8.,nLadders_,0.,nLadders_);
-
   // medians and MADs
 
   a_dxyPhiMedianTrend = MedianTrendsDir.make<TH1F>("medians_dxy_phi",
@@ -2204,6 +2179,41 @@ void PrimaryVertexValidation::endJob()
   n_dzladderWidthTrend  = WidthTrendsDir.make<TH1F>("norm_widths_dz_ladder",
 						    "width(d_{z}/#sigma_{d_{z}}) vs ladder;ladder number (#phi);width(d_{z}/#sigma_{d_{z}})",
 						    nLadders_,0.,nLadders_); 
+
+  // 2D maps of residuals in bins of L1 modules
+  
+  a_dxyL1MeanMap       =  Mean2DMapsDir.make<TH2F>  ("means_dxy_l1map",
+						     "#LT d_{xy} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  a_dzL1MeanMap        =  Mean2DMapsDir.make<TH2F>  ("means_dz_l1map",
+						     "#LT d_{z} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  		     
+  n_dxyL1MeanMap       =  Mean2DMapsDir.make<TH2F>  ("norm_means_dxy_l1map",
+						     "#LT d_{xy}/#sigma_{d_{xy}} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  n_dzL1MeanMap        =  Mean2DMapsDir.make<TH2F>  ("norm_means_dz_l1map",
+						     "#LT d_{z}/#sigma_{d_{z}} #GT map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  		     
+  a_dxyL1WidthMap      =  Width2DMapsDir.make<TH2F> ("widths_dxy_l1map",
+						     "#sigma_{d_{xy}} map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  a_dzL1WidthMap       =  Width2DMapsDir.make<TH2F> ("widths_dz_l1map",
+						     "#sigma_{d_{z}} map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  		     
+  n_dxyL1WidthMap      =  Width2DMapsDir.make<TH2F> ("norm_widths_dxy_l1map",
+						     "width(d_{xy}/#sigma_{d_{xy}}) map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+  
+  n_dzL1WidthMap       =  Width2DMapsDir.make<TH2F> ("norm_widths_dz_l1map",
+						     "width(d_{z}/#sigma_{d_{z}}) map;module number [z];ladder number [#varphi]",
+						     8,0.,8.,nLadders_,0.,nLadders_);
+
 
   if(useTracksFromRecoVtx_){
 
@@ -2608,7 +2618,9 @@ void PrimaryVertexValidation::fillMap(TH2F* trendMap, TH1F* residualsMapPlot[100
     auto phiBins = theDetails_.trendbins[PVValHelper::phi];
     sprintf(phibincenter,"%.f",(phiBins[i]+phiBins[i+1])/2.);
 
-    trendMap->GetYaxis()->SetBinLabel(i+1,phibincenter); 
+    if(nXBins_==nYBins_){
+      trendMap->GetYaxis()->SetBinLabel(i+1,phibincenter); 
+    }
 
     for ( int j=0; j<nXBins_; ++j ) {
       
@@ -2616,7 +2628,11 @@ void PrimaryVertexValidation::fillMap(TH2F* trendMap, TH1F* residualsMapPlot[100
       auto etaBins = theDetails_.trendbins[PVValHelper::eta];
       sprintf(etabincenter,"%.1f",(etaBins[j]+etaBins[j+1])/2.);   
       
-      if(i==0) { trendMap->GetXaxis()->SetBinLabel(j+1,etabincenter); }
+      if(i==0) {
+	if(nXBins_==nYBins_){
+	trendMap->GetXaxis()->SetBinLabel(j+1,etabincenter); 
+	}
+      }
 
       switch (fitPar_)
 	{ 
