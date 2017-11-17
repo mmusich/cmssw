@@ -8,6 +8,7 @@ from genericValidation import ValidationMetaClass, ValidationWithComparison, Val
 from helperFunctions import getCommandOutput2, replaceByMap, cppboolstring
 from offlineValidation import OfflineValidation
 from primaryVertexValidation import PrimaryVertexValidation
+from primaryVertexResolution import PrimaryVertexResolution
 from TkAlExceptions import AllInOneError
 from trackSplittingValidation import TrackSplittingValidation
 from zMuMuValidation import ZMuMuValidation
@@ -221,12 +222,20 @@ class PlottingOptionsPrimaryVertex(BasePlottingOptions):
         for name in "autoLimits", "doMaps", "stdResiduals":
             self.general[name] = cppboolstring(self.general[name], name)
 
+
+class PlottingOptionsPVResolution(BasePlottingOptions):
+    defaults = {}
+    validationclass = PrimaryVertexResolution
+    def __init__(self, config):
+        super(PlottingOptionsPVResolution, self).__init__(config, "pvresolution")
+
 def PlottingOptions(config, valType):
     plottingOptionsClasses = {
                               "offline": PlottingOptionsOffline,
                               "split": PlottingOptionsTrackSplitting,
                               "zmumu": PlottingOptionsZMuMu,
                               "primaryvertex": PlottingOptionsPrimaryVertex,
+                              "pvresolution": PlottingOptionsPVResolution,
                              }
     if isinstance(valType, type):
         valType = valType.valType
