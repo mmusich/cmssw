@@ -190,7 +190,7 @@ import Alignment.CommonAlignment.tools.trackselectionRefitting as trackselRefit
 process.seqTrackselRefit = trackselRefit.getSequence(process,'TRACKTYPETEMPLATE')
 process.HighPurityTrackSelector.trackQualities = cms.vstring()
 process.HighPurityTrackSelector.pMin     = cms.double(0.)
-process.TrackerTrackHitFilter.usePixelQualityFlag = cms.bool(False)
+process.TrackerTrackHitFilter.usePixelQualityFlag = cms.bool(True)
 #process.TrackerTrackHitFilter.commands   = cms.vstring("drop PXB 1")
 process.AlignmentTrackSelector.pMin      = cms.double(0.)
 process.AlignmentTrackSelector.ptMin     = cms.double(0.)

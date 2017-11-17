@@ -175,31 +175,31 @@ else:
 ####################################################################
 # Load and Configure TrackRefitter
 ####################################################################
-# process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
-# import RecoTracker.TrackProducer.TrackRefitters_cff
-# process.FinalTrackRefitter = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone()
-# process.FinalTrackRefitter.src = "TRACKTYPETEMPLATE"
-# process.FinalTrackRefitter.TrajectoryInEvent = True
-# process.FinalTrackRefitter.NavigationSchool = ''
-# process.FinalTrackRefitter.TTRHBuilder = "WithAngleAndTemplate"
+process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
+import RecoTracker.TrackProducer.TrackRefitters_cff
+process.FinalTrackRefitter = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone()
+process.FinalTrackRefitter.src = "TRACKTYPETEMPLATE"
+process.FinalTrackRefitter.TrajectoryInEvent = True
+process.FinalTrackRefitter.NavigationSchool = ''
+process.FinalTrackRefitter.TTRHBuilder = "WithAngleAndTemplate"
 
 ####################################################################
 # Load and Configure common selection sequence
 ####################################################################
-import Alignment.CommonAlignment.tools.trackselectionRefitting as trackselRefit
-process.seqTrackselRefit = trackselRefit.getSequence(process,'TRACKTYPETEMPLATE')
-process.HighPurityTrackSelector.trackQualities = cms.vstring()
-process.HighPurityTrackSelector.pMin     = cms.double(0.)
-process.TrackerTrackHitFilter.usePixelQualityFlag = cms.bool(False)
-#process.TrackerTrackHitFilter.commands   = cms.vstring("drop PXB 1")
-process.AlignmentTrackSelector.pMin      = cms.double(0.)
-process.AlignmentTrackSelector.ptMin     = cms.double(0.)
-process.AlignmentTrackSelector.nHitMin2D = cms.uint32(0)
-process.AlignmentTrackSelector.nHitMin   = cms.double(0.)
-process.AlignmentTrackSelector.d0Min     = cms.double(-999999.0)
-process.AlignmentTrackSelector.d0Max     = cms.double(+999999.0)                  
-process.AlignmentTrackSelector.dzMin     = cms.double(-999999.0)
-process.AlignmentTrackSelector.dzMax     = cms.double(+999999.0)  
+# import Alignment.CommonAlignment.tools.trackselectionRefitting as trackselRefit
+# process.seqTrackselRefit = trackselRefit.getSequence(process,'TRACKTYPETEMPLATE')
+# process.HighPurityTrackSelector.trackQualities = cms.vstring()
+# process.HighPurityTrackSelector.pMin     = cms.double(0.)
+# process.TrackerTrackHitFilter.usePixelQualityFlag = cms.bool(False)
+# #process.TrackerTrackHitFilter.commands   = cms.vstring("drop PXB 1")
+# process.AlignmentTrackSelector.pMin      = cms.double(0.)
+# process.AlignmentTrackSelector.ptMin     = cms.double(0.)
+# process.AlignmentTrackSelector.nHitMin2D = cms.uint32(0)
+# process.AlignmentTrackSelector.nHitMin   = cms.double(0.)
+# process.AlignmentTrackSelector.d0Min     = cms.double(-999999.0)
+# process.AlignmentTrackSelector.d0Max     = cms.double(+999999.0)                  
+# process.AlignmentTrackSelector.dzMin     = cms.double(-999999.0)
+# process.AlignmentTrackSelector.dzMax     = cms.double(+999999.0)  
 
 ####################################################################
 # Output file
@@ -291,10 +291,10 @@ else:
 ####################################################################
 process.p = cms.Path(process.goodvertexSkim*
                      # in case the common refitting sequence is removed
-                     #process.offlineBeamSpot*
-                     process.seqTrackselRefit*
+                     process.offlineBeamSpot*
+                     #process.seqTrackselRefit*
                      # in case the navigation shool is removed
                      #process.MeasurementTrackerEvent*
                      # in case the common refitting sequence is removed
-                     #process.TrackRefitter*
+                     process.FinalTrackRefitter*
                      process.PVValidation)
