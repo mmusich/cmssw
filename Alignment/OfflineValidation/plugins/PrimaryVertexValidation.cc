@@ -295,9 +295,9 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
   }
 
   if(isPhase1_){
-    etaOfProbe_ = std::min(etaOfProbe_,2.7);
+    etaOfProbe_ = std::min(etaOfProbe_,PVValHelper::max_eta_phase1);
   } else {
-    etaOfProbe_ = std::min(etaOfProbe_,2.5);
+    etaOfProbe_ = std::min(etaOfProbe_,PVValHelper::max_eta_phase0);
   }
 
   if(h_etaMax->GetEntries()==0.){
