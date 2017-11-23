@@ -87,16 +87,19 @@ namespace {
       auto s_coord = AlignmentPI::getStringFromCoordinate(coord);
       std::string unit = (coord == AlignmentPI::t_x || coord == AlignmentPI::t_y  || coord == AlignmentPI::t_z ) ? "[#mum]" : "[mrad]";
 
-      std::unique_ptr<TH1F> compare = std::unique_ptr<TH1F>(new TH1F("comparison",Form("Comparison of %s;DetId index; #Delta%s %s",s_coord.c_str(),s_coord.c_str(),unit.c_str()),ref_ali.size(),-0.5,ref_ali.size()-0.5)); 
-
+      //std::unique_ptr<TH1F> compare = std::unique_ptr<TH1F>(new TH1F("comparison",Form("Comparison of %s;DetId index; #Delta%s %s",s_coord.c_str(),s_coord.c_str(),unit.c_str()),ref_ali.size(),-0.5,ref_ali.size()-0.5)); 
+      std::unique_ptr<TH1F> compare = std::unique_ptr<TH1F>(new TH1F("comparison",Form(";Detector Id index; #Delta%s %s",s_coord.c_str(),unit.c_str()),ref_ali.size(),-0.5,ref_ali.size()-0.5)); 
+     
       std::vector<int> boundaries;
       AlignmentPI::partitions currentPart = AlignmentPI::BPix;
       for(unsigned int i=0;i<=ref_ali.size();i++){
 
-	if(DetId(ref_ali[i].rawId()).det() != DetId::Tracker){
-	  edm::LogWarning("TrackerAlignmentErrorExtended_PayloadInspector") << "Encountered invalid Tracker DetId:" << ref_ali[i].rawId() <<" - terminating ";
+	/*
+	  if(DetId(ref_ali[i].rawId()).det() != DetId::Tracker){
+	  edm::LogWarning("TrackerAlignmen_PayloadInspector") << "Encountered invalid Tracker DetId:" << ref_ali[i].rawId() <<" - terminating ";
 	  return false;
-	}
+	  }
+	*/
 
 	if(ref_ali[i].rawId() == target_ali[i].rawId()){
 
@@ -150,6 +153,7 @@ namespace {
       } // loop on the components
       
       canvas.cd();
+      
       canvas.SetLeftMargin(0.17);
       canvas.SetRightMargin(0.05);
       canvas.SetBottomMargin(0.15);
@@ -182,7 +186,15 @@ namespace {
       legend.SetHeader("Alignment comparison","C"); // option "C" allows to center the header
       legend.AddEntry(compare.get(),("IOV: "+std::to_string(std::get<0>(firstiov))+" - "+std::to_string(std::get<0>(lastiov))).c_str(),"PL");
       legend.Draw("same");
-      
+
+      TLatex t1;
+      t1.SetNDC();
+      t1.SetTextAlign(21);
+      t1.SetTextSize(0.05);
+      t1.DrawLatex(0.2, 0.93, Form("%s",s_coord.c_str()));
+      t1.SetTextColor(kBlue);
+      t1.DrawLatex(0.6, 0.93, Form("IOV %s - %s ",lastIOVsince.c_str(),firstIOVsince.c_str()));
+
       std::string fileName(m_imageFileName);
       canvas.SaveAs(fileName.c_str());
 
