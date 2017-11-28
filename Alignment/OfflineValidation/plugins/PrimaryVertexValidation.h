@@ -112,8 +112,8 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   edm::ParameterSet theConfig;
   int Nevt_;
  
-  TrackFilterForPVFindingBase* theTrackFilter_; 
-  TrackClusterizerInZ* theTrackClusterizer_;
+  std::unique_ptr<TrackFilterForPVFindingBase> theTrackFilter_; 
+  std::unique_ptr<TrackClusterizerInZ> theTrackClusterizer_;
 
   // setting of the number of plots 
   static const int nMaxBins_ = 100; // maximum number of bookable histograms
