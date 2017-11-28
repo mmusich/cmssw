@@ -105,16 +105,16 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
   theBeamspotToken = consumes<reco::BeamSpot>(BeamspotTag_);
 
   // select and configure the track filter 
-  theTrackFilter_= new TrackFilterForPVFinding(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters") );
+  theTrackFilter_= std::unique_ptr<TrackFilterForPVFinding>(new TrackFilterForPVFinding(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters")));
   // select and configure the track clusterizer  
   std::string clusteringAlgorithm=iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<std::string>("algorithm");
   if (clusteringAlgorithm=="gap"){
-    theTrackClusterizer_ = new GapClusterizerInZ(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkGapClusParameters"));
+    theTrackClusterizer_ = std::unique_ptr<GapClusterizerInZ>(new GapClusterizerInZ(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkGapClusParameters")));
   }else if(clusteringAlgorithm=="DA"){
-    theTrackClusterizer_ = new DAClusterizerInZ(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters"));
+    theTrackClusterizer_ = std::unique_ptr<DAClusterizerInZ>(new DAClusterizerInZ(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters")));
     // provide the vectorized version of the clusterizer, if supported by the build
   } else if(clusteringAlgorithm=="DA_vect") {
-    theTrackClusterizer_ = new DAClusterizerInZ_vect(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters"));
+    theTrackClusterizer_ = std::unique_ptr<DAClusterizerInZ_vect>(new DAClusterizerInZ_vect(iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<edm::ParameterSet>("TkDAClusParameters")));
   } else {
     throw VertexException("PrimaryVertexProducerAlgorithm: unknown clustering algorithm: " + clusteringAlgorithm);  
   }
@@ -186,8 +186,6 @@ PrimaryVertexValidation::~PrimaryVertexValidation()
 {
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
-  if (theTrackFilter_) delete theTrackFilter_;
-  if (theTrackClusterizer_) delete theTrackClusterizer_;
 }
 
 
