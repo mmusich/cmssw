@@ -99,9 +99,11 @@ process.TkCalPath_IsoMuon    = cms.Path(process.TkCalSeq_IsoMuon)
 process.TkCalPath_IsoMuon0T  = cms.Path(process.TkCalSeq_IsoMuon0T)
 process.TkCalPath_AagBunch   = cms.Path(process.TkCalSeq_AagBunch)
 process.TkCalPath_AagBunch0T = cms.Path(process.TkCalSeq_AagBunch0T)
+process.TkCalPath_HitEff     = cms.Path(process.TkCalSeq_HitEff) 
 
 process.schedule = cms.Schedule( process.TkCalPath_StdBunch, 
                                  process.TkCalPath_StdBunch0T,
+                                 process.TkCalPath_HitEff  
                                  #process.TkCalPath_IsoMuon,         # no After Abort Gap in MC
                                  #process.TkCalPath_IsoMuon0T,
                                  #process.TkCalPath_AagBunch,
