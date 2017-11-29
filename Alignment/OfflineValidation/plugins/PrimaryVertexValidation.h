@@ -75,6 +75,7 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void endJob() override;
   bool isBFieldConsistentWithMode(const edm::EventSetup& iSetup) const;
+  std::pair<long long,long long> getRunTime(const edm::EventSetup& iSetup) const;
   bool isHit2D(const TrackingRecHit &hit) const;
   bool hasFirstLayerPixelHits(const reco::TransientTrack& track);
   std::pair<bool,bool> pixelHitsCheck(const reco::TransientTrack& track);
@@ -270,6 +271,10 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   TH1F* h_nbins;
   TH1F* h_nLadders;
   TH1F* h_pTinfo;
+
+  std::map<unsigned int,std::pair<long long,long long> > runNumbersTimesLog_;
+  TH1I* h_runStartTimes;
+  TH1I* h_runEndTimes;
 
   // ---- directly histograms // ===> unbiased residuals
   

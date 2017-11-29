@@ -20,6 +20,8 @@
 #include <vector>
 #include <regex>
 #include <cassert>
+#include <chrono>
+#include <iomanip>
 
 // user include files
 #include "Alignment/OfflineValidation/plugins/PrimaryVertexValidation.h"
@@ -507,6 +509,18 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
   
   RunNumber_=iEvent.eventAuxiliary().run();
   h_runNumber->Fill(RunNumber_);
+
+  if(!runNumbersTimesLog_.count(RunNumber_)){
+    auto times = getRunTime(iSetup);
+
+    if(debug_){
+      const time_t start_time = times.first/1000000;
+      edm::LogInfo("PrimaryVertexValidation") << RunNumber_ << " has start time: " << times.first << " - "<< times.second << std::endl;
+      edm::LogInfo("PrimaryVertexValidation") <<"human readable time: " << std::asctime(std::gmtime(&start_time)) << std::endl;
+    }
+
+    runNumbersTimesLog_[RunNumber_]=times;
+  }
 
   if(h_runFromEvent->GetEntries()==0){
     h_runFromEvent->SetBinContent(1,RunNumber_);
@@ -2106,6 +2120,23 @@ void PrimaryVertexValidation::beginJob()
 void PrimaryVertexValidation::endJob() 
 {
 
+  TFileDirectory RunFeatures = fs->mkdir("RunFeatures");
+  h_runStartTimes = RunFeatures.make<TH1I>("runStartTimes","run start times",runNumbersTimesLog_.size(),0,runNumbersTimesLog_.size());
+  h_runEndTimes   = RunFeatures.make<TH1I>("runEndTimes","run end times",runNumbersTimesLog_.size(),0,runNumbersTimesLog_.size());
+  
+  unsigned int count=1;
+  for(const auto &run: runNumbersTimesLog_){
+
+    // strip down the microseconds
+    h_runStartTimes->SetBinContent(count,run.second.first/10e6);
+    h_runStartTimes->GetXaxis()->SetBinLabel(count,(std::to_string(run.first)).c_str());
+
+    h_runEndTimes->SetBinContent(count,run.second.second/10e6);
+    h_runEndTimes->GetXaxis()->SetBinLabel(count,(std::to_string(run.first)).c_str());
+
+    count++;
+  }
+
   edm::LogInfo("PrimaryVertexValidation")
     <<"######################################\n"
     <<"# PrimaryVertexValidation::endJob()\n" 
@@ -2398,6 +2429,19 @@ bool PrimaryVertexValidation::isBFieldConsistentWithMode(const edm::EventSetup& 
   bool is0T = (ptOfProbe_==0.);
   
   return ( (isOn && !is0T) || (!isOn && is0T) );
+}
+
+//*************************************************************
+std::pair<long long, long long> PrimaryVertexValidation::getRunTime(const edm::EventSetup& iSetup) const
+//*************************************************************
+{
+  edm::ESHandle<RunInfo> runInfo;
+  iSetup.get<RunInfoRcd>().get(runInfo);
+  if(debug_){
+    edm::LogInfo("PrimaryVertexValidation")<<runInfo.product()->m_start_time_str << " " << runInfo.product()->m_stop_time_str << std::endl;
+  }
+  return std::make_pair(runInfo.product()->m_start_time_ll,runInfo.product()->m_stop_time_ll);
+
 }
 
 //*************************************************************
