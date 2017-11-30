@@ -12,8 +12,7 @@ shallowClusters.Clusters                = 'CalibrationTracks'
 shallowGainCalibration.Tracks           = 'CalibrationTracksRefit'
 anEff.combinatorialTracks               = 'CalibrationTracksRefit'
 anEff.trajectories                      = 'CalibrationTracksRefit'
-prescaleEvent.prescale                  = 1
-
+prescaleEvent.prescale                  = 10
 
 #Schedule
 #TkCalFullSequence = cms.Sequence( trackFilterRefit + LorentzAngleNtuple + hiteff + OfflineGainNtuple)
