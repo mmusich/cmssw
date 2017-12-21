@@ -25,7 +25,7 @@
 #include "CalibTracker/Records/interface/SiStripGainRcd.h"
 #include "CalibTracker/Records/interface/SiStripQualityRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripApvGain.h"
-#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
+#include "DQMServices/Core/interface/DQMGlobalEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/FEDRawData/interface/FEDNumbering.h"
@@ -71,7 +71,7 @@
 // class declaration
 //
 
-class SiStripGainsPCLWorker : public  DQMEDAnalyzer {
+class SiStripGainsPCLWorker : public  DQMGlobalEDAnalyzer<APVGain::APVGainHistograms> {
 public:
     explicit SiStripGainsPCLWorker(const edm::ParameterSet&);
      
@@ -79,34 +79,17 @@ public:
 
 private:
     virtual void beginJob() ;
-    void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;   
-    void dqmBeginRun(edm::Run const&, edm::EventSetup const&) override;
-    void analyze(const edm::Event&, const edm::EventSetup&) override;
+    void dqmBeginRun(edm::Run const&, edm::EventSetup const&, APVGain::APVGainHistograms &) const override;
+    void bookHistograms(DQMStore::ConcurrentBooker &, edm::Run const&, edm::EventSetup const&, APVGain::APVGainHistograms &) const override;
+    void dqmAnalyze(edm::Event const&, edm::EventSetup const&, APVGain::APVGainHistograms const&) const override;
     virtual void endJob() ;
     
-    void processEvent(const TrackerTopology* topo); //what really does the job
-    virtual void checkBookAPVColls(const edm::EventSetup& setup);
+    void processEvent(const TrackerTopology* topo,APVGain::APVGainHistograms const& histogram); //what really does the job
+    virtual void checkBookAPVColls(edm::EventSetup const& setup);
 
     std::vector<std::string> dqm_tag_;
 
     int statCollectionFromMode(const char* tag) const;
-
-    std::vector<MonitorElement*>  Charge_Vs_Index;           /*!< Charge per cm for each detector id */
-    std::array< std::vector<APVGain::APVmon>,7 > Charge_1;   /*!< Charge per cm per layer / wheel */
-    std::array< std::vector<APVGain::APVmon>,7 > Charge_2;   /*!< Charge per cm per layer / wheel without G2 */
-    std::array< std::vector<APVGain::APVmon>,7 > Charge_3;   /*!< Charge per cm per layer / wheel without G1 */
-    std::array< std::vector<APVGain::APVmon>,7 > Charge_4;   /*!< Charge per cm per layer / wheel without G1 and G1*/
-
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTIB;   /*!< Charge vs pathlength in TIB */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTOB;   /*!< Charge vs pathlength in TOB */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTIDP;  /*!< Charge vs pathlength in TIDP */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTIDM;  /*!< Charge vs pathlength in TIDM */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTECP1; /*!< Charge vs pathlength in TECP thin */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTECP2; /*!< Charge vs pathlength in TECP thick */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTECM1; /*!< Charge vs pathlength in TECP thin */
-    std::vector<MonitorElement*>  Charge_Vs_PathlengthTECM2; /*!< Charge vs pathlength in TECP thick */
-
-    
 
     unsigned int NEvent;    
     unsigned int NTrack;
@@ -114,8 +97,6 @@ private:
     unsigned int NClusterPixel;
     int NStripAPVs;
     int NPixelDets;
-    unsigned int SRun;
-    unsigned int ERun;
   
     double       MinTrackMomentum;
     double       MaxTrackMomentum;
@@ -142,8 +123,6 @@ private:
     //Data members for processing
 
     //Event data
-    unsigned int                       eventnumber    =0;
-    unsigned int                       runnumber      =0;
     const std::vector<bool>*           TrigTech       =nullptr;  edm::EDGetTokenT<std::vector<bool>           > TrigTech_token_;
 
     // Track data
@@ -200,7 +179,7 @@ SiStripGainsPCLWorker::statCollectionFromMode(const char* tag) const
 }
 
 template<typename T>
-inline edm::Handle<T> connect(const T* &ptr, edm::EDGetTokenT<T> token, const edm::Event &evt) {
+inline edm::Handle<T> connectTokens(const T* ptr, edm::EDGetTokenT<T> token,const edm::Event &evt) {
   edm::Handle<T> handle;
   evt.getByToken(token, handle);
   ptr = handle.product();

@@ -13,8 +13,6 @@ SiStripGainsPCLWorker::SiStripGainsPCLWorker(const edm::ParameterSet& iConfig) :
   NClusterPixel(0),
   NStripAPVs(0),
   NPixelDets(0),
-  SRun(1<<31),
-  ERun(0),
   bareTkGeomPtr_(nullptr)
 {
   
@@ -47,15 +45,15 @@ SiStripGainsPCLWorker::SiStripGainsPCLWorker(const edm::ParameterSet& iConfig) :
   dqm_tag_.push_back( "IsoMuon0T" );     // statistic collection from Isolated Muon @ 0 T
   dqm_tag_.push_back( "Harvest" );       // statistic collection: Harvest
   
-  Charge_Vs_Index.insert( Charge_Vs_Index.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTIB.insert( Charge_Vs_PathlengthTIB.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTOB.insert( Charge_Vs_PathlengthTOB.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTIDP.insert( Charge_Vs_PathlengthTIDP.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTIDM.insert( Charge_Vs_PathlengthTIDM.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTECP1.insert( Charge_Vs_PathlengthTECP1.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTECP2.insert( Charge_Vs_PathlengthTECP2.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTECM1.insert( Charge_Vs_PathlengthTECM1.begin(), dqm_tag_.size(), nullptr);
-  Charge_Vs_PathlengthTECM2.insert( Charge_Vs_PathlengthTECM2.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_Index.insert( Charge_Vs_Index.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTIB.insert( Charge_Vs_PathlengthTIB.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTOB.insert( Charge_Vs_PathlengthTOB.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTIDP.insert( Charge_Vs_PathlengthTIDP.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTIDM.insert( Charge_Vs_PathlengthTIDM.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTECP1.insert( Charge_Vs_PathlengthTECP1.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTECP2.insert( Charge_Vs_PathlengthTECP2.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTECM1.insert( Charge_Vs_PathlengthTECM1.begin(), dqm_tag_.size(), nullptr);
+  // Charge_Vs_PathlengthTECM2.insert( Charge_Vs_PathlengthTECM2.begin(), dqm_tag_.size(), nullptr);
 
   // configure token for gathering the ntuple variables 
   edm::ParameterSet swhallowgain_pset = iConfig.getUntrackedParameter<edm::ParameterSet>("gain");
@@ -104,7 +102,7 @@ SiStripGainsPCLWorker::SiStripGainsPCLWorker(const edm::ParameterSet& iConfig) :
 
 //********************************************************************************//
 void 
-SiStripGainsPCLWorker::dqmBeginRun(edm::Run const& run, const edm::EventSetup& iSetup){
+SiStripGainsPCLWorker::dqmBeginRun(edm::Run const& run, edm::EventSetup const& iSetup, APVGain::APVGainHistograms & histograms) const {
   
   using namespace edm;
 
@@ -144,57 +142,56 @@ SiStripGainsPCLWorker::dqmBeginRun(edm::Run const& run, const edm::EventSetup& i
 //********************************************************************************//
 // ------------ method called for each event  ------------
 void
-SiStripGainsPCLWorker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+SiStripGainsPCLWorker::dqmAnalyze(edm::Event const& iEvent, edm::EventSetup const& iSetup,  APVGain::APVGainHistograms const& histograms) const 
 {
   using namespace edm;
 
   //  this->checkBookAPVColls(iSetup); // check whether APV colls are booked and do so if not yet done
 
-  eventnumber   = iEvent.id().event();
-  runnumber     = iEvent.id().run();
+  unsigned int eventnumber = iEvent.id().event();
+  unsigned int runnumber   = iEvent.id().run();
+  
+  edm::LogInfo("SiStripGainsPCLWorker") << "Processing run " << runnumber 
+				      << " and event " << eventnumber 
+				      << std::endl;
 
-  auto handle01 = connect(TrigTech      , TrigTech_token_      , iEvent);
-  auto handle02 = connect(trackchi2ndof , trackchi2ndof_token_ , iEvent);
-  auto handle03 = connect(trackp        , trackp_token_        , iEvent);
-  auto handle04 = connect(trackpt       , trackpt_token_       , iEvent);
-  auto handle05 = connect(tracketa      , tracketa_token_      , iEvent);
-  auto handle06 = connect(trackphi      , trackphi_token_      , iEvent);
-  auto handle07 = connect(trackhitsvalid, trackhitsvalid_token_, iEvent);
-  auto handle08 = connect(trackindex    , trackindex_token_    , iEvent);
-  auto handle09 = connect(rawid         , rawid_token_         , iEvent);
-  auto handle11 = connect(localdirx     , localdirx_token_     , iEvent);
-  auto handle12 = connect(localdiry     , localdiry_token_     , iEvent);
-  auto handle13 = connect(localdirz     , localdirz_token_     , iEvent);
-  auto handle14 = connect(firststrip    , firststrip_token_    , iEvent);
-  auto handle15 = connect(nstrips       , nstrips_token_       , iEvent);
-  auto handle16 = connect(saturation    , saturation_token_    , iEvent);
-  auto handle17 = connect(overlapping   , overlapping_token_   , iEvent);
-  auto handle18 = connect(farfromedge   , farfromedge_token_   , iEvent);
-  auto handle19 = connect(charge        , charge_token_        , iEvent);
-  auto handle21 = connect(path          , path_token_          , iEvent);
-  auto handle22 = connect(chargeoverpath, chargeoverpath_token_, iEvent);
-  auto handle23 = connect(amplitude     , amplitude_token_     , iEvent);
-  auto handle24 = connect(gainused      , gainused_token_      , iEvent);
-  auto handle25 = connect(gainusedTick  , gainusedTick_token_  , iEvent);
-  auto handle26 = connect(trackalgo     , trackalgo_token_     , iEvent);
+
+
+  auto handle01 = connectTokens(TrigTech      , TrigTech_token_      , iEvent);
+  auto handle02 = connectTokens(trackchi2ndof , trackchi2ndof_token_ , iEvent);
+  auto handle03 = connectTokens(trackp        , trackp_token_        , iEvent);
+  auto handle04 = connectTokens(trackpt       , trackpt_token_       , iEvent);
+  auto handle05 = connectTokens(tracketa      , tracketa_token_      , iEvent);
+  auto handle06 = connectTokens(trackphi      , trackphi_token_      , iEvent);
+  auto handle07 = connectTokens(trackhitsvalid, trackhitsvalid_token_, iEvent);
+  auto handle08 = connectTokens(trackindex    , trackindex_token_    , iEvent);
+  auto handle09 = connectTokens(rawid         , rawid_token_         , iEvent);
+  auto handle11 = connectTokens(localdirx     , localdirx_token_     , iEvent);
+  auto handle12 = connectTokens(localdiry     , localdiry_token_     , iEvent);
+  auto handle13 = connectTokens(localdirz     , localdirz_token_     , iEvent);
+  auto handle14 = connectTokens(firststrip    , firststrip_token_    , iEvent);
+  auto handle15 = connectTokens(nstrips       , nstrips_token_       , iEvent);
+  auto handle16 = connectTokens(saturation    , saturation_token_    , iEvent);
+  auto handle17 = connectTokens(overlapping   , overlapping_token_   , iEvent);
+  auto handle18 = connectTokens(farfromedge   , farfromedge_token_   , iEvent);
+  auto handle19 = connectTokens(charge        , charge_token_        , iEvent);
+  auto handle21 = connectTokens(path          , path_token_          , iEvent);
+  auto handle22 = connectTokens(chargeoverpath, chargeoverpath_token_, iEvent);
+  auto handle23 = connectTokens(amplitude     , amplitude_token_     , iEvent);
+  auto handle24 = connectTokens(gainused      , gainused_token_      , iEvent);
+  auto handle25 = connectTokens(gainusedTick  , gainusedTick_token_  , iEvent);
+  auto handle26 = connectTokens(trackalgo     , trackalgo_token_     , iEvent);
  
   edm::ESHandle<TrackerTopology> TopoHandle;
   iSetup.get<TrackerTopologyRcd>().get( TopoHandle );
   const TrackerTopology* topo = TopoHandle.product();
 
-  processEvent(topo);
+  processEvent(topo,histograms);
 
 }
 
 //********************************************************************************//
-void SiStripGainsPCLWorker::processEvent(const TrackerTopology* topo) {
-
-  edm::LogInfo("SiStripGainsPCLWorker") << "Processing run " << runnumber 
-					<< " and event " << eventnumber 
-					<< std::endl;
-
-  if(runnumber<SRun)SRun=runnumber;
-  if(runnumber>ERun)ERun=runnumber;
+void SiStripGainsPCLWorker::processEvent(const TrackerTopology* topo, APVGain::APVGainHistograms const& histograms) {
   
   NEvent++;
   NTrack+=(*trackp).size();
@@ -272,7 +269,7 @@ void SiStripGainsPCLWorker::processEvent(const TrackerTopology* topo) {
     if(APV->SubDet<=2) continue;
       
     // real histogram for calibration
-    (Charge_Vs_Index[elepos])->Fill(APV->Index,ClusterChargeOverPath);
+    histograms.Charge_Vs_Index[elepos].fill(APV->Index,ClusterChargeOverPath);
     
     LogDebug("SiStripGainsPCLWorker") <<" for mode "<< m_calibrationMode << "\n"
 				      <<" i "<< i
@@ -305,48 +302,44 @@ void SiStripGainsPCLWorker::processEvent(const TrackerTopology* topo) {
       mCharge3 *= (*gainusedTick)[i];                     // remove G1
       mCharge4 *= ( (*gainused)[i] * (*gainusedTick)[i]); // remove G1 and G2
     } 
-    std::vector<APVGain::APVmon>& v1 = Charge_1[elepos];
-    std::vector<MonitorElement*> cmon1 = APVGain::FetchMonitor(v1, (*rawid)[i], topo);
-    for(unsigned int m=0; m<cmon1.size(); m++) cmon1[m]->Fill(( (double) mCharge1 )/(*path)[i]);
 
-    std::vector<APVGain::APVmon>& v2 = Charge_2[elepos];
-    std::vector<MonitorElement*> cmon2 = APVGain::FetchMonitor(v2, (*rawid)[i], topo);
-    for(unsigned int m=0; m<cmon2.size(); m++) cmon2[m]->Fill(( (double) mCharge2 )/(*path)[i]);
+    auto cmon1 = APVGain::FetchMonitor(histograms.Charge_1[elepos], (*rawid)[i], topo);
+    for(unsigned int m=0; m<cmon1.size(); m++) cmon1[m].fill(( (double) mCharge1 )/(*path)[i]);
 
-    std::vector<APVGain::APVmon>& v3 = Charge_3[elepos];
-    std::vector<MonitorElement*> cmon3 = APVGain::FetchMonitor(v3, (*rawid)[i], topo);
-    for(unsigned int m=0; m<cmon3.size(); m++) cmon3[m]->Fill(( (double) mCharge3 )/(*path)[i]);
+    auto cmon2 = APVGain::FetchMonitor(histograms.Charge_2[elepos], (*rawid)[i], topo);
+    for(unsigned int m=0; m<cmon2.size(); m++) cmon2[m].fill(( (double) mCharge2 )/(*path)[i]);
 
-    std::vector<APVGain::APVmon>& v4 = Charge_4[elepos];
-    std::vector<MonitorElement*> cmon4 = APVGain::FetchMonitor(v4, (*rawid)[i], topo);
-    for(unsigned int m=0; m<cmon4.size(); m++) cmon4[m]->Fill(( (double) mCharge4 )/(*path)[i]);
+    auto cmon3 = APVGain::FetchMonitor(histograms.Charge_3[elepos], (*rawid)[i], topo);
+    for(unsigned int m=0; m<cmon3.size(); m++) cmon3[m].fill(( (double) mCharge3 )/(*path)[i]);
 
+    auto cmon4 = APVGain::FetchMonitor(histograms.Charge_4[elepos], (*rawid)[i], topo);
+    for(unsigned int m=0; m<cmon4.size(); m++) cmon4[m].fill(( (double) mCharge4 )/(*path)[i]);
 
     if(APV->SubDet==StripSubdetector::TIB){
-      (Charge_Vs_PathlengthTIB[elepos])->Fill((*path)[i],Charge);  // TIB
+      histograms.Charge_Vs_PathlengthTIB[elepos].fill((*path)[i],Charge);  // TIB
 
     }else if(APV->SubDet==StripSubdetector::TOB){
-      (Charge_Vs_PathlengthTOB[elepos])->Fill((*path)[i],Charge);  // TOB
+      histograms.Charge_Vs_PathlengthTOB[elepos].fill((*path)[i],Charge);  // TOB
 
     }else if(APV->SubDet==StripSubdetector::TID){
-      if(APV->Eta<0)     { (Charge_Vs_PathlengthTIDM[elepos])->Fill((*path)[i],Charge); }  // TID minus
-      else if(APV->Eta>0){ (Charge_Vs_PathlengthTIDP[elepos])->Fill((*path)[i],Charge); }  // TID plus
+      if(APV->Eta<0)     { histograms.Charge_Vs_PathlengthTIDM[elepos].fill((*path)[i],Charge); }  // TID minus
+      else if(APV->Eta>0){ histograms.Charge_Vs_PathlengthTIDP[elepos].fill((*path)[i],Charge); }  // TID plus
 
     }else if(APV->SubDet==StripSubdetector::TEC){
       if(APV->Eta<0){
-        if(APV->Thickness<0.04)     { (Charge_Vs_PathlengthTECM1[elepos])->Fill((*path)[i],Charge); } // TEC minus, type 1
-        else if(APV->Thickness>0.04){ (Charge_Vs_PathlengthTECM2[elepos])->Fill((*path)[i],Charge); } // TEC minus, type 2
+        if(APV->Thickness<0.04)     { histograms.Charge_Vs_PathlengthTECM1[elepos].fill((*path)[i],Charge); } // TEC minus, type 1
+        else if(APV->Thickness>0.04){ histograms.Charge_Vs_PathlengthTECM2[elepos].fill((*path)[i],Charge); } // TEC minus, type 2
       } else if(APV->Eta>0){
-        if(APV->Thickness<0.04)     { (Charge_Vs_PathlengthTECP1[elepos])->Fill((*path)[i],Charge); } // TEC plus, type 1
-        else if(APV->Thickness>0.04){ (Charge_Vs_PathlengthTECP2[elepos])->Fill((*path)[i],Charge); } // TEC plus, type 2
+        if(APV->Thickness<0.04)     { histograms.Charge_Vs_PathlengthTECP1[elepos].fill((*path)[i],Charge); } // TEC plus, type 1
+        else if(APV->Thickness>0.04){ histograms.Charge_Vs_PathlengthTECP2[elepos].fill((*path)[i],Charge); } // TEC plus, type 2
       }
     }
 
   }// END OF ON-CLUSTER LOOP
 
-  LogDebug("SiStripGainsPCLWorker")<<" for mode"<< m_calibrationMode 
-				   <<" entries in histogram:"<< (Charge_Vs_Index[elepos])->getTH2S()->GetEntries()
-				   <<std::endl;
+  //LogDebug("SiStripGainsPCLWorker")<<" for mode"<< m_calibrationMode 
+  //				   <<" entries in histogram:"<< histograms.Charge_Vs_Index[elepos].getEntries()
+  //				   <<std::endl;
 
 }//END OF processEvent()
 
@@ -490,7 +483,7 @@ SiStripGainsPCLWorker::fillDescriptions(edm::ConfigurationDescriptions& descript
 
 //********************************************************************************//
 void 
-SiStripGainsPCLWorker::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const & run, edm::EventSetup const & es){
+SiStripGainsPCLWorker::bookHistograms(DQMStore::ConcurrentBooker & ibooker, edm::Run const& run, edm::EventSetup const& setup, APVGain::APVGainHistograms & histograms) const {
 
   ibooker.cd();
   std::string dqm_dir = m_DQMdir;
@@ -543,53 +536,53 @@ SiStripGainsPCLWorker::bookHistograms(DQMStore::IBooker & ibooker, edm::Run cons
   }
   binYarray[687] = 4000.;
   
-  Charge_Vs_Index[elepos]           = ibooker.book2S(cvi.c_str()     , cvi.c_str()     , NStripAPVs, &binXarray[0], 687, binYarray.data());
-  Charge_Vs_PathlengthTIB[elepos]   = ibooker.book2S(cvpTIB.c_str()  , cvpTIB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTOB[elepos]   = ibooker.book2S(cvpTOB.c_str()  , cvpTOB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTIDP[elepos]  = ibooker.book2S(cvpTIDP.c_str() , cvpTIDP.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTIDM[elepos]  = ibooker.book2S(cvpTIDM.c_str() , cvpTIDM.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTECP1[elepos] = ibooker.book2S(cvpTECP1.c_str(), cvpTECP1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTECP2[elepos] = ibooker.book2S(cvpTECP2.c_str(), cvpTECP2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTECM1[elepos] = ibooker.book2S(cvpTECM1.c_str(), cvpTECM1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
-  Charge_Vs_PathlengthTECM2[elepos] = ibooker.book2S(cvpTECM2.c_str(), cvpTECM2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_Index[elepos]           = ibooker.book2S(cvi.c_str()     , cvi.c_str()     , NStripAPVs, &binXarray[0], 687, binYarray.data());
+  histograms.Charge_Vs_PathlengthTIB[elepos]   = ibooker.book2S(cvpTIB.c_str()  , cvpTIB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTOB[elepos]   = ibooker.book2S(cvpTOB.c_str()  , cvpTOB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTIDP[elepos]  = ibooker.book2S(cvpTIDP.c_str() , cvpTIDP.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTIDM[elepos]  = ibooker.book2S(cvpTIDM.c_str() , cvpTIDM.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTECP1[elepos] = ibooker.book2S(cvpTECP1.c_str(), cvpTECP1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTECP2[elepos] = ibooker.book2S(cvpTECP2.c_str(), cvpTECP2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTECM1[elepos] = ibooker.book2S(cvpTECM1.c_str(), cvpTECM1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+  histograms.Charge_Vs_PathlengthTECM2[elepos] = ibooker.book2S(cvpTECM2.c_str(), cvpTECM2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
 
   std::vector<std::pair<std::string,std::string>> hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"");
   for (unsigned int i=0;i<hnames.size();i++){
     std::string htag = (hnames[i]).first + stag;
-    MonitorElement* monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+    ConcurrentMonitorElement monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
     int id    = APVGain::subdetectorId((hnames[i]).first);
     int side  = APVGain::subdetectorSide((hnames[i]).first);
     int plane = APVGain::subdetectorPlane((hnames[i]).first);
-    Charge_1[elepos].push_back( APVGain::APVmon(id,side,plane,monitor) );
+    histograms.Charge_1[elepos].push_back(std::move(APVGain::APVmon(id,side,plane,monitor)) );
   }
 
   hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG2");
   for (unsigned int i=0;i<hnames.size();i++){
     std::string htag = (hnames[i]).first + stag;
-    MonitorElement* monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+    ConcurrentMonitorElement monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
     int id    = APVGain::subdetectorId((hnames[i]).first);
     int side  = APVGain::subdetectorSide((hnames[i]).first);
     int plane = APVGain::subdetectorPlane((hnames[i]).first);
-    Charge_2[elepos].push_back( APVGain::APVmon(id,side,plane,monitor) );
+    histograms.Charge_2[elepos].push_back(std::move(APVGain::APVmon(id,side,plane,monitor)));
   }
 
   hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG1");
   for (unsigned int i=0;i<hnames.size();i++){
     std::string htag = (hnames[i]).first + stag;
-    MonitorElement* monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+    ConcurrentMonitorElement monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
     int id    = APVGain::subdetectorId((hnames[i]).first);
     int side  = APVGain::subdetectorSide((hnames[i]).first);
     int plane = APVGain::subdetectorPlane((hnames[i]).first);
-    Charge_3[elepos].push_back( APVGain::APVmon(id,side,plane,monitor) );
+    histograms.Charge_3[elepos].push_back(std::move(APVGain::APVmon(id,side,plane,monitor)) );
   }
 
   hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG1G2");
   for (unsigned int i=0;i<hnames.size();i++){
     std::string htag = (hnames[i]).first + stag;
-    MonitorElement* monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+    ConcurrentMonitorElement monitor = ibooker.book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
     int id    = APVGain::subdetectorId((hnames[i]).first);
     int side  = APVGain::subdetectorSide((hnames[i]).first);
     int plane = APVGain::subdetectorPlane((hnames[i]).first);
-    Charge_4[elepos].push_back( APVGain::APVmon(id,side,plane,monitor) );
+    histograms.Charge_4[elepos].push_back(std::move(APVGain::APVmon(id,side,plane,monitor)) );
   }
 }
