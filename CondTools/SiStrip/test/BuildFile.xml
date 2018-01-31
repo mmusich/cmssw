@@ -1,0 +1,5 @@
+<use name="CondTools/SiStrip"/>
+
+<architecture name="slc.*_amd64_.*">
+  <test name="SiStripDCS_O2O_test" command="testSiStripDCSO2O.sh"/>
+</architecture>
