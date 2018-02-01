@@ -21,3 +21,59 @@ getPayloadData.py  \
 	--iovs '{"start_iov": "299685", "end_iov": "299685"}' \
   	--db Prod \
  	--test;
+
+#*************************************************************************#
+elements=(BPix FPix TIB TOB TID TEC)
+
+for i in "${elements[@]}"
+do
+    echo "Processing: $i partition"
+    
+    getPayloadData.py  \
+ 	--plugin pluginTrackerSurfaceDeformations_PayloadInspector \
+ 	--plot plot_${i}SurfaceDeformationsSummary \
+ 	--tag TrackerSurafceDeformations_v1_express \
+ 	--time_type Run \
+	--iovs '{"start_iov": "299685", "end_iov": "299685"}' \
+  	--db Prod \
+ 	--test;
+    
+    mv *.png $W_DIR/results_surfaces/SurfaceDeformationSummary${i}.png
+done
+
+#*************************************************************************#
+elements=(BPix FPix TIB TOB TID TEC)
+
+for i in "${elements[@]}"
+do
+    echo "Processing: $i partition"
+    
+    getPayloadData.py  \
+ 	--plugin pluginTrackerSurfaceDeformations_PayloadInspector \
+ 	--plot plot_${i}SurfaceDeformationsComparison \
+ 	--tag TrackerSurafceDeformations_v1_express \
+ 	--time_type Run \
+	--iovs '{"start_iov": "298757", "end_iov": "299685"}' \
+  	--db Prod \
+ 	--test;
+    
+    mv *.png $W_DIR/results_surfaces/SurfaceDeformationComparison${i}.png
+done
+
+#*************************************************************************#
+for i in {0..12}
+do 
+    echo "Processing: $i parameter"
+    
+    getPayloadData.py  \
+ 	--plugin pluginTrackerSurfaceDeformations_PayloadInspector \
+ 	--plot plot_SurfaceDeformationParameter${i}TrackerMap \
+ 	--tag TrackerSurafceDeformations_v1_express \
+ 	--time_type Run \
+	--iovs '{"start_iov": "299685", "end_iov": "299685"}' \
+  	--db Prod \
+ 	--test;
+    
+    mv *.png $W_DIR/results_surfaces/SurfaceDeformationTrackerMapParameter_${i}.png
+
+done
