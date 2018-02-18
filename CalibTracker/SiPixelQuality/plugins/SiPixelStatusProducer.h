@@ -31,6 +31,7 @@ class SiPixelStatusProducer : public edm::one::EDProducer<edm::EndLuminosityBloc
   void beginLuminosityBlock     (edm::LuminosityBlock const& lumiSeg, const edm::EventSetup& iSetup) final;
   void endLuminosityBlock       (edm::LuminosityBlock const& lumiSeg, const edm::EventSetup& iSetup) final;
   void endLuminosityBlockProduce(edm::LuminosityBlock& lumiSeg, const edm::EventSetup& iSetup) final;
+  void initialize               (const edm::EventSetup& iSetup);
   void endJob() final;
   void produce                  (edm::Event& iEvent, const edm::EventSetup& iSetup) final;
   
@@ -52,7 +53,7 @@ class SiPixelStatusProducer : public edm::one::EDProducer<edm::EndLuminosityBloc
   // CablingMaps
   edm::ESWatcher<SiPixelFedCablingMapRcd> siPixelFedCablingMapWatcher_;
   edm::ESHandle<SiPixelFedCablingMap>                     fCablingMap;
-  int MINFEDID, MAXFEDID;
+  unsigned int MINFEDID, MAXFEDID;
 
   // TrackerDIGIGeo
   edm::ESWatcher<TrackerDigiGeometryRecord> trackerDIGIGeoWatcher_;

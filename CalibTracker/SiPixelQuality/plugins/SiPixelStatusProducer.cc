@@ -72,12 +72,29 @@ SiPixelStatusProducer::SiPixelStatusProducer(const edm::ParameterSet& iConfig){
 SiPixelStatusProducer::~SiPixelStatusProducer(){
 }
 
+void SiPixelStatusProducer::initialize(const edm::EventSetup& iSetup){
+
+  // initialize cabling map or update it if necessary
+  // and re-cache modules information
+  if (siPixelFedCablingMapWatcher_.check(iSetup)){
+
+    // get the TrackerGeom
+    edm::ESHandle<TrackerGeometry> geom;
+    iSetup.get<TrackerDigiGeometryRecord>().get( geom );
+
+    // switch on the phase1 
+    MINFEDID = FEDNumbering::MINSiPixelFEDID; // phase0
+    MAXFEDID = FEDNumbering::MAXSiPixelFEDID;
+    if( (geom->isThere(GeomDetEnumerators::P1PXB)) && 
+	(geom->isThere(GeomDetEnumerators::P1PXEC)) ) {
+      MINFEDID = FEDNumbering::MINSiPixeluTCAFEDID; // phase1
+      MAXFEDID = FEDNumbering::MAXSiPixeluTCAFEDID;
+    }
+  }
+}
+
 //--------------------------------------------------------------------------------------------------
 void SiPixelStatusProducer::beginJob(){
-
-  MINFEDID = FEDNumbering::MINSiPixeluTCAFEDID;
-  MAXFEDID = FEDNumbering::MAXSiPixeluTCAFEDID;
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -94,9 +111,12 @@ void SiPixelStatusProducer::beginLuminosityBlock(edm::LuminosityBlock const& lum
     
   countLumi_++;
 
+  // -- initialize the FED limits from geomtery
+  initialize(iSetup);
+
   // -- Setup cabling map and its map to detIDs
   iSetup.get<SiPixelFedCablingMapRcd>().get(fCablingMap);
-  for (int i = MINFEDID; i < MAXFEDID; ++i) {
+  for (unsigned int i = MINFEDID; i < MAXFEDID; ++i) {
       fPFC[i] = new SiPixelFrameConverter(fCablingMap.product(), i);
   }
 
@@ -112,7 +132,7 @@ void SiPixelStatusProducer::beginLuminosityBlock(edm::LuminosityBlock const& lum
       DetId detId = (*it)->geographicalId();
       uint32_t newDetId = detId;
 
-      for (int fedid = MINFEDID; fedid < MAXFEDID; ++fedid) {
+      for (unsigned int fedid = MINFEDID; fedid < MAXFEDID; ++fedid) {
           if (fPFC[fedid]->hasDetUnit(newDetId)) {
             fFEDID.insert(make_pair(newDetId, fedid));
             break;
@@ -233,9 +253,9 @@ void SiPixelStatusProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi
 void SiPixelStatusProducer::endJob() {
 
    // FED counter
-   for (int i = MINFEDID; i < MAXFEDID; ++i) {
-        delete fPFC[i];
-   }
+  for (unsigned int i = MINFEDID; i < MAXFEDID; ++i) {
+    delete fPFC[i];
+  }
 
 }
 

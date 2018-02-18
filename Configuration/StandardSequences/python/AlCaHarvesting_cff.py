@@ -8,7 +8,7 @@ from Calibration.TkAlCaRecoProducers.AlcaSiStripGainsAAGHarvester_cff import *
 from Alignment.CommonAlignmentProducer.AlcaSiPixelAliHarvester_cff import *
 from Calibration.EcalCalibAlgos.AlcaEcalPedestalsHarvester_cff import *
 
-from CalibTrakcer.SiPixelQuality.SiPixelStatusHarvester_cff import *
+from CalibTracker.SiPixelQuality.SiPixelStatusHarvester_cff import *
 
 from Calibration.TkAlCaRecoProducers.PCLMetadataWriter_cfi import *
 
@@ -96,14 +96,13 @@ ALCAHARVESTEcalPedestals_dbOutput = cms.PSet(record = cms.string('EcalPedestalsR
 
 # SiPixel Quality
 ALCAHARVESTSiPixelQuality = siPixelStatusHarvester.clone()
-ALCAHARVESTSiPixelQuality.AlcaBeamSpotHarvesterParameters.outputBase = cms.untracked.string("nLumibased")
+ALCAHARVESTSiPixelQuality.SiPixelStatusHarvesterParameters.OutputBase = cms.untracked.string("nLumibased")
 
 ALCAHARVESTSiPixelQuality_metadata = cms.PSet(record = cms.untracked.string('SiPixelQualityFromDbRcd'))
 ALCAHARVESTSiPixelQuality_dbOutput = cms.PSet(record = cms.string('SiPixelQualityFromDbRcd'),
                                               tag = cms.string('SiPixelQuality_pcl'),
                                               timetype   = cms.untracked.string('lumiid')
                                               )
-
 
 # define the paths
 BeamSpotByRun  = cms.Path(ALCAHARVESTBeamSpotByRun)
