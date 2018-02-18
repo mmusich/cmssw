@@ -268,7 +268,7 @@ void SiPixelStatusProducer::onlineRocColRow(const DetId &pID, int offlineRow, in
     if ((outputname.find("mO") != string::npos || outputname.find("mI") != string::npos) && (HalfModule)) {
       // has to be BPIX; has to be minus side; has to be half module
       roc = theRoc->idInDetUnit() + 8;
-      }
+    }
   }
   col = locpixel.rocCol();
   row = locpixel.rocRow();

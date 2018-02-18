@@ -1745,12 +1745,12 @@ steps['ALCAPROMPT']={'-s':'ALCA:PromptCalibProd',
                      '--conditions':'auto:run1_data',
                      '--datatier':'ALCARECO',
                      '--eventcontent':'ALCARECO'}
-steps['ALCAEXP']={'-s':'ALCAOUTPUT:SiStripCalZeroBias+TkAlMinBias+DtCalib+Hotline+LumiPixelsMinBias+AlCaPCCZeroBiasFromRECO+AlCaPCCRandomFromRECO,ALCA:PromptCalibProd+PromptCalibProdSiStrip+PromptCalibProdSiStripGains+PromptCalibProdSiStripGainsAAG+PromptCalibProdSiPixelAli',
+steps['ALCAEXP']={'-s':'ALCAOUTPUT:SiStripCalZeroBias+TkAlMinBias+DtCalib+Hotline+LumiPixelsMinBias+AlCaPCCZeroBiasFromRECO+AlCaPCCRandomFromRECO,ALCA:PromptCalibProd+PromptCalibProdSiPixel+PromptCalibProdSiStrip+PromptCalibProdSiStripGains+PromptCalibProdSiStripGainsAAG+PromptCalibProdSiPixelAli',
                   '--conditions':'auto:run1_data',
                   '--datatier':'ALCARECO',
                   '--eventcontent':'ALCARECO',
                   '--triggerResultsProcess': 'RECO'}
-steps['ALCAEXPHI']=merge([{'-s':'ALCA:PromptCalibProd+PromptCalibProdSiStrip+PromptCalibProdSiStripGains+PromptCalibProdSiStripGainsAAG',
+steps['ALCAEXPHI']=merge([{'-s':'ALCA:PromptCalibProd+PromptCalibProdSiPixel+PromptCalibProdSiStrip+PromptCalibProdSiStripGains+PromptCalibProdSiStripGainsAAG',
                   '--scenario':'HeavyIons'},steps['ALCAEXP']])
 steps['ALCAEXPTE']={'-s':'ALCA:PromptCalibProdEcalPedestals',
                     '--conditions':'auto:run2_data_relval',
@@ -1830,6 +1830,15 @@ steps['ALCAHARVD5']={'-s':'ALCAHARVEST:%s'%(autoPCL['PromptCalibProdSiStripGains
                      '--filein':'file:PromptCalibProdSiStripGainsAAG.root'}
 
 steps['ALCAHARVD5HI']=merge([{'--scenario':'HeavyIons'},steps['ALCAHARVD5']])
+
+steps['ALCAHARVD6']={'-s':'ALCAHARVEST:%s'%(autoPCL['PromptCalibProdSiPixel']),
+                     '--conditions':'auto:run1_data',
+                     '--scenario':'pp',
+                     '--data':'',
+                     '--filein':'file:PromptCalibProdSiPixel.root'}
+
+steps['ALCAHARVD6HI']=merge([{'--scenario':'HeavyIons'},steps['ALCAHARVD5']])
+
 steps['ALCAHARVDTE']={'-s':'ALCAHARVEST:%s'%(autoPCL['PromptCalibProdEcalPedestals']),
                      '--conditions':'auto:run2_data',
                      '--scenario':'pp',

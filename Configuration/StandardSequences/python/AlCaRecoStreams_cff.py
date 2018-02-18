@@ -126,6 +126,7 @@ from Alignment.CommonAlignmentProducer.ALCARECOMuAlBeamHaloOverlaps_cff import *
 ###############################################################
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProd_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStrip_cff import *
+from CalibTracker.SiPixelQuality.ALCARECOPromptCalibProdSiPixel_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStripGains_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStripGainsAAG_cff import *
 
@@ -134,7 +135,7 @@ from Alignment.CommonAlignmentProducer.ALCARECOPromptCalibProdSiPixelAli_cff imp
 
 from Calibration.EcalCalibAlgos.ALCARECOPromptCalibProdEcalPedestals_cff import *
 
-from CalibTracer.SiPixelQuality.ALCARECOPromptCalibProdSiPixel_cff import *
+
 ###############################################################
 # hotline skim workflows
 ###############################################################
