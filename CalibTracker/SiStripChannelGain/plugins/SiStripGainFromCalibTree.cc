@@ -100,7 +100,7 @@ private:
 
   
 	void algoBeginRun(const edm::Run& run, const edm::EventSetup& iSetup) override;
-	void algoEndRun  (const edm::Run& run, const edm::EventSetup& iSetup) override;
+        void algoEndRun  (const edm::Run& run, const edm::EventSetup& iSetup) override;
 	void algoBeginJob      (const edm::EventSetup& iSetup) override;
 	void algoEndJob        () override;
 	void algoAnalyze       (const edm::Event &, const edm::EventSetup &) override;
@@ -134,7 +134,10 @@ private:
 	SiStripApvGain* getNewObject() override;
 
 	TFileService *tfs;
-	DQMStore* dbe;
+        DQMStore*                     dqmStore_{nullptr};
+        DQMStore::IBooker*            ibooker_{nullptr};
+        DQMStore::IGetter*            igetter_{nullptr};
+
         double       MagFieldCurrentTh;
 	double       MinNrEntries;
 	double       MaxMPVError;
@@ -378,10 +381,11 @@ SiStripGainFromCalibTree::SiStripGainFromCalibTree(const edm::ParameterSet& iCon
  
         doChargeMonitorPerPlane = iConfig.getUntrackedParameter<bool>    ("doChargeMonitorPerPlane", false);
 
-
-        // Gather DQM Service
-	dbe = edm::Service<DQMStore>().operator->();
-	dbe->setVerbose(10);
+	dqmStore_ = edm::Service<DQMStore>().operator->();
+        dqmStore_->meBookerGetter([this](DQMStore::IBooker &b, DQMStore::IGetter &g){
+	    this->ibooker_ = &b;
+	    this->igetter_ = &g;
+	  });
 
         //Set the monitoring element tag and store
         dqm_tag_.reserve(7);
@@ -404,9 +408,6 @@ SiStripGainFromCalibTree::SiStripGainFromCalibTree(const edm::ParameterSet& iCon
         Charge_Vs_PathlengthTECP2.insert( Charge_Vs_PathlengthTECP2.begin(), dqm_tag_.size(), nullptr);
         Charge_Vs_PathlengthTECM1.insert( Charge_Vs_PathlengthTECM1.begin(), dqm_tag_.size(), nullptr);
         Charge_Vs_PathlengthTECM2.insert( Charge_Vs_PathlengthTECM2.begin(), dqm_tag_.size(), nullptr);
-
-        
-
 
         // configure token for gathering the ntuple variables 
 	edm::ParameterSet swhallowgain_pset = iConfig.getUntrackedParameter<edm::ParameterSet>("gain");
@@ -461,7 +462,7 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
 
     if ( strcmp(booked_dir_.c_str(),dqm_dir)!=0 ) {
         booked_dir_ = dqm_dir;
-        dbe->setCurrentFolder(dqm_dir);
+        ibooker_->setCurrentFolder(dqm_dir);
     }
 
     std::string stag(tag);
@@ -479,6 +480,11 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
     std::string cvpTECM2 = std::string("Charge_Vs_PathlengthTECM2") + stag;
 
     int elepos = (m_harvestingMode && AlgoMode=="PCL")? Harvest : statCollectionFromMode(tag);
+
+    Charge_1[elepos].clear();
+    Charge_2[elepos].clear();
+    Charge_3[elepos].clear();
+    Charge_4[elepos].clear();
 
     // The cluster charge is stored by exploiting a non uniform binning in order 
     // reduce the histogram memory size. The bin width is relaxed with a falling
@@ -506,22 +512,22 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
     }
     binYarray[687] = 4000.;
 
-    Charge_Vs_Index[elepos]           = dbe->book2S(cvi.c_str()     , cvi.c_str()     , NStripAPVs, &binXarray[0], 687, binYarray.data());
-    //Charge_Vs_Index_Absolute[elepos]  = dbe->book2S(cviA.c_str()    , cviA.c_str()    , 88625, 0   , 88624,1000,0,4000);
-    Charge_Vs_PathlengthTIB[elepos]   = dbe->book2S(cvpTIB.c_str()  , cvpTIB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTOB[elepos]   = dbe->book2S(cvpTOB.c_str()  , cvpTOB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTIDP[elepos]  = dbe->book2S(cvpTIDP.c_str() , cvpTIDP.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTIDM[elepos]  = dbe->book2S(cvpTIDM.c_str() , cvpTIDM.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTECP1[elepos] = dbe->book2S(cvpTECP1.c_str(), cvpTECP1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTECP2[elepos] = dbe->book2S(cvpTECP2.c_str(), cvpTECP2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTECM1[elepos] = dbe->book2S(cvpTECM1.c_str(), cvpTECM1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
-    Charge_Vs_PathlengthTECM2[elepos] = dbe->book2S(cvpTECM2.c_str(), cvpTECM2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_Index[elepos]           = ibooker_->book2S(cvi.c_str()     , cvi.c_str()     , NStripAPVs, &binXarray[0], 687, binYarray.data());
+    //Charge_Vs_Index_Absolute[elepos]  = ibooker_->book2S(cviA.c_str()    , cviA.c_str()    , 88625, 0   , 88624,1000,0,4000);
+    Charge_Vs_PathlengthTIB[elepos]   = ibooker_->book2S(cvpTIB.c_str()  , cvpTIB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTOB[elepos]   = ibooker_->book2S(cvpTOB.c_str()  , cvpTOB.c_str()  , 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTIDP[elepos]  = ibooker_->book2S(cvpTIDP.c_str() , cvpTIDP.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTIDM[elepos]  = ibooker_->book2S(cvpTIDM.c_str() , cvpTIDM.c_str() , 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTECP1[elepos] = ibooker_->book2S(cvpTECP1.c_str(), cvpTECP1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTECP2[elepos] = ibooker_->book2S(cvpTECP2.c_str(), cvpTECP2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTECM1[elepos] = ibooker_->book2S(cvpTECM1.c_str(), cvpTECM1.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
+    Charge_Vs_PathlengthTECM2[elepos] = ibooker_->book2S(cvpTECM2.c_str(), cvpTECM2.c_str(), 20   , 0.3 , 1.3  , 250,0,2000);
 
     //Book Charge monitoring histograms
     std::vector<std::pair<std::string,std::string>> hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"");
     for (unsigned int i=0;i<hnames.size();i++){
         std::string htag = (hnames[i]).first + stag;
-        MonitorElement* monitor = dbe->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+        MonitorElement* monitor = ibooker_->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
         int id    = APVGain::subdetectorId((hnames[i]).first);
         int side  = APVGain::subdetectorSide((hnames[i]).first);
         int plane = APVGain::subdetectorPlane((hnames[i]).first);
@@ -531,7 +537,7 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
     hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG2");
     for (unsigned int i=0;i<hnames.size();i++){
         std::string htag = (hnames[i]).first + stag;
-        MonitorElement* monitor = dbe->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+        MonitorElement* monitor = ibooker_->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
         int id    = APVGain::subdetectorId((hnames[i]).first);
         int side  = APVGain::subdetectorSide((hnames[i]).first);
         int plane = APVGain::subdetectorPlane((hnames[i]).first);
@@ -541,7 +547,7 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
     hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG1");
     for (unsigned int i=0;i<hnames.size();i++){
         std::string htag = (hnames[i]).first + stag;
-        MonitorElement* monitor = dbe->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+        MonitorElement* monitor = ibooker_->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
         int id    = APVGain::subdetectorId((hnames[i]).first);
         int side  = APVGain::subdetectorSide((hnames[i]).first);
         int plane = APVGain::subdetectorPlane((hnames[i]).first);
@@ -551,7 +557,7 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
     hnames = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG1G2");
     for (unsigned int i=0;i<hnames.size();i++){
         std::string htag = (hnames[i]).first + stag;
-        MonitorElement* monitor = dbe->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+        MonitorElement* monitor = ibooker_->book1DD( htag.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
         int id    = APVGain::subdetectorId((hnames[i]).first);
         int side  = APVGain::subdetectorSide((hnames[i]).first);
         int plane = APVGain::subdetectorPlane((hnames[i]).first);
@@ -564,61 +570,61 @@ void SiStripGainFromCalibTree::bookDQMHistos(const char* dqm_dir, const char* ta
         float MPVmin = 0.;
         float MPVmax = 600.;
 
-        MPV_Vs_EtaTIB      = dbe->book2DD("MPV_vs_EtaTIB" ,"MPV vs Eta TIB"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_EtaTID      = dbe->book2DD("MPV_vs_EtaTID" ,"MPV vs Eta TID"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_EtaTOB      = dbe->book2DD("MPV_vs_EtaTOB" ,"MPV vs Eta TOB"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_EtaTEC      = dbe->book2DD("MPV_vs_EtaTEC" ,"MPV vs Eta TEC"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_EtaTECthin  = dbe->book2DD("MPV_vs_EtaTEC1","MPV vs Eta TEC-thin" , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_EtaTECthick = dbe->book2DD("MPV_vs_EtaTEC2","MPV vs Eta TEC-thick", 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_EtaTIB      = ibooker_->book2DD("MPV_vs_EtaTIB" ,"MPV vs Eta TIB"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_EtaTID      = ibooker_->book2DD("MPV_vs_EtaTID" ,"MPV vs Eta TID"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_EtaTOB      = ibooker_->book2DD("MPV_vs_EtaTOB" ,"MPV vs Eta TOB"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_EtaTEC      = ibooker_->book2DD("MPV_vs_EtaTEC" ,"MPV vs Eta TEC"      , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_EtaTECthin  = ibooker_->book2DD("MPV_vs_EtaTEC1","MPV vs Eta TEC-thin" , 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_EtaTECthick = ibooker_->book2DD("MPV_vs_EtaTEC2","MPV vs Eta TEC-thick", 50, -3.0, 3.0, MPVbin, MPVmin, MPVmax);
 
-        MPV_Vs_PhiTIB      = dbe->book2DD("MPV_vs_PhiTIB" ,"MPV vs Phi TIB"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_PhiTID      = dbe->book2DD("MPV_vs_PhiTID" ,"MPV vs Phi TID"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_PhiTOB      = dbe->book2DD("MPV_vs_PhiTOB" ,"MPV vs Phi TOB"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_PhiTEC      = dbe->book2DD("MPV_vs_PhiTEC" ,"MPV vs Phi TEC"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_PhiTECthin  = dbe->book2DD("MPV_vs_PhiTEC1","MPV vs Phi TEC-thin" , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
-        MPV_Vs_PhiTECthick = dbe->book2DD("MPV_vs_PhiTEC2","MPV vs Phi TEC-thick", 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_PhiTIB      = ibooker_->book2DD("MPV_vs_PhiTIB" ,"MPV vs Phi TIB"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_PhiTID      = ibooker_->book2DD("MPV_vs_PhiTID" ,"MPV vs Phi TID"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_PhiTOB      = ibooker_->book2DD("MPV_vs_PhiTOB" ,"MPV vs Phi TOB"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_PhiTEC      = ibooker_->book2DD("MPV_vs_PhiTEC" ,"MPV vs Phi TEC"      , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_PhiTECthin  = ibooker_->book2DD("MPV_vs_PhiTEC1","MPV vs Phi TEC-thin" , 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
+        MPV_Vs_PhiTECthick = ibooker_->book2DD("MPV_vs_PhiTEC2","MPV vs Phi TEC-thick", 50, -3.4, 3.4, MPVbin, MPVmin, MPVmax);
 
-        NoMPVfit           = dbe->book2DD("NoMPVfit"      ,"Modules with bad Landau Fit",350, -350, 350, 240, 0, 120);
-        NoMPVmasked        = dbe->book2DD("NoMPVmasked"   ,"Masked Modules"             ,350, -350, 350, 240, 0, 120);
+        NoMPVfit           = ibooker_->book2DD("NoMPVfit"      ,"Modules with bad Landau Fit",350, -350, 350, 240, 0, 120);
+        NoMPVmasked        = ibooker_->book2DD("NoMPVmasked"   ,"Masked Modules"             ,350, -350, 350, 240, 0, 120);
 
-        Gains          = dbe->book1DD("Gains"         ,"Gains"             ,                300, 0, 2);
-        MPVs           = dbe->book1DD("MPVs"          ,"MPVs"              ,                MPVbin, MPVmin, MPVmax);
-        MPVs320        = dbe->book1DD("MPV_320"       ,"MPV 320 thickness" ,                MPVbin, MPVmin, MPVmax);
-        MPVs500        = dbe->book1DD("MPV_500"       ,"MPV 500 thickness" ,                MPVbin, MPVmin, MPVmax);
-        MPVsTIB        = dbe->book1DD("MPV_TIB"       ,"MPV TIB"           ,                MPVbin, MPVmin, MPVmax);
-        MPVsTID        = dbe->book1DD("MPV_TID"       ,"MPV TID"           ,                MPVbin, MPVmin, MPVmax);
-        MPVsTIDP       = dbe->book1DD("MPV_TIDP"      ,"MPV TIDP"          ,                MPVbin, MPVmin, MPVmax);
-        MPVsTIDM       = dbe->book1DD("MPV_TIDM"      ,"MPV TIDM"          ,                MPVbin, MPVmin, MPVmax);
-        MPVsTOB        = dbe->book1DD("MPV_TOB"       ,"MPV TOB"           ,                MPVbin, MPVmin, MPVmax);
-        MPVsTEC        = dbe->book1DD("MPV_TEC"       ,"MPV TEC"           ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECP       = dbe->book1DD("MPV_TECP"      ,"MPV TECP"          ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECM       = dbe->book1DD("MPV_TECM"      ,"MPV TECM"          ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECthin    = dbe->book1DD("MPV_TEC1"      ,"MPV TEC1"          ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECthick   = dbe->book1DD("MPV_TEC2"      ,"MPV TEC2"          ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECP1      = dbe->book1DD("MPV_TECP1"     ,"MPV TECP1"         ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECP2      = dbe->book1DD("MPV_TECP2"     ,"MPV TECP2"         ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECM1      = dbe->book1DD("MPV_TECM1"     ,"MPV TECM1"         ,                MPVbin, MPVmin, MPVmax);
-        MPVsTECM2      = dbe->book1DD("MPV_TECM2"     ,"MPV TECM2"         ,                MPVbin, MPVmin, MPVmax);
+        Gains          = ibooker_->book1DD("Gains"         ,"Gains"             ,                300, 0, 2);
+        MPVs           = ibooker_->book1DD("MPVs"          ,"MPVs"              ,                MPVbin, MPVmin, MPVmax);
+        MPVs320        = ibooker_->book1DD("MPV_320"       ,"MPV 320 thickness" ,                MPVbin, MPVmin, MPVmax);
+        MPVs500        = ibooker_->book1DD("MPV_500"       ,"MPV 500 thickness" ,                MPVbin, MPVmin, MPVmax);
+        MPVsTIB        = ibooker_->book1DD("MPV_TIB"       ,"MPV TIB"           ,                MPVbin, MPVmin, MPVmax);
+        MPVsTID        = ibooker_->book1DD("MPV_TID"       ,"MPV TID"           ,                MPVbin, MPVmin, MPVmax);
+        MPVsTIDP       = ibooker_->book1DD("MPV_TIDP"      ,"MPV TIDP"          ,                MPVbin, MPVmin, MPVmax);
+        MPVsTIDM       = ibooker_->book1DD("MPV_TIDM"      ,"MPV TIDM"          ,                MPVbin, MPVmin, MPVmax);
+        MPVsTOB        = ibooker_->book1DD("MPV_TOB"       ,"MPV TOB"           ,                MPVbin, MPVmin, MPVmax);
+        MPVsTEC        = ibooker_->book1DD("MPV_TEC"       ,"MPV TEC"           ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECP       = ibooker_->book1DD("MPV_TECP"      ,"MPV TECP"          ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECM       = ibooker_->book1DD("MPV_TECM"      ,"MPV TECM"          ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECthin    = ibooker_->book1DD("MPV_TEC1"      ,"MPV TEC1"          ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECthick   = ibooker_->book1DD("MPV_TEC2"      ,"MPV TEC2"          ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECP1      = ibooker_->book1DD("MPV_TECP1"     ,"MPV TECP1"         ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECP2      = ibooker_->book1DD("MPV_TECP2"     ,"MPV TECP2"         ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECM1      = ibooker_->book1DD("MPV_TECM1"     ,"MPV TECM1"         ,                MPVbin, MPVmin, MPVmax);
+        MPVsTECM2      = ibooker_->book1DD("MPV_TECM2"     ,"MPV TECM2"         ,                MPVbin, MPVmin, MPVmax);
 
-        MPVError       = dbe->book1DD("MPVError"      ,"MPV Error"      ,                150, 0, 150);
-        MPVErrorVsMPV  = dbe->book2DD("MPVErrorVsMPV" ,"MPV Error vs MPV" ,300,    0, 600, 150, 0, 150);
-        MPVErrorVsEta  = dbe->book2DD("MPVErrorVsEta" ,"MPV Error vs Eta" , 50, -3.0, 3.0, 150, 0, 150);
-        MPVErrorVsPhi  = dbe->book2DD("MPVErrorVsPhi" ,"MPV Error vs Phi" , 50, -3.4, 3.4, 150, 0, 150);
-        MPVErrorVsN    = dbe->book2DD("MPVErrorVsN"   ,"MPV Error vs N"   ,500,    0,1000, 150, 0, 150);
+        MPVError       = ibooker_->book1DD("MPVError"      ,"MPV Error"      ,                150, 0, 150);
+        MPVErrorVsMPV  = ibooker_->book2DD("MPVErrorVsMPV" ,"MPV Error vs MPV" ,300,    0, 600, 150, 0, 150);
+        MPVErrorVsEta  = ibooker_->book2DD("MPVErrorVsEta" ,"MPV Error vs Eta" , 50, -3.0, 3.0, 150, 0, 150);
+        MPVErrorVsPhi  = ibooker_->book2DD("MPVErrorVsPhi" ,"MPV Error vs Phi" , 50, -3.4, 3.4, 150, 0, 150);
+        MPVErrorVsN    = ibooker_->book2DD("MPVErrorVsN"   ,"MPV Error vs N"   ,500,    0,1000, 150, 0, 150);
 
-        DiffWRTPrevGainTIB = dbe->book1DD("DiffWRTPrevGainTIB" ,"Diff w.r.t. PrevGain TIB" , 250, 0,2);
-        DiffWRTPrevGainTID = dbe->book1DD("DiffWRTPrevGainTID" ,"Diff w.r.t. PrevGain TID" , 250, 0,2);
-        DiffWRTPrevGainTOB = dbe->book1DD("DiffWRTPrevGainTOB" ,"Diff w.r.t. PrevGain TOB" , 250, 0,2);
-        DiffWRTPrevGainTEC = dbe->book1DD("DiffWRTPrevGainTEC" ,"Diff w.r.t. PrevGain TEC" , 250, 0,2);
+        DiffWRTPrevGainTIB = ibooker_->book1DD("DiffWRTPrevGainTIB" ,"Diff w.r.t. PrevGain TIB" , 250, 0,2);
+        DiffWRTPrevGainTID = ibooker_->book1DD("DiffWRTPrevGainTID" ,"Diff w.r.t. PrevGain TID" , 250, 0,2);
+        DiffWRTPrevGainTOB = ibooker_->book1DD("DiffWRTPrevGainTOB" ,"Diff w.r.t. PrevGain TOB" , 250, 0,2);
+        DiffWRTPrevGainTEC = ibooker_->book1DD("DiffWRTPrevGainTEC" ,"Diff w.r.t. PrevGain TEC" , 250, 0,2);
 
-        GainVsPrevGainTIB  = dbe->book2DD("GainVsPrevGainTIB"  ,"Gain vs PrevGain TIB"  , 100, 0,2, 100, 0,2);
-        GainVsPrevGainTID  = dbe->book2DD("GainVsPrevGainTID"  ,"Gain vs PrevGain TID"  , 100, 0,2, 100, 0,2);
-        GainVsPrevGainTOB  = dbe->book2DD("GainVsPrevGainTOB"  ,"Gain vs PrevGain TOB"  , 100, 0,2, 100, 0,2);
-        GainVsPrevGainTEC  = dbe->book2DD("GainVsPrevGainTEC"  ,"Gain vs PrevGain TEC"  , 100, 0,2, 100, 0,2);
+        GainVsPrevGainTIB  = ibooker_->book2DD("GainVsPrevGainTIB"  ,"Gain vs PrevGain TIB"  , 100, 0,2, 100, 0,2);
+        GainVsPrevGainTID  = ibooker_->book2DD("GainVsPrevGainTID"  ,"Gain vs PrevGain TID"  , 100, 0,2, 100, 0,2);
+        GainVsPrevGainTOB  = ibooker_->book2DD("GainVsPrevGainTOB"  ,"Gain vs PrevGain TOB"  , 100, 0,2, 100, 0,2);
+        GainVsPrevGainTEC  = ibooker_->book2DD("GainVsPrevGainTEC"  ,"Gain vs PrevGain TEC"  , 100, 0,2, 100, 0,2);
 
         std::vector<std::pair<std::string,std::string>> hnames=APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"newG2");
         for (unsigned int i=0;i<hnames.size();i++){
-            MonitorElement* monitor = dbe->book1DD( (hnames[i]).first.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
+            MonitorElement* monitor = ibooker_->book1DD( (hnames[i]).first.c_str(), (hnames[i]).second.c_str(), 100   , 0. , 1000. );
             int id    = APVGain::subdetectorId((hnames[i]).first);
             int side  = APVGain::subdetectorSide((hnames[i]).first);
             int plane = APVGain::subdetectorPlane((hnames[i]).first);
@@ -633,10 +639,11 @@ void SiStripGainFromCalibTree::algoBeginJob(const edm::EventSetup& iSetup)
         edm::LogInfo("SiStripGainFromCalibTree") << "AlgoMode        : " << AlgoMode          << "\n"
                                                  << "CalibrationMode : " << m_calibrationMode << "\n"
                                                  << "HarvestingMode  : " << m_harvestingMode  << std::endl;
+
         //Setup DQM histograms
 	if(AlgoMode != "PCL" or m_harvestingMode) {
             const char * dqm_dir = "AlCaReco/SiStripGainsHarvesting/";
-            this->bookDQMHistos( dqm_dir, dqm_tag_[statCollectionFromMode(m_calibrationMode.c_str())].c_str() );
+            this->bookDQMHistos(dqm_dir, dqm_tag_[statCollectionFromMode(m_calibrationMode.c_str())].c_str() );
         } else {
             //Check consistency of calibration Mode and BField only for the ALCAPROMPT in the PCL workflow
             if (!isBFieldConsistentWithMode(iSetup)) {
@@ -647,7 +654,7 @@ void SiStripGainFromCalibTree::algoBeginJob(const edm::EventSetup& iSetup)
             }
             std::string dqm_dir = m_DQMdir + ((m_splitDQMstat)? m_calibrationMode:"") + "/";
             int elem = statCollectionFromMode(m_calibrationMode.c_str());
-            this->bookDQMHistos( dqm_dir.c_str(), dqm_tag_[elem].c_str() );
+            this->bookDQMHistos(dqm_dir.c_str(), dqm_tag_[elem].c_str() );
         }
 
         edm::ESHandle<TrackerTopology> TopoHandle;
@@ -874,16 +881,16 @@ void SiStripGainFromCalibTree::algoEndRun(const edm::Run& run, const edm::EventS
                 std::string cvpTECM1 = DQM_dir + std::string("/Charge_Vs_PathlengthTECM1") + stag;
                 std::string cvpTECM2 = DQM_dir + std::string("/Charge_Vs_PathlengthTECM2") + stag;
 
-                Charge_Vs_Index[elepos]           = dbe->get(cvi);
-                //Charge_Vs_Index_Absolute[elepos]  = dbe->get(cviA.c_str());
-                Charge_Vs_PathlengthTIB[elepos]   = dbe->get(cvpTIB);
-                Charge_Vs_PathlengthTOB[elepos]   = dbe->get(cvpTOB);
-                Charge_Vs_PathlengthTIDP[elepos]  = dbe->get(cvpTIDP);
-                Charge_Vs_PathlengthTIDM[elepos]  = dbe->get(cvpTIDM);
-                Charge_Vs_PathlengthTECP1[elepos] = dbe->get(cvpTECP1);
-                Charge_Vs_PathlengthTECP2[elepos] = dbe->get(cvpTECP2);
-                Charge_Vs_PathlengthTECM1[elepos] = dbe->get(cvpTECM1);
-                Charge_Vs_PathlengthTECM2[elepos] = dbe->get(cvpTECM2);
+                Charge_Vs_Index[elepos]           = igetter_->get(cvi);
+                //Charge_Vs_Index_Absolute[elepos]  = igetter_->get(cviA.c_str());
+                Charge_Vs_PathlengthTIB[elepos]   = igetter_->get(cvpTIB);
+                Charge_Vs_PathlengthTOB[elepos]   = igetter_->get(cvpTOB);
+                Charge_Vs_PathlengthTIDP[elepos]  = igetter_->get(cvpTIDP);
+                Charge_Vs_PathlengthTIDM[elepos]  = igetter_->get(cvpTIDM);
+                Charge_Vs_PathlengthTECP1[elepos] = igetter_->get(cvpTECP1);
+                Charge_Vs_PathlengthTECP2[elepos] = igetter_->get(cvpTECP2);
+                Charge_Vs_PathlengthTECM1[elepos] = igetter_->get(cvpTECM1);
+                Charge_Vs_PathlengthTECM2[elepos] = igetter_->get(cvpTECM2);
 
                 if (Charge_Vs_Index[elepos]==nullptr) {
                     edm::LogError("SiStripGainFromCalibTree") << "Harvesting: could not retrieve " << cvi.c_str()
@@ -944,7 +951,7 @@ void SiStripGainFromCalibTree::algoEndRun(const edm::Run& run, const edm::EventS
                 std::vector<std::pair<std::string,std::string>> tags = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"");
                 for (unsigned int i=0;i<tags.size();i++){
                     std::string tag = DQM_dir + "/" + (tags[i]).first + stag;
-                    Charge_1[elepos].push_back( APVGain::APVmon(0,0,0,dbe->get( tag) ) );
+                    Charge_1[elepos].push_back( APVGain::APVmon(0,0,0,igetter_->get( tag) ) );
                     if ( (Charge_1[elepos][i]).monitor==nullptr ) {
                          edm::LogError("SiStripGainFromCalibTree") << "Harvesting: could not retrieve " << tag.c_str()
                                                                    << ", statistics will not be summed!" << std::endl;
@@ -954,7 +961,7 @@ void SiStripGainFromCalibTree::algoEndRun(const edm::Run& run, const edm::EventS
                 tags = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG2");
                 for (unsigned int i=0;i<tags.size();i++){
                     std::string tag = DQM_dir + "/" + (tags[i]).first + stag;
-                    Charge_2[elepos].push_back( APVGain::APVmon(0,0,0,dbe->get( tag) ) );
+                    Charge_2[elepos].push_back( APVGain::APVmon(0,0,0,igetter_->get( tag) ) );
                     if ( (Charge_2[elepos][i]).monitor==nullptr ) {
                          edm::LogError("SiStripGainFromCalibTree") << "Harvesting: could not retrieve " << tag.c_str()
                                                                    << ", statistics will not be summed!" << std::endl;
@@ -965,7 +972,7 @@ void SiStripGainFromCalibTree::algoEndRun(const edm::Run& run, const edm::EventS
                 tags = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG1");
                 for (unsigned int i=0;i<tags.size();i++){
                     std::string tag = DQM_dir + "/" + (tags[i]).first + stag;
-                    Charge_3[elepos].push_back( APVGain::APVmon(0,0,0,dbe->get( tag) ) );
+                    Charge_3[elepos].push_back( APVGain::APVmon(0,0,0,igetter_->get( tag) ) );
                     if ( (Charge_3[elepos][i]).monitor==nullptr ) {
                          edm::LogError("SiStripGainFromCalibTree") << "Harvesting: could not retrieve " << tag.c_str()
                                                                    << ", statistics will not be summed!" << std::endl;
@@ -976,7 +983,7 @@ void SiStripGainFromCalibTree::algoEndRun(const edm::Run& run, const edm::EventS
                 tags = APVGain::monHnames(VChargeHisto,doChargeMonitorPerPlane,"woG1G2");
                 for (unsigned int i=0;i<tags.size();i++){
                     std::string tag = DQM_dir + "/" + (tags[i]).first + stag;
-                    Charge_4[elepos].push_back( APVGain::APVmon(0,0,0,dbe->get( tag) ) );
+                    Charge_4[elepos].push_back( APVGain::APVmon(0,0,0,igetter_->get( tag) ) );
                     if ( (Charge_4[elepos][i]).monitor==nullptr ) {
                          edm::LogError("SiStripGainFromCalibTree") << "Harvesting: could not retrieve " << tag.c_str()
                                                                    << ", statistics will not be summed!" << std::endl;

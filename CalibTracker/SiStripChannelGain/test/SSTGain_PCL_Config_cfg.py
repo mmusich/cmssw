@@ -1,19 +1,51 @@
 import FWCore.ParameterSet.Config as cms
+import Utilities.General.cmssw_das_client as das_client
+
+###################################################################
+def getFileNames_das_client():
+###################################################################
+    """Return files for given DAS query via das_client"""
+    files = []
+
+    query = "dataset dataset=/ZeroBias/Run2*SiStripCalMinBias-*/ALCARECO site=T2_CH_CERN" 
+    jsondict = das_client.get_data(query)
+    status = jsondict['status']
+    if status != 'ok':
+        print "DAS query status: %s"%(status)
+        return files
+
+    data =  jsondict['data']
+    viableDS = []
+    for element in data:
+        viableDS.append(element['dataset'][0]['name'])
+
+    print "Using Dataset:",viableDS[-1]
+
+    query = "file dataset=%s site=T2_CH_CERN | grep file.name" % viableDS[-1]
+    jsondict = das_client.get_data(query)
+    status = jsondict['status']
+    if status != 'ok':
+        print "DAS query status: %s"%(status)
+        return files
+
+    mongo_query = jsondict['mongo_query']
+    filters = mongo_query['filters']
+    data = jsondict['data']
+
+    files = []
+    for row in data:
+        the_file = [r for r in das_client.get_value(row, filters['grep'])][0]
+        if len(the_file) > 0 and not the_file in files:
+            files.append(the_file)
+
+    return files
 
 process = cms.Process("APVGAIN")
 
-process.load('Configuration.StandardSequences.Geometry_cff')
-process.load('Configuration/StandardSequences/MagneticField_AutoFromDBCurrent_cff')
-process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-process.load("Geometry.TrackerGeometryBuilder.trackerGeometry_cfi")
-process.load("Geometry.TrackerNumberingBuilder.trackerNumberingGeometry_cfi")
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
+process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-
-#this block is there to solve issue related to SiStripQualityRcd
-process.load("CalibTracker.SiStripESProducers.SiStripQualityESProducer_cfi")
-process.load("CalibTracker.SiStripESProducers.fake.SiStripDetVOffFakeESSource_cfi")
-process.es_prefer_fakeSiStripDetVOff = cms.ESPrefer("SiStripDetVOffFakeESSource","siStripDetVOffFakeESSource")
-
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 
 process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
 
@@ -22,55 +54,68 @@ process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
 #    destinations = cms.untracked.vstring('cout')
 #)
 
+INPUTFILES=getFileNames_das_client()
 
+if len(INPUTFILES)==0: 
+    print "** WARNING: ** According to a DAS query no suitable data for test is available. Skipping test"
+    os._exit(0)
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+myFiles = cms.untracked.vstring()
+myFiles.extend([INPUTFILES[0][0].replace("\"","")])
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.source = cms.Source (
     "PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/FAFF2948-4EDF-E111-97FB-BCAEC518FF44.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/AA3A95D6-5ADF-E111-ACB3-0025901D629C.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/A6FD8EEA-4CDF-E111-AB2A-BCAEC5329700.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/A2358E47-4EDF-E111-A93D-BCAEC532971B.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/9A59F24F-57DF-E111-B724-5404A63886AE.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/9041A3ED-61DF-E111-B138-BCAEC5329713.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/8E28BE09-64DF-E111-B559-E0CB4E55365D.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/8A4AF852-4ADF-E111-B7D0-003048F024FE.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/629D881A-4FDF-E111-AA10-001D09F34488.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/3866F4D2-4ADF-E111-8749-5404A63886A0.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/287CFC74-59DF-E111-9175-5404A63886D4.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/26F372C9-5FDF-E111-9418-001D09F242EF.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/268097BA-58DF-E111-93A0-0025901D6288.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/2462FB44-4EDF-E111-8D3D-BCAEC518FF8A.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/1800C6E5-55DF-E111-AC90-003048F1C58C.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/16E003CB-4ADF-E111-8883-BCAEC518FF41.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/14F9B88E-56DF-E111-B79B-001D09F24303.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/0CC85F9E-88DF-E111-904F-001D09F29321.root','/store/data/Run2012C/MinimumBias/ALCARECO/SiStripCalMinBias-v2/000/200/190/00A42AC9-4ADF-E111-8749-5404A6388697.root',)
+    fileNames = cms.untracked.vstring(myFiles)
     )
 
-
-process.GlobalTag.globaltag = 'GR_P_V40::All'
-
-#process.load("CalibTracker.SiStripChannelGain.computeGain_cff")
-#process.SiStripCalib.InputFiles          = cms.vstring(
-#XXX_CALIBTREE_XXX
-#)
-#process.SiStripCalib.FirstSetOfConstants = cms.untracked.bool(False)
-#process.SiStripCalib.CalibrationLevel    = cms.untracked.int32(0) # 0==APV, 1==Laser, 2==module
-
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 
 process.SiStripCalib = cms.EDAnalyzer("SiStripGainFromCalibTree",
-    OutputGains         = cms.string('Gains_ASCII.txt'),
-    Tracks              = cms.untracked.InputTag('CalibrationTracksRefit'),
-    AlgoMode            = cms.untracked.string('PCL'),
+                                      OutputGains         = cms.string('Gains_ASCII.txt'),
+                                      AlgoMode            = cms.untracked.string('CalibTree'),
 
-    #Gain quality cuts
-    minNrEntries        = cms.untracked.double(25),
-    maxChi2OverNDF      = cms.untracked.double(9999999.0),
-    maxMPVError         = cms.untracked.double(25.0),
+                                      minTrackMomentum    = cms.untracked.double(2),
+                                      minNrEntries        = cms.untracked.double(25),
+                                      maxChi2OverNDF      = cms.untracked.double(9999999.0),
+                                      maxMPVError         = cms.untracked.double(25.0),
+                                      maxNrStrips         = cms.untracked.uint32(8),
+                                      
+                                      harvestingMode      = cms.untracked.bool(False),
+                                      calibrationMode     = cms.untracked.string('StdBunch'),
+                                      DQMdir              = cms.untracked.string('AlCaReco/SiStripGains'),
+                                      
+                                      Validation          = cms.untracked.bool(False),
+                                      OldGainRemoving     = cms.untracked.bool(False),
+                                      FirstSetOfConstants = cms.untracked.bool(True),
+                                      
+                                      CalibrationLevel    = cms.untracked.int32(0), # 0==APV, 1==Laser, 2==module
+                                      ChargeHisto = cms.untracked.vstring('TIB','TIB_layer_1','TOB','TOB_layer_1','TIDminus','TIDplus','TECminus','TECplus'),
+                                      
+                                      InputFiles          = cms.untracked.vstring(),
 
-    #track/cluster quality cuts
-    minTrackMomentum    = cms.untracked.double(2),
-    maxNrStrips         = cms.untracked.uint32(8),
+                                      UseCalibration     = cms.untracked.bool(False),
+                                      calibrationPath    = cms.untracked.string(""),
+                                      
+                                      saveSummary         = cms.untracked.bool(False),
 
-    Validation          = cms.untracked.bool(False),
-    OldGainRemoving     = cms.untracked.bool(False),
-    FirstSetOfConstants = cms.untracked.bool(True),
+                                      GoodFracForTagProd  = cms.untracked.double(0.98),
+                                      NClustersForTagProd = cms.untracked.double(1E8),
+    
+                                      
+                                      SinceAppendMode         = cms.bool(True),
+                                      TimeFromEndRun          = cms.untracked.bool(False),
+                                      TimeFromStartOfRunRange = cms.untracked.bool(True),
+                                      IOVMode                 = cms.string('AlgoDriven'),
+                                      Record                  = cms.string('SiStripApvGainRcd'),
+                                      doStoreOnDB             = cms.bool(True),
 
-    CalibrationLevel    = cms.untracked.int32(0), # 0==APV, 1==Laser, 2==module
-
-    InputFiles          = cms.vstring(),
-
-    UseCalibration     = cms.untracked.bool(False),
-    calibrationPath    = cms.untracked.string(""),
-
-    SinceAppendMode     = cms.bool(True),
-    IOVMode             = cms.string('Job'),
-    Record              = cms.string('SiStripApvGainRcd'),
-    doStoreOnDB         = cms.bool(True),
-)
+                                      treePath            = cms.untracked.string('gainCalibrationTree/tree'),
+                                      gain                = cms.untracked.PSet(label = cms.untracked.string('shallowGainCalibration'), prefix = cms.untracked.string("GainCalibration"), suffix = cms.untracked.string('')),
+                                      evtinfo             = cms.untracked.PSet(label = cms.untracked.string('shallowEventRun'), prefix = cms.untracked.string(""), suffix = cms.untracked.string('')),
+                                      tracks = cms.untracked.PSet(label = cms.untracked.string('shallowTracks'), prefix = cms.untracked.string("track"), suffix = cms.untracked.string('')),                                      
+                                      )
 
 process.SiStripCalib.FirstSetOfConstants = cms.untracked.bool(False)
 process.SiStripCalib.CalibrationLevel    = cms.untracked.int32(0) # 0==APV, 1==Laser, 2==module
@@ -86,34 +131,42 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     toPut = cms.VPSet(cms.PSet(
         record = cms.string('SiStripApvGainRcd'),
         tag = cms.string('IdealGainTag')
-    ))
+        )
+                      )
 )
 
 process.TFileService = cms.Service("TFileService",
         fileName = cms.string('Gains_Tree.root')  
 )
 
+process.load('CalibTracker.Configuration.setupCalibrationTree_cff')
+#definition of input collection
+process.CalibrationTracks.src = cms.InputTag('ALCARECOSiStripCalMinBias')
+process.shallowTracks.Tracks = cms.InputTag('ALCARECOSiStripCalMinBias')
+process.TkCalPath_StdBunch = cms.Path(process.TkCalSeq_StdBunch+process.SiStripCalib)
 
+process.schedule = cms.Schedule( process.TkCalPath_StdBunch)
 
+# process.load('Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi')
+# process.load('RecoVertex.BeamSpotProducer.BeamSpot_cff')
+# process.load('RecoTracker.TrackProducer.TrackRefitters_cff')
 
+# process.CalibrationTracksRefit = process.TrackRefitter.clone(src = cms.InputTag("CalibrationTracks"),
+#                                                              NavigationSchool = cms.string("")
+#                                                              )
 
-process.load('Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi')
-process.load('RecoVertex.BeamSpotProducer.BeamSpot_cff')
-process.load('RecoTracker.TrackProducer.TrackRefitters_cff')
+# process.CalibrationTracks = process.AlignmentTrackSelector.clone(
+#     #    src = 'generalTracks',
+#     src = 'ALCARECOSiStripCalMinBias',
+#     filter = True,
+#     applyBasicCuts = True,
+#     ptMin = 0.8,
+#     nHitMin = 6,
+#     chi2nMax = 10.,
+#     )
 
-process.CalibrationTracksRefit = process.TrackRefitter.clone(src = cms.InputTag("CalibrationTracks"))
-process.CalibrationTracks = process.AlignmentTrackSelector.clone(
-#    src = 'generalTracks',
-    src = 'ALCARECOSiStripCalMinBias',
-    filter = True,
-    applyBasicCuts = True,
-    ptMin = 0.8,
-    nHitMin = 6,
-    chi2nMax = 10.,
-    )
+# # refit and BS can be dropped if done together with RECO.
+# # track filter can be moved in acalreco if no otehr users
+# process.trackFilterRefit = cms.Sequence( process.CalibrationTracks + process.offlineBeamSpot + process.CalibrationTracksRefit )
 
-# refit and BS can be dropped if done together with RECO.
-# track filter can be moved in acalreco if no otehr users
-process.trackFilterRefit = cms.Sequence( process.CalibrationTracks + process.offlineBeamSpot + process.CalibrationTracksRefit )
-
-process.p = cms.Path(process.trackFilterRefit * process.SiStripCalib)
+# process.p = cms.Path(process.trackFilterRefit*process.SiStripCalib)
