@@ -65,7 +65,7 @@ SiPixelStatusProducer::SiPixelStatusProducer(const edm::ParameterSet& iConfig){
   beginLumi_ = endLumi_ = -1;
   endLumi_ = endRun_ = -1;
   
-  produces<SiPixelDetectorStatus, edm::Transition::EndLuminosityBlock>("siPixelStatusProducer");
+  produces<SiPixelDetectorStatus, edm::Transition::EndLuminosityBlock>("siPixelStatus");
 }
 
 //--------------------------------------------------------------------------------------------------
