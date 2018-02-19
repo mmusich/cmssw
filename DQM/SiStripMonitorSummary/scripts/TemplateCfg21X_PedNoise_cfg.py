@@ -21,7 +21,7 @@ process.CondDataMonitoring.MonitorSiStripHighThreshold =cms.bool(True)
 process.CondDataMonitoring.MonitorSiStripApvGain       =cms.bool(False)
 process.CondDataMonitoring.MonitorSiStripLorentzAngle  =cms.bool(False)
 
-process.load("DQM.SiStripCommon.TkHistoMap_cfi")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 process.load("DQM.SiStripMonitorClient.SiStripDQMOffline_cff")
 
 process.source = cms.Source("EmptyIOVSource",

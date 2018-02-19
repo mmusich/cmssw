@@ -18,7 +18,7 @@ process.CondDataMonitoring.MonitorSiStripApvGain       =cms.bool(False)
 process.CondDataMonitoring.MonitorSiStripLorentzAngle  =cms.bool(False)
 
 ## SI STRIP MONITOR TRACK:
-process.load("DQM.SiStripCommon.TkHistoMap_cfi");
+process.load("DQM.SiStripCommon.TkHistoMap_cff");
 
 process.source = cms.Source("EmptyIOVSource",
     lastValue = cms.uint64(insert_runnumber),

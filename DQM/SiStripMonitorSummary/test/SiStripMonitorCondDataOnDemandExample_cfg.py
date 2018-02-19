@@ -12,7 +12,7 @@ process.load("DQM.SiStripMonitorSummary.Tags21X_cff")
 process.load("DQM.SiStripMonitorSummary.SiStripMonitorCondDataOnDemandExample_cfi")
 
 ## SI STRIP MONITOR TRACK:
-process.load("DQM.SiStripCommon.TkHistoMap_cfi");
+process.load("DQM.SiStripCommon.TkHistoMap_cff");
 
 process.MessageLogger = cms.Service("MessageLogger",
     debugModules = cms.untracked.vstring('SiStripMonitorCondDataOnDemandExample'),

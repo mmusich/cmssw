@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("Reader")
 
-process.load("DQM.SiStripCommon.TkHistoMap_cfi")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 
 process.load("CalibTracker.SiStripCommon.TkDetMapESProducer_cfi")
 process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")

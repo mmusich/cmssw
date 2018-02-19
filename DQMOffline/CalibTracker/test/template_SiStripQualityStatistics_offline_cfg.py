@@ -53,7 +53,7 @@ process.SiStripQualityESProducer = cms.ESProducer("SiStripQualityESProducer",
 )
 
 #### Add these lines to produce a tracker map
-process.load("DQM.SiStripCommon.TkHistoMap_cfi")
+process.load("DQM.SiStripCommon.TkHistoMap_cff")
 # load TrackerTopology (needed for TkDetMap and TkHistoMap)
 process.load("Geometry.CMSCommonData.cmsExtendedGeometry2017XML_cfi")
 process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
