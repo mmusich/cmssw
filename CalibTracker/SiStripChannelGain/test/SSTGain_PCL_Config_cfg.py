@@ -1,3 +1,4 @@
+import os 
 import FWCore.ParameterSet.Config as cms
 import Utilities.General.cmssw_das_client as das_client
 
@@ -53,6 +54,23 @@ process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
 #    cout = cms.untracked.PSet( threshold = cms.untracked.string('ERROR')  ),
 #    destinations = cms.untracked.vstring('cout')
 #)
+
+###################################################################
+# Messages
+###################################################################
+process.load('FWCore.MessageService.MessageLogger_cfi')   
+process.MessageLogger.categories.append("SiStripGainFromCalibTree")  
+process.MessageLogger.destinations = cms.untracked.vstring("cout")
+process.MessageLogger.cout = cms.untracked.PSet(
+    threshold = cms.untracked.string("DEBUG"),
+    default   = cms.untracked.PSet(limit = cms.untracked.int32(0)),                       
+    FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
+                                   reportEvery = cms.untracked.int32(1000)
+                                   ),                                                      
+    SiStripGainFromCalibTree = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+    )
+process.MessageLogger.statistics.append('cout') 
+
 
 INPUTFILES=getFileNames_das_client()
 
