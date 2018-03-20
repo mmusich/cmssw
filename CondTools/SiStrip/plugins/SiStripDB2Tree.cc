@@ -26,7 +26,8 @@
 #include "CondFormats/SiStripObjects/interface/SiStripNoises.h"
 #include "CondFormats/DataRecord/interface/SiStripNoisesRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripApvGain.h"
-#include "CondFormats/DataRecord/interface/SiStripApvGainRcd.h"
+#include "CalibTracker/Records/interface/SiStripQualityRcd.h"
+#include "CalibFormats/SiStripObjects/interface/SiStripQuality.h"
 #include "CondFormats/DataRecord/interface/SiStripApvGainRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLatency.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
@@ -75,12 +76,13 @@ private:
   TTree *tree_;
   SiStripDetInfoFileReader reader_; 
   bool isMC_;
-
+  std::string qualityLabel_; 
+  
   //branches
   uint32_t detId_, ring_, istrip_, det_type_; 
   Int_t layer_, side_,subdetId_;
   float noise_, gsim_, g1_, g2_, lenght_; 
-  bool isTIB_, isTOB_, isTEC_, isTID_; 
+  bool isTIB_, isTOB_, isTEC_, isTID_, isBad_; 
   TText *text_;
 };
 
@@ -107,24 +109,26 @@ SiStripDB2Tree::SiStripDB2Tree(const edm::ParameterSet& iConfig):
   text_->SetName("RunMode");
   tree_ = fs->make<TTree>( "StripDBTree","Tree with DB SiStrip info");
 
-  tree_->Branch("detId"   , &detId_   ,"detId/i"  );
-  tree_->Branch("detType" , &det_type_,"detType/i");
-  tree_->Branch("noise"   , &noise_   ,"noise/F"  ); 
-  tree_->Branch("istrip"  , &istrip_  ,"istrip/i" );
-  tree_->Branch("gsim"    , &gsim_    ,"gsim/F"   ); 
-  tree_->Branch("g1"      , &g1_      ,"g1/F"     ); 
-  tree_->Branch("g2"      , &g2_      ,"g2/F"     ); 
-  tree_->Branch("layer"   , &layer_   ,"layer/I"  ); 
-  tree_->Branch("side"    , &side_    ,"side/I"  ); 
-  tree_->Branch("subdetId", &subdetId_ ,"subdetId/I"  ); 
-  tree_->Branch("ring"    , &ring_    ,"ring/i"   ); 
-  tree_->Branch("length"  , &lenght_  ,"length/F" ); 
-  tree_->Branch("isTIB"   , &isTIB_   ,"isTIB/O"  ); 
-  tree_->Branch("isTOB"   , &isTOB_   ,"isTOB/O"  ); 
-  tree_->Branch("isTEC"   , &isTEC_   ,"isTEC/O"  ); 
-  tree_->Branch("isTID"   , &isTID_   ,"isTID/O"  ); 
+  tree_->Branch("detId"   , &detId_    ,"detId/i"   );
+  tree_->Branch("detType" , &det_type_ ,"detType/i" );
+  tree_->Branch("noise"   , &noise_    ,"noise/F"   ); 
+  tree_->Branch("istrip"  , &istrip_   ,"istrip/i"  );
+  tree_->Branch("gsim"    , &gsim_     ,"gsim/F"    ); 
+  tree_->Branch("g1"      , &g1_       ,"g1/F"      ); 
+  tree_->Branch("g2"      , &g2_       ,"g2/F"      ); 
+  tree_->Branch("layer"   , &layer_    ,"layer/I"   ); 
+  tree_->Branch("side"    , &side_     ,"side/I"    ); 
+  tree_->Branch("subdetId", &subdetId_ ,"subdetId/I"); 
+  tree_->Branch("ring"    , &ring_     ,"ring/i"    ); 
+  tree_->Branch("length"  , &lenght_   ,"length/F"  ); 
+  tree_->Branch("isBad"   , &isBad_    ,"isBad/O"   ); 
+  tree_->Branch("isTIB"   , &isTIB_    ,"isTIB/O"   ); 
+  tree_->Branch("isTOB"   , &isTOB_    ,"isTOB/O"   ); 
+  tree_->Branch("isTEC"   , &isTEC_    ,"isTEC/O"   ); 
+  tree_->Branch("isTID"   , &isTID_    ,"isTID/O"   ); 
 
   isMC_ = iConfig.getUntrackedParameter<bool>("isMC",false);
+  qualityLabel_ = iConfig.getParameter<std::string>("StripQualityLabel"); 
 
 }
 
@@ -185,6 +189,9 @@ SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::ESHandle<SiStripApvGain> g2Handle;
   iSetup.get<SiStripApvGain2Rcd>().get(g2Handle);
   
+  edm::ESHandle<SiStripQuality> siStripQualityHandle;   
+  iSetup.get<SiStripQualityRcd>().get(qualityLabel_,siStripQualityHandle);
+
   edm::ESHandle<SiStripApvGain> gsimHandle;
   if(isMC_){
     iSetup.get<SiStripApvGainSimRcd>().get(gsimHandle);
@@ -229,6 +236,7 @@ SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       g1_ = g1Handle->getStripGain(istrip_, g1Range) ? g1Handle->getStripGain(istrip_, g1Range) : 1.;
       g2_ = g2Handle->getStripGain(istrip_, g2Range) ? g2Handle->getStripGain(istrip_, g2Range) : 1.;
       noise_ = noiseHandle->getNoise(istrip_, noiseRange);
+      isBad_ = siStripQualityHandle->IsStripBad(detid,istrip_);
       tree_->Fill();
     }
   }
