@@ -236,7 +236,7 @@ SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       g1_ = g1Handle->getStripGain(istrip_, g1Range) ? g1Handle->getStripGain(istrip_, g1Range) : 1.;
       g2_ = g2Handle->getStripGain(istrip_, g2Range) ? g2Handle->getStripGain(istrip_, g2Range) : 1.;
       noise_ = noiseHandle->getNoise(istrip_, noiseRange);
-      isBad_ = siStripQualityHandle->IsStripBad(detid,istrip_);
+      isBad_ = siStripQualityHandle->IsStripBad(siStripQualityHandle->getRange(detid),istrip_);
       tree_->Fill();
     }
   }
