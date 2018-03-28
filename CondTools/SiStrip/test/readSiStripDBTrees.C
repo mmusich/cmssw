@@ -2,6 +2,7 @@
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TTree.h"
 #include "TBranch.h"
 #include "TTree.h"
@@ -131,7 +132,7 @@ void readNSiStripDBTrees(TString fname){
 
   uint32_t detId_, ring_, istrip_, det_type_; 
   Int_t layer_, side_,subdetId_;
-  float noise_, gsim_, g1_, g2_, lenght_; 
+  float pedestal_,noise_, gsim_, g1_, g2_, lenght_; 
   bool isTIB_, isTOB_, isTEC_, isTID_, isBad_; 
 
   std::map<int, TH1F*> idealNoiseRatioPerLayer;
@@ -141,6 +142,7 @@ void readNSiStripDBTrees(TString fname){
   tree_->SetBranchAddress("detId"   , &detId_    );
   tree_->SetBranchAddress("detType" , &det_type_ );
   tree_->SetBranchAddress("noise"   , &noise_    ); 
+  tree_->SetBranchAddress("pedestal", &pedestal_ );
   tree_->SetBranchAddress("istrip"  , &istrip_   );
   tree_->SetBranchAddress("gsim"    , &gsim_     ); 
   tree_->SetBranchAddress("g1"      , &g1_       ); 
@@ -159,15 +161,23 @@ void readNSiStripDBTrees(TString fname){
   int nentries = tree_->GetEntries();
   std::cout << "Number of entries = " << nentries << std::endl;
 
-  TH1F* h_idealNoiseRatioPerLayer = new TH1F("h_IdealNoise", "Ideal Noise;Ideal Noise ratio;n. strips",500,0.,10.);
-  TH1F* h_NoisePerLayer           = new TH1F("h_Noise", "Noise;Noise;n. strips",500,0.,10.);
-  TH1F* h_g1PerLayer              = new TH1F("h_g1", "g1 gain;g1 gain;n. strips",200,0.,2.);
+  TH1F* h_Pedestal         = new TH1F("h_Pedestal", "Pedestal;Pedestals [ADC counts];n. strips",300,0.,300.);
+  TH1F* h_idealNoiseRatio  = new TH1F("h_IdealNoise", "Ideal Noise;Ideal Noise ratio;n. strips",500,0.,10.);
+  TH1F* h_Noise            = new TH1F("h_Noise", "Noise;Noise [ADC counts];n. strips",500,0.,10.);
+  TH2F* h2_NoiseVsPedestal = new TH2F("h2_NoiseVsPedestal", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,100,0.,12.);
+
+  TH2F* h2_NoiseVsPedestalTIB = new TH2F("h2_NoiseVsPedestalTIB", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,100,0.,12.);
+  TH2F* h2_NoiseVsPedestalTOB = new TH2F("h2_NoiseVsPedestalTOB", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,100,0.,12.);
+  TH2F* h2_NoiseVsPedestalTID = new TH2F("h2_NoiseVsPedestalTID", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,100,0.,12.);
+  TH2F* h2_NoiseVsPedestalTEC = new TH2F("h2_NoiseVsPedestalTEC", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,100,0.,12.);
+
+  TH1F* h_g1               = new TH1F("h_g1", "g1 gain;g1 gain;n. strips",200,0.,2.);
 
   for(int region = TrackerRegion::TIB1; region != TrackerRegion::END_OF_REGIONS; region++ ){
     auto tag = regionType(region);
     std::cout<< "booking region: " << std::setw(3) << region << " -> " << tag << std::endl;
     idealNoiseRatioPerLayer[region] = new TH1F(Form("IdealNoise_%s",tag), Form("Ideal Noise %s;Ideal Noise ratio for %s;n. strips",tag,tag),500,0.,10.);
-    NoisePerLayer[region]           = new TH1F(Form("Noise_%s",tag), Form("Noise %s;Noise for %s;n. strips",tag,tag),500,0.,10.);
+    NoisePerLayer[region]           = new TH1F(Form("Noise_%s",tag), Form("Noise %s;Noise for %s [ADC counts];n. strips",tag,tag),500,0.,10.);
     g1PerLayer[region]              = new TH1F(Form("g1_%s",tag), Form("g1 %s;g1 for %s;n. strips",tag,tag),200,0.,2.);
   }
 
@@ -176,9 +186,29 @@ void readNSiStripDBTrees(TString fname){
     Int_t IgetStrip = tree_-> GetEntry(stripNo);  
     auto region =  getTheRegionFromTopology(subdetId_,side_,layer_);
 
-    h_idealNoiseRatioPerLayer->Fill(noise_/g1_); 
-    h_NoisePerLayer->Fill(noise_);           
-    h_g1PerLayer->Fill(g1_);              
+    h2_NoiseVsPedestal->Fill(pedestal_,noise_);
+
+    switch(subdetId_){
+    case 3: 
+      h2_NoiseVsPedestalTIB->Fill(pedestal_,noise_);
+      break;
+    case 5:    
+      h2_NoiseVsPedestalTOB->Fill(pedestal_,noise_);
+      break;
+    case 4: 
+      h2_NoiseVsPedestalTID->Fill(pedestal_,noise_);
+      break;
+    case 6:
+      h2_NoiseVsPedestalTEC->Fill(pedestal_,noise_);
+      break;
+    default:
+      std::cout<<"shall never be here!" << std::endl;
+    }
+
+    h_Pedestal->Fill(pedestal_);
+    h_idealNoiseRatio->Fill(noise_/g1_); 
+    h_Noise->Fill(noise_);           
+    h_g1->Fill(g1_);              
 
     idealNoiseRatioPerLayer[region]->Fill(noise_/g1_);
     NoisePerLayer[region]->Fill(noise_);
@@ -193,9 +223,17 @@ void readNSiStripDBTrees(TString fname){
 
   TFile* outfile = TFile::Open("idealNoise.root","RECREATE");
   outfile->cd();
-  h_idealNoiseRatioPerLayer->Write();
-  h_NoisePerLayer->Write();          
-  h_g1PerLayer->Write();             
+  h_Pedestal->Write();
+  h_idealNoiseRatio->Write();
+  h_Noise->Write();          
+  h2_NoiseVsPedestal->Write();
+  h_g1->Write();             
+
+  TDirectory *byPartition = outfile->mkdir("ByPartition");
+  h2_NoiseVsPedestalTIB->Write();
+  h2_NoiseVsPedestalTOB->Write();
+  h2_NoiseVsPedestalTID->Write();
+  h2_NoiseVsPedestalTEC->Write();
 
   TDirectory *cdIdealNoise = outfile->mkdir("idealNoise");
   cdIdealNoise->cd(); 
