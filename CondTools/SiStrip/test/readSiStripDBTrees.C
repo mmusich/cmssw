@@ -96,38 +96,38 @@ const char * regionType(int index)
   case TOB4: return "TOB L4";
   case TOB5: return "TOB L5";
   case TOB6: return "TOB L6";
-  case TIDP1: return "TID + D1";
-  case TIDP2: return "TID + D2";
-  case TIDP3: return "TID + D3"; 
-  case TIDM1: return "TID - D1";
-  case TIDM2: return "TID - D2";
-  case TIDM3: return "TID - D3"; 
-  case TECP1: return "TEC + D1";
-  case TECP2: return "TEC + D2";
-  case TECP3: return "TEC + D3";
-  case TECP4: return "TEC + D4";
-  case TECP5: return "TEC + D5";
-  case TECP6: return "TEC + D6";
-  case TECP7: return "TEC + D7";
-  case TECP8: return "TEC + D8";
-  case TECP9: return "TEC + D9";
-  case TECM1: return "TEC - D1";
-  case TECM2: return "TEC - D2";
-  case TECM3: return "TEC - D3";
-  case TECM4: return "TEC - D4";
-  case TECM5: return "TEC - D5";
-  case TECM6: return "TEC - D6";
-  case TECM7: return "TEC - D7";
-  case TECM8: return "TEC - D8";
-  case TECM9: return "TEC - D9";
+  case TIDP1: return "TID+ D1";
+  case TIDP2: return "TID+ D2";
+  case TIDP3: return "TID+ D3"; 
+  case TIDM1: return "TID- D1";
+  case TIDM2: return "TID- D2";
+  case TIDM3: return "TID- D3"; 
+  case TECP1: return "TEC+ D1";
+  case TECP2: return "TEC+ D2";
+  case TECP3: return "TEC+ D3";
+  case TECP4: return "TEC+ D4";
+  case TECP5: return "TEC+ D5";
+  case TECP6: return "TEC+ D6";
+  case TECP7: return "TEC+ D7";
+  case TECP8: return "TEC+ D8";
+  case TECP9: return "TEC+ D9";
+  case TECM1: return "TEC- D1";
+  case TECM2: return "TEC- D2";
+  case TECM3: return "TEC- D3";
+  case TECM4: return "TEC- D4";
+  case TECM5: return "TEC- D5";
+  case TECM6: return "TEC- D6";
+  case TECM7: return "TEC- D7";
+  case TECM8: return "TEC- D8";
+  case TECM9: return "TEC- D9";
   case END_OF_REGIONS : return "undefined";
   default : return "should never be here";  
   }
 }
 
-void readNSiStripDBTrees(){
+void readNSiStripDBTrees(TString fname){
   TChain* tree_ = new TChain("treeDump/StripDBTree"); 
-  tree_->Add("sistrip_db_tree100X_dataRun2_Express_v3_306054.root");
+  tree_->Add(fname);
 
   uint32_t detId_, ring_, istrip_, det_type_; 
   Int_t layer_, side_,subdetId_;
@@ -158,7 +158,11 @@ void readNSiStripDBTrees(){
 
   int nentries = tree_->GetEntries();
   std::cout << "Number of entries = " << nentries << std::endl;
-  
+
+  TH1F* h_idealNoiseRatioPerLayer = new TH1F("h_IdealNoise", "Ideal Noise;Ideal Noise ratio;n. strips",500,0.,10.);
+  TH1F* h_NoisePerLayer           = new TH1F("h_Noise", "Noise;Noise;n. strips",500,0.,10.);
+  TH1F* h_g1PerLayer              = new TH1F("h_g1", "g1 gain;g1 gain;n. strips",200,0.,2.);
+
   for(int region = TrackerRegion::TIB1; region != TrackerRegion::END_OF_REGIONS; region++ ){
     auto tag = regionType(region);
     std::cout<< "booking region: " << std::setw(3) << region << " -> " << tag << std::endl;
@@ -171,19 +175,28 @@ void readNSiStripDBTrees(){
   for (Int_t stripNo=0; stripNo < nentries; stripNo++){
     Int_t IgetStrip = tree_-> GetEntry(stripNo);  
     auto region =  getTheRegionFromTopology(subdetId_,side_,layer_);
+
+    h_idealNoiseRatioPerLayer->Fill(noise_/g1_); 
+    h_NoisePerLayer->Fill(noise_);           
+    h_g1PerLayer->Fill(g1_);              
+
     idealNoiseRatioPerLayer[region]->Fill(noise_/g1_);
     NoisePerLayer[region]->Fill(noise_);
     g1PerLayer[region]->Fill(g1_);
     //std::cout << " strip n."<< stripNo << " detId:"<< detId_ << " strip n.: "<< istrip_ << std::endl;
     if(detId_!=cachedDetId){
       std::cout << " strip n."<< stripNo << " detId:"<< detId_ << " strip n.: "<< istrip_ 
-		<< " subdet: " << subdetId_ <<" side: "<< side_ << " layer: "<< layer_ << "region: " << region << " =>  " << regionType(region) << std::endl;
+		<< " subdet: " << subdetId_ <<" side: "<< side_ << " layer: "<< layer_ << " (region: " << region << ") =>  " << regionType(region) << std::endl;
       cachedDetId=detId_;
     }
   }
 
   TFile* outfile = TFile::Open("idealNoise.root","RECREATE");
-  
+  outfile->cd();
+  h_idealNoiseRatioPerLayer->Write();
+  h_NoisePerLayer->Write();          
+  h_g1PerLayer->Write();             
+
   TDirectory *cdIdealNoise = outfile->mkdir("idealNoise");
   cdIdealNoise->cd(); 
   for(int region = TrackerRegion::TIB1; region != TrackerRegion::END_OF_REGIONS; region++ ){
