@@ -23,6 +23,8 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "CondFormats/SiStripObjects/interface/SiStripPedestals.h"
+#include "CondFormats/DataRecord/interface/SiStripPedestalsRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripNoises.h"
 #include "CondFormats/DataRecord/interface/SiStripNoisesRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripApvGain.h"
@@ -81,7 +83,7 @@ private:
   //branches
   uint32_t detId_, ring_, istrip_, det_type_; 
   Int_t layer_, side_,subdetId_;
-  float noise_, gsim_, g1_, g2_, lenght_; 
+  float noise_, gsim_, g1_, g2_, lenght_, pedestal_; 
   bool isTIB_, isTOB_, isTEC_, isTID_, isBad_; 
   TText *text_;
 };
@@ -112,6 +114,7 @@ SiStripDB2Tree::SiStripDB2Tree(const edm::ParameterSet& iConfig):
   tree_->Branch("detId"   , &detId_    ,"detId/i"   );
   tree_->Branch("detType" , &det_type_ ,"detType/i" );
   tree_->Branch("noise"   , &noise_    ,"noise/F"   ); 
+  tree_->Branch("pedestal", &pedestal_ ,"pedestal/F"); 
   tree_->Branch("istrip"  , &istrip_   ,"istrip/i"  );
   tree_->Branch("gsim"    , &gsim_     ,"gsim/F"    ); 
   tree_->Branch("g1"      , &g1_       ,"g1/F"      ); 
@@ -180,6 +183,9 @@ void SiStripDB2Tree::setTopoInfo(uint32_t detId,const TrackerTopology *tTopo)
 void
 SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+  edm::ESHandle<SiStripPedestals> pedestalHandle;
+  iSetup.get<SiStripPedestalsRcd>().get(pedestalHandle);
+
   edm::ESHandle<SiStripNoises> noiseHandle;
   iSetup.get<SiStripNoisesRcd>().get(noiseHandle);
 
@@ -221,6 +227,8 @@ SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     SiStripApvGain::Range g1Range = g1Handle->getRange(detid);
     SiStripApvGain::Range g2Range = g2Handle->getRange(detid);
+    SiStripPedestals::Range pedestalsRange = pedestalHandle->getRange(detid);
+
     unsigned int nStrip = reader_.getNumberOfApvsAndStripLength(detid).first*128;
     lenght_ = reader_.getNumberOfApvsAndStripLength(detid).second;
     detId_=detid;
@@ -236,6 +244,7 @@ SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       g1_ = g1Handle->getStripGain(istrip_, g1Range) ? g1Handle->getStripGain(istrip_, g1Range) : 1.;
       g2_ = g2Handle->getStripGain(istrip_, g2Range) ? g2Handle->getStripGain(istrip_, g2Range) : 1.;
       noise_ = noiseHandle->getNoise(istrip_, noiseRange);
+      pedestal_ = pedestalHandle->getPed(istrip_,pedestalsRange);
       isBad_ = siStripQualityHandle->IsStripBad(siStripQualityHandle->getRange(detid),istrip_);
       tree_->Fill();
     }
