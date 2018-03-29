@@ -3,6 +3,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile.h"
 #include "TTree.h"
 #include "TBranch.h"
 #include "TTree.h"
@@ -14,6 +15,8 @@
 #include <map>
 #include <iostream>
 #include <iomanip>      // std::setw
+
+enum ModuleGeometry {UNKNOWNGEOMETRY, IB1, IB2, OB1, OB2, W1A, W2A, W3A, W1B, W2B, W3B, W4, W5, W6, W7, END_OF_GEOMETRIES};
 
 enum TrackerRegion { 
   TIB1  = 1,
@@ -126,7 +129,39 @@ const char * regionType(int index)
   }
 }
 
-void readNSiStripDBTrees(TString fname){
+/*--------------------------------------------------------------------*/
+const char * moduleType(int index)
+/*--------------------------------------------------------------------*/
+{  
+  auto geometry = static_cast<std::underlying_type_t<ModuleGeometry> >(index);
+
+  switch(geometry){
+  case UNKNOWNGEOMETRY: return "unknown geometry";
+  case IB1: return "IB1";
+  case IB2: return "IB2";
+  case OB1: return "OB1";
+  case OB2: return "OB2";
+  case W1A: return "W1A";
+  case W2A: return "W2A";
+  case W3A: return "W3A";
+  case W1B: return "W1B";
+  case W2B: return "W2B";
+  case W3B: return "W3B";
+  case W4:  return "W4";
+  case W5:  return "W5";
+  case W6:  return "W6";
+  case W7:  return "W7";
+  case END_OF_GEOMETRIES: return "NONE";
+  default : return "should never be here";  
+  }
+}
+
+
+
+/*--------------------------------------------------------------------*/
+void readNSiStripDBTrees(TString fname)
+/*--------------------------------------------------------------------*/
+{
   TChain* tree_ = new TChain("treeDump/StripDBTree"); 
   tree_->Add(fname);
 
@@ -139,6 +174,8 @@ void readNSiStripDBTrees(TString fname){
   std::map<int, TH1F*> idealNoiseRatioPerLayer;
   std::map<int, TH1F*> NoisePerLayer;
   std::map<int, TH1F*> g1PerLayer;
+  std::map<int, TH2F*> noiseVsG1PerModuleGeometry;
+  std::map<int, TProfile*> p_noiseVsG1PerModuleGeometry;
 
   tree_->SetBranchAddress("detId"   , &detId_    );
   tree_->SetBranchAddress("detType" , &det_type_ );
@@ -171,6 +208,8 @@ void readNSiStripDBTrees(TString fname){
   TH1F* h_Noise            = new TH1F("h_Noise", "Noise;Noise [ADC counts];n. strips",500,0.,10.);
 
   TH2F* h2_NoiseVsPedestal = new TH2F("h2_NoiseVsPedestal", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,120,0.,12.);
+  TH2F* h2_NoiseVsG1       = new TH2F("h2_NoiseVsG1", "Noise vs G1 Gain;G1 gain;Noise [ACD counts]",100,0.,2.,200,0.,20.);
+
 
   TH2F* h2_NoiseVsPedestalTIB = new TH2F("h2_NoiseVsPedestalTIB", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,120,0.,12.);
   TH2F* h2_NoiseVsPedestalTOB = new TH2F("h2_NoiseVsPedestalTOB", "Noise Vs Pedestal;Pedestals [ADC counts];Noise [ACD counts]",350,0.,350.,120,0.,12.);
@@ -179,6 +218,8 @@ void readNSiStripDBTrees(TString fname){
 
   TH1F* h_g1               = new TH1F("h_g1", "g1 gain;g1 gain;n. strips",200,0.,2.);
 
+
+  // loop on the tracker regions
   for(int region = TrackerRegion::TIB1; region != TrackerRegion::END_OF_REGIONS; region++ ){
     auto tag = regionType(region);
     std::cout<< "booking region: " << std::setw(3) << region << " -> " << tag << std::endl;
@@ -192,8 +233,18 @@ void readNSiStripDBTrees(TString fname){
     h_avgNoise->GetXaxis()->SetBinLabel(region,tag);           
   }
 
+  // loop on the tracker module geometries
+  for(int geometry = ModuleGeometry::IB1; geometry != ModuleGeometry::END_OF_GEOMETRIES; geometry++ ){
+    auto tag = moduleType(geometry);
+    noiseVsG1PerModuleGeometry[geometry] = new TH2F(Form("h2_NoiseVsG1_%s",tag),Form("Noise vs G1 Gain for %s;G1 gain;Noise [ACD counts]",tag),100,0.,2.,200,0.,20.);
+    p_noiseVsG1PerModuleGeometry[geometry] = new TProfile(Form("p_NoiseVsG1_%s",tag),Form("Noise vs G1 Gain for %s;G1 gain;Noise [ACD counts]",tag),100,0.,2.);
+  }
+
+
   uint32_t cachedDetId=-1;
 
+  printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
+  printf("Scanning ntuple              :");
   int TreeStep = tree_->GetEntries()/50;if(TreeStep==0)TreeStep=1;
   for (Int_t stripNo=0; stripNo < nentries; stripNo++){
     if(stripNo%TreeStep==0){printf(".");fflush(stdout);}
@@ -201,6 +252,7 @@ void readNSiStripDBTrees(TString fname){
     auto region =  getTheRegionFromTopology(subdetId_,side_,layer_);
 
     h2_NoiseVsPedestal->Fill(pedestal_,noise_);
+    h2_NoiseVsG1->Fill(g1_,noise_);
 
     switch(subdetId_){
     case 3: 
@@ -229,10 +281,13 @@ void readNSiStripDBTrees(TString fname){
     NoisePerLayer[region]->Fill(noise_);
     g1PerLayer[region]->Fill(g1_);
     
+    noiseVsG1PerModuleGeometry[det_type_]->Fill(g1_,noise_);
+    p_noiseVsG1PerModuleGeometry[det_type_]->Fill(g1_,noise_);
+
     //std::cout << " strip n."<< stripNo << " detId:"<< detId_ << " strip n.: "<< istrip_ << std::endl;
     if(detId_!=cachedDetId){
-      //std::cout << " strip n."<< stripNo << " detId:"<< detId_ << " strip n.: "<< istrip_ 
-      //	<< " subdet: " << subdetId_ <<" side: "<< side_ << " layer: "<< layer_ << " (region: " << region << ") =>  " << regionType(region) << std::endl;
+      //  std::cout << " strip n."<< stripNo << " detId:"<< detId_ << " strip n.: "<< istrip_ 
+      //	<< " subdet: " << subdetId_ <<" side: "<< side_ << " layer: "<< layer_ << " (region: " << region << ") =>  " << regionType(region) << " " << moduleType(det_type_) << std::endl;
       cachedDetId=detId_;
     }
   }printf("\n");
@@ -248,7 +303,8 @@ void readNSiStripDBTrees(TString fname){
   outfile->cd();
   h_Pedestal->Write();
   h_idealNoiseRatio->Write();
-  h_Noise->Write();          
+  h_Noise->Write();
+  h2_NoiseVsG1->Write();
   h2_NoiseVsPedestal->Write();
   h_g1->Write();             
   
@@ -286,6 +342,14 @@ void readNSiStripDBTrees(TString fname){
     g1PerLayer[region]->Write();
   }
   
+  outfile->cd();
+  TDirectory *cNoiseVsG1 = outfile->mkdir("tickmark_vs_noise");
+  cNoiseVsG1->cd();
+  for(int geometry = ModuleGeometry::IB1; geometry != ModuleGeometry::END_OF_GEOMETRIES; geometry++ ){
+    noiseVsG1PerModuleGeometry[geometry]->Write();
+    p_noiseVsG1PerModuleGeometry[geometry]->Write();
+  }   
+
   outfile -> Close();  
   tree_ -> Delete();
   return;
