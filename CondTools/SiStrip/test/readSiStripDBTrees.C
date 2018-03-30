@@ -16,6 +16,28 @@
 #include <iostream>
 #include <iomanip>      // std::setw
 
+//**********************************************//
+// Auxilliary class
+//**********************************************//
+class RecordInfo: public TNamed{
+public:
+  RecordInfo(const char* record,const char* tag):TNamed(record,tag){}
+  
+  void printInfo() const{
+    std::cout<< GetName () <<" " << GetTitle () << std::endl; 
+  }
+  
+  const char* getRecord(){
+    return this->GetName(); 
+  }
+
+  const char* getTag(){
+    return this->GetTitle();  
+  }
+
+};
+
+
 enum ModuleGeometry {UNKNOWNGEOMETRY, IB1, IB2, OB1, OB2, W1A, W2A, W3A, W1B, W2B, W3B, W4, W5, W6, W7, END_OF_GEOMETRIES};
 
 enum TrackerRegion { 
@@ -56,7 +78,10 @@ enum TrackerRegion {
   END_OF_REGIONS = 35	
 };
 
-TrackerRegion getTheRegionFromTopology(int subdet,int side,int layer){
+/*--------------------------------------------------------------------*/
+TrackerRegion getTheRegionFromTopology(int subdet,int side,int layer)
+/*--------------------------------------------------------------------*/
+{
   int ret(-99);
   switch(subdet){
   case 3: 
@@ -76,7 +101,7 @@ TrackerRegion getTheRegionFromTopology(int subdet,int side,int layer){
     ret = side==1 ? 16+std::abs(layer) : 25+std::abs(layer);
     break;
   default:
-    std::cout<<"shall never ever be here!" << std::endl;
+    std::cout<<"getTheRegionFromTopology(): shall never ever be here!" << std::endl;
     break;
   }
   return static_cast<TrackerRegion>(ret);
@@ -157,6 +182,24 @@ const char * moduleType(int index)
 }
 
 
+// //******************************************************//
+// // Auxilliary class to store info about the processed run
+// //******************************************************//
+// class MyRunInfo: public TNamed{
+//   unsigned int  runNumber_ ;
+
+// public:
+//   MyRunInfo(const char* name):TNamed(name,name),runNumber_(0){}
+//   MyRunInfo(const char* name,unsigned int run):TNamed(name,name),runNumber_(run){}
+
+//   void printInfo() const {  
+//     std::cout << MyRunInfo::runNumber_ << "\n";  
+//   }
+  
+//   uint32_t getRunInfo() const {
+//     return MyRunInfo::runNumber_;
+//   }
+// };
 
 /*--------------------------------------------------------------------*/
 void readNSiStripDBTrees(TString fname)
@@ -198,6 +241,23 @@ void readNSiStripDBTrees(TString fname)
 
   int nentries = tree_->GetEntries();
   std::cout << "Number of entries = " << nentries << std::endl;
+
+  tree_->LoadTree(0);
+  TObjString* s = (TObjString*)tree_->GetTree()->GetUserInfo()->At(0); 
+
+  //RecordInfo *header = (RecordInfo*)tree_->GetTree()->GetUserInfo()->FindObject("SiStripPedestalsRcd");
+  //header->printInfo();
+  //std::cout << "printing recordInfo:"<<header->getRecord() << " IOV: "<< header->getTag() << std::endl;
+  
+  // print the headers
+
+  std::vector<const char*> records = {"SiStripPedestalsRcd","SiStripNoisesRcd","SiStripApvGainRcd","SiStripApvGain2Rcd","SiStripQualityRcd"};
+  for(const auto &rec : records){
+    RecordInfo *header = (RecordInfo*)tree_->GetTree()->GetUserInfo()->FindObject(rec);
+    //header->printInfo();
+    std::cout << "printing recordInfo: "<<header->getRecord() << " IOV: "<< header->getTag() << std::endl;
+  }
+
 
   TH1F* h_avgPedestal         = new TH1F("h_avgPedestal_perRegion", "average Pedestal per region;;average Pedestals [ADC counts]",34,0.,34.);
   TH1F* h_avgIdealNoiseRatio  = new TH1F("h_avgIdealNoise_perRegion", "average Ideal Noise per region;;averag Ideal Noise ratio",34,0.,34.);
@@ -299,7 +359,7 @@ void readNSiStripDBTrees(TString fname)
   }
 
 
-  TFile* outfile = TFile::Open("idealNoise.root","RECREATE");
+  TFile* outfile = TFile::Open(Form("idealNoise_%s.root",(s->GetString()).Data()),"RECREATE");
   outfile->cd();
   h_Pedestal->Write();
   h_idealNoiseRatio->Write();
