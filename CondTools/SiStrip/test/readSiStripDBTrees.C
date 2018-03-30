@@ -31,7 +31,7 @@ public:
     return this->GetName(); 
   }
 
-  const char* getTag(){
+  const char* getIOVSince(){
     return this->GetTitle();  
   }
 
@@ -181,26 +181,6 @@ const char * moduleType(int index)
   }
 }
 
-
-// //******************************************************//
-// // Auxilliary class to store info about the processed run
-// //******************************************************//
-// class MyRunInfo: public TNamed{
-//   unsigned int  runNumber_ ;
-
-// public:
-//   MyRunInfo(const char* name):TNamed(name,name),runNumber_(0){}
-//   MyRunInfo(const char* name,unsigned int run):TNamed(name,name),runNumber_(run){}
-
-//   void printInfo() const {  
-//     std::cout << MyRunInfo::runNumber_ << "\n";  
-//   }
-  
-//   uint32_t getRunInfo() const {
-//     return MyRunInfo::runNumber_;
-//   }
-// };
-
 /*--------------------------------------------------------------------*/
 void readNSiStripDBTrees(TString fname)
 /*--------------------------------------------------------------------*/
@@ -247,7 +227,7 @@ void readNSiStripDBTrees(TString fname)
 
   //RecordInfo *header = (RecordInfo*)tree_->GetTree()->GetUserInfo()->FindObject("SiStripPedestalsRcd");
   //header->printInfo();
-  //std::cout << "printing recordInfo:"<<header->getRecord() << " IOV: "<< header->getTag() << std::endl;
+  //std::cout << "printing recordInfo:"<<header->getRecord() << " IOV: "<< header->getIOVSince() << std::endl;
   
   // print the headers
 
@@ -255,7 +235,7 @@ void readNSiStripDBTrees(TString fname)
   for(const auto &rec : records){
     RecordInfo *header = (RecordInfo*)tree_->GetTree()->GetUserInfo()->FindObject(rec);
     //header->printInfo();
-    std::cout << "printing recordInfo: "<<header->getRecord() << " IOV: "<< header->getTag() << std::endl;
+    std::cout << "printing recordInfo: "<<header->getRecord() << " IOV: "<< header->getIOVSince() << std::endl;
   }
 
 

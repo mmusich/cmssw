@@ -19,8 +19,9 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
 #include "CondFormats/SiStripObjects/interface/SiStripPedestals.h"
@@ -84,8 +85,7 @@ public:
 };
 
 
-
-class SiStripDB2Tree : public edm::EDAnalyzer {
+class SiStripDB2Tree : public edm::one::EDAnalyzer<edm::one::SharedResources,edm::one::WatchRuns> {
 public:
   explicit SiStripDB2Tree(const edm::ParameterSet&);
   ~SiStripDB2Tree() override;
@@ -94,6 +94,8 @@ public:
 
 private:
   void beginJob() override;
+  void beginRun(edm::Run const&, edm::EventSetup const&) override;
+  void endRun(edm::Run const&, edm::EventSetup const&) override {};
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void endJob() override;
   void setTopoInfo(uint32_t detId, const TrackerTopology* tTopo);
@@ -131,6 +133,9 @@ SiStripDB2Tree::SiStripDB2Tree(const edm::ParameterSet& iConfig):
   noise_(0), gsim_(0), g1_(0), g2_(0), lenght_(0),
   isTIB_(false), isTOB_(false), isTEC_(false), isTID_(false)
 {
+
+  usesResource(TFileService::kSharedResource);
+
   edm::Service<TFileService> fs;
   //now do what ever initialization is needed
   text_ = fs->make<TText>(0., 0., "");
@@ -202,6 +207,7 @@ void SiStripDB2Tree::setTopoInfo(uint32_t detId,const TrackerTopology *tTopo)
   return;
 }
 
+// ------------ auxilliary method for record info  ------------
 template<class Rcd>
 std::pair<const char*,std::string>
 SiStripDB2Tree::getRecordInfo(const edm::EventSetup& iSetup) const
@@ -231,18 +237,31 @@ SiStripDB2Tree::getRecordInfo(const edm::EventSetup& iSetup) const
    return std::make_pair(record.key().name(),std::to_string(first.eventID().run()));
 }
 
+// ------------ method called for each run  ------------
+void SiStripDB2Tree::beginRun( const edm::Run& iRun, edm::EventSetup const& iSetup ) 
+{
+  char c_run[30];
+  sprintf(c_run, "%i",iRun.run());
+  tree_->GetUserInfo()->Add(new TObjString(c_run));
+
+  auto pedHook     = this->getRecordInfo<SiStripPedestalsRcd>(iSetup);
+  auto noiseHook   = this->getRecordInfo<SiStripNoisesRcd>(iSetup);
+  auto g1Hook      = this->getRecordInfo<SiStripApvGainRcd>(iSetup);  
+  auto g2Hook      = this->getRecordInfo<SiStripApvGain2Rcd>(iSetup);
+  auto qualityHook = this->getRecordInfo<SiStripQualityRcd>(iSetup);
+  if(isMC_){
+    auto g1SimHook   = this->getRecordInfo<SiStripApvGainSimRcd>(iSetup);
+  }
+
+} 
+
 // ------------ method called for each event  ------------
 void
 SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
   // fill header information
-  unsigned int runNumber = iEvent.id().run();
-  
-  char c_run[30];
-  sprintf(c_run, "%i",runNumber);
-  TObjString* runInfo( new TObjString(c_run));
-  tree_->GetUserInfo()->Add(runInfo);
+  //unsigned int runNumber = iEvent.id().run();
   
   //std::cout<<edm::getProcessParameterSetContainingModule(moduleDescription()).dump() << std::endl;
 
@@ -257,37 +276,23 @@ SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   GTheader->printInfo(); 
 
   // handles
-
-  auto pedHook = this->getRecordInfo<SiStripPedestalsRcd>(iSetup);
- 
   edm::ESHandle<SiStripPedestals> pedestalHandle;
   iSetup.get<SiStripPedestalsRcd>().get(pedestalHandle);
-
-  auto noiseHook = this->getRecordInfo<SiStripNoisesRcd>(iSetup);
 
   edm::ESHandle<SiStripNoises> noiseHandle;
   iSetup.get<SiStripNoisesRcd>().get(noiseHandle);
 
-  auto g1Hook = this->getRecordInfo<SiStripApvGainRcd>(iSetup);
-
   edm::ESHandle<SiStripApvGain> g1Handle;
   iSetup.get<SiStripApvGainRcd>().get(g1Handle);
   
-  auto g2Hook = this->getRecordInfo<SiStripApvGain2Rcd>(iSetup);
-
   edm::ESHandle<SiStripApvGain> g2Handle;
   iSetup.get<SiStripApvGain2Rcd>().get(g2Handle);
   
-  auto qualityHook = this->getRecordInfo<SiStripQualityRcd>(iSetup);
-
   edm::ESHandle<SiStripQuality> siStripQualityHandle;   
   iSetup.get<SiStripQualityRcd>().get(qualityLabel_,siStripQualityHandle);
 
   edm::ESHandle<SiStripApvGain> gsimHandle;
   if(isMC_){
-
-    auto g1SimHook = this->getRecordInfo<SiStripApvGainSimRcd>(iSetup);
-    
     iSetup.get<SiStripApvGainSimRcd>().get(gsimHandle);
   } else {
     LOGINFO("SiStripDB2Tree")<<"We have determined this Data" << std::endl;
@@ -356,8 +361,13 @@ SiStripDB2Tree::endJob()
 void
 SiStripDB2Tree::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+  
+  desc.setComment("Creates TTree with SiStrip Database tag content.");
+  desc.add<std::string>("StripQualityLabel","MergedBadComponent");
+  desc.addUntracked<bool>("isMC",false);
+
+  descriptions.add("SiStripDB2Tree", desc); 
+
 }
 
 //define this as a plug-in
