@@ -44,12 +44,31 @@ options.parseArguments()
 process = cms.Process("Reader")
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff') 
 
-process.MessageLogger = cms.Service(
-    "MessageLogger",
-    debugModules = cms.untracked.vstring(''),
-    #    cout = cms.untracked.PSet(
-    #    threshold = cms.untracked.string('INFO')
-)
+
+###################################################################
+# Messages
+###################################################################
+process.load('FWCore.MessageService.MessageLogger_cfi')   
+process.MessageLogger.categories.append("SiStripDB2Tree")  
+process.MessageLogger.categories.append("RecordInfo")  
+process.MessageLogger.destinations = cms.untracked.vstring("cout")
+process.MessageLogger.cout = cms.untracked.PSet(
+    threshold = cms.untracked.string("INFO"),
+    default   = cms.untracked.PSet(limit = cms.untracked.int32(0)),                       
+    FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
+                                   reportEvery = cms.untracked.int32(1000)
+                                   ),                                                      
+    SiStripDB2Tree = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+    RecordInfo     = cms.untracked.PSet( limit = cms.untracked.int32(-1))
+    )
+process.MessageLogger.statistics.append('cout') 
+
+# process.MessageLogger = cms.Service(
+#     "MessageLogger",
+#     debugModules = cms.untracked.vstring(''),
+#     #    cout = cms.untracked.PSet(
+#     #    threshold = cms.untracked.string('INFO')
+# )
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)

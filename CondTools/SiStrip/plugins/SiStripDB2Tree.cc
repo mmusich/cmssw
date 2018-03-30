@@ -129,7 +129,7 @@ private:
 //
 SiStripDB2Tree::SiStripDB2Tree(const edm::ParameterSet& iConfig):
   reader_(edm::FileInPath(std::string("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat") ).fullPath()),
-  detId_(0), ring_(0), istrip_(0), det_type_(0), layer_(0), side_(0), subdetId_(0),
+  detId_(0), ring_(0), istrip_(0), det_type_(0),layer_(0), side_(0), subdetId_(0),
   noise_(0), gsim_(0), g1_(0), g2_(0), lenght_(0),
   isTIB_(false), isTOB_(false), isTEC_(false), isTID_(false)
 {
@@ -218,14 +218,14 @@ SiStripDB2Tree::getRecordInfo(const edm::EventSetup& iSetup) const
   const edm::IOVSyncValue last = validity.last();
    if (first!=edm::IOVSyncValue::beginOfTime() ||
        last!=edm::IOVSyncValue::endOfTime()) {
-     std::cout << "@SUB=SiStripDB2Tree::getRecordInfo"
+     LOGINFO("SiStripDB2Tree") << "@SUB=SiStripDB2Tree::getRecordInfo"
 	       << "\nTrying to apply "
 	       << record.key().name()
 	       << " with multiple IOVs in tag.\n"
 	       << "Validity range is "
 	       << first.eventID().run() << " - " << last.eventID().run() << "\n";
    } else {
-     std::cout << "@SUB=SiStripDB2Tree::getRecordInfo"
+     LOGINFO("SiStripDB2Tree") << "@SUB=SiStripDB2Tree::getRecordInfo"
 	       << "\nTrying to apply "
 	       << record.key().name()
 	       << "Validity range is "
