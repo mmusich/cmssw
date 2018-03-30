@@ -59,6 +59,31 @@
 #include <map>
 #include <string>
 #include "TText.h"
+#include "TObjString.h"
+#include "TNamed.h"
+
+//**********************************************//
+// Auxilliary class
+//**********************************************//
+class RecordInfo: public TNamed{
+public:
+  RecordInfo(const char* record,const char* tag):TNamed(record,tag){}
+  
+  void printInfo() const{
+    LOGINFO("RecordInfo")<< GetName () <<" " << GetTitle () << std::endl; 
+  }
+  
+  const char* getRecord(){
+    return this->GetName(); 
+  }
+
+  const char* getIOVSince(){
+    return this->GetTitle();  
+  }
+
+};
+
+
 
 class SiStripDB2Tree : public edm::EDAnalyzer {
 public:
@@ -67,19 +92,20 @@ public:
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-
 private:
   void beginJob() override;
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void endJob() override;
   void setTopoInfo(uint32_t detId, const TrackerTopology* tTopo);
+  template<class Rcd> std::pair<const char*,std::string> getRecordInfo(const edm::EventSetup& iSetup) const;
 
   // ----------member data ---------------------------
   TTree *tree_;
   SiStripDetInfoFileReader reader_; 
   bool isMC_;
   std::string qualityLabel_; 
-  
+  std::string processGT_;
+
   //branches
   uint32_t detId_, ring_, istrip_, det_type_; 
   Int_t layer_, side_,subdetId_;
@@ -135,8 +161,6 @@ SiStripDB2Tree::SiStripDB2Tree(const edm::ParameterSet& iConfig):
 
 }
 
-
-
 SiStripDB2Tree::~SiStripDB2Tree()
 {
 }
@@ -178,28 +202,92 @@ void SiStripDB2Tree::setTopoInfo(uint32_t detId,const TrackerTopology *tTopo)
   return;
 }
 
+template<class Rcd>
+std::pair<const char*,std::string>
+SiStripDB2Tree::getRecordInfo(const edm::EventSetup& iSetup) const
+{
+  const Rcd & record = iSetup.get<Rcd>();
+  const edm::ValidityInterval & validity = record.validityInterval();
+  const edm::IOVSyncValue first = validity.first();
+  const edm::IOVSyncValue last = validity.last();
+   if (first!=edm::IOVSyncValue::beginOfTime() ||
+       last!=edm::IOVSyncValue::endOfTime()) {
+     std::cout << "@SUB=SiStripDB2Tree::getRecordInfo"
+	       << "\nTrying to apply "
+	       << record.key().name()
+	       << " with multiple IOVs in tag.\n"
+	       << "Validity range is "
+	       << first.eventID().run() << " - " << last.eventID().run() << "\n";
+   } else {
+     std::cout << "@SUB=SiStripDB2Tree::getRecordInfo"
+	       << "\nTrying to apply "
+	       << record.key().name()
+	       << "Validity range is "
+	       << first.eventID().run() << " - " << last.eventID().run() << "\n";
+   }
+
+   tree_->GetUserInfo()->Add(new RecordInfo(record.key().name(),std::to_string(first.eventID().run()).c_str()));
+   
+   return std::make_pair(record.key().name(),std::to_string(first.eventID().run()));
+}
 
 // ------------ method called for each event  ------------
 void
 SiStripDB2Tree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+
+  // fill header information
+  unsigned int runNumber = iEvent.id().run();
+  
+  char c_run[30];
+  sprintf(c_run, "%i",runNumber);
+  TObjString* runInfo( new TObjString(c_run));
+  tree_->GetUserInfo()->Add(runInfo);
+  
+  //std::cout<<edm::getProcessParameterSetContainingModule(moduleDescription()).dump() << std::endl;
+
+  const edm::ParameterSet &globalTagPSet =
+    edm::getProcessParameterSetContainingModule(moduleDescription())
+    .getParameterSet("PoolDBESSource@GlobalTag");
+  
+  processGT_ = globalTagPSet.getParameter<std::string>("globaltag");
+
+  RecordInfo* GTheader = new RecordInfo("GlobalTag",processGT_.c_str());
+  tree_->GetUserInfo()->Add(GTheader);
+  GTheader->printInfo(); 
+
+  // handles
+
+  auto pedHook = this->getRecordInfo<SiStripPedestalsRcd>(iSetup);
+ 
   edm::ESHandle<SiStripPedestals> pedestalHandle;
   iSetup.get<SiStripPedestalsRcd>().get(pedestalHandle);
+
+  auto noiseHook = this->getRecordInfo<SiStripNoisesRcd>(iSetup);
 
   edm::ESHandle<SiStripNoises> noiseHandle;
   iSetup.get<SiStripNoisesRcd>().get(noiseHandle);
 
+  auto g1Hook = this->getRecordInfo<SiStripApvGainRcd>(iSetup);
+
   edm::ESHandle<SiStripApvGain> g1Handle;
   iSetup.get<SiStripApvGainRcd>().get(g1Handle);
   
+  auto g2Hook = this->getRecordInfo<SiStripApvGain2Rcd>(iSetup);
+
   edm::ESHandle<SiStripApvGain> g2Handle;
   iSetup.get<SiStripApvGain2Rcd>().get(g2Handle);
   
+  auto qualityHook = this->getRecordInfo<SiStripQualityRcd>(iSetup);
+
   edm::ESHandle<SiStripQuality> siStripQualityHandle;   
   iSetup.get<SiStripQualityRcd>().get(qualityLabel_,siStripQualityHandle);
 
   edm::ESHandle<SiStripApvGain> gsimHandle;
   if(isMC_){
+
+    auto g1SimHook = this->getRecordInfo<SiStripApvGainSimRcd>(iSetup);
+    
     iSetup.get<SiStripApvGainSimRcd>().get(gsimHandle);
   } else {
     LOGINFO("SiStripDB2Tree")<<"We have determined this Data" << std::endl;
