@@ -50,7 +50,7 @@ def main():
     session = con.session()
     RunInfo = session.get_dbtype(conddb.RunInfo)
     
-    bestRun = session.query(RunInfo.run_number,RunInfo.start_time, RunInfo.end_time).filter(RunInfo.run_number >= options.inputRun).first()
+    bestRun = session.query(RunInfo.run_number,RunInfo.start_time, RunInfo.end_time).filter(RunInfo.run_number == options.inputRun).first()
     if bestRun is None:
         raise Exception("Run %s can't be matched with an existing run in the database." %options.runNumber)
     

@@ -30,7 +30,7 @@ bool showStatsBoxes;
 
 // *******************************************
 // Variables
-TString imageType = "gif";
+TString imageType = "png";
 int outputWidth   = 480;
 int outputHeight  = 360;
 bool yAxisLogScale = false;
@@ -105,13 +105,13 @@ void recurseOverKeys( TDirectory *target1 ) {
     obj = key->ReadObj();
 
     // Check if this is a 1D histogram or a directory
-    if (obj->IsA()->InheritsFrom("TH1F")) {
+    if (obj->IsA()->InheritsFrom("TH1")) {
 
       // **************************
       // Plot & Save this Histogram
-      TH1F *htemp1, *htemp2;
+      TH1 *htemp1, *htemp2;
 
-      htemp1 = (TH1F*)obj;
+      htemp1 = (TH1*)obj;
       TString histName = htemp1->GetName();
 
       if (path != "") {
@@ -174,6 +174,7 @@ void plot2Histograms(TH1* htemp1, TH1* htemp2, TString filename) {
   if (!showStatsBoxes) {
     gStyle->SetOptStat(0);
   }
+
 
   // Create TStack but we will draw without stacking
   THStack *tempStack = new THStack();
