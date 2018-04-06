@@ -52,6 +52,7 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #define LOGERROR(x) edm::LogError(x)
+#define LOGWARNING(x) edm::LogWarning(x)
 #define LOGINFO(x) edm::LogInfo(x)
 #define LOGDEBUG(x) LogDebug(x)
 
@@ -76,7 +77,7 @@
 // from  edm::one::EDAnalyzer<>
 // This will improve performance in multithreaded jobs.
 
-class SiStripNoiseVisualizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class SiStripNoiseVisualizer : public edm::one::EDAnalyzer<edm::one::SharedResources,edm::one::WatchRuns>  {
    public:
       explicit SiStripNoiseVisualizer(const edm::ParameterSet&);
       ~SiStripNoiseVisualizer();
@@ -86,13 +87,17 @@ class SiStripNoiseVisualizer : public edm::one::EDAnalyzer<edm::one::SharedResou
 
    private:
       virtual void beginJob() override;
-      std::map<uint32_t, TH1F*>  bookModuleHistograms();
+      void beginRun(edm::Run const&, edm::EventSetup const&) override;
+      void endRun(edm::Run const&, edm::EventSetup const&) override {};
+      std::map<uint32_t, TH1F*>  bookModuleHistograms(const TrackerTopology* tTopo);
+      std::tuple<std::string,int,int,int> setTopoInfo(uint32_t detId,const TrackerTopology *tTopo);
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
       // ----------member data ---------------------------
       edm::Service<TFileService> fs;
       SiStripDetInfoFileReader reader_;
+      std::map<std::string,TFileDirectory> outputFolders;
       std::map<uint32_t,TH1F*> histoMap_;
 };
 
@@ -140,20 +145,21 @@ SiStripNoiseVisualizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
    std::vector<uint32_t> activeDetIds;
    noiseHandle->getDetIds(activeDetIds);
 
-   // edm::ESHandle<TrackerTopology> tTopoHandle;
-   // iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
-   // const TrackerTopology* tTopo_ = tTopoHandle.product();
+   LOGINFO("SiStripNoiseVisualizer")<<"@SUB=SiStripNoiseVisualizer::analyze() histoMap_.size(): "<< histoMap_.size() << std::endl;
 
-  for(uint32_t detid : activeDetIds){
-
-    //setTopoInfo(detid,tTopo_);      
+   for(uint32_t detid : activeDetIds){
 
     SiStripNoises::Range noiseRange = noiseHandle->getRange(detid);
     unsigned int nStrip = reader_.getNumberOfApvsAndStripLength(detid).first*128;
 
     for(unsigned int istrip_=0; istrip_<nStrip; ++istrip_){ 
       float noise_ = noiseHandle->getNoise(istrip_, noiseRange);
-      histoMap_[detid]->SetBinContent(istrip_,noise_);
+
+      if(!histoMap_.count(detid)){
+	LOGWARNING("SiStripNoiseVisualizer")<<"@SUB=SiStripNoiseVisualizer::analyze(): "<<detid<<" was not found!!!"<< std::endl;
+      } else {
+	histoMap_[detid]->SetBinContent(istrip_,noise_);
+      }
     } // loop on the strips
   } // loop on the active detids
 
@@ -166,11 +172,78 @@ SiStripNoiseVisualizer::analyze(const edm::Event& iEvent, const edm::EventSetup&
 void
 SiStripNoiseVisualizer::beginJob()
 {
-  histoMap_ = this->bookModuleHistograms();
+  //  histoMap_ = this->bookModuleHistograms();
 }
 
-// ------------ method called once to book all the module level histograms = ------------
-std::map<uint32_t, TH1F*> SiStripNoiseVisualizer::bookModuleHistograms()
+// ------------ method called for each run  ------------
+void 
+SiStripNoiseVisualizer::beginRun(const edm::Run& iRun, edm::EventSetup const& iSetup ) 
+{
+  LOGINFO("SiStripNoiseVisualizer")<<"@SUB=SiStripNoiseVisualizer::beginRun() before booking histoMap_.size(): "<< histoMap_.size() << std::endl;
+  
+  edm::ESHandle<TrackerTopology> tTopoHandle;
+  iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+  const TrackerTopology* tTopo_ = tTopoHandle.product();
+
+  const std::map<uint32_t, SiStripDetInfoFileReader::DetInfo > DetInfos  = reader_.getAllData();
+  
+  for(const auto &it : DetInfos){
+    auto topolInfo =  setTopoInfo(it.first,tTopo_);    
+
+    std::string thePart = std::get<0>(topolInfo);
+
+    // book the TFileDirectory if it's not already done
+    if(!outputFolders.count(thePart)){
+      outputFolders[thePart] = fs->mkdir(thePart.c_str());
+    }
+  } 
+
+  histoMap_ = bookModuleHistograms(tTopo_);
+
+  LOGINFO("SiStripNoiseVisualizer")<<"@SUB=SiStripNoiseVisualizer::beginRun()\n After booking histoMap_.size(): "<< histoMap_.size() << std::endl;
+
+} 
+
+// ------------ method called to determine the topology  ------------
+std::tuple<std::string,int,int,int>
+SiStripNoiseVisualizer::setTopoInfo(uint32_t detId,const TrackerTopology *tTopo)
+{
+
+  std::tuple<int,int,int,int> tuple;
+  int  subdetId_(-999),layer_(-999),side_(-999);
+  std::string ret="";
+  
+  subdetId_ = DetId(detId).subdetId();
+  switch(subdetId_){
+  case StripSubdetector::TIB: //TIB
+    layer_ = tTopo->tibLayer(detId);
+    side_  =0;
+    ret+=Form("TIB_Layer%i",layer_);
+    break;
+  case StripSubdetector::TID: //TID
+    side_ =tTopo->tidSide(detId);
+    layer_=tTopo->tidWheel(detId);
+    ret+=("TID_");
+    ret+= (side_ == 1) ? Form("P_disk%i",layer_) : Form("M_disk%i",layer_);
+    break;
+  case StripSubdetector::TOB: //TOB
+    layer_ =  tTopo->tobLayer(detId);
+    side_  =0;
+    ret+=Form("TOB_Layer%i",layer_);
+    break;
+  case StripSubdetector::TEC: //TEC    
+    side_  =tTopo->tecSide(detId);
+    layer_ =tTopo->tecWheel(detId);
+    ret+=("TEC_");
+    ret+= (side_ == 1) ? Form("P_disk%i",layer_) : Form("M_disk%i",layer_);
+    break;
+  }
+  
+  return std::make_tuple(ret,subdetId_,layer_,side_);
+}
+
+// ------------ method called once to book all the module level histograms  ------------
+std::map<uint32_t, TH1F*> SiStripNoiseVisualizer::bookModuleHistograms(const TrackerTopology* tTopo_)
 {
 
   TH1F::SetDefaultSumw2(kTRUE);
@@ -178,16 +251,22 @@ std::map<uint32_t, TH1F*> SiStripNoiseVisualizer::bookModuleHistograms()
 
   const std::map<uint32_t, SiStripDetInfoFileReader::DetInfo > DetInfos  = reader_.getAllData();
 
-  for(std::map<uint32_t, SiStripDetInfoFileReader::DetInfo >::const_iterator it = DetInfos.begin(); it != DetInfos.end(); it++){    
+  //  for(std::map<uint32_t, SiStripDetInfoFileReader::DetInfo >::const_iterator it = DetInfos.begin(); it != DetInfos.end(); it++){    
+
+  for(const auto &it : DetInfos){
     // check if det id is correct and if it is actually cabled in the detector
-    if( it->first==0 || it->first==0xFFFFFFFF ) {
-      edm::LogError("DetIdNotGood") << "@SUB=analyze" << "Wrong det id: " << it->first 
+    if( it.first==0 || it.first==0xFFFFFFFF ) {
+      edm::LogError("DetIdNotGood") << "@SUB=analyze" << "Wrong det id: " << it.first 
                                     << "  ... neglecting!" << std::endl;
       continue;
     }
-    unsigned int nStrip = reader_.getNumberOfApvsAndStripLength(it->first).first*128;
 
-    h[it->first] = fs->make<TH1F>(Form("NoiseProfile_%i",it->first),Form("Noise for module %i;n. strip; noise [ADC counts]",it->first),nStrip,-0.5,nStrip+0.5);
+    auto topolInfo =  setTopoInfo(it.first,tTopo_);    
+    std::string thePart = std::get<0>(topolInfo);
+
+    unsigned int nStrip = reader_.getNumberOfApvsAndStripLength(it.first).first*128;
+
+    h[it.first] = outputFolders[thePart].make<TH1F>(Form("NoiseProfile_%i",it.first),Form("Noise for module %i;n. strip; noise [ADC counts]",it.first),nStrip,-0.5,nStrip+0.5);
 
   }
   
