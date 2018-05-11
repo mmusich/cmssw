@@ -6,6 +6,7 @@
 #include <string>
 #include "TH1.h"
 #include "TH2.h"
+#include "TObjArray.h"
 #include "TPaveText.h"
 #include "TStyle.h"
 #include "CalibFormats/SiStripObjects/interface/SiStripQuality.h"   
@@ -360,7 +361,19 @@ namespace SiStripPI {
     
   }
   
-  
+  /*--------------------------------------------------------------------*/
+  double getMaximum(TObjArray *array)
+  /*--------------------------------------------------------------------*/
+  {
+    double theMaximum = (static_cast<TH1*>(array->At(0)))->GetMaximum();
+    for(int i = 0; i< array->GetSize(); i++){
+      if( (static_cast<TH1*>(array->At(i)))->GetMaximum() > theMaximum){
+	theMaximum = (static_cast<TH1*>(array->At(i)))->GetMaximum();
+      }
+    }
+    return theMaximum;
+  }
+
   /*--------------------------------------------------------------------*/
   void makeNicePlotStyle(TH1 *hist)
   /*--------------------------------------------------------------------*/

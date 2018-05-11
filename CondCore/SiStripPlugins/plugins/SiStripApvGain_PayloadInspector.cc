@@ -30,6 +30,7 @@
 // include ROOT 
 #include "TProfile.h"
 #include "TH2F.h"
+#include "THStack.h"
 #include "TLegend.h"
 #include "TCanvas.h"
 #include "TLine.h"
@@ -1272,6 +1273,224 @@ namespace {
     }
   };
 
+  /************************************************
+    Plot stack of gain by region 
+  *************************************************/
+
+  class SiStripApvGainsTHStack : public cond::payloadInspector::PlotImage<SiStripApvGain> {
+  public:
+    SiStripApvGainsTHStack  () : cond::payloadInspector::PlotImage<SiStripApvGain>( "Stack of SiStrip APV gains values" ),
+				 m_trackerTopo{StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath())}
+    {
+      setSingleIov( true );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+
+      //TH1F::SetDefaultSumw2(true);
+      auto iov = iovs.front();
+      std::shared_ptr<SiStripApvGain> payload = fetchPayload( std::get<1>(iov) );
+      std::string IOVsince  = std::to_string(std::get<0>(iov));
+
+      std::map<partition,std::shared_ptr<TH1F>> h_gains;
+
+      //std::vector< SiStripPI::TrackerRegion > regions;
+      std::vector< partition > regions;
+
+      std::vector<uint32_t> detid;
+      payload->getDetIds(detid);
+      
+      // fill the vector of regions
+      for (const auto & d : detid) {
+      	//auto region = this->getTheRegion(d);
+	auto region = this->getThePartition(d);
+      	if(std::find(regions.begin(), regions.end(), region) == regions.end()) {
+      	  regions.push_back(region);
+      	}
+      }
+      
+      std::cout<<"regions.size()="<<regions.size()<< std::endl; 
+
+      for(const auto & r : regions){
+
+	//auto part = std::string(SiStripPI::regionType(r).second);
+
+	auto part = std::string(this->partitionName(r));
+
+	h_gains[r]   = std::make_shared<TH1F>(Form("hGains_%s",part.c_str()),
+					      Form("Gains values for IOV: %s ;Gain;Number of APV",IOVsince.c_str()),100,0.5,1.5);
+      }
+      
+      // loop on the payload
+      for (const auto & d : detid) {
+	//auto region = this->getTheRegion(d);
+	auto region = this->getThePartition(d);
+	SiStripApvGain::Range range=payload->getRange(d);
+	for( int it=0; it < range.second - range.first; ++it ) {
+	  float gain = payload->getApvGain(it,range);
+	  h_gains[region]->Fill(gain);
+	} // end loop on APVs
+      } // end loop on detids
+
+
+      TCanvas canvas("Payload breakout","payload breakout",1200,800); 
+      canvas.Divide(2,1);
+
+      std::array<int,6> colors = {{kRed,kBlue,kGreen,kCyan,8,kMagenta}};
+
+      THStack *hs = new THStack("hs",Form("Gains values for IOV %s;Gain;Number of APV",IOVsince.c_str()));
+      int colorCounter=0;
+      for(const auto & r : regions){
+	hs->Add(h_gains[r].get());
+	SiStripPI::makeNicePlotStyle(h_gains[r].get());
+	h_gains[r]->SetFillColor(colors[colorCounter]);
+	//h_gains[r]->SetLineColor(colorCounter);
+	h_gains[r]->SetLineWidth(2);
+	colorCounter++;
+      }
+      
+      TLegend legend = TLegend(0.60,0.65,0.95,0.93);
+      legend.SetTextSize(0.05);
+      legend.SetHeader("Gain break-out","C"); // option "C" allows to center the header
+      for(const auto & r : regions){
+	auto part = std::string(this->partitionName(r));
+	legend.AddEntry(h_gains[r].get(),part.c_str(),"F");
+      }
+
+      canvas.cd(1)->SetLogy();
+      canvas.cd(1)->SetTopMargin(0.07);
+      canvas.cd(1)->SetBottomMargin(0.10);
+      canvas.cd(1)->SetLeftMargin(0.15);
+      canvas.cd(1)->SetRightMargin(0.05);
+      //      hs->Draw("NOSTACKB");
+
+      int count(0);
+      auto stack = hs->GetHists();
+      double maximum = hs->GetMaximum("nostack"); //SiStripPI::getMaximum(stack);
+
+      TLegend legend2 = TLegend(0.70,0.65,0.95,0.93);
+      legend2.SetTextSize(0.05);
+      legend2.SetHeader("Partition","C"); // option "C" allows to center the header
+
+      for (const auto&& elem : *stack){
+	auto clone = (TH1F*)(elem->Clone(Form("hclone_%s",elem->GetName())));
+	clone->SetFillColor(0);
+	clone->SetMarkerStyle(20);
+	clone->SetLineColor(colors[count]);
+	clone->SetMarkerColor(colors[count]);
+	clone->SetMaximum(maximum*10);
+	TString candName = clone->GetName();
+	legend2.AddEntry(clone,candName.ReplaceAll("hclone_hGains_",""),"L");
+	if(count==0) {
+	  clone->Draw("HIST");
+	} else {
+	  clone->Draw("HISTsame");
+	}
+	count++;
+      }
+
+      legend2.Draw("same");
+
+      canvas.cd(2);//->SetLogy();
+      canvas.cd(2)->SetTopMargin(0.07);
+      canvas.cd(2)->SetBottomMargin(0.10);
+      canvas.cd(2)->SetLeftMargin(0.12);
+      canvas.cd(2)->SetRightMargin(0.05);
+      hs->Draw();
+      legend.Draw("same");
+      
+      std::string fileName(m_imageFileName);
+      canvas.SaveAs(fileName.c_str());
+
+      return true;
+    }
+
+  private:
+    TrackerTopology m_trackerTopo;
+    enum partition {TIB=30,TIDP=41,TIDM=42,TOB=50,TECP=61,TECM=62,END_OF_PARTS};
+
+    const char* partitionName(partition part){
+
+      std::map<partition,const char*> mapping = {
+	{partition::TIB, "TIB"},
+	{partition::TIDP,"TIPp"},
+	{partition::TIDM,"TIDm"},
+	{partition::TOB, "TOB"},
+	{partition::TECP,"TECp"},
+	{partition::TECM,"TECm"}
+      };
+
+      if (mapping.find(part) == mapping.end() ){
+	throw cms::Exception("Invalid Partition passed"); 
+      } else {
+	return mapping[part];
+      }
+    }
+
+    partition getThePartition(DetId detid){
+      
+      int detNum = 0;
+      int side   = 0; 
+      switch (detid.subdetId()) {
+      case StripSubdetector::TIB:
+	detNum = 30;
+	break;
+      case StripSubdetector::TOB:
+	detNum = 50;
+	break;
+      case StripSubdetector::TEC:
+	// is this module in TEC+ or TEC-?
+	side  = m_trackerTopo.tecSide(detid); 
+	detNum = 60;
+	break;
+      case StripSubdetector::TID:
+	// is this module in TID+ or TID-?
+	side  = m_trackerTopo.tidSide(detid); 
+	detNum = 40;
+	break;
+      }
+
+      detNum+=side;
+      return static_cast<partition>(detNum);
+    }
+
+    SiStripPI::TrackerRegion getTheRegion(DetId detid){
+      
+      int layer = 0;
+      int stereo = 0;
+      int detNum = 0;
+
+      switch (detid.subdetId()) {
+      case StripSubdetector::TIB:
+	layer = m_trackerTopo.tibLayer(detid);
+	stereo = m_trackerTopo.tibStereo(detid);
+	detNum = 1000;
+	break;
+      case StripSubdetector::TOB:
+	layer = m_trackerTopo.tobLayer(detid);
+	stereo = m_trackerTopo.tobStereo(detid);
+	detNum = 2000;
+	break;
+      case StripSubdetector::TEC:
+	// is this module in TEC+ or TEC-?
+	layer = m_trackerTopo.tecWheel(detid);
+	stereo = m_trackerTopo.tecStereo(detid);
+	detNum = 3000;
+	break;
+      case StripSubdetector::TID:
+	// is this module in TID+ or TID-?
+	layer = m_trackerTopo.tidWheel(detid);
+	stereo = m_trackerTopo.tidStereo(detid);
+	detNum = 4000;
+	break;
+      }
+
+      detNum += layer*10 + stereo;
+      return static_cast<SiStripPI::TrackerRegion>(detNum);
+    }
+
+  };
+
   //*******************************************//
   // Compare Gains from 2 IOVs
   //******************************************//
@@ -1444,7 +1663,7 @@ namespace {
   class SiStripApvGainsRatioComparatorByRegion : public cond::payloadInspector::PlotImage<SiStripApvGain> {
   public:
     SiStripApvGainsRatioComparatorByRegion () : cond::payloadInspector::PlotImage<SiStripApvGain>( "Module by Module Comparison of SiStrip APV gains" ),
-      m_trackerTopo{StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath())}
+						m_trackerTopo{StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath())}
     {
       setSingleIov( false );
     }
@@ -1915,6 +2134,7 @@ PAYLOAD_INSPECTOR_MODULE(SiStripApvGain){
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsByRegion);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsComparator);
+  PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsTHStack);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsValuesComparator);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsComparatorByRegion);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsRatioComparatorByRegion);
