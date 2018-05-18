@@ -17,3 +17,6 @@ DEFINE_FWK_MODULE(SiStripCalibLorentzAngle);
 
 #include "CalibTracker/SiStripLorentzAngle/interface/SiStripLAProfileBooker.h"
 DEFINE_FWK_MODULE(SiStripLAProfileBooker);
+
+#include "CalibTracker/SiStripLorentzAngle/interface/ShallowLorentzAngleRunProducer.h"
+DEFINE_FWK_MODULE(ShallowLorentzAngleRunProducer);
