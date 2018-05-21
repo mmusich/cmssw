@@ -127,13 +127,35 @@ void compareAll(TString file1,TString file2, TString leg1, TString leg2)
 	    c1->cd();
 	    pad1->cd();
 	    h->SetMarkerSize(0.1);
-	    h->Draw("P");
+	    h->Draw("colz");
+
+	    TLegend *lego = new TLegend(0.12,0.80,0.29,0.88);
+	    lego->SetFillColor(10);
+	    lego->SetTextSize(0.042);
+	    lego->SetTextFont(42);
+	    lego->SetFillColor(10);
+	    lego->SetLineColor(10);
+	    lego->SetShadowColor(10);
+	    lego->AddEntry(h,leg1.Data()); 
+	    lego->Draw();
+	    
 	    c1->cd();
 	    TPad *pad2 = new TPad("pad2", "pad2", 0.5, 0.,1.0, 1.0);
 	    pad2->Draw();
 	    pad2->cd();
 	    h2->SetMarkerSize(0.1);
-	    h2->Draw("P");
+	    h2->Draw("colz");
+	    
+	    TLegend *lego2 = new TLegend(0.12,0.80,0.29,0.88);
+	    lego2->SetFillColor(10);
+	    lego2->SetTextSize(0.042);
+	    lego2->SetTextFont(42);
+	    lego2->SetFillColor(10);
+	    lego2->SetLineColor(10);
+	    lego2->SetShadowColor(10);
+	    lego2->AddEntry(h2,leg2.Data()); 
+	    lego2->Draw("same");
+
 	  }
 
 	  TString savename = fullpath.ReplaceAll("/","_");
@@ -191,7 +213,7 @@ void compareAll(TString file1,TString file2, TString leg1, TString leg2)
 	    h3->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
 	    h3->GetXaxis()->SetLabelSize(15);
 	    h3->GetXaxis()->SetLabelOffset(0.02);
-	  }
+	  } 
 
 	  // avoid spurious false positive due to empty histogram
 	  if(h->GetEntries()==0 && h2->GetEntries()==0){
