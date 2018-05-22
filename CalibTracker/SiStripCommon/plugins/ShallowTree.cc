@@ -1,13 +1,17 @@
 #include "CalibTracker/SiStripCommon/interface/ShallowTree.h"
-
 #include "FWCore/Framework/interface/ConstProductRegistry.h" 
 #include "FWCore/Framework/interface/ProductSelector.h"
 #include "FWCore/Framework/interface/ProductSelectorRules.h"
 
+
 #include <map>
 #include <TBranch.h>
+#include <iostream>
 
 ShallowTree::ShallowTree(const edm::ParameterSet& iConfig) {
+
+  edm::ConsumesCollector iC = consumesCollector();
+  isRunBased_ = iConfig.getUntrackedParameter<bool>("isRunBased",false);
   tree_ = fs_->make<TTree>("tree", ""); 
 
   std::map<std::string, LEAFTYPE> leafmap;
@@ -23,13 +27,12 @@ ShallowTree::ShallowTree(const edm::ParameterSet& iConfig) {
   leafmap["char"]      = CHAR;       leafmap["chars"]     = CHAR_V;
   leafmap["uchar"]     = U_CHAR;     leafmap["uchars"]    = U_CHAR_V;
 
-
   edm::Service<edm::ConstProductRegistry> reg;
   auto allBranches = reg->allBranchDescriptions();
   edm::ProductSelectorRules productSelectorRules_(iConfig, "outputCommands", "ShallowTree");
   edm::ProductSelector productSelector_;
   productSelector_.initialize(productSelectorRules_, allBranches);
-
+  
   std::set<std::string> branchnames;
 
   for( auto const& selection : allBranches) {
@@ -37,15 +40,15 @@ ShallowTree::ShallowTree(const edm::ParameterSet& iConfig) {
 
       //Check for duplicate branch names
       if (branchnames.find( selection->productInstanceName()) != branchnames.end() ) {
-				throw edm::Exception(edm::errors::Configuration)
-					<< "More than one branch named: "
-					<< selection->productInstanceName() << std::endl
-					<< "Exception thrown from ShallowTree::ShallowTree" << std::endl;
+	throw edm::Exception(edm::errors::Configuration)
+	  << "More than one branch named: "
+	  << selection->productInstanceName() << std::endl
+	  << "Exception thrown from ShallowTree::ShallowTree" << std::endl;
       }
       else {
-				branchnames.insert( selection->productInstanceName() );
+	branchnames.insert( selection->productInstanceName() );
       }
-
+      
       //Create ShallowTree branch
       switch(leafmap.find( selection->friendlyClassName() )->second) {
       case BOOL     :  connectors_.push_back( new TypedBranchConnector                      <bool>  (selection, "/O", tree_) ); eat                      <bool>  (selection); break;
@@ -71,35 +74,51 @@ ShallowTree::ShallowTree(const edm::ParameterSet& iConfig) {
       case U_CHAR   :  connectors_.push_back( new TypedBranchConnector             <unsigned char>  (selection, "/b", tree_) ); eat             <unsigned char>  (selection); break;
       case U_CHAR_V :  connectors_.push_back( new TypedBranchConnector<std::vector <unsigned char> >(selection,   "", tree_) ); eat<std::vector <unsigned char> >(selection); break;
       default: 
-			{
-				std::string leafstring = "";
-				typedef std::pair<std::string, LEAFTYPE> pair_t;
-				for( const pair_t& leaf: leafmap) { 
-					leafstring+= "\t" + leaf.first + "\n";
-				}
+	{
+	  std::string leafstring = "";
+	  typedef std::pair<std::string, LEAFTYPE> pair_t;
+	  for( const pair_t& leaf: leafmap) { 
+	    leafstring+= "\t" + leaf.first + "\n";
+	  }
+	  
+	  throw edm::Exception(edm::errors::Configuration)
+	    << "class ShallowTree does not handle leaves of type " << selection->className() << " like\n"
+	    <<   selection->friendlyClassName()   << "_" 
+	    <<   selection->moduleLabel()         << "_" 
+	    <<   selection->productInstanceName() << "_"  
+	    <<   selection->processName()         << std::endl
+	    << "Valid leaf types are (friendlyClassName):\n"
+	    <<   leafstring
+	    << "Exception thrown from ShallowTree::ShallowTree\n";
+	}
+      } // loop on branches
 
-				throw edm::Exception(edm::errors::Configuration)
-					<< "class ShallowTree does not handle leaves of type " << selection->className() << " like\n"
-					<<   selection->friendlyClassName()   << "_" 
-					<<   selection->moduleLabel()         << "_" 
-					<<   selection->productInstanceName() << "_"  
-					<<   selection->processName()         << std::endl
-					<< "Valid leaf types are (friendlyClassName):\n"
-					<<   leafstring
-					<< "Exception thrown from ShallowTree::ShallowTree\n";
-			}
+      // register the consumes
+      for( BranchConnector* connector: connectors_) {
+	connector->consume(iC);
       }
     }
   }
 }
 
-
+void ShallowTree::
+beginRun(const edm::Run& iRun, edm::EventSetup const& iSetup ){
+ if(isRunBased_){
+   for( BranchConnector* connector: connectors_) {
+     connector->connectFromRun(iRun);
+   }
+   tree_->Fill();
+ }
+}
+  
 void ShallowTree::
 analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  if(!isRunBased_){
   for( BranchConnector* connector: connectors_) {
     connector->connect(iEvent);
- }
+  }
   tree_->Fill();
+  }
 }
 
 template <class T>
@@ -107,6 +126,16 @@ void ShallowTree::TypedBranchConnector<T>::
 connect(const edm::Event& iEvent) {
   edm::Handle<T> handle_;
   iEvent.getByLabel(ml, pin, handle_);
+  object_ = *handle_;
+}
+
+template <class T>
+void ShallowTree::TypedBranchConnector<T>::
+connectFromRun(const edm::Run& iRun) {
+  edm::Handle<T> handle_;
+  //std::cout<< ml <<" "<< pin << std::endl; 
+  //iRun.getByLabel(ml, pin, handle_);
+  iRun.getByToken(token, handle_);
   object_ = *handle_;
 }
 
@@ -122,6 +151,12 @@ TypedBranchConnector(edm::BranchDescription const* desc,
   std::string s=pin+t;  
   if(t!="")  { tree->Branch(pin.c_str(),  object_ptr_, s.c_str() );}  //raw type
   else       { tree->Branch(pin.c_str(), &object_ptr_            );}  //vector<type>
+}
+
+template <class T> 
+void ShallowTree::TypedBranchConnector<T>::
+consume(edm::ConsumesCollector& cc){
+  token = cc.consumes<T,edm::InRun>(edm::InputTag(ml,pin));
 }
 
 void ShallowTree::

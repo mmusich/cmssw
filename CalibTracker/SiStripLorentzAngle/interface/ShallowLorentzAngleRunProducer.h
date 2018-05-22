@@ -1,30 +1,29 @@
-#ifndef SHALLOW_LORENTZANGLERUN_PRODUCER
-#define SHALLOW_LORENTZANGLERUN_PRODUCER
+#ifndef CALIBTRACKER_SISTRIPLORENTZANGLE_SHALLOWLORENTZANGLERUNPRODUCER
+#define CALIBTRACKER_SISTRIPLORENTZANGLE_SHALLOWLORENTZANGLERUNPRODUCER
 
-#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/Event.h"
-
-
+#include "FWCore/Framework/interface/Run.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include <ext/hash_map>
 
 
-class ShallowLorentzAngleRunProducer : public edm::EDProducer
+class ShallowLorentzAngleRunProducer : public edm::one::EDProducer< edm::BeginRunProducer,
+								    edm::one::WatchRuns> 
 {
    public:
       explicit ShallowLorentzAngleRunProducer(const edm::ParameterSet&);
+      virtual ~ShallowLorentzAngleRunProducer();
    private:
       std::string Suffix;
       std::string Prefix;
-      
-      bool newRun;
 
-      void produce( edm::Event &, const edm::EventSetup & );
-      void beginRun(edm::Run const&, edm::EventSetup const&);
-      void endRun(edm::Run const&, edm::EventSetup const&);
-      
-      
+      virtual void produce(edm::Event& iEvent, const edm::EventSetup& iSetup)override final;
+      virtual void beginRunProduce(edm::Run & iRun, const edm::EventSetup& iSetup)override final;
+      virtual void beginRun(edm::Run const& iRun, const edm::EventSetup& iSetup)override final;
+      virtual void endRun(edm::Run const& iRun, const edm::EventSetup& iSetup)override final;
 
 };
 #endif

@@ -21,18 +21,21 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 #include <string>
 #include <vector>
 #include <TTree.h>
 
 class ShallowTree : public edm::EDAnalyzer {
-private:    
+private:   
   virtual void beginJob();
+  virtual void beginRun(const edm::Run& ,const edm::EventSetup&);
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob(){}
 
@@ -45,6 +48,8 @@ private:
   public:
     virtual ~BranchConnector() {};
     virtual void connect(const edm::Event&) = 0;
+    virtual void connectFromRun(const edm::Run&) =0;
+    virtual void consume(edm::ConsumesCollector&) =0;
   };
   
   template <class T>
@@ -52,20 +57,24 @@ private:
   private:
     std::string ml;  //module label
     std::string pin;  //product instance name
+    edm::EDGetTokenT<T> token; // token
     T object_;
     T* object_ptr_;
   public:
     TypedBranchConnector(edm::BranchDescription const*, std::string, TTree*);
     void connect(const edm::Event&);
+    void connectFromRun(const edm::Run&);
+    void consume(edm::ConsumesCollector&);
   };
 
+  bool isRunBased_;
   edm::Service<TFileService> fs_;
   TTree * tree_;
   std::vector<BranchConnector*> connectors_;
 
 public:
   explicit ShallowTree(const edm::ParameterSet& iConfig);// : pset(iConfig) {}
-  
+
   enum LEAFTYPE {BOOL=1,  BOOL_V,          
 		 SHORT,   SHORT_V,           U_SHORT, U_SHORT_V,       
 		 INT,     INT_V,             U_INT,   U_INT_V,

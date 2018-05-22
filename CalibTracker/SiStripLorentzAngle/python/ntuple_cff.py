@@ -28,7 +28,11 @@ from CalibTracker.SiStripLorentzAngle.ShallowLorentzAngleRunProducer_cfi import 
 
 LorentzAngleOutputCommands =  [ 'keep *_shallowLorentzAngleRunProducer_*_*',]
 
-lorentzAngleRunTree = cms.EDAnalyzer("ShallowTree", outputCommands = cms.untracked.vstring('drop *'))
+lorentzAngleRunTree = cms.EDAnalyzer("ShallowTree", 
+                                     isRunBased = cms.untracked.bool(True),
+                                     outputCommands = cms.untracked.vstring('drop *')
+                                     )
+
 lorentzAngleRunTree.outputCommands += LorentzAngleOutputCommands
 
 LorentzAngleRunNtuple = cms.Sequence( shallowLorentzAngleRunProducer *  lorentzAngleRunTree)
