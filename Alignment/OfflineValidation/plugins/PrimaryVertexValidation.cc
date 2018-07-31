@@ -839,6 +839,13 @@ PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::EventSetup
 		if((*iHit)->isValid() && ( subid == PixelSubdetector::PixelBarrel ) ) {
 		  int layer = tTopo->pxbLayer(detId);
 		  if(layer==1){
+		    const SiPixelRecHit* prechit = dynamic_cast<const SiPixelRecHit*>(*iHit);//to be used to get the associated cluster and the cluster probability      
+
+		    double clusterProbability= prechit->clusterProbability(0);
+		    if (clusterProbability > 0){
+		      h_probeL1ClusterProb_->Fill(log10(clusterProbability));
+		    }
+
 		    L1BPixHitCount+=1;
 		    ladder_num = tTopo->pxbLadder(detId);    
 		    module_num = tTopo->pxbModule(detId);
@@ -1364,6 +1371,8 @@ void PrimaryVertexValidation::beginJob()
   h2_probePassingLayer1Map_= ProbeFeatures.make<TH2F>("h2_probePassingLayer1Map","Position in Layer 1 of first hit;module number;ladder number",8,0.5,8.5,12,0.5,12.5);
 
   h_probeHasBPixL1Overlap_ = ProbeFeatures.make<TH1I>("h_probeHasBPixL1Overlap","n. hits in L1;n. L1-BPix hits;tracks",5,-0.5,4.5);
+
+  h_probeL1ClusterProb_    = ProbeFeatures.make<TH1F>("h_probeL1ClusterProb","log_{10}(Cluster Probability) for Layer1 hits;log_{10}(cluster probability); n. Layer1 hits",100,-10.,0.);
 
   // refit vertex features
   TFileDirectory RefitVertexFeatures = fs->mkdir("RefitVertexFeatures");
