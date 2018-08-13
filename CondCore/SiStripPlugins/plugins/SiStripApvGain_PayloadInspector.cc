@@ -21,7 +21,9 @@
 
 // auxilliary functions
 #include "CondCore/SiStripPlugins/interface/SiStripPayloadInspectorHelper.h"
+#include "CondCore/SiStripPlugins/interface/SiStripCondObjectRepresent.h" 
 #include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
+
 
 #include <memory>
 #include <sstream>
@@ -39,6 +41,51 @@
 #include "TPaveStats.h"
 
 namespace {
+
+  class SiStripApvGainContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripApvGain,float> {
+  public:
+    SiStripApvGainContainer(std::shared_ptr<SiStripApvGain> payload,unsigned int run,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripApvGain,float>(payload, run, perStrip, perAPV) {}
+
+    void getAllValues(std::shared_ptr<SiStripApvGain> payload) override {
+
+      std::vector<uint32_t> detid;
+      payload->getDetIds(detid);
+	  
+      for (const auto & d : detid) {
+	SiStripApvGain::Range range=payload->getRange(d);
+	for(int it=0;it<range.second-range.first;it++){
+	  // to be used to fill the histogram
+	  SiStripCondData_.fillByPushBack(d,payload->getApvGain(it,range));
+	}
+      }
+    }
+  };
+
+  /************************************************
+    testing the machinery
+  ************************************************/
+  class SiStripApvGainTest : public cond::payloadInspector::Histogram1D<SiStripApvGain> {
+    
+  public:
+    SiStripApvGainTest() : cond::payloadInspector::Histogram1D<SiStripApvGain>("SiStrip ApvGain values",
+									       "SiStrip ApvGain values",1,0.0,1.){
+      Base::setSingleIov( true );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+      for ( auto const & iov: iovs) {
+	std::shared_ptr<SiStripApvGain> payload = Base::fetchPayload( std::get<1>(iov) );
+	if( payload.get() ){
+
+	  SiStripApvGainContainer* objContainer = new SiStripApvGainContainer(payload, std::get<0>(iov),false,true);
+	  objContainer->printAll();
+	  
+	}// payload
+      }// iovs
+      return true;
+    }// fill
+  };
+  
 
   /************************************************
     1d histogram of SiStripApvGains of 1 IOV 
@@ -1174,7 +1221,7 @@ namespace {
       
       for ( const auto &part : parts){
 	ratios[part]   = std::make_shared<TH1F>(Form("hRatio_%s",part.c_str()),Form("Gains ratio IOV: %s/ IOV: %s ;Previous Gain (%s) / New Gain (%s);Number of APV",firstIOVsince.c_str(),lastIOVsince.c_str(),firstIOVsince.c_str(),lastIOVsince.c_str()),200,0.,2.);
-	scatters[part] = std::make_shared<TH2F>(Form("hScatter_%s",part.c_str()),Form("new Gain (%s) vs previous Gain (%s);Previous Gain (%s);New Gain (%s)",lastIOVsince.c_str(),firstIOVsince.c_str(),firstIOVsince.c_str(),lastIOVsince.c_str()),100,0.5,1.8,100,0.5,1.8);
+	scatters[part] = std::make_shared<TH2F>(Form("hScatter_%s",part.c_str()),Form("new Gain (%s) vs previous Gain (%s);New Gain (%s);Previous Gain (%s)",lastIOVsince.c_str(),firstIOVsince.c_str(),lastIOVsince.c_str(),firstIOVsince.c_str()),100,0.5,1.8,100,0.5,1.8);
       }
       
       // now loop on the cached maps
@@ -1912,6 +1959,7 @@ namespace {
 // Register the classes as boost python plugin
 PAYLOAD_INSPECTOR_MODULE(SiStripApvGain){
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsValue);
+  PAYLOAD_INSPECTOR_CLASS(SiStripApvGainTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsByRegion);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsComparator);
