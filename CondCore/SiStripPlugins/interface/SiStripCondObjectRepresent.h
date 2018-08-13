@@ -12,12 +12,14 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "TROOT.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 #include "TStyle.h"
 #include "TColor.h"
 #include "TLine.h"
 #include "TLatex.h"
 #include "TProfile.h"
 #include "TPaveLabel.h"
+#include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
 
 //functions for correct representation of data in summary and plot
 namespace SiStripCondObjectRepresent{
@@ -33,11 +35,13 @@ namespace SiStripCondObjectRepresent{
     
     void fillAll(unsigned int detid,std::vector<type> store){
       m_info[detid]=store;
+      m_cached=true;
       return;
     }
     
     void fillByPushBack(unsigned int detid,type value){
       m_info[detid].push_back(value);
+      m_cached=true;
     }
 
     std::vector<type> get(unsigned int detid){
@@ -47,6 +51,10 @@ namespace SiStripCondObjectRepresent{
     void setGranularity(bool isPerStrip,bool isPerAPV){
       m_servedPerStrip=isPerStrip;
       m_servedPerAPV=isPerAPV;      
+    }
+
+    bool isCached(){
+      return m_cached;
     }
 
     std::vector<unsigned int> getDetIds(bool verbose){
@@ -66,11 +74,13 @@ namespace SiStripCondObjectRepresent{
     std::map<unsigned int,std::vector<type> > m_info;
     bool m_servedPerStrip;
     bool m_servedPerAPV;
+    bool m_cached;
 
     void init(){
       m_servedPerStrip=false;
       m_servedPerAPV=false;
       m_info.clear();
+      m_cached=false;
     }
 
   };
@@ -80,7 +90,8 @@ namespace SiStripCondObjectRepresent{
   class SiStripDataContainer {
 
   public : 
-    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run,bool perStrip,bool perAPV) : payload_(payload), run_(run), isPerStrip_(perStrip), isPerAPV_(perAPV) {
+    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash,bool perStrip,bool perAPV) : payload_(payload), run_(run), hash_(hash), isPerStrip_(perStrip), isPerAPV_(perAPV), m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
+    {
       PlotMode_ = "Map";
       SiStripCondData_.setGranularity(isPerStrip_,isPerAPV_);
     }
@@ -110,7 +121,93 @@ namespace SiStripCondObjectRepresent{
       }
     }
 
+    void fillSummary(TCanvas &canvas){
+      if(! SiStripCondData_.isCached()) getAllValues(payload_);
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for(const auto &detId: listOfDetIds ){
+	auto values = SiStripCondData_.get(detId);
+	for(const auto &value : values){
+	  summary.add(detId,value);
+	}
+      }
 
+      std::map<unsigned int, SiStripDetSummary::Values> map = summary.getCounts();
+      //=========================
+      
+      canvas.cd();
+      auto h1 = new TH1F("byRegion","SiStrip average by partition;; average SiStrip",map.size(),0.,map.size());
+      h1->SetStats(false);
+      canvas.SetBottomMargin(0.18);
+      canvas.SetLeftMargin(0.17);
+      canvas.SetRightMargin(0.05);
+      canvas.Modified();
+
+      std::vector<int> boundaries;
+      unsigned int iBin=0;
+
+      std::string detector;
+      std::string currentDetector;
+
+      for (const auto &element : map){
+	iBin++;
+	int count   = element.second.count;
+	double mean = (element.second.mean)/count;
+
+	if(currentDetector.empty()) currentDetector="TIB";
+	
+	switch ((element.first)/1000) 
+	  {
+	  case 1:
+	    detector = "TIB";
+	    break;
+	  case 2:
+	    detector = "TOB";
+	    break;
+	  case 3:
+	    detector = "TEC";
+	    break;
+	  case 4:
+	    detector = "TID";
+	    break;
+	  }
+
+	h1->SetBinContent(iBin,mean);
+	h1->GetXaxis()->SetBinLabel(iBin,SiStripPI::regionType(element.first).second);
+	h1->GetXaxis()->LabelsOption("v");
+	
+	if(detector!=currentDetector) {
+	  boundaries.push_back(iBin);
+	  currentDetector=detector;
+	}
+      }
+
+      h1->GetYaxis()->SetRangeUser(0.,h1->GetMaximum()*1.30);
+      h1->SetMarkerStyle(20);
+      h1->SetMarkerSize(1);
+      h1->Draw("HIST");
+      h1->Draw("Psame");
+	    
+      canvas.Update();
+      
+      TLine* l[boundaries.size()];
+      unsigned int i=0;
+      for (const auto & line : boundaries){
+	l[i] = new TLine(h1->GetBinLowEdge(line),canvas.GetUymin(),h1->GetBinLowEdge(line),canvas.GetUymax());
+	l[i]->SetLineWidth(1);
+	l[i]->SetLineStyle(9);
+	l[i]->SetLineColor(2);
+	l[i]->Draw("same");
+	i++;
+      }
+      
+      TLegend* legend = new TLegend(0.52,0.82,0.95,0.9);
+      legend->SetHeader(hash_.c_str(),"C"); // option "C" allows to center the header
+      legend->AddEntry(h1,Form("IOV: %i",run_),"PL");
+      legend->SetTextSize(0.025);
+      legend->Draw("same");
+
+    }
+  
   private:
     std::shared_ptr<Item> payload_;
     unsigned int run_;
@@ -118,14 +215,16 @@ namespace SiStripCondObjectRepresent{
     bool isPerStrip_;
     bool isPerAPV_;
     std::string TopoMode_;
+    TrackerTopology m_trackerTopo;
+    SiStripDetSummary summary{&m_trackerTopo};
     // "Map", "Ratio", or "Diff"
     std::string PlotMode_;
    
     std::map<std::string, std::string> units_ = {
-      { "SiStripPedestals", "ADC" },
+      { "SiStripPedestals", "ADC counts" },
       { "SiStripApVGain",  ""},//dimensionless TODO: verify
-      { "SiStripNoises" , ""},
-      { "SiStripLorentzAngle" , ""},
+      { "SiStripNoises" , "ADC counts"},
+      { "SiStripLorentzAngle" , "rad"},
       { "SiStripBackPlaneCorrection" , ""},
       { "SiStripBadStrip" , ""},
       

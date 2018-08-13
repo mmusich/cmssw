@@ -44,7 +44,7 @@ namespace {
 
   class SiStripApvGainContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripApvGain,float> {
   public:
-    SiStripApvGainContainer(std::shared_ptr<SiStripApvGain> payload,unsigned int run,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripApvGain,float>(payload, run, perStrip, perAPV) {}
+    SiStripApvGainContainer(std::shared_ptr<SiStripApvGain> payload,unsigned int run,std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripApvGain,float>(payload, run, hash, perStrip, perAPV) {}
 
     void getAllValues(std::shared_ptr<SiStripApvGain> payload) override {
 
@@ -77,7 +77,7 @@ namespace {
 	std::shared_ptr<SiStripApvGain> payload = Base::fetchPayload( std::get<1>(iov) );
 	if( payload.get() ){
 
-	  SiStripApvGainContainer* objContainer = new SiStripApvGainContainer(payload, std::get<0>(iov),false,true);
+	  SiStripApvGainContainer* objContainer = new SiStripApvGainContainer(payload, std::get<0>(iov),std::get<1>(iov),false,true);
 	  objContainer->printAll();
 	  
 	}// payload
