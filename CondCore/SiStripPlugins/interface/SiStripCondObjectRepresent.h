@@ -103,17 +103,15 @@ namespace SiStripCondObjectRepresent{
     std::string getHash() {return hash_;}
     std::string getTopoMode() {return TopoMode_;}
 
-    SiStripCondDataItem<type> SiStripCondData_; 
-
     ////NOTE to be implemented in PayloadInspector classes
-    virtual void getAllValues(std::shared_ptr<Item> payload){throw cms::Exception ("Value definition not found") << "getValue definition not found for ";}; // << payload_->myname();};
+    virtual void getAllValues(){throw cms::Exception ("Value definition not found") << "getValue definition not found for ";}; // << payload_->myname();};
 
 
     /***********************************************************************/
     void printAll()
     /***********************************************************************/
     {
-      getAllValues(payload_);
+      getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
       for(const auto &detId: listOfDetIds ){
 	std::cout<< detId << ": ";
@@ -129,7 +127,7 @@ namespace SiStripCondObjectRepresent{
     void fillSummary(TCanvas &canvas)
     /***********************************************************************/
     {
-      if(! SiStripCondData_.isCached()) getAllValues(payload_);
+      if(! SiStripCondData_.isCached()) getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
       for(const auto &detId: listOfDetIds ){
 	auto values = SiStripCondData_.get(detId);
@@ -233,7 +231,7 @@ namespace SiStripCondObjectRepresent{
 	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),Form("IOV: %i",run_),nbins,min,max);
       }
 
-      if(! SiStripCondData_.isCached()) getAllValues(payload_);
+      if(! SiStripCondData_.isCached()) getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
       for(const auto &detId: listOfDetIds ){
 	auto values = SiStripCondData_.get(detId);
@@ -269,19 +267,26 @@ namespace SiStripCondObjectRepresent{
 	canvas.cd(index)->SetTopMargin(0.05);
 	canvas.cd(index)->SetLeftMargin(0.13);
 	canvas.cd(index)->SetRightMargin(0.08);
-
+	
 	SiStripPI::makeNicePlotStyle(h_parts[part]);
 	h_parts[part]->SetMinimum(1.);
 	h_parts[part]->SetStats(false);
 	h_parts[part]->SetLineWidth(2);
 	h_parts[part]->SetLineColor(colormap[part]);
 	h_parts[part]->Draw();
+
+	TLegend* leg = new TLegend(.60,0.8,0.92,0.95);
+	leg->AddEntry(h_parts[part],part.c_str(),"L");
+	leg->Draw("same");
+
       }
     }
-    
+
+  protected:
+    std::shared_ptr<Item> payload_;
+    SiStripCondDataItem<type> SiStripCondData_;     
 
   private:
-    std::shared_ptr<Item> payload_;
     unsigned int run_;
     std::string hash_;
     bool isPerStrip_;

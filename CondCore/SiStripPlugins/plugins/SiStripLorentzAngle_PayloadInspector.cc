@@ -38,8 +38,8 @@ namespace {
   public:
     SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run, std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, hash, perStrip, perAPV) {}
 
-    void getAllValues(std::shared_ptr<SiStripLorentzAngle> payload) override {
-      auto LAMap_ = payload->getLorentzAngles();
+    void getAllValues() override {
+      auto LAMap_ = payload_->getLorentzAngles();
       for(const auto &element :LAMap_){
       	SiStripCondData_.fillByPushBack(element.first,element.second);
       }
