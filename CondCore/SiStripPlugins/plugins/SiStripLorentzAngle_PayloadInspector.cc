@@ -36,7 +36,7 @@ namespace {
   
   class SiStripLorentzAngleContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float> {
   public:
-    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, perStrip, perAPV) {}
+    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run, std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, hash, perStrip, perAPV) {}
 
     void getAllValues(std::shared_ptr<SiStripLorentzAngle> payload) override {
       auto LAMap_ = payload->getLorentzAngles();
@@ -49,22 +49,27 @@ namespace {
   /************************************************
     testing the machinery
   ************************************************/
-  class SiStripLorentzAngleTest : public cond::payloadInspector::Histogram1D<SiStripLorentzAngle> {
+  class SiStripLorentzAngleTest : public cond::payloadInspector::PlotImage<SiStripLorentzAngle> {
     
   public:
-    SiStripLorentzAngleTest() : cond::payloadInspector::Histogram1D<SiStripLorentzAngle>("SiStrip LorentzAngle values",
-											  "SiStrip LorentzAngle values",1,0.0,1.){
-      Base::setSingleIov( true );
+    SiStripLorentzAngleTest() : cond::payloadInspector::PlotImage<SiStripLorentzAngle>("SiStrip LorentzAngle values"){
+      setSingleIov( true );
     }
     
     bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
       for ( auto const & iov: iovs) {
-	std::shared_ptr<SiStripLorentzAngle> payload = Base::fetchPayload( std::get<1>(iov) );
+	std::shared_ptr<SiStripLorentzAngle> payload = fetchPayload( std::get<1>(iov) );
 	if( payload.get() ){
 
-	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),false,false);
+	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov),false,false);
 	  objContainer->printAll();
+
+	  TCanvas canvas("Partion summary","partition summary",1200,1000); 
+	  objContainer->fillSummary(canvas);
 	  
+	  std::string fileName(m_imageFileName);
+	  canvas.SaveAs(fileName.c_str());
+
 	}// payload
       }// iovs
       return true;
