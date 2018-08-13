@@ -87,6 +87,34 @@ namespace {
   };
   
 
+  class SiStripApvGainByPartition : public cond::payloadInspector::PlotImage<SiStripApvGain> {
+    
+  public:
+    SiStripApvGainByPartition() : cond::payloadInspector::PlotImage<SiStripApvGain>("SiStrip ApvGains By Partition"){
+      setSingleIov( true );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+      for ( auto const & iov: iovs) {
+	std::shared_ptr<SiStripApvGain> payload = fetchPayload( std::get<1>(iov) );
+	if( payload.get() ){
+
+	  SiStripApvGainContainer* objContainer = new SiStripApvGainContainer(payload, std::get<0>(iov),std::get<1>(iov),false,true);
+	  objContainer->printAll();
+
+	  TCanvas canvas("Partition summary","partition summary",1400,1000); 
+	  objContainer->fillByPartition(canvas,100,0.,2.);
+	  
+	  std::string fileName(m_imageFileName);
+	  canvas.SaveAs(fileName.c_str());
+
+	}// payload
+      }// iovs
+      return true;
+    }// fill
+  };
+
+
   /************************************************
     1d histogram of SiStripApvGains of 1 IOV 
   *************************************************/
@@ -2143,6 +2171,7 @@ namespace {
 PAYLOAD_INSPECTOR_MODULE(SiStripApvGain) {
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsValue);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainTest);
+  PAYLOAD_INSPECTOR_CLASS(SiStripApvGainByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsByRegion);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsComparatorSingleTag);

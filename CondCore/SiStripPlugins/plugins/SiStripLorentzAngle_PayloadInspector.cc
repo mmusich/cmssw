@@ -76,6 +76,33 @@ namespace {
     }// fill
   };
 
+  class SiStripLorentzAngleByPartition : public cond::payloadInspector::PlotImage<SiStripLorentzAngle> {
+    
+  public:
+    SiStripLorentzAngleByPartition() : cond::payloadInspector::PlotImage<SiStripLorentzAngle>("SiStrip LorentzAngle By Partition"){
+      setSingleIov( true );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+      for ( auto const & iov: iovs) {
+	std::shared_ptr<SiStripLorentzAngle> payload = fetchPayload( std::get<1>(iov) );
+	if( payload.get() ){
+
+	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov),false,false);
+	  objContainer->printAll();
+
+	  TCanvas canvas("Partition summary","partition summary",1400,1000); 
+	  objContainer->fillByPartition(canvas,100,0.,0.05);
+	  
+	  std::string fileName(m_imageFileName);
+	  canvas.SaveAs(fileName.c_str());
+
+	}// payload
+      }// iovs
+      return true;
+    }// fill
+  };
+  
   /************************************************
     1d histogram of SiStripLorentzAngle of 1 IOV 
   *************************************************/
@@ -448,6 +475,7 @@ namespace {
 
 PAYLOAD_INSPECTOR_MODULE(SiStripLorentzAngle) {
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleTest);
+  PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleValue);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngle_TrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleByRegion);

@@ -108,7 +108,11 @@ namespace SiStripCondObjectRepresent{
     ////NOTE to be implemented in PayloadInspector classes
     virtual void getAllValues(std::shared_ptr<Item> payload){throw cms::Exception ("Value definition not found") << "getValue definition not found for ";}; // << payload_->myname();};
 
-    void printAll(){
+
+    /***********************************************************************/
+    void printAll()
+    /***********************************************************************/
+    {
       getAllValues(payload_);
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
       for(const auto &detId: listOfDetIds ){
@@ -121,7 +125,10 @@ namespace SiStripCondObjectRepresent{
       }
     }
 
-    void fillSummary(TCanvas &canvas){
+    /***********************************************************************/
+    void fillSummary(TCanvas &canvas)
+    /***********************************************************************/
+    {
       if(! SiStripCondData_.isCached()) getAllValues(payload_);
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
       for(const auto &detId: listOfDetIds ){
@@ -208,6 +215,71 @@ namespace SiStripCondObjectRepresent{
 
     }
   
+    /***********************************************************************/
+    void fillByPartition(TCanvas &canvas,int nbins,float min,float max)
+    /***********************************************************************/
+    {
+      std::map<std::string,TH1F*> h_parts;
+      std::map<std::string,int> colormap;
+      std::map<std::string,int> markermap;
+      colormap["TIB"] = kRed;       markermap["TIB"] = kFullCircle;           
+      colormap["TOB"] = kGreen;	    markermap["TOB"] = kFullTriangleUp;
+      colormap["TID"] = kBlack;	    markermap["TID"] = kFullSquare;
+      colormap["TEC"] = kBlue; 	    markermap["TEC"] = kFullTriangleDown; 
+
+      std::vector<std::string> parts = {"TEC","TOB","TIB","TID"};
+      
+      for ( const auto &part : parts){
+	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),Form("IOV: %i",run_),nbins,min,max);
+      }
+
+      if(! SiStripCondData_.isCached()) getAllValues(payload_);
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for(const auto &detId: listOfDetIds ){
+	auto values = SiStripCondData_.get(detId);
+	int subid = DetId(detId).subdetId();
+	for(const auto &value : values){
+	  
+	  switch(subid){
+	  case StripSubdetector::TIB:
+	    h_parts["TIB"]->Fill(value);
+	    break;
+	  case StripSubdetector::TID:
+	    h_parts["TID"]->Fill(value);
+	    break;
+	  case StripSubdetector::TOB:
+	    h_parts["TOB"]->Fill(value);
+	    break;
+	  case StripSubdetector::TEC:
+	    h_parts["TEC"]->Fill(value);
+	    break;
+	  default:
+	    edm::LogError("LogicError") << "Unknown partition: " << subid; 
+	    break;
+	  }
+
+	}
+      }
+
+      canvas.Divide(2,2);
+      
+      int index=0;
+      for (const auto &part : parts){
+	index++;
+	canvas.cd(index)->SetTopMargin(0.05);
+	canvas.cd(index)->SetLeftMargin(0.13);
+	canvas.cd(index)->SetRightMargin(0.08);
+
+	SiStripPI::makeNicePlotStyle(h_parts[part]);
+	h_parts[part]->SetMinimum(1.);
+	h_parts[part]->SetStats(false);
+	h_parts[part]->SetLineWidth(2);
+	h_parts[part]->SetLineColor(colormap[part]);
+	h_parts[part]->Draw();
+      }
+    }
+    
+
   private:
     std::shared_ptr<Item> payload_;
     unsigned int run_;
