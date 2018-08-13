@@ -15,6 +15,7 @@
 
 #include "CommonTools/TrackerMap/interface/TrackerMap.h"
 #include "CondCore/SiStripPlugins/interface/SiStripPayloadInspectorHelper.h"
+#include "CondCore/SiStripPlugins/interface/SiStripCondObjectRepresent.h" 
 #include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
 
 #include <memory>
@@ -32,6 +33,43 @@
 #include "TGaxis.h"
 
 namespace {
+  
+  class SiStripLorentzAngleContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float> {
+  public:
+    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, perStrip, perAPV) {}
+
+    void getAllValues(std::shared_ptr<SiStripLorentzAngle> payload) override {
+      auto LAMap_ = payload->getLorentzAngles();
+      for(const auto &element :LAMap_){
+      	SiStripCondData_.fillByPushBack(element.first,element.second);
+      }
+    }
+  };
+
+  /************************************************
+    testing the machinery
+  ************************************************/
+  class SiStripLorentzAngleTest : public cond::payloadInspector::Histogram1D<SiStripLorentzAngle> {
+    
+  public:
+    SiStripLorentzAngleTest() : cond::payloadInspector::Histogram1D<SiStripLorentzAngle>("SiStrip LorentzAngle values",
+											  "SiStrip LorentzAngle values",1,0.0,1.){
+      Base::setSingleIov( true );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+      for ( auto const & iov: iovs) {
+	std::shared_ptr<SiStripLorentzAngle> payload = Base::fetchPayload( std::get<1>(iov) );
+	if( payload.get() ){
+
+	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),false,false);
+	  objContainer->printAll();
+	  
+	}// payload
+      }// iovs
+      return true;
+    }// fill
+  };
 
   /************************************************
     1d histogram of SiStripLorentzAngle of 1 IOV 
@@ -404,6 +442,7 @@ namespace {
 }  // namespace
 
 PAYLOAD_INSPECTOR_MODULE(SiStripLorentzAngle) {
+  PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleValue);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngle_TrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleByRegion);
