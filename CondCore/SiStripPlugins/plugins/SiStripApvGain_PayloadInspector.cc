@@ -46,16 +46,16 @@ namespace {
   public:
     SiStripApvGainContainer(std::shared_ptr<SiStripApvGain> payload,unsigned int run,std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripApvGain,float>(payload, run, hash, perStrip, perAPV) {}
 
-    void getAllValues(std::shared_ptr<SiStripApvGain> payload) override {
+    void getAllValues() override {
 
       std::vector<uint32_t> detid;
-      payload->getDetIds(detid);
+      payload_->getDetIds(detid);
 	  
       for (const auto & d : detid) {
-	SiStripApvGain::Range range=payload->getRange(d);
+	SiStripApvGain::Range range=payload_->getRange(d);
 	for(int it=0;it<range.second-range.first;it++){
 	  // to be used to fill the histogram
-	  SiStripCondData_.fillByPushBack(d,payload->getApvGain(it,range));
+	  SiStripCondData_.fillByPushBack(d,payload_->getApvGain(it,range));
 	}
       }
     }
