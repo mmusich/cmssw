@@ -36,7 +36,9 @@ namespace {
   
   class SiStripLorentzAngleContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float> {
   public:
-    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run, std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, hash, perStrip, perAPV) {}
+    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run, std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, hash, perStrip, perAPV) {
+      payloadType_ = "SiStripLorentzAngle";
+    }
 
     void getAllValues() override {
       auto LAMap_ = payload_->getLorentzAngles();

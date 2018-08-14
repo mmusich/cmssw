@@ -134,7 +134,8 @@ namespace SiStripCondObjectRepresent{
     std::string getTopoMode() {return TopoMode_;}
     plotType    getPlotType() {return PlotMode_;}
     void        setPlotType(plotType myType) {PlotMode_ = myType;}
-    
+    void        setPayloadType(std::string myPayloadType){payloadType_ = myPayloadType;}
+
     void        setAdditionalIOV(unsigned int run, std::string hash){ 
       additionalIOV_.first  = run;   
       additionalIOV_.second = hash;
@@ -333,12 +334,49 @@ namespace SiStripCondObjectRepresent{
       colormap["TEC"] = kBlue; 	    markermap["TEC"] = kFullTriangleDown; 
 
       std::vector<std::string> parts = {"TEC","TOB","TIB","TID"};
-      
+
+      const char* device;
+      if(isPerStrip_){
+	device = "strips";
+      } else if(isPerAPV_) {
+	device = "APVs";
+      } else {
+	device = "modules";
+      }
+
+      const char* thePlotType="";
+      switch(PlotMode_){
+      case STANDARD:
+	thePlotType = "Display";
+	break;
+      case COMPARISON:
+	thePlotType = "Display";
+	break;
+      case DIFF:
+	thePlotType = "#Delta";
+	break;
+      case RATIO:
+	thePlotType = "Ratio";
+	break;
+      case MAP:
+	thePlotType = "TrackerMap";
+	break;
+      case END_OF_TYPES:
+	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
+	break;
+      default:
+	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
+	break;
+      }
+
       for ( const auto &part : parts){
-	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),part.c_str(),nbins,min,max);
+
+	TString globalTitle = Form("%s - %s %s;%s %s;n. %s",thePlotType,payloadType_.c_str(),part.c_str(),payloadType_.c_str(),(units_[payloadType_]).c_str(),device);
+
+	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),globalTitle,nbins,min,max);
 	
 	if(PlotMode_ == COMPARISON){
-	  h_parts2[part] = new TH1F(Form("h2_%s",part.c_str()),part.c_str(),nbins,min,max);
+	  h_parts2[part] = new TH1F(Form("h2_%s",part.c_str()),globalTitle,nbins,min,max);
 	}
       }
 
@@ -431,6 +469,7 @@ namespace SiStripCondObjectRepresent{
 
   protected:
     std::shared_ptr<Item> payload_;
+    std::string payloadType_;
     SiStripCondDataItem<type> SiStripCondData_;     
 
   private:
@@ -446,13 +485,13 @@ namespace SiStripCondObjectRepresent{
     std::pair<int,std::string> additionalIOV_;
 
     std::map<std::string, std::string> units_ = {
-      { "SiStripPedestals", "ADC counts" },
-      { "SiStripApVGain",  ""},//dimensionless TODO: verify
-      { "SiStripNoises" , "ADC counts"},
-      { "SiStripLorentzAngle" , "rad"},
+      { "SiStripPedestals", "[ADC counts]" },
+      { "SiStripApvGain",  ""},//dimensionless TODO: verify
+      { "SiStripNoises" , "[ADC counts]"},
+      { "SiStripLorentzAngle" , "[rad]"},
       { "SiStripBackPlaneCorrection" , ""},
       { "SiStripBadStrip" , ""},
-      
+      { "SiStripDetVOff" , ""}
     };
   };
 
