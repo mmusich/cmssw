@@ -108,6 +108,46 @@ namespace {
   };
 
 
+  class SiStripNoiseDiffByPartition : public cond::payloadInspector::PlotImage<SiStripNoises> {
+    
+  public:
+    SiStripNoiseDiffByPartition() : cond::payloadInspector::PlotImage<SiStripNoises>("SiStrip Diff Noises By Partition"){
+      setSingleIov( false );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+
+      std::vector<std::tuple<cond::Time_t,cond::Hash> > sorted_iovs = iovs;
+       
+      // make absolute sure the IOVs are sortd by since
+      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const &t1, auto const &t2) {
+	  return std::get<0>(t1) < std::get<0>(t2);
+	});
+      
+      auto firstiov  = sorted_iovs.front();
+      auto lastiov   = sorted_iovs.back();
+      
+      std::shared_ptr<SiStripNoises> last_payload  = fetchPayload( std::get<1>(lastiov) );
+      std::shared_ptr<SiStripNoises> first_payload = fetchPayload( std::get<1>(firstiov) );
+      
+      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov), false,true);
+      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov),false,true);
+	
+      l_objContainer->Subtract(f_objContainer);
+
+      //l_objContainer->printAll();
+
+      TCanvas canvas("Partition summary","partition summary",1400,1000); 
+      l_objContainer->fillByPartition(canvas,100,0.,1.);
+	  
+      std::string fileName(m_imageFileName);
+      canvas.SaveAs(fileName.c_str());
+
+      return true;
+    }// fill
+  };
+
+
 
   /************************************************
     test class
@@ -1895,6 +1935,7 @@ namespace {
 
 PAYLOAD_INSPECTOR_MODULE(SiStripNoises) {
   PAYLOAD_INSPECTOR_CLASS(SiStripNoiseCompareByPartition);
+  PAYLOAD_INSPECTOR_CLASS(SiStripNoiseDiffByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripNoisesTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripNoisePerDetId);
   PAYLOAD_INSPECTOR_CLASS(SiStripNoiseValue);
