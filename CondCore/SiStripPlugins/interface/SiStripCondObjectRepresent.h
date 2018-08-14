@@ -24,6 +24,8 @@
 //functions for correct representation of data in summary and plot
 namespace SiStripCondObjectRepresent{
 
+  enum plotType { STANDARD, COMPARISON, DIFF, RATIO, MAP, END_OF_TYPES };
+
   template<class type>
   class SiStripCondDataItem {
   public:
@@ -33,16 +35,43 @@ namespace SiStripCondObjectRepresent{
 
     virtual ~SiStripCondDataItem(){};
     
-    void fillAll(unsigned int detid,std::vector<type> store){
+    void fillAll(unsigned int detid,const std::vector<type>& store){
       m_info[detid]=store;
       m_cached=true;
       return;
     }
     
-    void fillByPushBack(unsigned int detid,type value){
+    void fillByPushBack(unsigned int detid,const type& value){
       m_info[detid].push_back(value);
       m_cached=true;
     }
+
+    void divide(unsigned int detid,const std::vector<type>& denominator){
+      
+      if(m_info[detid].size() != denominator.size()){
+	throw cms::Exception ("Unaligned Conditions") << "data size of numerator mismatched the data size of denominator";
+      }
+  
+      unsigned int counter=0;
+      for (const auto &den : denominator){
+	m_info[detid].At(counter)/=den;
+	counter++;
+      }
+    }
+
+    void subtract(unsigned int detid,const std::vector<type>& subtractor){
+      
+      if(m_info[detid].size() != subtractor.size()){
+	throw cms::Exception ("Unaligned Conditions") << "data size of numerator mismatched the data size of denominator";
+      }
+  
+      unsigned int counter=0;
+      for (const auto &sub : subtractor){
+	m_info[detid].At(counter)-=sub;
+	counter++;
+      }
+    }
+
 
     std::vector<type> get(unsigned int detid){
       return m_info[detid];
@@ -92,8 +121,9 @@ namespace SiStripCondObjectRepresent{
   public : 
     SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash,bool perStrip,bool perAPV) : payload_(payload), run_(run), hash_(hash), isPerStrip_(perStrip), isPerAPV_(perAPV), m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
     {
-      PlotMode_ = "Map";
+      PlotMode_ = STANDARD;
       SiStripCondData_.setGranularity(isPerStrip_,isPerAPV_);
+      additionalIOV_ = std::make_pair(-1,"");
     }
 
     virtual ~SiStripDataContainer(){};
@@ -102,16 +132,91 @@ namespace SiStripCondObjectRepresent{
     unsigned int getRun() {return run_;}   
     std::string getHash() {return hash_;}
     std::string getTopoMode() {return TopoMode_;}
+    plotType    getPlotType() {return PlotMode_;}
+    void        setPlotType(plotType myType) {PlotMode_ = myType;}
+    
+    void        setAdditionalIOV(unsigned int run, std::string hash){ 
+      additionalIOV_.first  = run;   
+      additionalIOV_.second = hash;
+    };
+
 
     ////NOTE to be implemented in PayloadInspector classes
     virtual void getAllValues(){throw cms::Exception ("Value definition not found") << "getValue definition not found for ";}; // << payload_->myname();};
+
+    SiStripCondDataItem<type> getSiStripCondData() {return SiStripCondData_; }
+    
+    // all methods needed for comparison of 2 IOVs
+
+    /***********************************************************************/
+    void Compare(SiStripDataContainer* dataCont2) 
+    /***********************************************************************/
+    {
+      PlotMode_ = COMPARISON;
+      dataCont2->setPlotType(COMPARISON);
+
+      setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
+
+      if(! SiStripCondData_.isCached()) getAllValues();
+      dataCont2->getAllValues();
+      auto SiStripCondData2_ = dataCont2->getSiStripCondData();
+      
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for(const auto &detId: listOfDetIds ){
+	auto entriesToAdd =  SiStripCondData2_.get(detId);
+	for (const auto &entry : entriesToAdd){
+	  SiStripCondData_.fillByPushBack(detId,entry);
+	}
+      }
+    }
+
+
+    /***********************************************************************/
+    void Divide(SiStripDataContainer* dataCont2) 
+    /***********************************************************************/
+    {
+      PlotMode_ = RATIO;
+      dataCont2->setPlotType(RATIO);
+
+      setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
+
+      if(! SiStripCondData_.isCached()) getAllValues();
+      dataCont2->getAllValues();
+      auto SiStripCondData2_ = dataCont2->getSiStripCondData();
+
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for(const auto &detId: listOfDetIds ){
+	SiStripCondData_.divide(detId,SiStripCondData2_.get(detId));
+      }
+
+    }
+
+    /***********************************************************************/
+    void Subtract(SiStripDataContainer* dataCont2) 
+    /***********************************************************************/
+    {
+      PlotMode_ = DIFF;
+      dataCont2->setPlotType(DIFF);
+
+      setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
+
+      if(! SiStripCondData_.isCached()) getAllValues();
+      dataCont2->getAllValues();
+      auto SiStripCondData2_ = dataCont2->getSiStripCondData();
+
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for(const auto &detId: listOfDetIds ){
+	SiStripCondData_.subtract(detId,SiStripCondData2_.get(detId));
+      }
+
+    }
 
 
     /***********************************************************************/
     void printAll()
     /***********************************************************************/
     {
-      getAllValues();
+      if(! SiStripCondData_.isCached()) getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
       for(const auto &detId: listOfDetIds ){
 	std::cout<< detId << ": ";
@@ -217,7 +322,9 @@ namespace SiStripCondObjectRepresent{
     void fillByPartition(TCanvas &canvas,int nbins,float min,float max)
     /***********************************************************************/
     {
-      std::map<std::string,TH1F*> h_parts;
+      std::map<std::string,TH1F* > h_parts;
+      std::map<std::string,TH1F* > h_parts2;
+
       std::map<std::string,int> colormap;
       std::map<std::string,int> markermap;
       colormap["TIB"] = kRed;       markermap["TIB"] = kFullCircle;           
@@ -228,7 +335,11 @@ namespace SiStripCondObjectRepresent{
       std::vector<std::string> parts = {"TEC","TOB","TIB","TID"};
       
       for ( const auto &part : parts){
-	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),Form("IOV: %i",run_),nbins,min,max);
+	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),part.c_str(),nbins,min,max);
+	
+	if(PlotMode_ == COMPARISON){
+	  h_parts2[part] = new TH1F(Form("h2_%s",part.c_str()),part.c_str(),nbins,min,max);
+	}
       }
 
       if(! SiStripCondData_.isCached()) getAllValues();
@@ -236,26 +347,42 @@ namespace SiStripCondObjectRepresent{
       for(const auto &detId: listOfDetIds ){
 	auto values = SiStripCondData_.get(detId);
 	int subid = DetId(detId).subdetId();
+	unsigned int counter=0;
 	for(const auto &value : values){
-	  
+	  counter++;
 	  switch(subid){
 	  case StripSubdetector::TIB:
-	    h_parts["TIB"]->Fill(value);
+	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2)) ){
+	      h_parts2["TIB"]->Fill(value);
+	    } else {
+	      h_parts["TIB"]->Fill(value);
+	    }
 	    break;
 	  case StripSubdetector::TID:
-	    h_parts["TID"]->Fill(value);
+	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2))){
+	      h_parts2["TID"]->Fill(value);
+	    } else {
+	      h_parts["TID"]->Fill(value);
+	    }
 	    break;
 	  case StripSubdetector::TOB:
-	    h_parts["TOB"]->Fill(value);
+	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2))){
+	      h_parts2["TOB"]->Fill(value);
+	    } else {
+	      h_parts["TOB"]->Fill(value);
+	    }
 	    break;
 	  case StripSubdetector::TEC:
-	    h_parts["TEC"]->Fill(value);
+	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2))){
+	      h_parts2["TEC"]->Fill(value);
+	    } else {
+	      h_parts["TEC"]->Fill(value);
+	    }
 	    break;
 	  default:
 	    edm::LogError("LogicError") << "Unknown partition: " << subid; 
 	    break;
-	  }
-
+	  }	  
 	}
       }
 
@@ -272,14 +399,34 @@ namespace SiStripCondObjectRepresent{
 	h_parts[part]->SetMinimum(1.);
 	h_parts[part]->SetStats(false);
 	h_parts[part]->SetLineWidth(2);
-	h_parts[part]->SetLineColor(colormap[part]);
+	 
+	if(PlotMode_ != COMPARISON){
+	  h_parts[part]->SetLineColor(colormap[part]);
+	} else {
+	  h_parts[part]->SetLineColor(kBlack);
+
+	  SiStripPI::makeNicePlotStyle(h_parts2[part]);
+	  h_parts2[part]->SetMinimum(1.);
+	  h_parts2[part]->SetStats(false);
+	  h_parts2[part]->SetLineWidth(2);
+	  h_parts2[part]->SetLineColor(kBlue);
+	}
+
 	h_parts[part]->Draw();
+	if(PlotMode_ == COMPARISON){
+	  h_parts2[part]->Draw("same");
+	}
 
 	TLegend* leg = new TLegend(.60,0.8,0.92,0.95);
-	leg->AddEntry(h_parts[part],part.c_str(),"L");
-	leg->Draw("same");
-
-      }
+	if(PlotMode_ != COMPARISON){
+	  leg->AddEntry(h_parts[part],part.c_str(),"L");
+	  leg->Draw("same");
+	} else {
+	  leg->AddEntry(h_parts[part],Form("IOV: %i",run_),"L");
+	  leg->AddEntry(h_parts2[part],Form("IOV: %i",(additionalIOV_.first)),"L");
+	  leg->Draw("same");
+	}
+      } 
     }
 
   protected:
@@ -295,8 +442,9 @@ namespace SiStripCondObjectRepresent{
     TrackerTopology m_trackerTopo;
     SiStripDetSummary summary{&m_trackerTopo};
     // "Map", "Ratio", or "Diff"
-    std::string PlotMode_;
-   
+    plotType PlotMode_;
+    std::pair<int,std::string> additionalIOV_;
+
     std::map<std::string, std::string> units_ = {
       { "SiStripPedestals", "ADC counts" },
       { "SiStripApVGain",  ""},//dimensionless TODO: verify
