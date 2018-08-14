@@ -54,7 +54,7 @@ namespace SiStripCondObjectRepresent{
   
       unsigned int counter=0;
       for (const auto &den : denominator){
-	m_info[detid].At(counter)/=den;
+	m_info[detid].at(counter)/=den;
 	counter++;
       }
     }
@@ -67,7 +67,7 @@ namespace SiStripCondObjectRepresent{
   
       unsigned int counter=0;
       for (const auto &sub : subtractor){
-	m_info[detid].At(counter)-=sub;
+	m_info[detid].at(counter)-=sub;
 	counter++;
       }
     }
