@@ -147,6 +147,40 @@ namespace SiStripCondObjectRepresent{
 
     SiStripCondDataItem<type> getSiStripCondData() {return SiStripCondData_; }
     
+    /***********************************************************************/
+    const char* getPlotDescriptor()
+    /***********************************************************************/
+    {
+      
+      const char* thePlotType="";
+      switch(PlotMode_){
+      case STANDARD:
+	thePlotType = Form("Display - IOV: %i",run_);
+	break;
+      case COMPARISON:
+	thePlotType = "Display";
+	break;
+      case DIFF:
+	thePlotType = Form("#Delta (%i-%i)",run_,additionalIOV_.first);
+	break;
+      case RATIO:
+	thePlotType = Form("Ratio (%i/%i)",run_,additionalIOV_.first);
+	break;
+      case MAP:
+	thePlotType = Form("TrackerMap - %s",hash_.c_str());
+	break;
+      case END_OF_TYPES:
+	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
+	break;
+      default:
+	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
+	break;
+      }
+
+      return thePlotType;
+
+    }
+
     // all methods needed for comparison of 2 IOVs
 
     /***********************************************************************/
@@ -344,34 +378,9 @@ namespace SiStripCondObjectRepresent{
 	device = "modules";
       }
 
-      const char* thePlotType="";
-      switch(PlotMode_){
-      case STANDARD:
-	thePlotType = "Display";
-	break;
-      case COMPARISON:
-	thePlotType = "Display";
-	break;
-      case DIFF:
-	thePlotType = "#Delta";
-	break;
-      case RATIO:
-	thePlotType = "Ratio";
-	break;
-      case MAP:
-	thePlotType = "TrackerMap";
-	break;
-      case END_OF_TYPES:
-	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
-	break;
-      default:
-	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
-	break;
-      }
-
       for ( const auto &part : parts){
 
-	TString globalTitle = Form("%s - %s %s;%s %s;n. %s",thePlotType,payloadType_.c_str(),part.c_str(),payloadType_.c_str(),(units_[payloadType_]).c_str(),device);
+	TString globalTitle = Form("%s - %s %s;%s %s;n. %s",getPlotDescriptor(),payloadType_.c_str(),part.c_str(),payloadType_.c_str(),(units_[payloadType_]).c_str(),device);
 
 	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),globalTitle,nbins,min,max);
 	
@@ -429,7 +438,7 @@ namespace SiStripCondObjectRepresent{
       int index=0;
       for (const auto &part : parts){
 	index++;
-	canvas.cd(index)->SetTopMargin(0.05);
+	canvas.cd(index)->SetTopMargin(0.07);
 	canvas.cd(index)->SetLeftMargin(0.13);
 	canvas.cd(index)->SetRightMargin(0.08);
 	
@@ -440,6 +449,8 @@ namespace SiStripCondObjectRepresent{
 	 
 	if(PlotMode_ != COMPARISON){
 	  h_parts[part]->SetLineColor(colormap[part]);
+	  float theMax = h_parts[part]->GetMaximum();
+	  h_parts[part]->SetMaximum(theMax*1.30);
 	} else {
 	  h_parts[part]->SetLineColor(kBlack);
 
@@ -448,6 +459,12 @@ namespace SiStripCondObjectRepresent{
 	  h_parts2[part]->SetStats(false);
 	  h_parts2[part]->SetLineWidth(2);
 	  h_parts2[part]->SetLineColor(kBlue);
+
+	  float theMax = (h_parts[part]->GetMaximum() > h_parts2[part]->GetMaximum()) ? h_parts[part]->GetMaximum() : h_parts2[part]->GetMaximum();
+
+	  h_parts[part]->SetMaximum(theMax*1.30);
+	  h_parts2[part]->SetMaximum(theMax*1.30);
+
 	}
 
 	h_parts[part]->Draw();
@@ -455,7 +472,7 @@ namespace SiStripCondObjectRepresent{
 	  h_parts2[part]->Draw("same");
 	}
 
-	TLegend* leg = new TLegend(.60,0.8,0.92,0.95);
+	TLegend* leg = new TLegend(.60,0.8,0.92,0.93);
 	if(PlotMode_ != COMPARISON){
 	  leg->AddEntry(h_parts[part],part.c_str(),"L");
 	  leg->Draw("same");
