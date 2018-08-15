@@ -185,8 +185,9 @@ namespace {
       //l_objContainer->printAll();
 
       TCanvas canvas("Partition summary","partition summary",1400,1000); 
-      l_objContainer->fillByPartition(canvas,100,0.8,1.2);
-	  
+      l_objContainer->fillByPartition(canvas,200,0.,2.);
+      for(int i=1;i<=4;i++) canvas.cd(i)->SetLogy();
+
       std::string fileName(m_imageFileName);
       canvas.SaveAs(fileName.c_str());
 
