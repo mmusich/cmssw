@@ -21,6 +21,9 @@
 #include "TPaveLabel.h"
 #include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
 
+// needed for the tracker map
+#include "CommonTools/TrackerMap/interface/TrackerMap.h"
+
 //functions for correct representation of data in summary and plot
 namespace SiStripCondObjectRepresent{
 
@@ -264,6 +267,220 @@ namespace SiStripCondObjectRepresent{
     }
 
     /***********************************************************************/
+    void fillTrackerMap(TrackerMap* &tmap, std::pair<float,float>& range, const SiStripPI::estimator& est,const int nsigmas_of_saturation)
+    /***********************************************************************/
+    {
+
+      std::string titleMap; 
+      if(PlotMode_!=DIFF && PlotMode_ !=RATIO){
+	titleMap = "Tracker Map of "+payloadType_+" "+estimatorType(est)+" per module (payload : "+hash_+")";
+      } else {
+	titleMap = "Tracker Map of "+payloadType_+" "+Form("%s",getPlotDescriptor())+" "+estimatorType(est)+" per module";
+      }
+
+      tmap = new TrackerMap(payloadType_.c_str());
+      tmap->setTitle(titleMap);
+      tmap->setPalette(1);
+
+      // storage of info
+      std::map<unsigned int,float> info_per_detid;
+
+      if(! SiStripCondData_.isCached()) getAllValues();
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for(const auto &detId: listOfDetIds ){
+	auto values = SiStripCondData_.get(detId);
+
+	unsigned int nElements = values.size();
+	double mean(0.),rms(0.),min(10000.), max(0.);
+	
+	for(const auto &value : values){
+	  mean+=value;
+	  rms+=value*value;
+	  if(value<min) min=value;
+	  if(value>max) max=value;
+	}
+	
+	mean/=nElements;
+	if((rms/nElements-mean*mean)>0.){
+	  rms = sqrt(rms/nElements-mean*mean);
+	} else {
+	  rms=0.;
+	}       
+
+	switch(est){
+	case SiStripPI::min:
+	  info_per_detid[detId]=min;
+	  break;
+	case SiStripPI::max:
+	  info_per_detid[detId]=max;
+	  break;
+	case SiStripPI::mean:
+	  info_per_detid[detId]=mean;
+	  break;
+	case SiStripPI::rms:
+	  info_per_detid[detId]=rms;
+	  break;
+	default:
+	  edm::LogWarning("LogicError") << "Unknown estimator: " <<  est; 
+	  break;
+	}	
+      }
+      
+      // loop on the map
+      for (const auto &item : info_per_detid){
+	tmap->fill(item.first,item.second);
+      }
+      
+      range = SiStripPI::getTheRange(info_per_detid,nsigmas_of_saturation);
+    }
+
+    /***********************************************************************/
+    void fillValuePlot(TCanvas &canvas,const SiStripPI::OpMode& op_mode_,int nbins,float min,float max)
+    /***********************************************************************/
+    {
+
+      auto myMode = op_mode_;
+      // check the consistency first
+      if(!isPerStrip_){
+	if(isPerAPV_ ){
+	  switch(op_mode_){
+	  case SiStripPI::STRIP_BASED:
+	    edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per APV";
+	    return;
+	  case SiStripPI::APV_BASED:
+	    myMode = SiStripPI::STRIP_BASED;
+	    break;
+	  default:
+	    break;
+	  }
+	} else {
+	  if (op_mode_==SiStripPI::STRIP_BASED || op_mode_==SiStripPI::APV_BASED) {
+	    edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per module";
+	    return;
+	  }
+	}
+      }
+
+      SiStripPI::Monitor1D *f_mon = NULL;
+      SiStripPI::Monitor1D *l_mon = NULL;
+
+      f_mon = new SiStripPI::Monitor1D(op_mode_,
+				       "first",
+				       Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
+					    payloadType_.c_str(),opType(op_mode_).c_str(),payloadType_.c_str(),opType(op_mode_).c_str(),(units_[payloadType_]).c_str(),opType(op_mode_).c_str())
+				       ,nbins,min,max);
+      
+      if(PlotMode_ == COMPARISON){
+	l_mon = new SiStripPI::Monitor1D(op_mode_,
+					 "last",
+					 Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
+					      payloadType_.c_str(),opType(op_mode_).c_str(),payloadType_.c_str(),opType(op_mode_).c_str(),(units_[payloadType_]).c_str(),opType(op_mode_).c_str())
+					 ,nbins,min,max);
+	
+      }
+      
+      // retrieve the data
+      if(! SiStripCondData_.isCached()) getAllValues();
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+
+      unsigned int prev_det=0, prev_apv=0;
+      SiStripPI::Entry f_entryContainer;
+      SiStripPI::Entry l_entryContainer;
+	    
+      for(const auto &detId: listOfDetIds ){
+	auto values = SiStripCondData_.get(detId);
+
+	unsigned int istrip=0;
+	for(const auto &value : values){
+	  
+	  bool flush = false;
+	  switch(myMode) {
+	  case (SiStripPI::APV_BASED):
+	    flush = (prev_det != 0 && prev_apv != istrip/128);
+	    break;
+	  case (SiStripPI::MODULE_BASED):
+	    flush = (prev_det != 0 && prev_det != detId);
+	    break;
+	  case (SiStripPI::STRIP_BASED):
+	    flush = (istrip != 0);
+	    break;
+	  }
+	  
+	  if(flush){
+	    f_mon->Fill(prev_apv,prev_det,f_entryContainer.mean());
+	    f_entryContainer.reset();
+
+	    if(PlotMode_ == COMPARISON){
+	      l_mon->Fill(prev_apv,prev_det,l_entryContainer.mean());
+	      l_entryContainer.reset();
+	    }
+	  }
+	  
+	  if(PlotMode_ == COMPARISON  && (istrip>(values.size()/2))){
+	    l_entryContainer.add(value);
+	  } else {
+	    f_entryContainer.add(value);
+	  }
+
+	  prev_apv = istrip/128;
+	  istrip++;
+	}
+	prev_det = detId;
+      }
+
+      TH1F* h_first = (TH1F*)(f_mon->getHist()).Clone("h_first");
+      h_first->SetStats(kFALSE);
+      SiStripPI::makeNicePlotStyle(h_first);
+      h_first->GetYaxis()->CenterTitle(true);
+      h_first->GetXaxis()->CenterTitle(true);
+      h_first->SetLineWidth(2);
+      h_first->SetLineColor(kBlack);
+
+      //=========================
+      canvas.cd();
+      canvas.SetBottomMargin(0.11);
+      canvas.SetLeftMargin(0.13);
+      canvas.SetRightMargin(0.05);
+      //canvas.Modified();
+
+      TLegend* legend = new TLegend(0.52,0.82,0.95,0.9);
+      legend->SetTextSize(0.025);
+
+      if(PlotMode_ != COMPARISON){
+	float theMax = h_first->GetMaximum();
+	h_first->SetMaximum(theMax*1.30);
+	h_first->Draw();
+
+	legend->AddEntry(h_first,Form("IOV: %i",run_),"L");
+
+      } else {
+
+	TH1F* h_last  = (TH1F*)(l_mon->getHist()).Clone("h_last");
+	h_last->SetStats(kFALSE);
+	SiStripPI::makeNicePlotStyle(h_last);
+	h_last->GetYaxis()->CenterTitle(true);
+	h_last->GetXaxis()->CenterTitle(true);
+	h_last->SetLineWidth(2);
+	h_last->SetLineColor(kBlue);
+
+	float theMax = (h_first->GetMaximum() > h_last->GetMaximum()) ? h_first->GetMaximum() : h_last->GetMaximum();
+
+	h_first->SetMaximum(theMax*1.30);
+	h_last->SetMaximum(theMax*1.30);
+
+	h_first->Draw();
+	h_last->Draw("same");
+
+	legend->SetHeader(Form("%s comparison",payloadType_.c_str()),"C"); // option "C" allows to center the header
+	legend->AddEntry(h_first,Form("IOV: %i",run_),"F");
+	legend->AddEntry(h_last, Form("IOV: %i",(additionalIOV_.first)),"F");
+      }
+
+      legend->Draw("same");
+
+    }
+  
+    /***********************************************************************/
     void fillSummary(TCanvas &canvas)
     /***********************************************************************/
     {
@@ -280,7 +497,7 @@ namespace SiStripCondObjectRepresent{
       //=========================
       
       canvas.cd();
-      auto h1 = new TH1F("byRegion","SiStrip average by partition;; average SiStrip",map.size(),0.,map.size());
+      auto h1 = new TH1F("byRegion",Form("SiStrip %s average by partition;; average SiStrip %s",payloadType_.c_str(),payloadType_.c_str()),map.size(),0.,map.size());
       h1->SetStats(false);
       canvas.SetBottomMargin(0.18);
       canvas.SetLeftMargin(0.17);
@@ -510,6 +727,12 @@ namespace SiStripCondObjectRepresent{
       { "SiStripBadStrip" , ""},
       { "SiStripDetVOff" , ""}
     };
+
+    std::string opType(SiStripPI::OpMode mode) {
+      std::string types[3] = {"Strip","APV","Module"};
+      return types[mode];
+    }
+
   };
 
 }
