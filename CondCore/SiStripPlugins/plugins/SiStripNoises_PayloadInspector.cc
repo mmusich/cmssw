@@ -50,8 +50,9 @@ namespace {
 
   class SiStripNoiseContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripNoises,float> {
   public:
-    SiStripNoiseContainer(std::shared_ptr<SiStripNoises> payload,unsigned int run,std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripNoises,float>(payload, run, hash, perStrip, perAPV) {
+    SiStripNoiseContainer(std::shared_ptr<SiStripNoises> payload,unsigned int run,std::string hash) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripNoises,float>(payload, run, hash) {
       payloadType_ = "SiStripNoises";
+      setGranularity(SiStripCondObjectRepresent::PERSTRIP);
     }
 
     void getAllValues() override {
@@ -91,8 +92,8 @@ namespace {
       std::shared_ptr<SiStripNoises> last_payload  = fetchPayload( std::get<1>(lastiov) );
       std::shared_ptr<SiStripNoises> first_payload = fetchPayload( std::get<1>(firstiov) );
       
-      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload, std::get<0>(lastiov),std::get<1>(lastiov),true,false);
-      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov),true,false);
+      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload, std::get<0>(lastiov),std::get<1>(lastiov));
+      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
 	
       l_objContainer->Compare(f_objContainer);
 
@@ -131,8 +132,8 @@ namespace {
       std::shared_ptr<SiStripNoises> last_payload  = fetchPayload( std::get<1>(lastiov) );
       std::shared_ptr<SiStripNoises> first_payload = fetchPayload( std::get<1>(firstiov) );
       
-      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov), true,false);
-      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov),true,false);
+      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov));
+      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
 	
       l_objContainer->Subtract(f_objContainer);
 
@@ -152,7 +153,7 @@ namespace {
   class SiStripNoiseConsistencyCheck : public cond::payloadInspector::PlotImage<SiStripNoises> {
     
   public:
-    SiStripNoiseConsistencyCheck() : cond::payloadInspector::PlotImage<SiStripNoises>("SiStrip Diff Noises By Partition"){
+    SiStripNoiseConsistencyCheck() : cond::payloadInspector::PlotImage<SiStripNoises>("SiStrip Noise Consistency Check"){
       setSingleIov( false );
     }
     
@@ -171,15 +172,17 @@ namespace {
       std::shared_ptr<SiStripNoises> last_payload  = fetchPayload( std::get<1>(lastiov) );
       std::shared_ptr<SiStripNoises> first_payload = fetchPayload( std::get<1>(firstiov) );
       
-      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov), true,false);
-      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov),true,false);
+      SiStripNoiseContainer* f_objContainer = new SiStripNoiseContainer(first_payload,  std::get<0>(firstiov), std::get<1>(firstiov));
+      SiStripNoiseContainer* l_objContainer = new SiStripNoiseContainer(last_payload, std::get<0>(lastiov),std::get<1>(lastiov));
 	
-      l_objContainer->Compare(f_objContainer);
+      f_objContainer->Compare(l_objContainer);
 
       //l_objContainer->printAll();
 
       TCanvas canvas("Partition summary","partition summary",1200,1000); 
-      l_objContainer->fillValuePlot(canvas,SiStripPI::STRIP_BASED,100,0.1,10);
+      //f_objContainer->fillValuePlot(canvas,SiStripPI::STRIP_BASED,100,0.1,10);
+      f_objContainer->fillValuePlot(canvas,SiStripPI::APV_BASED,100,0.1,10);
+      //f_objContainer->fillValuePlot(canvas,SiStripPI::MODULE_BASED,100,0.1,10);
 	  
       std::string fileName(m_imageFileName);
       canvas.SaveAs(fileName.c_str());

@@ -49,8 +49,9 @@ namespace {
 
   class SiStripPedestalContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals,float> {
   public:
-    SiStripPedestalContainer(std::shared_ptr<SiStripPedestals> payload,unsigned int run,std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals,float>(payload, run, hash, perStrip, perAPV) {
+    SiStripPedestalContainer(std::shared_ptr<SiStripPedestals> payload,unsigned int run,std::string hash) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals,float>(payload, run, hash) {
       payloadType_ = "SiStripPedestals";
+      setGranularity(SiStripCondObjectRepresent::PERSTRIP);
     }
 
     void getAllValues() override {
@@ -90,8 +91,8 @@ namespace {
       std::shared_ptr<SiStripPedestals> last_payload  = fetchPayload( std::get<1>(lastiov) );
       std::shared_ptr<SiStripPedestals> first_payload = fetchPayload( std::get<1>(firstiov) );
       
-      SiStripPedestalContainer* l_objContainer = new SiStripPedestalContainer(last_payload, std::get<0>(lastiov),std::get<1>(lastiov),true,false);
-      SiStripPedestalContainer* f_objContainer = new SiStripPedestalContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov),true,false);
+      SiStripPedestalContainer* l_objContainer = new SiStripPedestalContainer(last_payload, std::get<0>(lastiov),std::get<1>(lastiov));
+      SiStripPedestalContainer* f_objContainer = new SiStripPedestalContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
 	
       l_objContainer->Compare(f_objContainer);
 
@@ -130,8 +131,8 @@ namespace {
       std::shared_ptr<SiStripPedestals> last_payload  = fetchPayload( std::get<1>(lastiov) );
       std::shared_ptr<SiStripPedestals> first_payload = fetchPayload( std::get<1>(firstiov) );
       
-      SiStripPedestalContainer* l_objContainer = new SiStripPedestalContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov), true,false);
-      SiStripPedestalContainer* f_objContainer = new SiStripPedestalContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov),true,false);
+      SiStripPedestalContainer* l_objContainer = new SiStripPedestalContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov));
+      SiStripPedestalContainer* f_objContainer = new SiStripPedestalContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
 	
       l_objContainer->Subtract(f_objContainer);
 
