@@ -28,6 +28,7 @@
 namespace SiStripCondObjectRepresent{
 
   enum plotType { STANDARD, COMPARISON, DIFF, RATIO, MAP, END_OF_TYPES };
+  enum granularity { PERSTRIP, PERAPV, PERMODULE };
 
   template<class type>
   class SiStripCondDataItem {
@@ -122,10 +123,10 @@ namespace SiStripCondObjectRepresent{
   class SiStripDataContainer {
 
   public : 
-    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash,bool perStrip,bool perAPV) : payload_(payload), run_(run), hash_(hash), isPerStrip_(perStrip), isPerAPV_(perAPV), m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
+    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash) : payload_(payload), run_(run), hash_(hash),  m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
     {
+      granularity_ = PERSTRIP;
       PlotMode_ = STANDARD;
-      SiStripCondData_.setGranularity(isPerStrip_,isPerAPV_);
       additionalIOV_ = std::make_pair(-1,"");
     }
 
@@ -138,6 +139,24 @@ namespace SiStripCondObjectRepresent{
     plotType    getPlotType() {return PlotMode_;}
     void        setPlotType(plotType myType) {PlotMode_ = myType;}
     void        setPayloadType(std::string myPayloadType){payloadType_ = myPayloadType;}
+    void        setGranularity(granularity myGranularity){
+
+      granularity_ = myGranularity;
+      
+      switch(myGranularity){
+      case PERSTRIP:
+	SiStripCondData_.setGranularity(true,false);
+	break;
+      case PERAPV:
+	SiStripCondData_.setGranularity(false,true);
+	break;
+      case PERMODULE:
+	SiStripCondData_.setGranularity(false,false);
+	break;
+      default: 
+	edm::LogError("LogicError") << "Unknown granularity type: " << myGranularity; 	
+      }
+    }
 
     void        setAdditionalIOV(unsigned int run, std::string hash){ 
       additionalIOV_.first  = run;   
@@ -341,37 +360,36 @@ namespace SiStripCondObjectRepresent{
 
       auto myMode = op_mode_;
       // check the consistency first
-      if(!isPerStrip_){
-	if(isPerAPV_ ){
-	  switch(op_mode_){
-	  case SiStripPI::STRIP_BASED:
-	    edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per APV";
-	    return;
-	  case SiStripPI::APV_BASED:
-	    myMode = SiStripPI::STRIP_BASED;
-	    break;
-	  default:
-	    break;
-	  }
-	} else {
-	  if (op_mode_==SiStripPI::STRIP_BASED || op_mode_==SiStripPI::APV_BASED) {
-	    edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per module";
-	    return;
-	  }
+
+      if(granularity_ == PERAPV ){
+	switch(op_mode_){
+	case SiStripPI::STRIP_BASED:
+	  edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per APV";
+	  return;
+	case SiStripPI::APV_BASED:
+	  myMode = SiStripPI::STRIP_BASED;
+	  break;
+	default:
+	  break;
+	}
+      } else if (granularity_ == PERMODULE) {
+	if (op_mode_==SiStripPI::STRIP_BASED || op_mode_==SiStripPI::APV_BASED) {
+	  edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per module";
+	  return;
 	}
       }
-
+      
       SiStripPI::Monitor1D *f_mon = NULL;
       SiStripPI::Monitor1D *l_mon = NULL;
 
-      f_mon = new SiStripPI::Monitor1D(op_mode_,
+      f_mon = new SiStripPI::Monitor1D(myMode,
 				       "first",
 				       Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
 					    payloadType_.c_str(),opType(op_mode_).c_str(),payloadType_.c_str(),opType(op_mode_).c_str(),(units_[payloadType_]).c_str(),opType(op_mode_).c_str())
 				       ,nbins,min,max);
       
       if(PlotMode_ == COMPARISON){
-	l_mon = new SiStripPI::Monitor1D(op_mode_,
+	l_mon = new SiStripPI::Monitor1D(myMode,
 					 "last",
 					 Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
 					      payloadType_.c_str(),opType(op_mode_).c_str(),payloadType_.c_str(),opType(op_mode_).c_str(),(units_[payloadType_]).c_str(),opType(op_mode_).c_str())
@@ -386,10 +404,13 @@ namespace SiStripCondObjectRepresent{
       unsigned int prev_det=0, prev_apv=0;
       SiStripPI::Entry f_entryContainer;
       SiStripPI::Entry l_entryContainer;
-	    
+
+      std::cout<<"mode:" << opType(myMode) << " granularity: "<< granularity_ 
+	       <<" listOfDetIds.size(): "<< listOfDetIds.size() << std::endl;
+
       for(const auto &detId: listOfDetIds ){
 	auto values = SiStripCondData_.get(detId);
-
+	
 	unsigned int istrip=0;
 	for(const auto &value : values){
 	  
@@ -409,22 +430,23 @@ namespace SiStripCondObjectRepresent{
 	  if(flush){
 	    f_mon->Fill(prev_apv,prev_det,f_entryContainer.mean());
 	    f_entryContainer.reset();
-
-	    if(PlotMode_ == COMPARISON){
+	    
+	    if( (PlotMode_== COMPARISON) && (istrip > values.size()/2)){
 	      l_mon->Fill(prev_apv,prev_det,l_entryContainer.mean());
 	      l_entryContainer.reset();
 	    }
+
 	  }
-	  
-	  if(PlotMode_ == COMPARISON  && (istrip>(values.size()/2))){
+
+	  if( (PlotMode_== COMPARISON) && (istrip > values.size()/2) ){
 	    l_entryContainer.add(value);
-	  } else {
+	  } else { 
 	    f_entryContainer.add(value);
 	  }
 
-	  prev_apv = istrip/128;
+	  prev_apv = (istrip/128);
 	  istrip++;
-	}
+	}	
 	prev_det = detId;
       }
 
@@ -462,6 +484,9 @@ namespace SiStripCondObjectRepresent{
 	h_last->GetXaxis()->CenterTitle(true);
 	h_last->SetLineWidth(2);
 	h_last->SetLineColor(kBlue);
+
+	std::cout << h_first->GetEntries() << " ---- "<< h_last->GetEntries() << std::endl;
+
 
 	float theMax = (h_first->GetMaximum() > h_last->GetMaximum()) ? h_first->GetMaximum() : h_last->GetMaximum();
 
@@ -587,12 +612,19 @@ namespace SiStripCondObjectRepresent{
       std::vector<std::string> parts = {"TEC","TOB","TIB","TID"};
 
       const char* device;
-      if(isPerStrip_){
+      switch(granularity_){
+      case PERSTRIP:
 	device = "strips";
-      } else if(isPerAPV_) {
+	break;
+      case PERAPV:
 	device = "APVs";
-      } else {
+	break;
+      case PERMODULE:
 	device = "modules";
+	break;
+      default:
+	device = "unrecognized device";
+	break;
       }
 
       for ( const auto &part : parts){
@@ -691,7 +723,9 @@ namespace SiStripCondObjectRepresent{
 
 	TLegend* leg = new TLegend(.60,0.8,0.92,0.93);
 	if(PlotMode_ != COMPARISON){
-	  leg->AddEntry(h_parts[part],part.c_str(),"L");
+	  leg->SetTextSize(0.035);
+	  leg->SetHeader(part.c_str(),"C"); // option "C" allows to center the header
+	  leg->AddEntry(h_parts[part],Form("#splitline{#mu = %.2f}{r.m.s. = %.2f}",h_parts[part]->GetMean(),h_parts[part]->GetRMS()),"L");
 	  leg->Draw("same");
 	} else {
 	  leg->AddEntry(h_parts[part],Form("IOV: %i",run_),"L");
@@ -709,8 +743,7 @@ namespace SiStripCondObjectRepresent{
   private:
     unsigned int run_;
     std::string hash_;
-    bool isPerStrip_;
-    bool isPerAPV_;
+    granularity granularity_;
     std::string TopoMode_;
     TrackerTopology m_trackerTopo;
     SiStripDetSummary summary{&m_trackerTopo};

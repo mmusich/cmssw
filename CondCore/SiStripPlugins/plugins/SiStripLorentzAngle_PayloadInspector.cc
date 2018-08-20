@@ -36,8 +36,9 @@ namespace {
   
   class SiStripLorentzAngleContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float> {
   public:
-    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run, std::string hash,bool perStrip,bool perAPV) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, hash, perStrip, perAPV) {
+    SiStripLorentzAngleContainer(std::shared_ptr<SiStripLorentzAngle> payload,unsigned int run, std::string hash) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripLorentzAngle,float>(payload, run, hash) {
       payloadType_ = "SiStripLorentzAngle";
+      setGranularity(SiStripCondObjectRepresent::PERMODULE);
     }
 
     void getAllValues() override {
@@ -63,7 +64,7 @@ namespace {
 	std::shared_ptr<SiStripLorentzAngle> payload = fetchPayload( std::get<1>(iov) );
 	if( payload.get() ){
 
-	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov),false,false);
+	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov));
 	  objContainer->printAll();
 
 	  TCanvas canvas("Partion summary","partition summary",1200,1000); 
@@ -90,7 +91,7 @@ namespace {
 	std::shared_ptr<SiStripLorentzAngle> payload = fetchPayload( std::get<1>(iov) );
 	if( payload.get() ){
 
-	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov),false,false);
+	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov));
 	  objContainer->printAll();
 
 	  TCanvas canvas("Partition summary","partition summary",1400,1000); 
