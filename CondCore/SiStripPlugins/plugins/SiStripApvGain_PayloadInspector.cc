@@ -195,6 +195,46 @@ namespace {
       return true;
     }// fill
   };
+  
+  class SiStripApvGainDiffByPartition : public cond::payloadInspector::PlotImage<SiStripApvGain> {
+    
+  public:
+    SiStripApvGainDiffByPartition() : cond::payloadInspector::PlotImage<SiStripApvGain>("SiStrip Diff ApvGains By Partition"){
+      setSingleIov( false );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+
+      std::vector<std::tuple<cond::Time_t,cond::Hash> > sorted_iovs = iovs;
+       
+      // make absolute sure the IOVs are sortd by since
+      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const &t1, auto const &t2) {
+	  return std::get<0>(t1) < std::get<0>(t2);
+	});
+      
+      auto firstiov  = sorted_iovs.front();
+      auto lastiov   = sorted_iovs.back();
+      
+      std::shared_ptr<SiStripApvGain> last_payload  = fetchPayload( std::get<1>(lastiov) );
+      std::shared_ptr<SiStripApvGain> first_payload = fetchPayload( std::get<1>(firstiov) );
+      
+      SiStripApvGainContainer* l_objContainer = new SiStripApvGainContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov));
+      SiStripApvGainContainer* f_objContainer = new SiStripApvGainContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
+	
+      l_objContainer->Subtract(f_objContainer);
+
+      //l_objContainer->printAll();
+
+      TCanvas canvas("Partition summary","partition summary",1400,1000); 
+      l_objContainer->fillByPartition(canvas,100,-0.1,0.1);
+	  
+      std::string fileName(m_imageFileName);
+      canvas.SaveAs(fileName.c_str());
+
+      return true;
+    }// fill
+  };
+
 
   /************************************************
     1d histogram of SiStripApvGains of 1 IOV 
@@ -2255,6 +2295,7 @@ PAYLOAD_INSPECTOR_MODULE(SiStripApvGain) {
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainCompareByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainRatioByPartition);
+  PAYLOAD_INSPECTOR_CLASS(SiStripApvGainDiffByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsByRegion);
   PAYLOAD_INSPECTOR_CLASS(SiStripApvGainsComparatorSingleTag);
