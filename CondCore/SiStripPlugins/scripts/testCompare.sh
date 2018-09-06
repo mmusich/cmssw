@@ -42,7 +42,7 @@ fi
 
 for i in "${plotTypes[@]}" 
 do
-
+echo "Making plot ${i}"
 # Run get payload data script
     getPayloadData.py \
 	--plugin pluginSiStripApvGain_PayloadInspector \

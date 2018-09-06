@@ -1,3 +1,5 @@
+from __future__ import print_function 
+
 import ConfigParser
 import glob
 import os
@@ -25,11 +27,11 @@ def getCommandOutput(command):
     data = child.read()
     err = child.close()
     if err:
-        print '%s failed w/ exit code %d' % (command, err)
+        print ('%s failed w/ exit code %d' % (command, err))
     return data
 
 ##############################################
-def getFSCR():
+def getFCSR():
 ##############################################
     out = subprocess.check_output(["curl", "-k", "-s", "https://cmsweb.cern.ch/t0wmadatasvc/prod/firstconditionsaferun"])
     response = json.loads(out)["result"][0]
@@ -70,10 +72,10 @@ if __name__ == "__main__":
     (options, arguments) = parser.parse_args()
 
 
-    FSCR = getFSCR()
+    FCSR = getFCSR()
     promptGT  = getPromptGT()
     expressGT = getExpressGT() 
-    print "Current FSCR:",FSCR,"| Express Global Tag",expressGT,"| Prompt Global Tag",promptGT
+    print ("Current FCSR:",FCSR,"| Express Global Tag",expressGT,"| Prompt Global Tag",promptGT)
 
     con = conddb.connect(url = conddb.make_url("pro"))
     session = con.session()
@@ -97,12 +99,12 @@ if __name__ == "__main__":
     IOVsToValidate=[]
     if(options.since==-1):
         IOVsToValidate.append(validationTagIOVs[-1][0])
-        print "changing the default validatio tag since to:",IOVsToValidate[0]
+        print("changing the default validation tag since to:",IOVsToValidate[0])
         
     else:
         for entry in validationTagIOVs:
             if(options.since!=1 and int(entry[0])>=int(options.since)):
-                print "appending to the validation list:",entry[0],entry[1],entry[2]
+                print("appending to the validation list:",entry[0],entry[1],entry[2])
                 IOVsToValidate.append(entry[0])
             
     for element in myGTMap:
@@ -113,19 +115,25 @@ if __name__ == "__main__":
         if(Record=="SiStripApvGain2Rcd"):
             TagIOVs = session.query(IOV.since,IOV.payload_hash,IOV.insertion_time).filter(IOV.tag_name == Tag).all()
             lastG2Payload = TagIOVs[-1]
-            print "last payload has IOV since:",lastG2Payload[0],"payload hash:",lastG2Payload[1],"insertion time:",lastG2Payload[2] 
+            print("last payload has IOV since:",lastG2Payload[0],"payload hash:",lastG2Payload[1],"insertion time:",lastG2Payload[2])
             command = 'conddb_import -c sqlite_file:toCompare.db -f frontier://FrontierProd/CMS_CONDITIONS -i '+str(Tag) +' -t '+str(Tag)+' -b '+str(lastG2Payload[0])
-            print command
+            print(command)
             getCommandOutput(command)
 
-            for theValidationTagSince in IOVsToValidate:
+            for i,theValidationTagSince in enumerate(IOVsToValidate):
 
                 command = 'conddb_import -c sqlite_file:toCompare.db -f frontier://FrontierPrep/CMS_CONDITIONS -i '+str(options.validationTag) +' -t '+str(Tag)+' -b '+str(theValidationTagSince)
-                print command
+                if(theValidationTagSince < lastG2Payload[0]):
+                    print("the last available IOV in the validation tag is older than the current last express IOV, taking FCSR as a since!")
+                    command = 'conddb_import -c sqlite_file:toCompare.db -f frontier://FrontierPrep/CMS_CONDITIONS -i '+str(options.validationTag) +' -t '+str(Tag)+' -b '+str(FCSR+i)
+
+                print(command)
                 getCommandOutput(command)
 
                 command = './testCompare.sh SiStripApvGain_FromParticles_GR10_v1_express '+str(lastG2Payload[0])+' '+str(theValidationTagSince)+ ' toCompare.db'
-                print command
+                if(theValidationTagSince < lastG2Payload[0]):
+                    command = './testCompare.sh SiStripApvGain_FromParticles_GR10_v1_express '+str(lastG2Payload[0])+' '+str(FCSR+i)+ ' toCompare.db'
+                print(command)
                 getCommandOutput(command)
 
 
