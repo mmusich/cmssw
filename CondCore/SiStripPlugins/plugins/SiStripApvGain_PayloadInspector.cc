@@ -98,21 +98,21 @@ namespace {
     }
     
     bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
-      for ( auto const & iov: iovs) {
-	std::shared_ptr<SiStripApvGain> payload = fetchPayload( std::get<1>(iov) );
-	if( payload.get() ){
 
-	  SiStripApvGainContainer* objContainer = new SiStripApvGainContainer(payload, std::get<0>(iov),std::get<1>(iov));
-	  objContainer->printAll();
+      auto iov = iovs.front();
+      std::shared_ptr<SiStripApvGain> payload = fetchPayload( std::get<1>(iov) );
+      if( payload.get() ){
 
-	  TCanvas canvas("Partition summary","partition summary",1400,1000); 
-	  objContainer->fillByPartition(canvas,100,0.,2.);
+	SiStripApvGainContainer* objContainer = new SiStripApvGainContainer(payload, std::get<0>(iov),std::get<1>(iov));
+	//objContainer->printAll();
+	
+	TCanvas canvas("Partition summary","partition summary",1400,1000); 
+	objContainer->fillByPartition(canvas,100,0.,2.);
 	  
-	  std::string fileName(m_imageFileName);
-	  canvas.SaveAs(fileName.c_str());
-
-	}// payload
-      }// iovs
+	std::string fileName(m_imageFileName);
+	canvas.SaveAs(fileName.c_str());
+	  
+      }// payload
       return true;
     }// fill
   };
