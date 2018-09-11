@@ -1560,6 +1560,18 @@ steps['HYBRIDRepackHI2015VR']={'--eventcontent':'RAW',
                                '-n':100
                                }
 
+steps['RepackHI2015VR']={'--eventcontent':'RAW',
+                         '--datatier':'RAW',
+                         '--conditions':'auto:run2_data',
+                         '--step':'RAW2DIGI,REPACK:DigiToRawRepack',
+                         '--scenario':'HeavyIons',                     
+                         '--data':'',
+                         '--era':'Run2_HI',
+                         '--customise_commands':'\"process.load(\\"RecoLocalTracker.SiStripZeroSuppression.SiStripZeroSuppression_cfi\\")\\nprocess.DigiToRawRepack.insert(0,process.siStripZeroSuppression)\"',
+                         '-n':100
+                         }
+
+
 steps['HYBRIDZSHI2015']=merge([{'--step': 'RAW2DIGI,REPACK:DigiToRawRepack',
                                 '--processName':'REHLT',
                                 '--customise': 'RecoLocalTracker/SiStripZeroSuppression/customiseHybrid.runOnHybridZS,RecoLocalTracker/SiStripZeroSuppression/customiseHybrid.repackZSHybrid',

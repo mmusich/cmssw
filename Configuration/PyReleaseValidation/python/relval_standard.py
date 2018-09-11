@@ -116,6 +116,7 @@ workflows[140.53] = ['',['RunHI2011','RECOHID11','HARVESTDHI']]
 workflows[140.54] = ['',['RunPA2013','RECO_PPbData','HARVEST_PPbData']]
 
 workflows[140.55] = ['',['RunHI2015VR','HYBRIDRepackHI2015VR','HYBRIDZSHI2015','RECOHID15','HARVESTDHI15']]
+workflows[140.56] = ['',['RunHI2015VR','RepackHI2015VR','RECOHID15','HARVESTDHI15']]
 
 ### run2 2015B 50ns ###
 workflows[134.701] = ['',['RunHLTPhy2015B','HLTDR2_50ns','RECODR2_50nsreHLT_HIPM','HARVESTDR2']]
