@@ -76,9 +76,48 @@ namespace SiStripCondObjectRepresent{
       }
     }
 
-
     std::vector<type> get(unsigned int detid){
       return m_info[detid];
+    }
+
+    std::pair<std::vector<type>, std::vector<type> > getDemux(unsigned int detid){
+      if(m_compared){
+	std::vector<type> v1(m_info[detid].begin(),m_info[detid].begin()+m_info[detid].size()/2);
+	std::vector<type> v2(m_info[detid].begin()+m_info[detid].size()/2,m_info[detid].end());
+	assert(v1.size()==v2.size());
+	return std::make_pair(v1,v2);
+      } else {
+	throw cms::Exception ("Logic error") << "not being in compared mode, data cannot be demultiplexed";
+      }
+    }
+
+    void fillMonitor1D(const SiStripPI::OpMode& mymode, SiStripPI::Monitor1D* &mon,SiStripPI::Entry& entry, std::vector<type>& values,const unsigned int prev_det,unsigned int& prev_apv,const unsigned int detid){
+
+      unsigned int istrip=0;
+      for(const auto &value : values){
+	bool flush = false;
+	switch(mymode) {
+	case (SiStripPI::APV_BASED):
+	  flush = (prev_det != 0 && prev_apv != istrip/128);
+	  break;
+	case (SiStripPI::MODULE_BASED):
+	  flush = (prev_det != 0 && prev_det != detid);
+	  break;
+	case (SiStripPI::STRIP_BASED):
+	  flush = (istrip != 0);
+	  break;
+	}
+      
+	if(flush){
+	  mon->Fill(prev_apv,prev_det,entry.mean());
+	  entry.reset();
+	}
+
+	entry.add(value); 
+
+	prev_apv = istrip/128;
+	istrip++;
+      }
     }
 
     void setGranularity(bool isPerStrip,bool isPerAPV){
@@ -88,6 +127,10 @@ namespace SiStripCondObjectRepresent{
 
     bool isCached(){
       return m_cached;
+    }
+
+    void setComparedBit(){
+      m_compared=true;
     }
 
     std::vector<unsigned int> getDetIds(bool verbose){
@@ -108,12 +151,14 @@ namespace SiStripCondObjectRepresent{
     bool m_servedPerStrip;
     bool m_servedPerAPV;
     bool m_cached;
+    bool m_compared;
 
     void init(){
       m_servedPerStrip=false;
       m_servedPerAPV=false;
       m_info.clear();
       m_cached=false;
+      m_compared=false;
     }
 
   };
@@ -211,6 +256,7 @@ namespace SiStripCondObjectRepresent{
     {
       PlotMode_ = COMPARISON;
       dataCont2->setPlotType(COMPARISON);
+      SiStripCondData_.setComparedBit();
 
       setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
 
@@ -401,7 +447,8 @@ namespace SiStripCondObjectRepresent{
       if(! SiStripCondData_.isCached()) getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
 
-      unsigned int prev_det=0, prev_apv=0;
+      unsigned int prev_det=0;
+      unsigned int prev_apv=0;
       SiStripPI::Entry f_entryContainer;
       SiStripPI::Entry l_entryContainer;
 
@@ -409,44 +456,15 @@ namespace SiStripCondObjectRepresent{
 	       <<" listOfDetIds.size(): "<< listOfDetIds.size() << std::endl;
 
       for(const auto &detId: listOfDetIds ){
-	auto values = SiStripCondData_.get(detId);
 	
-	unsigned int istrip=0;
-	for(const auto &value : values){
-	  
-	  bool flush = false;
-	  switch(myMode) {
-	  case (SiStripPI::APV_BASED):
-	    flush = (prev_det != 0 && prev_apv != istrip/128);
-	    break;
-	  case (SiStripPI::MODULE_BASED):
-	    flush = (prev_det != 0 && prev_det != detId);
-	    break;
-	  case (SiStripPI::STRIP_BASED):
-	    flush = (istrip != 0);
-	    break;
-	  }
-	  
-	  if(flush){
-	    f_mon->Fill(prev_apv,prev_det,f_entryContainer.mean());
-	    f_entryContainer.reset();
-	    
-	    if( (PlotMode_== COMPARISON) && (istrip > values.size()/2)){
-	      l_mon->Fill(prev_apv,prev_det,l_entryContainer.mean());
-	      l_entryContainer.reset();
-	    }
-
-	  }
-
-	  if( (PlotMode_== COMPARISON) && (istrip > values.size()/2) ){
-	    l_entryContainer.add(value);
-	  } else { 
-	    f_entryContainer.add(value);
-	  }
-
-	  prev_apv = (istrip/128);
-	  istrip++;
-	}	
+	if(PlotMode_ == COMPARISON){
+	  auto values = SiStripCondData_.getDemux(detId);
+	  SiStripCondData_.fillMonitor1D(myMode,f_mon,f_entryContainer,values.first ,prev_det,prev_apv,detId);
+	  SiStripCondData_.fillMonitor1D(myMode,l_mon,l_entryContainer,values.second,prev_det,prev_apv,detId);
+	} else {
+	  auto values = SiStripCondData_.get(detId);
+	  SiStripCondData_.fillMonitor1D(myMode,f_mon,l_entryContainer,values,prev_det,prev_apv,detId);
+	}
 	prev_det = detId;
       }
 
@@ -486,7 +504,6 @@ namespace SiStripCondObjectRepresent{
 	h_last->SetLineColor(kBlue);
 
 	std::cout << h_first->GetEntries() << " ---- "<< h_last->GetEntries() << std::endl;
-
 
 	float theMax = (h_first->GetMaximum() > h_last->GetMaximum()) ? h_first->GetMaximum() : h_last->GetMaximum();
 
