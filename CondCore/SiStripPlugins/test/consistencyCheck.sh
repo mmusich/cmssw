@@ -14,7 +14,7 @@ if [ ! -d $W_DIR/results ]; then
     mkdir $W_DIR/results
 fi
  
-# reference
+# # reference
 
 getPayloadData.py \
     --plugin pluginSiStripNoises_PayloadInspector \
@@ -39,3 +39,27 @@ getPayloadData.py \
     --test;
 	
 mv *.png $W_DIR/results/SiStripNoisesPerAPVValues_tar.png
+
+# LA test
+
+getPayloadData.py \
+    --plugin pluginSiStripLorentzAngle_PayloadInspector \
+    --plot plot_SiStripLorentzAngleTest \
+    --tag SiStripLorentzAngleDeco_GR10_v1_prompt \
+    --time_type Run \
+    --iovs '{"start_iov": "132646", "end_iov": "132646"}' \
+    --db Prod \
+    --test;
+	
+mv *.png $W_DIR/results/SiStripLorentzAngleTest.png
+
+getPayloadData.py \
+    --plugin pluginSiStripLorentzAngle_PayloadInspector \
+    --plot plot_SiStripLorentzAngleCompareByRegion \
+    --tag SiStripLorentzAngleDeco_GR10_v1_prompt \
+    --time_type Run \
+    --iovs '{"start_iov": "132646", "end_iov": "254501"}' \
+    --db Prod \
+    --test;
+	
+mv *.png $W_DIR/results/SiStripLorentzAngleComparebyRegion.png
