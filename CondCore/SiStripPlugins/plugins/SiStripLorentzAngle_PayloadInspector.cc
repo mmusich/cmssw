@@ -65,7 +65,7 @@ namespace {
 	if( payload.get() ){
 
 	  SiStripLorentzAngleContainer* objContainer = new SiStripLorentzAngleContainer(payload, std::get<0>(iov),std::get<1>(iov));
-	  objContainer->printAll();
+	  //objContainer->printAll();
 
 	  TCanvas canvas("Partion summary","partition summary",1200,1000); 
 	  objContainer->fillSummary(canvas);
@@ -105,6 +105,47 @@ namespace {
       return true;
     }// fill
   };
+
+
+  class SiStripLorentzAngleCompareByRegion : public cond::payloadInspector::PlotImage<SiStripLorentzAngle> {
+    
+  public:
+    SiStripLorentzAngleCompareByRegion() : cond::payloadInspector::PlotImage<SiStripLorentzAngle>("SiStrip LorentzAngle By Partition"){
+      setSingleIov( false );
+    }
+    
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+      
+      std::vector<std::tuple<cond::Time_t,cond::Hash> > sorted_iovs = iovs;
+       
+      // make absolute sure the IOVs are sortd by since
+      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const &t1, auto const &t2) {
+	  return std::get<0>(t1) < std::get<0>(t2);
+	});
+      
+      auto firstiov  = sorted_iovs.front();
+      auto lastiov   = sorted_iovs.back();
+      
+      std::shared_ptr<SiStripLorentzAngle> last_payload  = fetchPayload( std::get<1>(lastiov) );
+      std::shared_ptr<SiStripLorentzAngle> first_payload = fetchPayload( std::get<1>(firstiov) );
+
+      SiStripLorentzAngleContainer* l_objContainer = new SiStripLorentzAngleContainer(last_payload,  std::get<0>(lastiov),std::get<1>(lastiov));
+      SiStripLorentzAngleContainer* f_objContainer = new SiStripLorentzAngleContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
+
+      l_objContainer->Compare(f_objContainer);
+
+      //l_objContainer->printAll();
+
+      TCanvas canvas("Partition summary","partition summary",1400,1000); 
+      l_objContainer->fillSummary(canvas);
+	  
+      std::string fileName(m_imageFileName);
+      canvas.SaveAs(fileName.c_str());
+
+      return true;
+    }// fill
+  };
+
   
   /************************************************
     1d histogram of SiStripLorentzAngle of 1 IOV 
@@ -482,6 +523,7 @@ PAYLOAD_INSPECTOR_MODULE(SiStripLorentzAngle) {
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleValue);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngle_TrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleByRegion);
+  PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleCompareByRegion);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleByRegionCompareSingleTag);
   PAYLOAD_INSPECTOR_CLASS(SiStripLorentzAngleByRegionCompareTwoTags);
 }
