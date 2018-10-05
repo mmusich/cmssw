@@ -97,6 +97,7 @@ getPayloadData.py \
 mv *.png $W_DIR/results/SiStripConfObjectDisplay.png
 
 ######################
+<<<<<<< HEAD
 # Test DetVOff
 ######################
 getPayloadData.py \
@@ -107,6 +108,14 @@ getPayloadData.py \
     --iovs '{"start_iov": "685006631803433472", "end_iov": "6850066318803433472"}' \
     --db Prod \
     --test ;
+
+getPayloadData.py \
+    --plugin pluginSiStripDetVOff_PayloadInspector \
+    --plot plot_SiStripDetVOffByRegion \
+    --tag SiStripDetVOff_v6_prompt \
+    --time_type Run --iovs '{"start_iov": "6607932533539533824", "end_iov": "6607932533539533824"}' \
+    --db Prod \
+    --test;
 
 ######################
 # Test dumping of switched off modules
@@ -138,5 +147,3 @@ getPayloadData.py \
     --tag  SiStripLorentzAngleDeco_GR10_v1_prompt \
     --time_type Run \
     --iovs '{"start_iov": "1", "end_iov": "1"}' \
-    --db Prod \
-    --test;
