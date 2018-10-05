@@ -20,6 +20,7 @@
 #include "TProfile.h"
 #include "TPaveLabel.h"
 #include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
+#include "CondCore/SiStripPlugins/interface/SiStripPayloadInspectorHelper.h"
 
 // needed for the tracker map
 #include "CommonTools/TrackerMap/interface/TrackerMap.h"
@@ -168,7 +169,10 @@ namespace SiStripCondObjectRepresent{
   class SiStripDataContainer {
 
   public : 
-    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash) : payload_(payload), run_(run), hash_(hash),  m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
+    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash) : payload_(payload), 
+											      run_(run), 
+											      hash_(hash),  
+											      m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
     {
       granularity_ = PERSTRIP;
       PlotMode_ = STANDARD;
@@ -203,7 +207,7 @@ namespace SiStripCondObjectRepresent{
       }
     }
 
-    void        setAdditionalIOV(unsigned int run, std::string hash){ 
+    void setAdditionalIOV(unsigned int run, std::string hash){ 
       additionalIOV_.first  = run;   
       additionalIOV_.second = hash;
     };
@@ -526,21 +530,57 @@ namespace SiStripCondObjectRepresent{
     void fillSummary(TCanvas &canvas)
     /***********************************************************************/
     {
+      
+      std::map<unsigned int, SiStripDetSummary::Values> f_map;
+      std::map<unsigned int, SiStripDetSummary::Values> l_map;
+
       if(! SiStripCondData_.isCached()) getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	auto values = SiStripCondData_.get(detId);
-	for(const auto &value : values){
-	  summary.add(detId,value);
+      
+      if(PlotMode_ == COMPARISON){
+
+	for(const auto &detId: listOfDetIds ){
+	  auto values = SiStripCondData_.getDemux(detId);
+	  for(const auto &value : values.first){
+	    summary.add(detId,value);
+	  }
 	}
+	  
+	f_map = summary.getCounts();
+	summary.clear();
+
+	for(const auto &detId: listOfDetIds ){
+	  auto values = SiStripCondData_.getDemux(detId);
+	  for(const auto &value : values.second){
+	    summary.add(detId,value);
+	  }
+	}
+
+	l_map = summary.getCounts();
+
+      } else {
+	for(const auto &detId: listOfDetIds ){
+	  auto values = SiStripCondData_.get(detId);
+	  for(const auto &value : values){
+	    summary.add(detId,value);
+	  }
+	}
+	f_map = summary.getCounts();
       }
 
-      std::map<unsigned int, SiStripDetSummary::Values> map = summary.getCounts();
+      if(PlotMode_ == COMPARISON){
+	std::cout<< "f map size: " << f_map.size() << " l map size:" << l_map.size() << std::endl;
+	assert(f_map.size()==l_map.size());
+      }
       //=========================
       
       canvas.cd();
-      auto h1 = new TH1F("byRegion",Form("SiStrip %s average by partition;; average SiStrip %s",payloadType_.c_str(),payloadType_.c_str()),map.size(),0.,map.size());
+      auto h1 = new TH1F("byRegion1",Form("SiStrip %s average by region;; average SiStrip %s",payloadType_.c_str(),payloadType_.c_str()),f_map.size(),0.,f_map.size());
       h1->SetStats(false);
+
+      auto h2 = new TH1F("byRegion2",Form("SiStrip %s average by region;; average SiStrip %s",payloadType_.c_str(),payloadType_.c_str()),f_map.size(),0.,f_map.size());
+      h2->SetStats(false);
+
       canvas.SetBottomMargin(0.18);
       canvas.SetLeftMargin(0.17);
       canvas.SetRightMargin(0.05);
@@ -552,7 +592,7 @@ namespace SiStripCondObjectRepresent{
       std::string detector;
       std::string currentDetector;
 
-      for (const auto &element : map){
+      for (const auto &element : f_map){
 	iBin++;
 	int count   = element.second.count;
 	double mean = (element.second.mean)/count;
@@ -585,12 +625,35 @@ namespace SiStripCondObjectRepresent{
 	}
       }
 
+      iBin=0;
+      if(PlotMode_ == COMPARISON){
+	for (const auto &element : l_map){
+	  iBin++;
+	  int count   = element.second.count;
+	  double mean = (element.second.mean)/count;
+
+	  h2->SetBinContent(iBin,mean);
+	  h2->GetXaxis()->SetBinLabel(iBin,SiStripPI::regionType(element.first).second);
+	  h2->GetXaxis()->LabelsOption("v");
+	}
+      }
+
       h1->GetYaxis()->SetRangeUser(0.,h1->GetMaximum()*1.30);
       h1->SetMarkerStyle(20);
-      h1->SetMarkerSize(1);
+      h1->SetMarkerSize(1.5);
       h1->Draw("HIST");
       h1->Draw("Psame");
 	    
+      if(PlotMode_ == COMPARISON){
+	h2->GetYaxis()->SetRangeUser(0.,h2->GetMaximum()*1.30);
+	h2->SetMarkerStyle(25);
+	h2->SetMarkerColor(kBlue);
+	h2->SetLineColor(kBlue);
+	h2->SetMarkerSize(1.5);
+	h2->Draw("HISTsame");
+	h2->Draw("Psame");
+      }
+	
       canvas.Update();
       
       TLine* l[boundaries.size()];
@@ -607,6 +670,9 @@ namespace SiStripCondObjectRepresent{
       TLegend* legend = new TLegend(0.52,0.82,0.95,0.9);
       legend->SetHeader(hash_.c_str(),"C"); // option "C" allows to center the header
       legend->AddEntry(h1,Form("IOV: %i",run_),"PL");
+      if(PlotMode_ == COMPARISON){
+	legend->AddEntry(h2,Form("IOV: %i",additionalIOV_.first),"PL");
+      }
       legend->SetTextSize(0.025);
       legend->Draw("same");
 
