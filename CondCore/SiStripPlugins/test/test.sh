@@ -68,3 +68,14 @@ getPayloadData.py \
     --time_type Run --iovs '{"start_iov": "1", "end_iov": "1"}' \
     --db Prod \
     --test;
+
+######################
+# DetVoff  
+######################
+getPayloadData.py \
+    --plugin pluginSiStripDetVOff_PayloadInspector \
+    --plot plot_SiStripDetVOffByRegion \
+    --tag SiStripDetVOff_v6_prompt \
+    --time_type Run --iovs '{"start_iov": "6607932533539533824", "end_iov": "6607932533539533824"}' \
+    --db Prod \
+    --test;
