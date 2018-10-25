@@ -21,3 +21,17 @@ dt4DSegmentsNoWire.Reco4DAlgoConfig.Reco2DAlgoConfig.recAlgoConfig.tTrigModeConf
 from RecoMET.METFilters.metFilters_cff import primaryVertexFilter, noscraping
 
 seqALCARECODtCalib = cms.Sequence(primaryVertexFilter * noscraping * ALCARECODtCalibHLTFilter * DTCalibMuonSelection * dt4DSegmentsNoWire) 
+
+## customizations for the pp_on_AA eras
+from Configuration.Eras.Modifier_pp_on_XeXe_2017_cff import pp_on_XeXe_2017
+from Configuration.Eras.Modifier_pp_on_AA_2018_cff import pp_on_AA_2018
+(pp_on_XeXe_2017 | pp_on_AA_2018).toModify(ALCARECODtCalibHLTFilter,
+                                           eventSetupPathsKey='MuAlcaDtCalibHI'
+                                           )
+
+
+seqALCARECODtCalibHI = cms.Sequence(ALCARECODtCalibHLTFilter * dt4DSegmentsNoWire) 
+#Specify we want to use our other sequence 
+(pp_on_XeXe_2017 | pp_on_AA_2018).toReplaceWith(seqALCARECODtCalib,
+                                                seqALCARECODtCalibHI
+                                                )
