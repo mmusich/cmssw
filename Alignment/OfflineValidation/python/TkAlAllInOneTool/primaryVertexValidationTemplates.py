@@ -4,6 +4,16 @@ isDA = .oO[isda]Oo.
 isMC = .oO[ismc]Oo.
 
 ###################################################################
+#  Trigger selection
+###################################################################
+import HLTrigger.HLTfilters.hltHighLevel_cfi
+process.myTkAlMinBiasHLT = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
+     andOr = True, ## choose logical OR between Triggerbits
+     HLTPaths = [.oO[HLTSelection]Oo.],
+     throw = False # tolerate triggers stated above, but not available
+     )
+
+###################################################################
 #  Runs and events
 ###################################################################
 runboundary = .oO[runboundary]Oo.
@@ -157,7 +167,8 @@ else:
 ####################################################################
 ####################################################################
 PVValidationPath="""
-process.p = cms.Path(process.goodvertexSkim*
+process.p = cms.Path(process.myTkAlMinBiasHLT*
+                     process.goodvertexSkim*
                      process.seqTrackselRefit*
                      process.PVValidation)
 """

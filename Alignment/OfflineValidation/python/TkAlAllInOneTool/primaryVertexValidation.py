@@ -17,6 +17,7 @@ class PrimaryVertexValidation(GenericValidationData_CTSR, ParallelValidation, Va
         "doBPix":"True",
         "doFPix":"True",
         "forceBeamSpot":"False",
+        "HLTSelection":"HLT_*"
         }
     mandatories = {"isda","ismc","runboundary","trackcollection","vertexcollection","lumilist","ptCut","etaCut","runControl","numberOfBins"}
     valType = "primaryvertex"
