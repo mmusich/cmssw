@@ -32,6 +32,14 @@ void SiPixelQualityCollection::printAll() const {
   
   edm::LogVerbatim("SiPixelQualityCollection")<<"SiPixelQualityCollection::printAll()";
   edm::LogVerbatim("SiPixelQualityCollection")<<" ===================================================================================================================";
+  for(auto it = m_qualities.begin(); it != m_qualities.end() ; ++it){
+    edm::LogVerbatim("SiPixelQualityCollection")<< "run :"<< it->first << "  \n ";
+    auto theDisabledModules = (it->second).getBadComponentList();
+    for (const auto &mod : theDisabledModules){
+      edm::LogVerbatim("SiPixelQualityCollection")<<"detId: " <<  mod.DetID << " |error type: " << mod.errorType << " |BadRocs: "  <<  mod.BadRocs <<  std::endl;
+    }
+  }
+
 }
 
 //****************************************************************************//
