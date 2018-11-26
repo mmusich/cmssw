@@ -28,6 +28,7 @@ int main()
     testSerialization<SiPixelPerformanceSummary>();
     testSerialization<SiPixelPerformanceSummary::DetSummary>();
     testSerialization<SiPixelQuality>();
+    testSerialization<SiPixelQualityCollection>();
     testSerialization<SiPixelQuality::disabledModuleType>();
     testSerialization<SiPixelTemplateDBObject>();
     testSerialization<sipixelobjects::PixelROC>();
