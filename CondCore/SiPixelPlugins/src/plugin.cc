@@ -21,6 +21,8 @@
 #include "CondFormats/DataRecord/interface/SiPixelQualityRcd.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQualityCollection.h"
 #include "CondFormats/DataRecord/interface/SiPixelStatusScenariosRcd.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelQualityProbabilities.h"
+#include "CondFormats/DataRecord/interface/SiPixelStatusScenarioProbabilityRcd.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelCPEGenericErrorParm.h"
 #include "CondFormats/DataRecord/interface/SiPixelCPEGenericErrorParmRcd.h"
 
@@ -64,6 +66,7 @@ REGISTER_PLUGIN(SiPixelCalibConfigurationRcd,SiPixelCalibConfiguration);
 REGISTER_PLUGIN(SiPixelPerformanceSummaryRcd,SiPixelPerformanceSummary);
 REGISTER_PLUGIN(SiPixelQualityFromDbRcd,SiPixelQuality);
 REGISTER_PLUGIN(SiPixelStatusScenariosRcd,SiPixelQualityCollection);
+REGISTER_PLUGIN(SiPixelStatusScenarioProbabilityRcd,SiPixelQualityProbabilities);
 REGISTER_PLUGIN(SiPixelCPEGenericErrorParmRcd,SiPixelCPEGenericErrorParm);
 REGISTER_PLUGIN(SiPixelTemplateDBObjectRcd,SiPixelTemplateDBObject);
 REGISTER_PLUGIN(SiPixelTemplateDBObject38TRcd,SiPixelTemplateDBObject);

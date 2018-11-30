@@ -4,11 +4,11 @@
 // Class:      SiPixelQualityCollectionTestWriter
 // 
 /**\class SiPixelQualityCollectionTestWriter SiPixelQualityCollectionTestWriter.cc CondFormats/SiPixelObjects/plugins/SiPixelQualityCollectionTestWriter.cc
- Description: class to build the SiPixelAli PCL thresholds
+ Description: class to build the SiPixelQualityCollection payloads
 */
 //
 // Original Author:  Marco Musich
-//         Created:  Wed, 22 Feb 2017 12:04:36 GMT
+//         Created:  Wed, 27 Nov 2018 12:04:36 GMT
 //
 //
 
@@ -102,8 +102,6 @@ SiPixelQualityCollectionTestWriter::analyze(const edm::Event& iEvent, const edm:
 
    }
    
-   // loop on the PSet and insert the conditions 
-
    if(printdebug_){
      edm::LogInfo("SiPixelQualityCollectionTestWriter")<<"Content of SiPixelQualityCollection "<<std::endl;
 
