@@ -30,7 +30,6 @@ int main()
     testSerialization<SiPixelQuality>();
     testSerialization<SiPixelQualityCollection>();
     testSerialization<SiPixelQuality::disabledModuleType>();
-    testSerialization<SiPixelQualityCollection>();
     testSerialization<SiPixelQualityProbabilities>();
     testSerialization<SiPixelTemplateDBObject>();
     testSerialization<sipixelobjects::PixelROC>();
