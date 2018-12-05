@@ -29,6 +29,9 @@ int main()
     testSerialization<SiPixelPerformanceSummary::DetSummary>();
     testSerialization<SiPixelQuality>();
     testSerialization<SiPixelQualityCollection>();
+    testSerialization<SiPixelFEDChannelQualityContainer>();
+    testSerialization<SiPixelFEDChannelQualityContainer::SiPixelFEDChannelCollection>();
+    //testSerialization<std::unordered_map<std::string,SiPixelFEDChannelCollection>();
     testSerialization<SiPixelQuality::disabledModuleType>();
     testSerialization<SiPixelQualityProbabilities>();
     testSerialization<SiPixelTemplateDBObject>();

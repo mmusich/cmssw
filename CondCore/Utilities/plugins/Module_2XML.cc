@@ -246,6 +246,7 @@ PAYLOAD_2XML_MODULE( pluginUtilities_payload2xml ){
   PAYLOAD_2XML_CLASS( SiPixelLorentzAngle );
   PAYLOAD_2XML_CLASS( SiPixelQuality );
   PAYLOAD_2XML_CLASS( SiPixelQualityCollection );
+  PAYLOAD_2XML_CLASS( SiPixelFEDChannelQualityContainer );
   PAYLOAD_2XML_CLASS( SiPixelQualityProbabilities );
   PAYLOAD_2XML_CLASS( SiPixelTemplateDBObject );
   PAYLOAD_2XML_CLASS( SiStripApvGain );

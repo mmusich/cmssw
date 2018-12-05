@@ -17,8 +17,10 @@
 #include "CondFormats/SiPixelObjects/interface/SiPixelCalibConfiguration.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQualityCollection.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelFEDChannelQualityContainer.h"
 #include "CondFormats/SiPixelObjects/interface/PixelDCSObject.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQualityProbabilities.h"
 
 #include "CondFormats/External/interface/DetID.h"
+#include "CondFormats/External/interface/PixelFEDChannel.h"
 
