@@ -43,14 +43,16 @@ process.dbInput = cms.ESSource("PoolDBESSource",
                                process.CondDB,
                                toGet = cms.VPSet(cms.PSet(record = cms.string("SiPixelQualityFromDbRcd"),
                                                           tag = cms.string("SiPixelQuality_byPCL_stuckTBM_v1")
+                                                          ),
+                                                 cms.PSet(record = cms.string("SiPixelFedCablingMapRcd"),
+                                                          tag = cms.string("SiPixelFedCablingMap_phase1_v7")
                                                           )
                                                  )
                                )
-
 ##
 ## Output database (in this case local sqlite file)
 ##
-process.CondDB.connect = 'sqlite_file:SiPixelStatusScenarios._v0db'
+process.CondDB.connect = 'sqlite_file:SiPixelStatusScenarios_v1.db'
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
                                           process.CondDB,
                                           timetype = cms.untracked.string('runnumber'),

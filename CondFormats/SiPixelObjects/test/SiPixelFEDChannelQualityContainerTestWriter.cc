@@ -19,6 +19,8 @@
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelFEDChannelQualityContainer.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
+#include "CondFormats/DataRecord/interface/SiPixelFedCablingMapRcd.h"
 #include "CondFormats/DataRecord/interface/SiPixelQualityFromDbRcd.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESWatcher.h"
@@ -94,11 +96,14 @@ SiPixelFEDChannelQualityContainerTestWriter::analyze(const edm::Event& iEvent, c
      edm::ESHandle<SiPixelQuality> siPixelQuality_;
      iSetup.get<SiPixelQualityFromDbRcd>().get(siPixelQuality_);
 
+     edm::ESHandle<SiPixelFedCablingMap> cablingMapHandle;
+     iSetup.get<SiPixelFedCablingMapRcd>().get(cablingMapHandle);
+
      std::string scenario = std::to_string(RunNumber_)+"_"+std::to_string(LuminosityBlockNumber_);
 
      edm::LogInfo("SiPixelFEDChannelQualityContainerTestWriter")<<"Found IOV:" << RunNumber_ <<"("<< LuminosityBlockNumber_ <<")"<<std::endl;
      
-     myQualities->setScenario(scenario,*(siPixelQuality_.product()));
+     myQualities->setScenario(scenario,*(siPixelQuality_.product()),*(cablingMapHandle.product()));
 
    }
    

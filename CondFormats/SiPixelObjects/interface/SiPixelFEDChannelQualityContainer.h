@@ -18,7 +18,7 @@ public:
   virtual ~SiPixelFEDChannelQualityContainer(){}
 
   void setScenario(const std::string &theScenarioId, const SiPixelFEDChannelCollection &theBadFEDChannels);
-  void setScenario(const std::string &theScenarioId, const SiPixelQuality &theSiPixelQuality);
+  void setScenario(const std::string &theScenarioId, const SiPixelQuality &theSiPixelQuality, const SiPixelFedCablingMap& theFedCabling);
                   
   const SiPixelBadFEDChannelsScenarioMap& getScenarioMap () const  {return m_scenarioMap;}
 

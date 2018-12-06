@@ -20,6 +20,7 @@
 #include "CondFormats/DataRecord/interface/SiPixelQualityFromDbRcd.h"
 #include "CondFormats/DataRecord/interface/SiPixelQualityRcd.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQualityCollection.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelFEDChannelQualityContainer.h"
 #include "CondFormats/DataRecord/interface/SiPixelStatusScenariosRcd.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQualityProbabilities.h"
 #include "CondFormats/DataRecord/interface/SiPixelStatusScenarioProbabilityRcd.h"
@@ -65,7 +66,8 @@ REGISTER_PLUGIN(SiPixelDynamicInefficiencyRcd,SiPixelDynamicInefficiency);
 REGISTER_PLUGIN(SiPixelCalibConfigurationRcd,SiPixelCalibConfiguration);
 REGISTER_PLUGIN(SiPixelPerformanceSummaryRcd,SiPixelPerformanceSummary);
 REGISTER_PLUGIN(SiPixelQualityFromDbRcd,SiPixelQuality);
-REGISTER_PLUGIN(SiPixelStatusScenariosRcd,SiPixelQualityCollection);
+//REGISTER_PLUGIN(SiPixelStatusScenariosRcd,SiPixelQualityCollection);
+REGISTER_PLUGIN(SiPixelStatusScenariosRcd,SiPixelFEDChannelQualityContainer);
 REGISTER_PLUGIN(SiPixelStatusScenarioProbabilityRcd,SiPixelQualityProbabilities);
 REGISTER_PLUGIN(SiPixelCPEGenericErrorParmRcd,SiPixelCPEGenericErrorParm);
 REGISTER_PLUGIN(SiPixelTemplateDBObjectRcd,SiPixelTemplateDBObject);

@@ -1,3 +1,4 @@
+#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelFEDChannelQualityContainer.h"
 #include "FWCore/Utilities/interface/Exception.h" 
@@ -11,14 +12,16 @@ void SiPixelFEDChannelQualityContainer::setScenario(const std::string &theScenar
 }
 
 //****************************************************************************//
-void SiPixelFEDChannelQualityContainer::setScenario(const std::string &theScenarioId, const SiPixelQuality & theQuality) {
+void SiPixelFEDChannelQualityContainer::setScenario(const std::string &theScenarioId, const SiPixelQuality & theQuality, const SiPixelFedCablingMap& theFedCabling) {
   //m_scenarioMap[theScenarioId]=theQuality;
+
+  auto fedid_ = theFedCabling.det2fedMap();
 
   SiPixelFEDChannelQualityContainer::SiPixelFEDChannelCollection theBadChannelCollection;
   auto theDisabledModules = theQuality.getBadComponentList();
   for (const auto &mod : theDisabledModules){
     //mod.DetID, mod.errorType,mod.BadRocs
-    PixelFEDChannel theBadChannel{1, 2, 3, 4};
+    PixelFEDChannel theBadChannel{fedid_[mod.DetID], 2, 3, 4};
     unsigned int BadRocCount(0),ch(0);
     for (unsigned short n = 0; n < 16; n++){
       unsigned short mask = 1 << n;  // 1 << n = 2^{n} using bitwise shift
@@ -65,11 +68,10 @@ void SiPixelFEDChannelQualityContainer::printAll() const {
 
       for(const auto& entry: thePixelFEDChannel.second) {
 	//unsigned int fed, link, roc_first, roc_last;
-	edm::LogVerbatim("SiPixelFEDChannelQualityContainer")<< "fed       :"<< entry.fed 
-							     << "link      :"<< entry.link
-							     << "roc_first :"<< entry.roc_first
-							     << "roc_last: :"<< entry.roc_last       
-							     << "  \n ";
+	edm::LogVerbatim("SiPixelFEDChannelQualityContainer")<< " fed : "<< entry.fed 
+							     << " link : "<< entry.link
+							     << " roc_first : "<< entry.roc_first
+							     << " roc_last: : "<< entry.roc_last;       
       }
     }
   }
