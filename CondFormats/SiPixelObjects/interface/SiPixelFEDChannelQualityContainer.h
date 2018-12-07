@@ -4,6 +4,7 @@
 #include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
 #include "DataFormats/SiPixelDetId/interface/PixelFEDChannel.h"
 #include "CondFormats/Serialization/interface/Serializable.h"
+#include "DataFormats/Common/interface/DetSetVector.h"
 
 #include <map>
 #include <string>
@@ -24,6 +25,8 @@ public:
 
   SiPixelFEDChannelCollection   getSiPixelBadFedChannels(const std::string &ScenarioId) const;
   SiPixelFEDChannelCollection & getSiPixelBadFedChannels(const std::string &ScenarioId);
+
+  std::unique_ptr<edmNew::DetSetVector<PixelFEDChannel> > getDetSetBadPixelFedChannels(const std::string &ScenarioId) const;
   
   double size()const {return m_scenarioMap.size();}
   std::vector<std::string> getScenarioList() const;
