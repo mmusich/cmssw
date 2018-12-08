@@ -100,6 +100,7 @@ SiPixelQualityCollectionTestWriter::analyze(const edm::Event& iEvent, const edm:
 
      myQualities->setSiPixelQuality(scenario,*(siPixelQuality_.product()));
 
+     IOVcount_++;
    }
    
    if(printdebug_){
@@ -114,13 +115,15 @@ SiPixelQualityCollectionTestWriter::analyze(const edm::Event& iEvent, const edm:
 void 
 SiPixelQualityCollectionTestWriter::beginJob()
 {
+  IOVcount_=0;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 SiPixelQualityCollectionTestWriter::endJob() 
 {
-
+  
+  edm::LogInfo("SiPixelQualityCollectionTestWriter")<<"Analyzed "<<IOVcount_<<" IOVs"<<std::endl;
   edm::LogInfo("SiPixelQualityCollectionTestWriter")<<"Size of SiPixelQualityCollection object "<< myQualities->size() <<std::endl<<std::endl;
 
   // Form the data here
@@ -136,8 +139,10 @@ SiPixelQualityCollectionTestWriter::endJob()
 void
 SiPixelQualityCollectionTestWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+   desc.setComment("Writes payloads of type SiPixelQualityCollection");
+   desc.addUntracked<bool>("printDebug",true);
+   desc.add<std::string>("record","");
+   descriptions.add("SiPixelQualityCollectionTestWriter",desc);
 }
 
 //define this as a plug-in
