@@ -25,6 +25,8 @@ public:
   SiPixelFEDChannelCollection   getSiPixelBadFedChannels(const std::string &ScenarioId) const;
   SiPixelFEDChannelCollection & getSiPixelBadFedChannels(const std::string &ScenarioId);
 
+  std::vector<PixelFEDChannel>& getSiPixelBadFedChannelsInDetId(const std::string &theScenarioId,DetId theDetId);
+
   std::unique_ptr<PixelFEDChannelCollection> getDetSetBadPixelFedChannels(const std::string &ScenarioId) const;
   
   double size()const {return m_scenarioMap.size();}

@@ -25,6 +25,12 @@ SiPixelFEDChannelQualityContainer::SiPixelFEDChannelCollection& SiPixelFEDChanne
 }
 
 //****************************************************************************//
+std::vector<PixelFEDChannel>& SiPixelFEDChannelQualityContainer::getSiPixelBadFedChannelsInDetId(const std::string &theScenarioId,DetId theDetId) {
+  return (m_scenarioMap[theScenarioId])[theDetId];
+}
+
+
+//****************************************************************************//
 std::unique_ptr<PixelFEDChannelCollection> SiPixelFEDChannelQualityContainer::getDetSetBadPixelFedChannels(const std::string &theScenarioId) const {
 
   std::unique_ptr<PixelFEDChannelCollection> disabled_channelcollection = std::make_unique<edmNew::DetSetVector<PixelFEDChannel> >();
