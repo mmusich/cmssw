@@ -5,8 +5,8 @@ process = cms.Process("ProcessOne")
 ## MessageLogger
 ##
 process.load('FWCore.MessageService.MessageLogger_cfi')   
-process.MessageLogger.categories.append("SiPixelQualityCollectionTestWriter")  
-process.MessageLogger.categories.append("SiPixelQualityCollection")  
+process.MessageLogger.categories.append("SiPixelFEDChannelQualityContainerTestWriter")  
+process.MessageLogger.categories.append("SiPixelFEDChannelQualityContainer")  
 process.MessageLogger.destinations = cms.untracked.vstring("cout")
 process.MessageLogger.cout = cms.untracked.PSet(
     threshold = cms.untracked.string("INFO"),
@@ -14,8 +14,8 @@ process.MessageLogger.cout = cms.untracked.PSet(
     FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
                                    reportEvery = cms.untracked.int32(100)
                                    ),                                                      
-    SiPixelQualityCollectionTestWriter = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
-    SiPixelQualityCollection           = cms.untracked.PSet( limit = cms.untracked.int32(-1))
+    SiPixelFEDChannelQualityContainerTestWriter = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+    SiPixelFEDChannelQualityContainer           = cms.untracked.PSet( limit = cms.untracked.int32(-1))
     )
 process.MessageLogger.statistics.append('cout')  
 
