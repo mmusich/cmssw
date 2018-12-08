@@ -95,7 +95,7 @@ SiPixelFEDChannelQualityContainerWriteFromASCII::analyze(const edm::Event& iEven
 
    if(mysnapshots.is_open()){
      while (getline (mysnapshots, line)) {
-       //std::cout << line << std::endl;
+       //edm::LogVerbatim("SiPixelFEDChannelQualityContainerWriteFromASCII") << line << std::endl;
        std::istringstream iss (line);            
        unsigned int run, ls, detid, fed, link, roc_first, roc_last;
        iss >> run >> ls >> detid >> fed >> link >> roc_first >> roc_last;
@@ -104,11 +104,11 @@ SiPixelFEDChannelQualityContainerWriteFromASCII::analyze(const edm::Event& iEven
        
        auto newscenario=std::to_string(run)+"_"+std::to_string(ls);
        if(newscenario!=scenario){
-	 std::cout<< "================================" << std::endl;
-	 std::cout<< "found a new scenario: " << newscenario << std::endl;
+	 edm::LogVerbatim("SiPixelFEDChannelQualityContainerWriteFromASCII")<< "================================" << std::endl;
+	 edm::LogVerbatim("SiPixelFEDChannelQualityContainerWriteFromASCII")<< "found a new scenario: " << newscenario << std::endl;
 	 if(scenario!=""){
-	   std::cout<< "size of the fed channel vector: " <<  theBadFEDChannels.size() << std::endl;
-	   std::cout<< "================================" << std::endl;
+	   edm::LogVerbatim("SiPixelFEDChannelQualityContainerWriteFromASCII")<< "size of the fed channel vector: " <<  theBadFEDChannels.size() << std::endl;
+	   edm::LogVerbatim("SiPixelFEDChannelQualityContainerWriteFromASCII")<< "================================" << std::endl;
 	   myQualities->setScenario(scenario,theBadFEDChannels);
 	   theBadFEDChannels.clear();
 	 }
@@ -116,7 +116,7 @@ SiPixelFEDChannelQualityContainerWriteFromASCII::analyze(const edm::Event& iEven
        }
 
        if(detid!=thedetid){
-	 if(printdebug_) std::cout<< "found a new detid!" << detid << std::endl;	 
+	 if(printdebug_) edm::LogVerbatim("SiPixelFEDChannelQualityContainerWriteFromASCII")<< "found a new detid!" << detid << std::endl;	 
 	 thedetid=detid;
        } 
        theBadFEDChannels[thedetid].push_back(theBadChannel);

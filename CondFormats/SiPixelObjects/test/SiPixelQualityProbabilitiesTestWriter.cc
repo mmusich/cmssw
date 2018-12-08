@@ -91,7 +91,7 @@ SiPixelQualityProbabilitiesTestWriter::analyze(const edm::Event& iEvent, const e
 
    if(mysnapshots.is_open()){
      while (getline (mysnapshots, line1)) {
-       //std::cout << line1 << std::endl;
+       //edm::LogInfo("SiPixelQualityProbabilitiesTestWriter") << line1 << std::endl;
        std::istringstream iss (line1);            
        int id, run, ls;
        iss >> id >> run >> ls;
@@ -103,16 +103,16 @@ SiPixelQualityProbabilitiesTestWriter::analyze(const edm::Event& iEvent, const e
 
    if (myfile.is_open()){
      while (getline (myfile, line2)) {
-       std::cout << line2 << std::endl;
+       edm::LogInfo("SiPixelQualityProbabilitiesTestWriter") << line2 << std::endl;
        std::istringstream iss (line2);            
        int pileupBinId, nEntries;
        iss >>  pileupBinId >>  nEntries;
-       std::cout << "PILEUP BIN/ENTRIES:  " << pileupBinId << " " << nEntries <<  std::endl;
+       edm::LogInfo("SiPixelQualityProbabilitiesTestWriter") << "PILEUP BIN/ENTRIES:  " << pileupBinId << " " << nEntries <<  std::endl;
        std::vector <int>     ids(nEntries, 0);
        std::vector <float>   probs(nEntries, 0.0);
        for (int i=0;i< nEntries; ++i){
 	 iss >> ids.at(i) >> probs.at(i);
-	 //std::cout << ids.at(i) << " " << probs.at(i)<< std::endl; 
+	 //edm::LogInfo("SiPixelQualityProbabilitiesTestWriter") << ids.at(i) << " " << probs.at(i)<< std::endl; 
 	 auto idAndProb = std::make_pair(snapshotIdToString.at(ids.at(i)),probs.at(i));
 	 myProbVector.push_back(idAndProb); 
        }
