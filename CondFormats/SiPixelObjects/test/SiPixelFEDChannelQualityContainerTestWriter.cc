@@ -218,8 +218,10 @@ SiPixelFEDChannelQualityContainerTestWriter::endJob()
 void
 SiPixelFEDChannelQualityContainerTestWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+  desc.setComment("Writes payloads of type SiPixelFEDChannelQualityContainer");
+  desc.addUntracked<bool>("printDebug",true);
+  desc.add<std::string>("record","SiPixelStatusScenariosRcd");
+  descriptions.add("SiPixelFEDChannelQualityContainerTestWriter",desc);
 }
 
 //define this as a plug-in

@@ -159,8 +159,11 @@ SiPixelFEDChannelQualityContainerWriteFromASCII::endJob()
 void
 SiPixelFEDChannelQualityContainerWriteFromASCII::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+  desc.setComment("Writes payloads of type SiPixelFEDChannelQualityContainer from input ASCII files");
+  desc.addUntracked<bool>("printDebug",true);
+  desc.add<std::string>("snapshots","");
+  desc.add<std::string>("record","SiPixelStatusScenariosRcd");
+  descriptions.add("SiPixelFEDChannelQualityContainerWriteFromASCII",desc);
 }
 
 //define this as a plug-in

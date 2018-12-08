@@ -155,8 +155,12 @@ SiPixelQualityProbabilitiesTestWriter::endJob()
 void
 SiPixelQualityProbabilitiesTestWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+  desc.setComment("Writes payloads of type SiPixelQualityProbabilities");
+  desc.addUntracked<bool>("printDebug",true);
+  desc.add<std::string>("record","SiPixelStatusScenarioProbabilityRcd");
+  desc.add<std::string>("snapshots","");
+  desc.add<std::string>("probabilities","");
+  descriptions.add("SiPixelQualityProbabilitiesTestWriter",desc);
 }
 
 //define this as a plug-in
