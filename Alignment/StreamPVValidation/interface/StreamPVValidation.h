@@ -14,6 +14,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
 
 #include <string>
 #include <map>
@@ -25,22 +27,67 @@
 
 typedef std::map<uint32_t, TH1F*> HistogramMap;
 
+// auxilliary class to store phase-space info
+struct PhaseSpaceBin {
+
+  PhaseSpaceBin(unsigned int iEta,unsigned int iPhi): 
+    mEta(iEta),mPhi(iPhi){
+    mRawId=100*iEta+10*iPhi;
+  }
+  
+public:
+  void clear() {
+    mEta=0;
+    mPhi=0;
+    mRawId=0;
+  }
+
+  void print(std::ostream & os) const {
+    os<< "phi :"<< mPhi << " eta:" << mEta <<" rawID:" << mRawId << "  \n ";
+  }
+
+  unsigned int rawId(){return mRawId;}
+  unsigned int iphi(){return mPhi;}
+  unsigned int ieta(){return mEta;}
+
+private:
+  unsigned int mEta;
+  unsigned int mPhi;
+  unsigned int mRawId;
+};
+
+std::ostream & operator<<( std::ostream & os, PhaseSpaceBin bin) {
+  std::stringstream ss;
+  bin.print( ss );
+  os << ss.str();
+  return os;
+}
+
 class PVValidationStreamData {
 public:
-  HistogramMap _hist; // Filled
+  HistogramMap _hist_dxy; // Filled with transverse impact parameter
+  HistogramMap _hist_dz;  // Filled with longitudinal impact parameter
   TF1* _fgaus;
   int _nevents;
   inline void add(const PVValidationStreamData* data) {
-    for (auto& it : _hist) {
-      if (data->_hist.find(it.first) != data->_hist.end()) {
-	it.second->Add(data->_hist.at(it.first));
+    for (auto& it : _hist_dxy) {
+      if (data->_hist_dxy.find(it.first) != data->_hist_dxy.end()) {
+	it.second->Add(data->_hist_dxy.at(it.first));
       }
     }
+
+    for (auto& it : _hist_dz) {
+      if (data->_hist_dz.find(it.first) != data->_hist_dz.end()) {
+	it.second->Add(data->_hist_dz.at(it.first));
+      }
+    }
+
     _nevents += data->_nevents;
   }
   
   inline void reset() {
-    this->_hist.clear();
+    this->_hist_dxy.clear();
+    this->_hist_dz.clear();
     if (_fgaus) {
       delete _fgaus;
       _fgaus = 0;
@@ -51,7 +98,8 @@ public:
 class StreamPVValidation :  
   public edm::global::EDAnalyzer<edm::StreamCache<PVValidationStreamData>, edm::RunSummaryCache<PVValidationStreamData>> {
  public:
-  edm::EDGetTokenT<TrackCollection> tracksToken_;  //used to select what tracks to read from configuration file  
+  edm::InputTag		                   _tagVertices;
+  edm::EDGetTokenT<reco::VertexCollection> _tokVertices;
 
  public:
   explicit StreamPVValidation(const edm::ParameterSet& ps);// : pset(iConfig) {}
@@ -72,6 +120,7 @@ class StreamPVValidation :
   void endRun(edm::Run const&, edm::EventSetup const&){}
   
   std::map<TString, double> fitIP(TH1F* hist, TF1** peak_fit, bool debug=false) const;
+  std::pair<unsigned int ,unsigned int> getiEtaiPhi(float eta,float phi);
   
   edm::Service<TFileService> _fs;
   

@@ -7,17 +7,17 @@
 #include "Math/Vector3D.h"
 
 #include <map>
+#include <algorithm> 
+#include <numeric>
 #include "boost/foreach.hpp"
 #include <TBranch.h>
 #include <TLorentzVector.h>
 
+auto getBin = [](int mult, double pitch, double start) -> double { return start + mult*pitch; };
+
 StreamPVValidation::StreamPVValidation(const edm::ParameterSet& ps) {
-  _tagHE = ps.getUntrackedParameter<edm::InputTag>("tagHE", edm::InputTag("hcalDigis"));
-  _tokHE = consumes<QIE11DigiCollection>(_tagHE);	
-  _subdet_to_string[HcalBarrel]  = "HB";
-  _subdet_to_string[HcalEndcap]  = "HE";
-  _subdet_to_string[HcalForward] = "HF";
-  _subdet_to_string[HcalOuter]   = "HO";
+  _tagVertices = ps.getUntrackedParameter<edm::InputTag>("tagVertices", edm::InputTag("offlinePrimaryVertices"));
+  _tokVertices = consumes<reco::VertexCollection>(_tagVertices);	
 }
 
 StreamPVValidation::~StreamPVValidation() {
@@ -31,36 +31,28 @@ std::unique_ptr<PVValidationStreamData> StreamPVValidation::beginStream(edm::Str
 std::shared_ptr<PVValidationStreamData> StreamPVValidation::globalBeginRunSummary(edm::Run const& run, edm::EventSetup const& es) const {
   //std::shared_ptr<PVValidation::ChannelHistogramMap> returnValue(new StreamPVValidation::ChannelHistogramMap());
   std::shared_ptr<PVValidationStreamData> returnValue(new PVValidationStreamData());
-  edm::ESHandle<HcalDbService> dbs;
-  es.get<HcalDbRecord>().get(dbs);
-  const HcalElectronicsMap * emap = dbs->getHcalMapping();
   
-  for (auto& it_gdid : emap->allPrecisionId()) {
-    if (!it_gdid.isHcalDetId()) {
-      continue;
-    }
-    HcalDetId did(it_gdid.rawId());
-    if (did.subdet() == HcalEndcap) {
+  for(unsigned int ieta=0;ieta<48;ieta++){
+    for(unsigned int iphi=0;iphi<48;iphi++){
+
       char hname[50];
-      sprintf(hname, "h_fc_HE_ieta%d_iphi%d_depth%d_run%d", did.ieta(), did.iphi(), did.depth(), run.runAuxiliary().run());
-      returnValue->_hist_fc.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 500, 0., 500.)));
+      PhaseSpaceBin did(ieta,iphi);
       
-      sprintf(hname, "h_fc_kernel_HE_ieta%d_iphi%d_depth%d_run%d", did.ieta(), did.iphi(), did.depth(), run.runAuxiliary().run());
-      returnValue->_hist_fc_kernel.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 500, 0., 500.)));
+      sprintf(hname, "h_dxy_ieta%d_iphi%d_run%d", did.ieta(), did.iphi(), run.runAuxiliary().run());
+      returnValue->_hist_dxy.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 1000, -500., 500.)));
       
-      sprintf(hname, "h_adc_HE_ieta%d_iphi%d_depth%d_run%d", did.ieta(), did.iphi(), did.depth(), run.runAuxiliary().run());
-      returnValue->_hist_adc.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 256, -0.5, 255.5)));
+      sprintf(hname, "h_dz_ieta%d_iphi%d_run%d", did.ieta(), did.iphi(), run.runAuxiliary().run());
+      returnValue->_hist_dz.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 1000, -500., 500.)));  
+
+      did.clear();
     }
   }
-  
+
   // SumW2 all histograms
-  for (auto& it : returnValue->_hist_fc) {
-    it.second->Sumw2();
-	}
-  for (auto& it : returnValue->_hist_fc_kernel) {
+  for (auto& it : returnValue->_hist_dxy) {
     it.second->Sumw2();
   }
-  for (auto& it : returnValue->_hist_adc) {
+  for (auto& it : returnValue->_hist_dz)  {
     it.second->Sumw2();
   }
   
@@ -68,80 +60,139 @@ std::shared_ptr<PVValidationStreamData> StreamPVValidation::globalBeginRunSummar
 }
 
 void StreamPVValidation::streamBeginRun(edm::StreamID sid, edm::Run const& run, edm::EventSetup const& es) const {
-  // Book stream histograms and TF1
-  edm::ESHandle<HcalDbService> dbs;
-  es.get<HcalDbRecord>().get(dbs);
-  const HcalElectronicsMap * emap = dbs->getHcalMapping();
   
-  for (auto& it_gdid : emap->allPrecisionId()) {
-    if (!it_gdid.isHcalDetId()) {
-      continue;
-    }
-    HcalDetId did(it_gdid.rawId());
-    if (did.subdet() == HcalEndcap) {
+  for(unsigned int ieta=0;ieta<48;ieta++){
+    for(unsigned int iphi=0;iphi<48;iphi++){
+
       char hname[50];
-      sprintf(hname, "h_fc_HE_ieta%d_iphi%d_depth%d_run%d", did.ieta(), did.iphi(), did.depth(), run.runAuxiliary().run());
-      streamCache(sid)->_hist_fc.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 500, 0., 500.)));
+      PhaseSpaceBin did(ieta,iphi);
+
+      sprintf(hname, "h_dxy_ieta%d_iphi%d_run%d", did.ieta(), did.iphi(), run.runAuxiliary().run());
+      streamCache(sid)->_hist_dxy.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 500, -500., 500.)));
       
-      sprintf(hname, "h_fc_kernel_HE_ieta%d_iphi%d_depth%d_run%d", did.ieta(), did.iphi(), did.depth(), run.runAuxiliary().run());
-      streamCache(sid)->_hist_fc_kernel.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 500, 0., 500.)));
+      sprintf(hname, "h_dz_ieta%d_iphi%d_run%d", did.ieta(), did.iphi(), run.runAuxiliary().run());      
+      streamCache(sid)->_hist_dz.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 1000, -500., 500.)));
       
-      sprintf(hname, "h_adc_HE_ieta%d_iphi%d_depth%d_run%d", did.ieta(), did.iphi(), did.depth(), run.runAuxiliary().run());
-      streamCache(sid)->_hist_adc.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 256, -0.5, 255.5)));
+      did.clear();
     }
   }
+
   char fname[50];
   sprintf(fname, "gaus_%d", sid.value());
   streamCache(sid)->_fgaus = new TF1(fname, "gaus", 0., 500.);
-  
   streamCache(sid)->_nevents = 0;
   
   // Sumw2 all histograms
-  for (auto& it : streamCache(sid)->_hist_fc) {
+  for (auto& it : streamCache(sid)->_hist_dxy) {
     it.second->Sumw2();
   }
-  for (auto& it : streamCache(sid)->_hist_fc_kernel) {
-    it.second->Sumw2();
-  }
-  for (auto& it : streamCache(sid)->_hist_adc) {
+  for (auto& it : streamCache(sid)->_hist_dz) {
     it.second->Sumw2();
   }
   
 }
 
 void StreamPVValidation::beginJob() {
-  _tree = _fs->make<TTree>("gains", "gains");
-  _tree->Branch("run", &(_gain_container.run));
-  _tree->Branch("nevents", &(_gain_container.nevents));
-  _tree->Branch("subdet", &(_gain_container.subdet));
-  _tree->Branch("ieta", &(_gain_container.ieta));
-  _tree->Branch("iphi", &(_gain_container.iphi));
-  _tree->Branch("depth", &(_gain_container.depth));
-  _tree->Branch("gain", &(_gain_container.gain));
-  _tree->Branch("gain_est", &(_gain_container.gain_est));
-  _tree->Branch("dgain", &(_gain_container.dgain));
-  _tree->Branch("mean1", &(_gain_container.mean1));
-  _tree->Branch("mean2", &(_gain_container.mean2));
+}
+
+
+std::pair<unsigned int ,unsigned int> 
+StreamPVValidation::getiEtaiPhi(float eta,float phi){
   
-  _tree->Branch("gain_kernel", &(_gain_container.gain_kernel));
-  _tree->Branch("gain_est_kernel", &(_gain_container.gain_est_kernel));
-  _tree->Branch("dgain_kernel", &(_gain_container.dgain_kernel));
-  _tree->Branch("mean1_kernel", &(_gain_container.mean1_kernel));
-  _tree->Branch("mean2_kernel", &(_gain_container.mean2_kernel));
+  const Int_t nBins_ = 48;
+  const Double_t phiLow_ = -TMath::Pi();
+  const Double_t phiHig_ = TMath::Pi();
+  const Double_t etaLow_ = -2.5;
+  const Double_t etaHig_ = 2.5;
+  
+  unsigned int iPhi(9999),iEta(9999);
+
+  std::array<unsigned int, 48> multiplier;
+  std::iota(multiplier.begin(), multiplier.end(),0);
+
+  for (auto i : multiplier){
+
+    auto etaMin = getBin(i,((etaHig_-etaLow_)/nBins_),etaLow_);
+    auto etaMax = getBin(i+1,((etaHig_-etaLow_)/nBins_),etaLow_);
+
+    auto phiMin = getBin(i,((phiHig_-phiLow_)/nBins_),phiLow_);
+    auto phiMax = getBin(i+1,((phiHig_-phiLow_)/nBins_),phiLow_);
+        
+    if(phi>phiMin && phi<=phiMax){
+      iPhi = i;
+    }
+
+    if(eta>etaMin && eta<=etaMax){
+      iEta = i;
+    }
+  }
+  return std::make_pair(iEta,iPhi);
 }
 
 void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, const edm::EventSetup& es) const {
+
+  const double cmToum = 10000;
   streamCache(sid)->_nevents += 1;
   
-  // Load digis
-  edm::Handle<QIE11DigiCollection> che_qie11;
-  if (!event.getByToken(_tokHE, che_qie11)) {
-    std::cout << "Collection QIE11DigiCollection isn't available" << _tagHE.label() << " " << _tagHE.instance() << std::endl;
+  using namespace edm;
+
+  // edm::ESHandle<TransientTrackBuilder>            theB                ;
+  // edm::ESHandle<GlobalTrackingGeometry>           theTrackingGeometry ;
+  // es.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry) ;
+  // es.get<TransientTrackRecord>().get("TransientTrackBuilder",theB);
+
+  // load vertices
+  edm::Handle<reco::VertexCollection> vertices;
+  if(!event.getByToken(_tokVertices, vertices)){
+    std::cout << "Collection reco::VertexCollection  isn't available" << _tagVertices.label() << " " << _tagVertices.instance() << std::endl;
     exit(1);
   }
+  const reco::VertexCollection pvtx  = *(vertices.product())  ;
   
-  edm::ESHandle<HcalDbService> dbs;
-  es.get<HcalDbRecord>().get(dbs);
+  for (reco::VertexCollection::const_iterator pvIt = pvtx.begin(); pvIt!=pvtx.end(); pvIt++){
+    reco::Vertex iPV = *pvIt;
+    if (iPV.isFake()) continue;
+
+    const math::XYZPoint pos_(iPV.x(),iPV.y(),iPV.z());
+
+    reco::Vertex::trackRef_iterator trki;
+
+    // vertex selection as in bs code                                                                                
+    //if ( iPV.ndof() < minVtxNdf_ || (iPV.ndof()+3.)/iPV.tracksSize()< 2*minVtxWgt_ )  continue;
+
+    //reco::TrackCollection allTracks;
+    //reco::TrackCollection groupOne, groupTwo;
+    for (trki  = iPV.tracks_begin(); trki != iPV.tracks_end(); ++trki){
+      if (trki->isNonnull()){
+	
+	double dxyRes  = (*trki)->dxy(pos_)*cmToum;
+	double dzRes   = (*trki)->dz(pos_)*cmToum;
+	
+	double dxy_err = (*trki)->dxyError()*cmToum;
+	double dz_err  = (*trki)->dzError()*cmToum;
+	
+	float trackphi = ((*trki)->phi())*(180/M_PI);
+	float tracketa = (*trki)->eta();
+
+	auto coords = getiEtaiPhi(tracketa,trackphi);
+	PhaseSpaceBin did(coords.first,coords.second);
+
+	if (streamCache(sid)->_hist_dxy.find(did.rawId()) != streamCache(sid)->_hist_dxy.end()) {
+	  streamCache(sid)->_hist_dxy.at(did.rawId())->Fill(dxyRes);
+	} else {
+	  std::cout << "[debug] WARNING : Did " << did << " is not in the streamCache object!" << std::endl;
+	}
+
+	if (streamCache(sid)->_hist_dz.find(did.rawId()) != streamCache(sid)->_hist_dz.end()) {
+	  streamCache(sid)->_hist_dz.at(did.rawId())->Fill(dzRes);
+	} else {
+	  std::cout << "[debug] WARNING : Did " << did << " is not in the streamCache object!" << std::endl;
+	}
+
+      }// if track reference is not null
+    }// loop on tracks
+  } // loop on vertices
+
   
   for (QIE11DigiCollection::const_iterator it=che_qie11->begin(); it!=che_qie11->end();
        ++it)
