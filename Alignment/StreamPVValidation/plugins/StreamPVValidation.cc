@@ -6,6 +6,7 @@
 #include "Math/LorentzVector.h"
 #include "Math/Vector3D.h"
 
+#include<TH1F.h>
 #include <map>
 #include <algorithm> 
 #include <numeric>
@@ -97,7 +98,7 @@ void StreamPVValidation::beginJob() {
 
 
 std::pair<unsigned int ,unsigned int> 
-StreamPVValidation::getiEtaiPhi(float eta,float phi){
+StreamPVValidation::getiEtaiPhi(float eta,float phi) const{
   
   const Int_t nBins_ = 48;
   const Double_t phiLow_ = -TMath::Pi();
@@ -168,8 +169,8 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
 	double dxyRes  = (*trki)->dxy(pos_)*cmToum;
 	double dzRes   = (*trki)->dz(pos_)*cmToum;
 	
-	double dxy_err = (*trki)->dxyError()*cmToum;
-	double dz_err  = (*trki)->dzError()*cmToum;
+	//double dxy_err = (*trki)->dxyError()*cmToum;
+	//double dz_err  = (*trki)->dzError()*cmToum;
 	
 	float trackphi = ((*trki)->phi())*(180/M_PI);
 	float tracketa = (*trki)->eta();
@@ -192,66 +193,6 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
       }// if track reference is not null
     }// loop on tracks
   } // loop on vertices
-
-  
-  for (QIE11DigiCollection::const_iterator it=che_qie11->begin(); it!=che_qie11->end();
-       ++it)
-    {
-      const QIE11DataFrame digi = static_cast<const QIE11DataFrame>(*it);
-      HcalDetId const& did = digi.detid();
-      if (did.subdet() != HcalEndcap) {
-	continue;
-      }
-      //CaloSamples digi_fC = hcaldqm::utilities::loadADC2fCDB<QIE11DataFrame>(dbs, did, digi);
-      double sumq = 0.;
-      double dsumq2 = 0.;
-      for (int i=0; i<digi.samples(); i++) {
-	//double q = hcaldqm::utilities::adc2fCDBMinusPedestal<QIE11DataFrame>(dbs, digi_fC, did, digi, i); // This is pedestal subtracted, don't want
-	//double q = digi_fC[i]; // Database apparently doesn't have GSel0?
-	double q = adc2fC[digi[i].adc()];
-	double delta_q = 0.;
-	if (digi[i].adc() == 0) {
-	  delta_q = adc2fC[digi[i].adc()] / 2.;
-	} else if (digi[i].adc() == 255) {
-	  delta_q = (adc2fC[digi[i].adc()] - adc2fC[digi[i].adc() - 1]) / 2.;
-	} else {
-	  delta_q = (adc2fC[digi[i].adc() + 1] - adc2fC[digi[i].adc() - 1]) / 2.;
-	}
-	delta_q = delta_q / TMath::Sqrt(12);
-	sumq += q;
-	dsumq2 += TMath::Power(delta_q, 2);
-	if (streamCache(sid)->_hist_adc.find(did.rawId()) != streamCache(sid)->_hist_adc.end()) {
-	  streamCache(sid)->_hist_adc.at(did.rawId())->Fill(digi[i].adc());
-	} else {
-	  //std::cout << "[debug] WARNING : Did " << did << " is not in the streamCache object!" << std::endl;
-	}
-	
-      }
-      double dsumq = TMath::Sqrt(dsumq2);
-      
-      // For high-charge events, print the pulse shape
-      //if (sumq > 100) {
-      //std::cout << "[StreamPVValidation::analyze] INFO : Printing high-charge pulse ADC => q" << std::endl;
-      //for (int i = 0; i < digi.samples(); ++i) {
-      //	std::cout << "[StreamPVValidation::analyze] INFO : \t" << digi[i].adc() << "\t=>\t" << digi_fC[i] << std::endl;
-      //}
-      //}
-      if (streamCache(sid)->_hist_fc.find(did.rawId()) != streamCache(sid)->_hist_fc.end()) {
-	streamCache(sid)->_hist_fc.at(did.rawId())->Fill(sumq);
-      }
-      ChannelHistogramMap::iterator it_hist_fc_kernel = streamCache(sid)->_hist_fc_kernel.find(did.rawId());
-      TF1* fgaus = streamCache(sid)->_fgaus;
-      if (it_hist_fc_kernel != streamCache(sid)->_hist_fc_kernel.end()) {
-	TH1F* this_hist_fc_kernel = it_hist_fc_kernel->second;
-	//std::cout << "[debug] Making gaussian with width " << dsumq << " / mean " << sumq << " / constant " << 1. / TMath::Sqrt(2*TMath::Pi()*dsumq*dsumq) << std::endl;
-	fgaus->SetParameter(1, sumq);
-	fgaus->SetParameter(2, dsumq);
-	fgaus->SetParameter(0, 1. / TMath::Sqrt(2*TMath::Pi()*dsumq*dsumq));
-	for (int bin = 1; bin <= this_hist_fc_kernel->GetNbinsX(); ++bin) {
-	  this_hist_fc_kernel->Fill(this_hist_fc_kernel->GetXaxis()->GetBinCenter(bin), fgaus->Integral(this_hist_fc_kernel->GetXaxis()->GetBinLowEdge(bin), this_hist_fc_kernel->GetXaxis()->GetBinUpEdge(bin)));
-	}
-      }
-    }
 }
 
 void StreamPVValidation::streamEndRunSummary(edm::StreamID sid, edm::Run const& run, edm::EventSetup const& es, PVValidationStreamData* globalData) const {
@@ -260,13 +201,13 @@ void StreamPVValidation::streamEndRunSummary(edm::StreamID sid, edm::Run const& 
   streamCache(sid)->reset();
 }
 
-std::map<TString, double> StreamPVValidation::fitGain(TH1F* hist, TF1** peak_fit, bool debug) const {
+std::map<TString, double> StreamPVValidation::fitIP(TH1F* hist, TF1** peak_fit, bool debug) const {
   std::map<TString, double> returnMap = {{"gain_est",0.}, {"gain",0.}, {"dgain",0.}};
   std::vector<int> peak_bins;
   TSpectrum* spectrum = new TSpectrum(250);
   int npeaks = spectrum->Search(hist, 1., "", 0.02); // histogram, width, option, threshold (peaks lower than thresh*max are discarded)
   if (npeaks <= 1) {
-    std::cerr << "[StreamPVValidation::fitGain] WARNING : npeaks=" << npeaks << " for hist " << hist->GetName() << ". hist integral = " << hist->Integral() << std::endl;
+    std::cerr << "[StreamPVValidation::fitIP] WARNING : npeaks=" << npeaks << " for hist " << hist->GetName() << ". hist integral = " << hist->Integral() << std::endl;
     return returnMap;
   }
   double *peak_x = spectrum->GetPositionX();
@@ -347,16 +288,16 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
   
   // Do gain fits
   
-  for (auto& it : globalData->_hist_fc) {
-    HcalDetId did(it.first);
+  for (auto& it : globalData->_hist_dxy) {
     TH1F* hist = it.second;
-    
+
+    PhaseSpaceBin did(it.first);
+
     // Write out a few histograms
     if (hist->Integral() > 0 && counter < 100) {
       _fs->cd();
       hist->Write();
-      globalData->_hist_fc_kernel.at(it.first)->Write();
-      globalData->_hist_adc.at(it.first)->Write();
+      globalData->_hist_dz.at(it.first)->Write();
     }
 
     // Skip histograms with low integral. 
@@ -365,86 +306,85 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
       continue;
     }
     if (counter < 100) {
-      std::cout << std::endl << "[debug] *** Doing gain determination for channel " << did << " ***" << std::endl;
+      std::cout << std::endl << "[debug] *** Doing fit determination for channel " << did << " ***" << std::endl;
     }
     
+    // // Bin width of 4 fC to avoid gaps
+  //   hist->Rebin(4);
+  //   if (counter < 100) {
+  //     std::cout << "[debug] Fitting nominal histogram" << std::endl;
+  //   }
+  //   TF1* peak_fit = 0;
+  //   std::map<TString, double> thisGain = fitIP(hist, &peak_fit, (counter<10));
     
-    // Bin width of 4 fC to avoid gaps
-    hist->Rebin(4);
-    if (counter < 100) {
-      std::cout << "[debug] Fitting nominal histogram" << std::endl;
-    }
-    TF1* peak_fit = 0;
-    std::map<TString, double> thisGain = fitGain(hist, &peak_fit, (counter<10));
+  //   _gain_container.run      = run.runAuxiliary().run();
+  //   _gain_container.nevents  = globalData->_nevents;
+  //   _gain_container.subdet   = _subdet_to_string.at(did.subdet());
+  //   _gain_container.ieta     = did.ieta();
+  //   _gain_container.iphi     = did.iphi();
+  //   _gain_container.depth    = did.depth();
+  //   _gain_container.gain     = thisGain["gain"];
+  //   _gain_container.gain_est = thisGain["gain_est"];
+  //   _gain_container.dgain    = thisGain["dgain"];
+  //   _gain_container.mean1    = thisGain["mean1"];
+  //   _gain_container.mean2    = thisGain["mean2"];
     
-    _gain_container.run      = run.runAuxiliary().run();
-    _gain_container.nevents  = globalData->_nevents;
-    _gain_container.subdet   = _subdet_to_string.at(did.subdet());
-    _gain_container.ieta     = did.ieta();
-    _gain_container.iphi     = did.iphi();
-    _gain_container.depth    = did.depth();
-    _gain_container.gain     = thisGain["gain"];
-    _gain_container.gain_est = thisGain["gain_est"];
-    _gain_container.dgain    = thisGain["dgain"];
-    _gain_container.mean1    = thisGain["mean1"];
-    _gain_container.mean2    = thisGain["mean2"];
+  //   // Do fit for kernel-based histograms too
+  //   TH1F* hist_kernel = globalData->_hist_fc_kernel.at(it.first);
+  //   // Set the uncertainty in each bin to sqrt(contents)... maybe not rigorous, but at least this gets the total histogram Sumw2 correct...
+  //   for (int bin = 0; bin <= hist_kernel->GetNbinsX() + 1; ++bin) {
+  //     if (hist_kernel->GetBinContent(bin) > 0) {
+  // 	hist_kernel->SetBinError(bin, TMath::Sqrt(hist_kernel->GetBinContent(bin)));
+  //     }
+  //   }
+  //   if (counter < 100) {
+  //     std::cout << "[debug] Fitting kernel histogram" << std::endl;
+  //   }
+  //   TF1* peak_fit_kernel = 0;		
+  //   std::map<TString, double> thisGainKernel = fitIP(hist_kernel, &peak_fit_kernel);
+  //   _gain_container.gain_kernel     = thisGainKernel["gain"];
+  //   _gain_container.gain_est_kernel = thisGainKernel["gain_est"];
+  //   _gain_container.dgain_kernel    = thisGainKernel["dgain"];
+  //   _gain_container.mean1_kernel    = thisGainKernel["mean1"];
+  //   _gain_container.mean2_kernel    = thisGainKernel["mean2"];
     
-    // Do fit for kernel-based histograms too
-    TH1F* hist_kernel = globalData->_hist_fc_kernel.at(it.first);
-    // Set the uncertainty in each bin to sqrt(contents)... maybe not rigorous, but at least this gets the total histogram Sumw2 correct...
-    for (int bin = 0; bin <= hist_kernel->GetNbinsX() + 1; ++bin) {
-      if (hist_kernel->GetBinContent(bin) > 0) {
-	hist_kernel->SetBinError(bin, TMath::Sqrt(hist_kernel->GetBinContent(bin)));
-      }
-    }
-    if (counter < 100) {
-      std::cout << "[debug] Fitting kernel histogram" << std::endl;
-    }
-    TF1* peak_fit_kernel = 0;		
-    std::map<TString, double> thisGainKernel = fitGain(hist_kernel, &peak_fit_kernel);
-    _gain_container.gain_kernel     = thisGainKernel["gain"];
-    _gain_container.gain_est_kernel = thisGainKernel["gain_est"];
-    _gain_container.dgain_kernel    = thisGainKernel["dgain"];
-    _gain_container.mean1_kernel    = thisGainKernel["mean1"];
-    _gain_container.mean2_kernel    = thisGainKernel["mean2"];
-    
-    if ((thisGain["gain"] < 30. || thisGainKernel["gain"] < 30. || counter < 100) && max_histogram_counter < 200) {
-      char tmpname[100];
+  //   if ((thisGain["gain"] < 30. || thisGainKernel["gain"] < 30. || counter < 100) && max_histogram_counter < 200) {
+  //     char tmpname[100];
       
-      sprintf(tmpname, "lowgainhist_%s", hist->GetName());
-      hist->Write(tmpname);
+  //     sprintf(tmpname, "lowgainhist_%s", hist->GetName());
+  //     hist->Write(tmpname);
       
-      sprintf(tmpname, "lowgainhist_%s", hist_kernel->GetName());
-      hist_kernel->Write(tmpname);
+  //     sprintf(tmpname, "lowgainhist_%s", hist_kernel->GetName());
+  //     hist_kernel->Write(tmpname);
       
-      sprintf(tmpname, "peak_fit_%s", hist_kernel->GetName());
-      _fs->cd();
-      if (peak_fit_kernel) {
-	peak_fit_kernel->Write(tmpname);
-      }
+  //     sprintf(tmpname, "peak_fit_%s", hist_kernel->GetName());
+  //     _fs->cd();
+  //     if (peak_fit_kernel) {
+  // 	peak_fit_kernel->Write(tmpname);
+  //     }
       
-      sprintf(tmpname, "peak_fit_%s", hist->GetName());
-      _fs->cd();
-      if (peak_fit) {
-	peak_fit->Write(tmpname);
-      }
+  //     sprintf(tmpname, "peak_fit_%s", hist->GetName());
+  //     _fs->cd();
+  //     if (peak_fit) {
+  // 	peak_fit->Write(tmpname);
+  //     }
       
-      ++max_histogram_counter;
-    }
+  //     ++max_histogram_counter;
+  //   }
     
-    if (thisGain["gain"] != 0 || thisGainKernel["gain"] != 0) {
-      _fs->cd();
-      _tree->Fill();
-    }
+  //   if (thisGain["gain"] != 0 || thisGainKernel["gain"] != 0) {
+  //     _fs->cd();
+  //     _tree->Fill();
+  //   }
     
-    if (peak_fit) {
-      delete peak_fit;
-      peak_fit = 0;
-    }
-    if (peak_fit_kernel) {
-      delete peak_fit_kernel;
-      peak_fit_kernel = 0;
-    }
+  //   if (peak_fit) {
+  //     delete peak_fit;
+  //     peak_fit = 0;
+  //   }
+  //   if (peak_fit_kernel) {
+  //     delete peak_fit_kernel;
+  //     peak_fit_kernel = 0;
+  //   }
     
     ++counter;
   }

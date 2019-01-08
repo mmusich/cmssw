@@ -32,7 +32,13 @@ struct PhaseSpaceBin {
 
   PhaseSpaceBin(unsigned int iEta,unsigned int iPhi): 
     mEta(iEta),mPhi(iPhi){
-    mRawId=100*iEta+10*iPhi;
+    mRawId=100*iEta+iPhi;
+  }
+  
+  PhaseSpaceBin(unsigned int rawId): 
+    mRawId(rawId){
+    mEta=mRawId/100;
+    mPhi=mRawId%100;
   }
   
 public:
@@ -120,7 +126,7 @@ class StreamPVValidation :
   void endRun(edm::Run const&, edm::EventSetup const&){}
   
   std::map<TString, double> fitIP(TH1F* hist, TF1** peak_fit, bool debug=false) const;
-  std::pair<unsigned int ,unsigned int> getiEtaiPhi(float eta,float phi);
+  std::pair<unsigned int ,unsigned int> getiEtaiPhi(float eta,float phi) const;
   
   edm::Service<TFileService> _fs;
   
