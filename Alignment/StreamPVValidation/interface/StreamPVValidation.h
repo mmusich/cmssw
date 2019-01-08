@@ -10,6 +10,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Utilities/interface/StreamID.h"
+#include "FWCore/Concurrency/interface/SerialTaskQueue.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -129,7 +130,8 @@ class StreamPVValidation :
   std::pair<unsigned int ,unsigned int> getiEtaiPhi(float eta,float phi) const;
   
   edm::Service<TFileService> _fs;
-  
+  mutable edm::SerialTaskQueue _queue; //queue is used to serialize access to output file
+
  protected:
   
  public:

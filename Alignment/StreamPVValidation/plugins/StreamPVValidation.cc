@@ -16,7 +16,7 @@
 
 auto getBin = [](int mult, double pitch, double start) -> double { return start + mult*pitch; };
 
-StreamPVValidation::StreamPVValidation(const edm::ParameterSet& ps) {
+StreamPVValidation::StreamPVValidation(const edm::ParameterSet& ps) {    
   _tagVertices = ps.getUntrackedParameter<edm::InputTag>("tagVertices", edm::InputTag("offlinePrimaryVertices"));
   _tokVertices = consumes<reco::VertexCollection>(_tagVertices);	
 }
@@ -69,7 +69,7 @@ void StreamPVValidation::streamBeginRun(edm::StreamID sid, edm::Run const& run, 
       PhaseSpaceBin did(ieta,iphi);
 
       sprintf(hname, "h_dxy_ieta%d_iphi%d_run%d", did.ieta(), did.iphi(), run.runAuxiliary().run());
-      streamCache(sid)->_hist_dxy.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 500, -500., 500.)));
+      streamCache(sid)->_hist_dxy.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 1000, -500., 500.)));
       
       sprintf(hname, "h_dz_ieta%d_iphi%d_run%d", did.ieta(), did.iphi(), run.runAuxiliary().run());      
       streamCache(sid)->_hist_dz.insert(std::pair<uint32_t, TH1F*>(did.rawId(), new TH1F(hname, hname, 1000, -500., 500.)));
@@ -102,7 +102,7 @@ StreamPVValidation::getiEtaiPhi(float eta,float phi) const{
   
   const Int_t nBins_ = 48;
   const Double_t phiLow_ = -TMath::Pi();
-  const Double_t phiHig_ = TMath::Pi();
+  const Double_t phiHig_ =  TMath::Pi();
   const Double_t etaLow_ = -2.5;
   const Double_t etaHig_ = 2.5;
   
@@ -127,6 +127,11 @@ StreamPVValidation::getiEtaiPhi(float eta,float phi) const{
       iEta = i;
     }
   }
+
+  if(iEta==9999 || iPhi==9999){
+    std::cout << "[debug] WARNING : eta="<<eta<<"("<<iEta<<")"<<" phi="<<phi<<"("<< iPhi<< ") is not a valid set of coordinates" << std::endl;
+  }
+
   return std::make_pair(iEta,iPhi);
 }
 
@@ -172,7 +177,7 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
 	//double dxy_err = (*trki)->dxyError()*cmToum;
 	//double dz_err  = (*trki)->dzError()*cmToum;
 	
-	float trackphi = ((*trki)->phi())*(180/M_PI);
+	float trackphi = (*trki)->phi();
 	float tracketa = (*trki)->eta();
 
 	auto coords = getiEtaiPhi(tracketa,trackphi);
@@ -288,28 +293,32 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
   
   // Do gain fits
   
-  for (auto& it : globalData->_hist_dxy) {
-    TH1F* hist = it.second;
+  // Save all histograms
+  _queue.pushAndWait([&]() {
 
-    PhaseSpaceBin did(it.first);
+      _fs->file().cd();
 
-    // Write out a few histograms
-    if (hist->Integral() > 0 && counter < 100) {
-      _fs->cd();
-      hist->Write();
-      globalData->_hist_dz.at(it.first)->Write();
-    }
+      std::string subdir_name = "run" + std::to_string(run.runAuxiliary().run());
+      TDirectory* subdir = _fs->file().mkdir(subdir_name.c_str());
+      subdir->cd();
 
-    // Skip histograms with low integral. 
-    if (hist->Integral() < 100) {
-      ++counter;
-      continue;
-    }
-    if (counter < 100) {
-      std::cout << std::endl << "[debug] *** Doing fit determination for channel " << did << " ***" << std::endl;
-    }
-    
-    // // Bin width of 4 fC to avoid gaps
+      TDirectory* Residuals = subdir->mkdir("Residuals");
+      Residuals->cd();
+
+      for (auto& it : globalData->_hist_dxy) {
+	TH1F* hist = it.second;
+
+	PhaseSpaceBin did(it.first);
+
+	std::cout << std::endl << "[debug] *** Doing fit determination for channel " << did << " ***" << std::endl;
+
+	hist->Write();
+	globalData->_hist_dz.at(it.first)->Write();
+      
+      }
+    });
+
+  // // Bin width of 4 fC to avoid gaps
   //   hist->Rebin(4);
   //   if (counter < 100) {
   //     std::cout << "[debug] Fitting nominal histogram" << std::endl;
@@ -386,6 +395,6 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
   //     peak_fit_kernel = 0;
   //   }
     
-    ++counter;
-  }
 }
+
+DEFINE_FWK_MODULE(StreamPVValidation);
