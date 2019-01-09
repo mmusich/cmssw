@@ -137,11 +137,21 @@ class StreamPVValidation :
 				      TString resType,
 				      TString varType) const ;
     
+
+  void fillTrendPlotByIndex(TH1F* trendPlot,HistogramMap& h, TString fitPar_) const;
+  std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > fitResiduals(TH1 *hist) const;
+  std::pair<Double_t,Double_t> getMedian(TH1 *histo) const;
+  std::pair<Double_t,Double_t> getMAD(TH1 *histo) const;
+
   edm::Service<TFileService> _fs;
   mutable edm::SerialTaskQueue _queue; //queue is used to serialize access to output file
 
  protected:
   static const unsigned int nBins_ = 48;
+  static constexpr double phiLow_ = -TMath::Pi();
+  static constexpr double phiHig_ =  TMath::Pi();
+  static constexpr double etaLow_ = -2.5;
+  static constexpr double etaHig_ = 2.5;
 
  public:
 

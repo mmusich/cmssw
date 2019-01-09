@@ -99,12 +99,7 @@ void StreamPVValidation::beginJob() {
 
 std::pair<unsigned int ,unsigned int> 
 StreamPVValidation::getiEtaiPhi(float eta,float phi) const{
-  
-  const Double_t phiLow_ = -TMath::Pi();
-  const Double_t phiHig_ =  TMath::Pi();
-  const Double_t etaLow_ = -2.5;
-  const Double_t etaHig_ = 2.5;
-  
+    
   unsigned int iPhi(9999),iEta(9999);
 
   std::array<unsigned int, nBins_> multiplier;
@@ -389,7 +384,6 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
       	hist->Write();
       }
 
-
       // book residuals vs eta histograms                                                                                     
  
       TDirectory* AbsTransEtaRes = _fs->file().mkdir("Abs_Transv_Eta_Residuals");
@@ -407,6 +401,65 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
       	auto hist = it.second;
       	hist->Write();
       }
+
+      // fill the trend plots
+
+      TDirectory* MeanTrendsDir   = _fs->file().mkdir("MeanTrends");
+      TDirectory* WidthTrendsDir  = _fs->file().mkdir("WidthTrends");
+
+      auto a_dxyPhiMeanTrend  = new TH1F("means_dxy_phi",
+					 "#LT d_{xy} #GT vs #phi sector;track #varphi;#LT d_{xy} #GT [#mum]",
+					 nBins_,phiLow_,phiHig_); 
+  
+      auto a_dxyPhiWidthTrend = new TH1F("widths_dxy_phi",
+					 "#sigma_{d_{xy}} vs #phi sector;track #varphi;#sigma_{d_{xy}} [#mum]",
+					 nBins_,phiLow_,phiHig_);
+
+      auto a_dzPhiMeanTrend   = new TH1F ("means_dz_phi",
+					  "#LT d_{z} #GT vs #phi sector;track #varphi;#LT d_{z} #GT [#mum]",
+					  nBins_,phiLow_,phiHig_); 
+      
+      auto a_dzPhiWidthTrend  = new TH1F("widths_dz_phi",
+					 "#sigma_{d_{z}} vs #phi sector;track #varphi;#sigma_{d_{z}} [#mum]",
+					 nBins_,phiLow_,phiHig_);
+      
+      auto a_dxyEtaMeanTrend  = new TH1F ("means_dxy_eta",
+					  "#LT d_{xy} #GT vs #eta sector;track #eta;#LT d_{xy} #GT [#mum]",
+					  nBins_,etaLow_,etaHig_);
+
+      auto a_dxyEtaWidthTrend = new TH1F("widths_dxy_eta",
+					 "#sigma_{d_{xy}} vs #eta sector;track #eta;#sigma_{d_{xy}} [#mum]",
+					 nBins_,etaLow_,etaHig_);
+  
+      auto a_dzEtaMeanTrend   = new TH1F ("means_dz_eta",
+					  "#LT d_{z} #GT vs #eta sector;track #eta;#LT d_{z} #GT [#mum]",
+					  nBins_,etaLow_,etaHig_); 
+  
+      auto a_dzEtaWidthTrend  = new TH1F("widths_dz_eta",
+					 "#sigma_{d_{xy}} vs #eta sector;track #eta;#sigma_{d_{z}} [#mum]",
+					 nBins_,etaLow_,etaHig_);
+
+      fillTrendPlotByIndex(a_dxyPhiMeanTrend ,h_dxy_phi_,"mean");  
+      fillTrendPlotByIndex(a_dxyPhiWidthTrend,h_dxy_phi_,"width");
+      fillTrendPlotByIndex(a_dzPhiMeanTrend  ,h_dz_phi_,"mean");   
+      fillTrendPlotByIndex(a_dzPhiWidthTrend ,h_dz_phi_,"width"); 
+
+      fillTrendPlotByIndex(a_dxyEtaMeanTrend ,h_dxy_eta_,"mean");  
+      fillTrendPlotByIndex(a_dxyEtaWidthTrend,h_dxy_eta_,"width");
+      fillTrendPlotByIndex(a_dzEtaMeanTrend  ,h_dz_eta_,"mean");   
+      fillTrendPlotByIndex(a_dzEtaWidthTrend ,h_dz_eta_,"width"); 
+
+      MeanTrendsDir->cd();
+      a_dxyPhiMeanTrend->Write();
+      a_dzPhiMeanTrend->Write(); 
+      a_dxyEtaMeanTrend->Write();
+      a_dzEtaMeanTrend->Write();
+
+      WidthTrendsDir->cd();
+      a_dxyPhiWidthTrend->Write();
+      a_dzPhiWidthTrend->Write();
+      a_dxyEtaWidthTrend->Write();
+      a_dzEtaWidthTrend->Write();
 
     });
 
@@ -488,5 +541,143 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
   //   }
     
 }
+
+//*************************************************************
+void StreamPVValidation::fillTrendPlotByIndex(TH1F* trendPlot,HistogramMap& h, TString fitPar_) const
+//*************************************************************
+{  
+  for(auto iterator = h.begin(); iterator != h.end(); iterator++) {
+    
+    unsigned int bin = (iterator->first)+1;
+    std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > myFit = fitResiduals(iterator->second);
+    
+    if(fitPar_=="mean"){
+      float mean_      = myFit.first.first;
+      float meanErr_   = myFit.first.second;
+      trendPlot->SetBinContent(bin,mean_);
+      trendPlot->SetBinError(bin,meanErr_);
+    } else if (fitPar_=="width"){
+      float width_     = myFit.second.first;
+      float widthErr_  = myFit.second.second;
+      trendPlot->SetBinContent(bin,width_);
+      trendPlot->SetBinError(bin,widthErr_);
+    } else if (fitPar_=="median"){
+      float median_    = getMedian(iterator->second).first;
+      float medianErr_ = getMedian(iterator->second).second;
+      trendPlot->SetBinContent(bin,median_);
+      trendPlot->SetBinError(bin,medianErr_);
+    } else if (fitPar_=="mad"){
+      float mad_       = getMAD(iterator->second).first; 
+      float madErr_    = getMAD(iterator->second).second;
+      trendPlot->SetBinContent(bin,mad_);
+      trendPlot->SetBinError(bin,madErr_);
+    } else {
+      std::cout<<"PrimaryVertexValidation::fillTrendPlot() "<<fitPar_<<" unknown estimator!"<<std::endl;
+    }
+  }
+}
+
+//*************************************************************
+std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > StreamPVValidation::fitResiduals(TH1 *hist) const
+//*************************************************************
+{
+  //float fitResult(9999);
+  //if (hist->GetEntries() < 20) return ;
+  
+  float mean  = hist->GetMean();
+  float sigma = hist->GetRMS();
+  
+  TF1 func("tmp", "gaus", mean - 1.5*sigma, mean + 1.5*sigma); 
+  if (0 == hist->Fit(&func,"QNR")) { // N: do not blow up file by storing fit!
+    mean  = func.GetParameter(1);
+    sigma = func.GetParameter(2);
+    // second fit: three sigma of first fit around mean of first fit
+    func.SetRange(mean - 2*sigma, mean + 2*sigma);
+      // I: integral gives more correct results if binning is too wide
+      // L: Likelihood can treat empty bins correctly (if hist not weighted...)
+    if (0 == hist->Fit(&func, "Q0LR")) {
+      if (hist->GetFunction(func.GetName())) { // Take care that it is later on drawn:
+	hist->GetFunction(func.GetName())->ResetBit(TF1::kNotDraw);
+      }
+    }
+  }
+
+  float res_mean  = func.GetParameter(1);
+  float res_width = func.GetParameter(2);
+  
+  float res_mean_err  = func.GetParError(1);
+  float res_width_err = func.GetParError(2);
+
+  std::pair<Double_t,Double_t> resultM;
+  std::pair<Double_t,Double_t> resultW;
+
+  resultM = std::make_pair(res_mean,res_mean_err);
+  resultW = std::make_pair(res_width,res_width_err);
+
+  std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > result;
+  
+  result = std::make_pair(resultM,resultW);
+  return result;
+}
+
+//*************************************************************
+std::pair<Double_t,Double_t> StreamPVValidation::getMedian(TH1 *histo) const
+//*************************************************************
+{
+  Double_t median = 999;
+  int nbins = histo->GetNbinsX();
+
+  //extract median from histogram
+  double *x = new double[nbins];
+  double *y = new double[nbins];
+  for (int j = 0; j < nbins; j++) {
+    x[j] = histo->GetBinCenter(j+1);
+    y[j] = histo->GetBinContent(j+1);
+  }
+  median = TMath::Median(nbins, x, y);
+  
+  delete[] x; x = 0;
+  delete[] y; y = 0;  
+
+  std::pair<Double_t,Double_t> result;
+  result = std::make_pair(median,median/TMath::Sqrt(histo->GetEntries()));
+
+  return result;
+
+}
+
+//*************************************************************
+std::pair<Double_t,Double_t> StreamPVValidation::getMAD(TH1 *histo) const
+//*************************************************************
+{
+
+  int nbins = histo->GetNbinsX();
+  Double_t median = getMedian(histo).first;
+  Double_t x_lastBin = histo->GetBinLowEdge(nbins+1);
+  const char *HistoName =histo->GetName();
+  TString Finalname = Form("resMed%s",HistoName);
+  TH1F *newHisto = new TH1F(Finalname,Finalname,nbins,0.,x_lastBin);
+  Double_t *residuals = new Double_t[nbins];
+  Double_t *weights = new Double_t[nbins];
+
+  for (int j = 0; j < nbins; j++) {
+    residuals[j] = TMath::Abs(median - histo->GetBinCenter(j+1));
+    weights[j]=histo->GetBinContent(j+1);
+    newHisto->Fill(residuals[j],weights[j]);
+  }
+  
+  Double_t theMAD = (getMedian(newHisto).first)*1.4826;
+  
+  delete[] residuals; residuals=0;
+  delete[] weights; weights=0;
+  newHisto->Delete("");
+  
+  std::pair<Double_t,Double_t> result;
+  result = std::make_pair(theMAD,theMAD/histo->GetEntries());
+
+  return result;
+
+}
+
 
 DEFINE_FWK_MODULE(StreamPVValidation);
