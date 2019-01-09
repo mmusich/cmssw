@@ -3,9 +3,9 @@ import sys
  
 isDA = True
 isMC = True
-allFromGT = False
+allFromGT = True
 applyBows = True
-applyExtraConditions = True
+applyExtraConditions = False
 
 process = cms.Process("PrimaryVertexValidation") 
 

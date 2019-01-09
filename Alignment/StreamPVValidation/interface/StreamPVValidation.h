@@ -76,6 +76,8 @@ public:
   HistogramMap _hist_dz;  // Filled with longitudinal impact parameter
   TF1* _fgaus;
   int _nevents;
+  int _nvertices;
+  int _ntracks;
   inline void add(const PVValidationStreamData* data) {
     for (auto& it : _hist_dxy) {
       if (data->_hist_dxy.find(it.first) != data->_hist_dxy.end()) {
@@ -89,7 +91,9 @@ public:
       }
     }
 
-    _nevents += data->_nevents;
+    _nevents    += data->_nevents;
+    _nvertices  += data->_nvertices;
+    _ntracks    += data->_ntracks;
   }
   
   inline void reset() {
@@ -129,11 +133,16 @@ class StreamPVValidation :
   std::map<TString, double> fitIP(TH1F* hist, TF1** peak_fit, bool debug=false) const;
   std::pair<unsigned int ,unsigned int> getiEtaiPhi(float eta,float phi) const;
   
+  HistogramMap bookResidualsHistogram(unsigned int theNOfBins,
+				      TString resType,
+				      TString varType) const ;
+    
   edm::Service<TFileService> _fs;
   mutable edm::SerialTaskQueue _queue; //queue is used to serialize access to output file
 
  protected:
-  
+  static const unsigned int nBins_ = 48;
+
  public:
 
 };

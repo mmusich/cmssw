@@ -33,8 +33,8 @@ std::shared_ptr<PVValidationStreamData> StreamPVValidation::globalBeginRunSummar
   //std::shared_ptr<PVValidation::ChannelHistogramMap> returnValue(new StreamPVValidation::ChannelHistogramMap());
   std::shared_ptr<PVValidationStreamData> returnValue(new PVValidationStreamData());
   
-  for(unsigned int ieta=0;ieta<48;ieta++){
-    for(unsigned int iphi=0;iphi<48;iphi++){
+  for(unsigned int ieta=0;ieta<nBins_;ieta++){
+    for(unsigned int iphi=0;iphi<nBins_;iphi++){
 
       char hname[50];
       PhaseSpaceBin did(ieta,iphi);
@@ -62,8 +62,8 @@ std::shared_ptr<PVValidationStreamData> StreamPVValidation::globalBeginRunSummar
 
 void StreamPVValidation::streamBeginRun(edm::StreamID sid, edm::Run const& run, edm::EventSetup const& es) const {
   
-  for(unsigned int ieta=0;ieta<48;ieta++){
-    for(unsigned int iphi=0;iphi<48;iphi++){
+  for(unsigned int ieta=0;ieta<nBins_;ieta++){
+    for(unsigned int iphi=0;iphi<nBins_;iphi++){
 
       char hname[50];
       PhaseSpaceBin did(ieta,iphi);
@@ -100,7 +100,6 @@ void StreamPVValidation::beginJob() {
 std::pair<unsigned int ,unsigned int> 
 StreamPVValidation::getiEtaiPhi(float eta,float phi) const{
   
-  const Int_t nBins_ = 48;
   const Double_t phiLow_ = -TMath::Pi();
   const Double_t phiHig_ =  TMath::Pi();
   const Double_t etaLow_ = -2.5;
@@ -108,7 +107,7 @@ StreamPVValidation::getiEtaiPhi(float eta,float phi) const{
   
   unsigned int iPhi(9999),iEta(9999);
 
-  std::array<unsigned int, 48> multiplier;
+  std::array<unsigned int, nBins_> multiplier;
   std::iota(multiplier.begin(), multiplier.end(),0);
 
   for (auto i : multiplier){
@@ -159,6 +158,7 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
     reco::Vertex iPV = *pvIt;
     if (iPV.isFake()) continue;
 
+    streamCache(sid)->_nvertices += 1;
     const math::XYZPoint pos_(iPV.x(),iPV.y(),iPV.z());
 
     reco::Vertex::trackRef_iterator trki;
@@ -171,6 +171,8 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
     for (trki  = iPV.tracks_begin(); trki != iPV.tracks_end(); ++trki){
       if (trki->isNonnull()){
 	
+	streamCache(sid)->_ntracks += 1;
+
 	double dxyRes  = (*trki)->dxy(pos_)*cmToum;
 	double dzRes   = (*trki)->dz(pos_)*cmToum;
 	
@@ -279,6 +281,35 @@ std::map<TString, double> StreamPVValidation::fitIP(TH1F* hist, TF1** peak_fit, 
   return returnMap;
 }
 
+
+//*************************************************************                                                                                                                                             
+// Generic booker function                                                                                                                                                                                  
+//*************************************************************                                                                                                                                             
+HistogramMap StreamPVValidation::bookResidualsHistogram(unsigned int theNOfBins,
+							TString resType,
+							TString varType) const{
+  TH1F::SetDefaultSumw2(kTRUE);
+  
+  Double_t up   =  500.;
+  Double_t down = -500.;
+
+  if(resType.Contains("norm")){
+    up = up*0.01;
+    down = down*0.01;
+  }
+
+  HistogramMap h;
+
+  const char* auxResType = (resType.ReplaceAll("_","")).Data();
+
+  for(unsigned int i=0; i<theNOfBins;i++){
+    h.insert(std::pair<uint32_t,TH1F*>(i,new TH1F(Form("histo_%s_%s_plot%i",resType.Data(),varType.Data(),i),
+						  Form("%s vs %s - bin %i;%s;tracks",auxResType,varType.Data(),i,auxResType),
+						  1000,down,up)));  
+  }
+  return h;
+}
+
 void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetup const& es, PVValidationStreamData* globalData) const {
   // Test: just print the map
   //std::cout << "[PVValidation::globalEndRunSummary] DEBUG : Printing results" << std::endl;
@@ -298,6 +329,17 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
 
       _fs->file().cd();
 
+      std::cout << "[StreamPVValidation::globalEndRunSummary] DEBUG : \t" 
+		<< globalData->_nevents << " have been processed \t" 
+		<< globalData->_nvertices << " vertices and " 
+		<< globalData->_ntracks   << " tracks in total"
+		<< std::endl;
+
+      auto h_dxy_phi_      = bookResidualsHistogram(nBins_,"dxy","phi");
+      auto h_dz_phi_       = bookResidualsHistogram(nBins_,"dz","phi");
+      auto h_dxy_eta_      = bookResidualsHistogram(nBins_,"dxy","eta");
+      auto h_dz_eta_       = bookResidualsHistogram(nBins_,"dz","eta");
+
       std::string subdir_name = "run" + std::to_string(run.runAuxiliary().run());
       TDirectory* subdir = _fs->file().mkdir(subdir_name.c_str());
       subdir->cd();
@@ -306,16 +348,66 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
       Residuals->cd();
 
       for (auto& it : globalData->_hist_dxy) {
-	TH1F* hist = it.second;
+	TH1F* histdxy = it.second;
+	TH1F* histdz  = globalData->_hist_dz.at(it.first);
 
 	PhaseSpaceBin did(it.first);
 
 	std::cout << std::endl << "[debug] *** Doing fit determination for channel " << did << " ***" << std::endl;
 
-	hist->Write();
-	globalData->_hist_dz.at(it.first)->Write();
+	histdxy->Write();
+	histdz->Write();
       
+	for(unsigned int iBin=0; iBin<nBins_;iBin++){
+	  if(did.iphi()==iBin){
+	    std::cout << "iPhi:" << iBin << std::endl;
+	    h_dxy_phi_.at(iBin)->Add(histdxy);
+	    h_dz_phi_.at(iBin)->Add(histdz);
+	  }
+
+	  if(did.ieta()==iBin){
+	    std::cout << "iEta:" << iBin << std::endl;
+	    h_dxy_eta_.at(iBin)->Add(histdxy);
+	    h_dz_eta_.at(iBin)->Add(histdz);
+	  }
+	}
       }
+      
+      // book residuals vs phi histograms                                                                                     
+      
+      TDirectory* AbsTransPhiRes = _fs->file().mkdir("Abs_Transv_Phi_Residuals");
+      AbsTransPhiRes->cd();
+      for (auto& it : h_dxy_phi_) {
+      	auto hist = it.second;
+      	hist->Write();
+      }
+
+      TDirectory* AbsLongPhiRes = _fs->file().mkdir("Abs_Long_Phi_Residuals");
+      AbsLongPhiRes->cd();
+      for (auto& it : h_dz_phi_) {
+      	auto hist = it.second;
+      	hist->Write();
+      }
+
+
+      // book residuals vs eta histograms                                                                                     
+ 
+      TDirectory* AbsTransEtaRes = _fs->file().mkdir("Abs_Transv_Eta_Residuals");
+      AbsTransEtaRes->cd();
+
+  
+      for (auto& it : h_dxy_eta_) {
+      	auto hist = it.second;
+      	hist->Write();
+      }
+
+      TDirectory* AbsLongEtaRes  = _fs->file().mkdir("Abs_Long_Eta_Residuals");
+      AbsLongEtaRes->cd();      
+      for (auto& it : h_dz_eta_) {
+      	auto hist = it.second;
+      	hist->Write();
+      }
+
     });
 
   // // Bin width of 4 fC to avoid gaps
