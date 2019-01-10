@@ -59,6 +59,11 @@ private:
 	double m_ellipticalEpsilon;
 	double m_skewEpsilon;
 	double m_sagittaEpsilon;
+	
+	double m_xOffsetEpsilon;
+	double m_yOffsetEpsilon;
+	double m_zOffsetEpsilon;
+        double m_scissorsPsi;
 
         //misalignment phases
         double m_ellipticalDelta;

@@ -1,12 +1,11 @@
 #=================================
 #inputs
-globaltag = 'auto:phase1_2018_design'    #APEs are copied from this GT (and IdealGeometry and TrackerTopology are used)
+globaltag = '100X_upgrade2018_realistic_v10'    #APEs are copied from this GT (and IdealGeometry and TrackerTopology are used)
 inputsqlitefile = None                  #if None, uses the GT alignment
 alignmenttag = 'Alignments'             #tag name for TrackerAlignmentRcd in the input file, also used for the output file
 runnumberalignmentIOV = 1               #any run number in the iov that you want to start from
 
-outputfilename = 'outputfile.db'
-
+outputfilename = 'outputfile_yOffset50um.db'
 
 #misalignment amplitudes, -999 means no misalignment
 #the commented numbers are the default magnitudes, which produce a maximum movement of around 600 microns
@@ -21,14 +20,16 @@ twistEpsilon      = -999. # 2.04e-6               #cm^-1
 ellipticalEpsilon = -999. # 5e-4
 skewEpsilon       = -999. # 5.5e-2                #cm
 sagittaEpsilon    = -999. # 5.0e-4
+xOffsetEpsilon    = -999. # 50um  
+yOffsetEpsilon    = 5.0e-3
+zOffsetEpsilon    = -999.
+scissorsPsi       = -999.
 
 #phases for phi dependent misalignments
 ellipticalDelta   = 0.
 skewDelta         = 0.
 sagittaDelta      = 0.
 #=================================
-
-
 
 
 import FWCore.ParameterSet.Config as cms
@@ -79,6 +80,10 @@ process.TrackerSystematicMisalignments.twistEpsilon      = twistEpsilon
 process.TrackerSystematicMisalignments.ellipticalEpsilon = ellipticalEpsilon
 process.TrackerSystematicMisalignments.skewEpsilon       = skewEpsilon
 process.TrackerSystematicMisalignments.sagittaEpsilon    = sagittaEpsilon
+process.TrackerSystematicMisalignments.xOffsetEpsilon    = xOffsetEpsilon
+process.TrackerSystematicMisalignments.yOffsetEpsilon    = yOffsetEpsilon
+process.TrackerSystematicMisalignments.zOffsetEpsilon    = zOffsetEpsilon
+process.TrackerSystematicMisalignments.scissorsPsi       = scissorsPsi
 
 #misalignment phases
 process.TrackerSystematicMisalignments.ellipticalDelta   = ellipticalDelta

@@ -2126,14 +2126,39 @@ TrackerCRAFTScenario.P1PXECEndcaps = copy.deepcopy(TrackerSurveyLASOnlyScenario.
 # -----------------------------------------------------------------------
 # Pixel Tracker Only z Shifts and Rotations
 # ----------------------------------------------------------------------
+PixelTrackerScissorScenario = cms.PSet(MisalignmentScenarioSettings,
+                                       P1PXBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
+                                                                   phiZlocal = cms.double(0.001),
+                                                                   ),
+                                       P1PXBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                                                   phiZlocal = cms.double(-0.001),
+                                                                   )
+                                       )
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Only z Shifts and Rotations
+# ----------------------------------------------------------------------
 PixelTrackerOnlyZShift = cms.PSet(MisalignmentScenarioSettings,
                                   P1PXBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
+                                                              dZlocal = cms.double(0.0050),
+                                                              ),
+                                  P1PXBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                                              dZlocal = cms.double(-0.050),
+                                                              )
+                                  )
+
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Only z Shifts and Rotations
+# ----------------------------------------------------------------------
+BPixHalfBarrelZShift = cms.PSet(MisalignmentScenarioSettings,
+                                P1PXBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
                                                             DetUnits = cms.PSet(dZ = cms.double(0.0015))
                                                             ),
-                                  P1PXBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                P1PXBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
                                                             DetUnits = cms.PSet(dZ = cms.double(-0.0015))
                                                             )
-                                  )
+                                )
 
 # -----------------------------------------------------------------------
 # Pixel Tracker Fixed Shifts and Rotations
@@ -3441,4 +3466,60 @@ MisalignmentScenario_PhaseI_PseudoAsymptotic = MisalignmentScenarioSettings.clon
     ),
   ),
 )
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Only z Shifts and Rotations 
+# ----------------------------------------------------------------------
+PixelTrackerOnlyZShift = cms.PSet(MisalignmentScenarioSettings,
+                                  P1PXBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
+                                                            DetUnits = cms.PSet(dZ = cms.double(0.0015))                                                                                
+                                                            ),
+                                  P1PXBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                                            DetUnits = cms.PSet(dZ = cms.double(-0.0015))                                                                               
+                                                            )
+                                  )
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Fixed Shifts and Rotations 
+# ----------------------------------------------------------------------
+PixelTrackerFixedShiftsAndRotations = cms.PSet(MisalignmentScenarioSettings,
+                                          P1PXBHalfBarrel1 = cms.PSet(distribution = cms.string('fixed'),
+                                                                    DetUnits = cms.PSet(dX = cms.double(0.0005),
+                                                                                        dY = cms.double(0.0010),
+                                                                                        dZ = cms.double(0.0015),
+                                                                                        phiX = cms.double(30e-6),
+                                                                                        phiY = cms.double(30e-06),
+                                                                                        phiZ = cms.double(30e-06)
+                                                                                        )
+                                                                    ),
+                                          P1PXBHalfBarrel2 = cms.PSet(distribution = cms.string('fixed'),
+                                                                    DetUnits = cms.PSet(dX = cms.double(-0.0005),
+                                                                                        dY = cms.double(-0.0010),
+                                                                                        dZ = cms.double(-0.0015),
+                                                                                        phiX = cms.double(-30e-6),
+                                                                                        phiY = cms.double(-30e-06),
+                                                                                        phiZ = cms.double(-30e-06)
+                                                                                        )
+                                                                    )
+                                          )
+
+
+# -----------------------------------------------------------------------
+# Pixel Tracker Random Shifts and Rotations 
+# ----------------------------------------------------------------------
+
+PixelTrackerDicedShiftsAndRotations = cms.PSet(MisalignmentScenarioSettings,
+                                               P1PXBBarrels = cms.PSet(distribution = cms.string('gaussian'),
+                                                                     scale = cms.double(1.0),
+                                                                     scaleError = cms.double(1.0),
+                                                                     P1PXBHalfBarrels = cms.PSet(distribution = cms.string('flat'),
+                                                                                                 dX = cms.double(0.0005),
+                                                                                                 dY = cms.double(0.0010),
+                                                                                                 dZ = cms.double(0.0015),
+                                                                                                 phiX = cms.double(30e-6),
+                                                                                                 phiY = cms.double(30e-06),
+                                                                                                 phiZ = cms.double(30e-06)
+                                                                                                 )
+                                                                       )
+                                               )
 

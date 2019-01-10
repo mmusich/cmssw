@@ -55,6 +55,11 @@ TrackerSystematicMisalignments::TrackerSystematicMisalignments(const edm::Parame
 	m_skewEpsilon = cfg.getUntrackedParameter< double > ("skewEpsilon");
 	m_sagittaEpsilon = cfg.getUntrackedParameter< double > ("sagittaEpsilon");
 
+	m_xOffsetEpsilon = cfg.getUntrackedParameter< double > ("xOffsetEpsilon");
+	m_yOffsetEpsilon = cfg.getUntrackedParameter< double > ("yOffsetEpsilon");
+	m_zOffsetEpsilon = cfg.getUntrackedParameter< double > ("zOffsetEpsilon");
+	m_scissorsPsi    = cfg.getUntrackedParameter< double > ("scissorsPsi");
+
 	m_ellipticalDelta = cfg.getUntrackedParameter< double > ("ellipticalDelta");
 	m_skewDelta = cfg.getUntrackedParameter< double > ("skewDelta");
 	m_sagittaDelta = cfg.getUntrackedParameter< double > ("sagittaDelta");
@@ -86,6 +91,19 @@ TrackerSystematicMisalignments::TrackerSystematicMisalignments(const edm::Parame
 	if (m_sagittaEpsilon > -990.0){
 		edm::LogWarning("MisalignedTracker") << "Applying sagitta ...";
 	}
+	if (m_xOffsetEpsilon > -990.0){
+		edm::LogWarning("MisalignedTracker") << "Applying x-offset ...";
+	}
+	if (m_yOffsetEpsilon > -990.0){
+		edm::LogWarning("MisalignedTracker") << "Applying y-offset ...";
+	}
+	if (m_zOffsetEpsilon > -990.0){
+		edm::LogWarning("MisalignedTracker") << "Applying z-offset ...";
+	}
+	if (m_scissorsPsi  > -990.0){
+		edm::LogWarning("MisalignedTracker") << "Applying scissors-like mode ...";
+	}
+
 
 	// get flag for suppression of blind movements
 	suppressBlindMvmts = cfg.getUntrackedParameter< bool > ("suppressBlindMvmts");
@@ -181,9 +199,10 @@ void TrackerSystematicMisalignments::applySystematicMisalignment(Alignable* ali)
 
 	// if suppression of blind mvmts: check if subdet is blind to a certain mode
 	bool blindToZ(false), blindToR(false);
+	const int subdetid = ali->geomDetId().subdetId();
 	if (suppressBlindMvmts)
 	{
-		const int subdetid = ali->geomDetId().subdetId();
+
 		switch(subdetid)
 		{
 			// TIB/TON blind to z
@@ -202,7 +221,7 @@ void TrackerSystematicMisalignments::applySystematicMisalignment(Alignable* ali)
 	}
 
 	const int level = ali->alignableObjectId();
-	if ((level == 1)||(level == 2)){
+	if ( ((level == 1)||(level == 2) ) && (subdetid==1)){
 		const align::PositionType gP = ali->globalPosition();
 		const align::GlobalVector gVec = findSystematicMis( gP, blindToZ, blindToR);
 		ali->move( gVec );
@@ -264,6 +283,36 @@ align::GlobalVector TrackerSystematicMisalignments::findSystematicMis( const ali
 		// deltaX += oldX/fabs(oldX)*m_sagittaEpsilon; // old one...
 		deltaX += oldR*m_sagittaEpsilon*sin(m_sagittaDelta);
 		deltaY += oldR*m_sagittaEpsilon*cos(m_sagittaDelta);    //Delta y is cos so that delta=0 reflects the old behavior
+	}
+	if (m_xOffsetEpsilon > -999.0){
+	  if(oldX>0){
+	    deltaX += m_xOffsetEpsilon;
+	  } else if(oldX<0){
+	    deltaX -= m_xOffsetEpsilon;
+	  }
+	}
+	if (m_yOffsetEpsilon > -999.0){
+	  if(oldX>0){
+	    deltaY += m_yOffsetEpsilon;
+	  } else if(oldX<0){
+	    deltaY -= m_yOffsetEpsilon;
+	  }
+	}
+	if (m_zOffsetEpsilon > -999.0){
+	  if(oldX>0){
+	    deltaZ += m_zOffsetEpsilon;
+	  } else if(oldX<0){
+	    deltaZ -= m_zOffsetEpsilon;
+	  }
+	}
+	if(m_scissorsPsi > -999.0){
+	  
+	  if(oldX>0){
+	    deltaX += oldR*std::sqrt(2*(1-sin(oldPhi)))*sin(m_scissorsPsi);
+	  } else if(oldX<0){
+	    deltaX -= oldR*std::sqrt(2*(1-sin(oldPhi)))*sin(m_scissorsPsi);
+	  }
+	  deltaY += oldR*std::sqrt(2*(1-sin(oldPhi)))*(1 - cos(m_scissorsPsi));
 	}
 
 	// Compatibility with old version <= 1.5

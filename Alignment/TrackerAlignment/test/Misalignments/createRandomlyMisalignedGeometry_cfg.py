@@ -11,7 +11,9 @@ process = cms.Process("Misaligner")
 options = VarParsing.VarParsing()
 
 options.register('myScenario',
-                 "MisalignmentScenario_PhaseI_PseudoAsymptotic", # default value
+                 #"MisalignmentScenario_PhaseI_PseudoAsymptotic", # default value
+                 #"PixelTrackerOnlyZShift",
+                 "PixelTrackerScissorScenario",
                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                  VarParsing.VarParsing.varType.string, # string, int, or float
                  "scenario to apply")
