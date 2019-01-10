@@ -27,10 +27,8 @@ def customiseAlignmentAndAPE(process):
 
     process.GlobalTag.toGet.extend( cms.VPSet(cms.PSet(record = cms.string("TrackerAlignmentRcd"),
                                                        tag = cms.string("Alignments"),
-                                                       #connect = cms.string("sqlite_file:/tmp/musich/CMSSW_10_5_X_2019-01-07-2300/src/Alignment/TrackerAlignment/test/outputfile_yOffset50um.db")
-                                                       #connect = cms.string("sqlite_file:/tmp/musich/CMSSW_10_5_X_2019-01-07-2300/src/Alignment/TrackerAlignment/test/outputfile_scissors1mrad.db")
-                                                       #connect  = cms.string("sqlite_file:/tmp/musich/CMSSW_10_5_X_2019-01-07-2300/src/Alignment/TrackerAlignment/test/Misalignments/geometry_PixelTrackerOnlyZShift__from_103X_mc2017_design_IdealBS_v2.db")
-                                                       connect  = cms.string("sqlite_file:/tmp/musich/CMSSW_10_5_X_2019-01-07-2300/src/Alignment/TrackerAlignment/test/Misalignments/geometry_PixelTrackerScissorScenario__from_103X_mc2017_design_IdealBS_v2.db")
+                                                       #connect = cms.string("sqlite_file:/tmp/musich/CMSSW_10_5_X_2019-01-07-2300/src/Alignment/TrackerAlignment/test/outputfile_xOffeset50um.db")
+                                                       connect = cms.string("sqlite_file:/tmp/musich/CMSSW_10_5_X_2019-01-07-2300/src/Alignment/TrackerAlignment/test/outputfile_scissors1mrad.db")
                                                        )
                                               )
                                     )
@@ -63,14 +61,14 @@ process.source = cms.Source("PoolSource",
                             )
 
 
-process.options = cms.untracked.PSet(
-    numberOfThreads = cms.untracked.uint32(4)
-    )
+# process.options = cms.untracked.PSet(
+#     numberOfThreads = cms.untracked.uint32(4)
+#     )
 
 #process.load("Alignment.OfflineValidation.DATASETTEMPLATE");
 runboundary = 1
 process.source.firstRun = cms.untracked.uint32(int(runboundary))
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 ###################################################################
 # JSON Filtering
@@ -262,7 +260,7 @@ process.offlinePrimaryVerticesFromRefittedTrks.TkFilterParameters.minPixelLayers
 # Output file
 ####################################################################
 process.TFileService = cms.Service("TFileService",
-                                   fileName=cms.string("test_refitVtx_ScissorsFromRandomTool.root")
+                                   fileName=cms.string("PVValidation_misaligned_v3.root")
                                    )                                    
 
 ####################################################################
@@ -278,8 +276,10 @@ if isDA:
                                            useTracksFromRecoVtx = cms.bool(False),
                                            isLightNtuple = cms.bool(True),
                                            askFirstLayerHit = cms.bool(False),
-                                           probePt = cms.untracked.double(3.0),
-                                           intLumi = cms.untracked.double(1),
+                                           forceBeamSpot = cms.untracked.bool(False),
+                                           probePt = cms.untracked.double(3.),
+                                           minPt   = cms.untracked.double(1.),
+                                           maxPt   = cms.untracked.double(30.),
                                            runControl = cms.untracked.bool(True),
                                            runControlNumber = cms.untracked.vuint32(int(runboundary)),
                                            
@@ -288,20 +288,27 @@ if isDA:
                                                                          minPixelLayersWithHits = cms.int32(2),                      # PX hits > 2                       
                                                                          minSiliconLayersWithHits = cms.int32(5),                    # TK hits > 5  
                                                                          maxD0Significance = cms.double(5.0),                        # fake cut (requiring 1 PXB hit)     
-                                                                         minPt = cms.double(0.0),                                    # better for softish events                        
+                                                                         minPt = cms.double(0.0),                                    # better for softish events
+                                                                         maxEta = cms.double(5.0),                                   # as per recommendation in PR #18330
                                                                          trackQuality = cms.string("any")
                                                                          ),
                                            
-                                           TkClusParameters=cms.PSet(algorithm=cms.string('DA'),
-                                                                     TkDAClusParameters = cms.PSet(coolingFactor = cms.double(0.8),  # moderate annealing speed
-                                                                                                   Tmin = cms.double(4.),            # end of annealing
-                                                                                                   vertexSize = cms.double(0.05),    # ~ resolution / sqrt(Tmin)
+                                           ## MM 04.05.2017 (use settings as in: https://github.com/cms-sw/cmssw/pull/18330)
+                                           TkClusParameters=cms.PSet(algorithm=cms.string('DA_vect'),
+                                                                     TkDAClusParameters = cms.PSet(coolingFactor = cms.double(0.6),  # moderate annealing speed
+                                                                                                   Tmin = cms.double(2.0),           # end of vertex splitting
+                                                                                                   Tpurge = cms.double(2.0),         # cleaning 
+                                                                                                   Tstop = cms.double(0.5),          # end of annealing
+                                                                                                   vertexSize = cms.double(0.006),   # added in quadrature to track-z resolutions
                                                                                                    d0CutOff = cms.double(3.),        # downweight high IP tracks
-                                                                                                   dzCutOff = cms.double(4.)         # outlier rejection after freeze-out (T<Tmin)
+                                                                                                   dzCutOff = cms.double(3.),        # outlier rejection after freeze-out (T<Tmin)   
+                                                                                                   zmerge = cms.double(1e-2),        # merge intermediat clusters separated by less than zmerge
+                                                                                                   uniquetrkweight = cms.double(0.8) # require at least two tracks with this weight at T=Tpurge
                                                                                                    )
+
                                                                      )
                                            )
-
+     
 ####################################################################
 # GAP clustering
 ####################################################################
@@ -369,9 +376,9 @@ process.p = cms.Path(process.goodvertexSkim*
                      #process.MeasurementTrackerEvent*
                      # in case the common refitting sequence is removed
                      process.FinalTrackRefitter*
-                     #process.PVValidation
-                     process.offlinePrimaryVerticesFromRefittedTrks*
+                     process.PVValidation
+                     #process.offlinePrimaryVerticesFromRefittedTrks*
                      #process.fastpv
-                     process.streamPVValidation
+                     #process.streamPVValidation
                      #*process.errorScaleCal
                      )
