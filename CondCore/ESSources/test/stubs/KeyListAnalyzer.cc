@@ -11,7 +11,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 
 #include "CondFormats/DataRecord/interface/ExEfficiency.h"
-#include "CondCore/IOVService/interface/KeyList.h"
+#include "CondCore/CondDB/interface/KeyList.h"
 #include "CondFormats/Calibration/interface/Conf.h"
 
 using namespace std;
@@ -56,22 +56,25 @@ namespace edmtest
       //record not found
       std::cout <<"Record \"ExDwarfListRcd "<<"\" does not exist "<<std::endl;
     }
-    edm::ESHandle<cond::KeyList> klh;
+    edm::ESHandle<cond::persistency::KeyList> klh;
     std::cout<<"got eshandle"<<std::endl;
     context.get<ExDwarfListRcd>().get(klh);
     std::cout<<"got context"<<std::endl;
-    cond::KeyList const &  kl= *klh.product();
+    cond::persistency::KeyList const &  kl= *klh.product();
+    std::cout<< "size is: "<< kl.size() << std::endl;
     int n=0;
-    for (int i=0; i<kl.size(); i++)
-      if (kl.elem(i)) { 
-	n++;
-	if (0==i%2) 
-	  print(*kl.get<condex::ConfI>(i));
-	else
-	  print(*kl.get<condex::ConfF>(i));
+    for (unsigned int i=0; i<kl.size(); i++){
+      //if (kl.elem(i)) { 
+      n++;
+      if (0==i%2){ 
+	std::cout << (*kl.get<condex::ConfI>(i)).key << std::endl;
+    	//print(*kl.get<condex::ConfI>(i));
+      }  else {
+	std::cout << (*kl.get<condex::ConfF>(i)).key << std::endl;
+    	//print(*kl.get<condex::ConfF>(i));
       }
+    }
     std::cout << "found " << n << " valid keyed confs" << std::endl;
-      
     std::cout << std::endl;
   }
 
