@@ -16,7 +16,12 @@
 
 auto getBin = [](int mult, double pitch, double start) -> double { return start + mult*pitch; };
 
-StreamPVValidation::StreamPVValidation(const edm::ParameterSet& ps) {    
+StreamPVValidation::StreamPVValidation(const edm::ParameterSet& ps):
+  ptOfProbe_(ps.getUntrackedParameter<double>("probePt",3.)),
+  pOfProbe_(ps.getUntrackedParameter<double>("probeP",0.)),
+  etaOfProbe_(ps.getUntrackedParameter<double>("probeEta",2.5)),
+  nHitsOfProbe_(ps.getUntrackedParameter<double>("probeNHits",0.))
+{    
   _tagVertices = ps.getUntrackedParameter<edm::InputTag>("tagVertices", edm::InputTag("offlinePrimaryVertices"));
   _tokVertices = consumes<reco::VertexCollection>(_tagVertices);	
 }
@@ -56,7 +61,13 @@ std::shared_ptr<PVValidationStreamData> StreamPVValidation::globalBeginRunSummar
   for (auto& it : returnValue->_hist_dz)  {
     it.second->Sumw2();
   }
-  
+
+  // book the control plots and SumW2 all histograms
+  bookTrackControlPlots(returnValue.get());
+  for (auto& it : returnValue->_control_plots)  {
+    it.second->Sumw2();
+  }
+
   return returnValue;
 }
 
@@ -90,7 +101,13 @@ void StreamPVValidation::streamBeginRun(edm::StreamID sid, edm::Run const& run, 
   for (auto& it : streamCache(sid)->_hist_dz) {
     it.second->Sumw2();
   }
-  
+
+  // book the control plots and SumW2 all histograms
+  bookTrackControlPlots(streamCache(sid));
+  for (auto& it : streamCache(sid)->_control_plots)  {
+    it.second->Sumw2();
+  }
+
 }
 
 void StreamPVValidation::beginJob() {
@@ -165,6 +182,15 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
     //reco::TrackCollection groupOne, groupTwo;
     for (trki  = iPV.tracks_begin(); trki != iPV.tracks_end(); ++trki){
       if (trki->isNonnull()){
+
+	bool pass = this->hasFirstLayerPixelHits(**trki);
+	if (!pass 
+	    || ((*trki)->pt() < ptOfProbe_) 
+	    || std::abs((*trki)->eta()) > etaOfProbe_ 
+	    || ((*trki)->numberOfValidHits())<nHitsOfProbe_
+	    || ((*trki)->p()) < pOfProbe_ ){
+	  continue;
+	}
 	
 	streamCache(sid)->_ntracks += 1;
 
@@ -177,6 +203,75 @@ void StreamPVValidation::analyze(edm::StreamID sid, const edm::Event& event, con
 	float trackphi = (*trki)->phi();
 	float tracketa = (*trki)->eta();
 
+	streamCache(sid)->_control_plots.at("probePhi")->Fill(trackphi);
+	streamCache(sid)->_control_plots.at("probeEta")->Fill(tracketa);
+	streamCache(sid)->_control_plots.at("probePt")->Fill((*trki)->pt());
+	streamCache(sid)->_control_plots.at("probeP")->Fill((*trki)->p());
+	streamCache(sid)->_control_plots.at("probeChi2")->Fill((*trki)->chi2());
+	streamCache(sid)->_control_plots.at("probeNormChi2")->Fill((*trki)->normalizedChi2());
+	streamCache(sid)->_control_plots.at("probeQoverP")->Fill((*trki)->qoverp());
+	streamCache(sid)->_control_plots.at("probeHits")->Fill((*trki)->numberOfValidHits());
+	streamCache(sid)->_control_plots.at("probeCharge")->Fill((*trki)->charge());
+	streamCache(sid)->_control_plots.at("probedzRefitV")->Fill(dzRes);
+	streamCache(sid)->_control_plots.at("probedxyRefitV")->Fill(dxyRes);
+
+	// // probe checks
+	// h_probePt_->Fill(theTrack.pt());
+	// h_probePtRebin_->Fill(theTrack.pt());
+	// h_probeP_->Fill(theTrack.p());
+	// h_probeEta_->Fill(theTrack.eta());
+	// h_probePhi_->Fill(theTrack.phi());
+	// h2_probeEtaPhi_->Fill(theTrack.eta(),theTrack.phi());
+	// h2_probeEtaPt_->Fill(theTrack.eta(),theTrack.pt());
+	
+	// h_probeChi2_->Fill(theTrack.chi2());
+	// h_probeNormChi2_->Fill(theTrack.normalizedChi2());
+	// h_probeCharge_->Fill(theTrack.charge());
+	// h_probeQoverP_->Fill(theTrack.qoverp());
+	// h_probeHits_->Fill(theTrack.numberOfValidHits());       
+	// h_probeHits1D_->Fill(nRecHit1D);
+	// h_probeHits2D_->Fill(nRecHit2D);
+	// h_probeHitsInTIB_->Fill(nhitinBPIX);
+	// h_probeHitsInTOB_->Fill(nhitinFPIX);
+	// h_probeHitsInTID_->Fill(nhitinTIB);
+	// h_probeHitsInTEC_->Fill(nhitinTID);
+	// h_probeHitsInBPIX_->Fill(nhitinTOB);
+	// h_probeHitsInFPIX_->Fill(nhitinTEC);
+	
+	// float dxyRecoV = theTrack.dz(theRecoVertex);
+	// float dzRecoV  = theTrack.dxy(theRecoVertex);
+	// float dxysigmaRecoV = TMath::Sqrt(theTrack.d0Error()*theTrack.d0Error()+xErrOfflineVertex_*yErrOfflineVertex_);
+	// float dzsigmaRecoV  = TMath::Sqrt(theTrack.dzError()*theTrack.dzError()+zErrOfflineVertex_*zErrOfflineVertex_);
+	
+	// double zTrack=(theTTrack.stateAtBeamLine().trackStateAtPCA()).position().z();
+	// double zVertex=theFittedVertex.position().z();
+	// double tantheta=tan((theTTrack.stateAtBeamLine().trackStateAtPCA()).momentum().theta());
+		
+	// double dz2= pow(theTrack.dzError(),2)+wxy2_/pow(tantheta,2);
+	// double restrkz   = zTrack-zVertex;
+	// double pulltrkz  = (zTrack-zVertex)/TMath::Sqrt(dz2);
+	
+	// h_probedxyRecoV_->Fill(dxyRecoV);
+	// h_probedzRecoV_->Fill(dzRecoV);
+	
+	// h_probedzRefitV_->Fill(dxyFromMyVertex);
+	// h_probedxyRefitV_->Fill(dzFromMyVertex);
+	
+	// h_probed0RefitV_->Fill(d0);
+	// h_probez0RefitV_->Fill(z0);
+	
+	// h_probesignIP2DRefitV_->Fill(s_ip2dpv_corr);
+	// h_probed3DRefitV_->Fill(ip3d_corr);
+	// h_probereszRefitV_->Fill(restrkz);
+	
+	// h_probeRecoVSigZ_->Fill(dzRecoV/dzsigmaRecoV);
+	// h_probeRecoVSigXY_->Fill(dxyRecoV/dxysigmaRecoV); 	
+	// h_probeRefitVSigZ_->Fill(dzFromMyVertex/dz_err);
+	// h_probeRefitVSigXY_->Fill(dxyFromMyVertex/s_ip2dpv_err); 
+	// h_probeRefitVSig3D_->Fill(ip3d_corr/ip3d_err);
+	// h_probeRefitVLogSig3D_->Fill(log10(ip3d_corr/ip3d_err));
+	// h_probeRefitVSigResZ_->Fill(pulltrkz);
+	
 	auto coords = getiEtaiPhi(tracketa,trackphi);
 	PhaseSpaceBin did(coords.first,coords.second);
 
@@ -305,6 +400,63 @@ HistogramMap StreamPVValidation::bookResidualsHistogram(unsigned int theNOfBins,
   return h;
 }
 
+//**************************************************************
+//
+// Book Probe track control plots
+//
+//**************************************************************
+void StreamPVValidation::bookTrackControlPlots(PVValidationStreamData* theStreamData) const{
+
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probePt"            ,new TH1F("h_probePt","p_{T} of probe track;track p_{T} (GeV); tracks",100,0.,50.)));   
+  //theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probePtRebin"       ,new TH1F("h_probePtRebin","p_{T} of probe track;track p_{T} (GeV); tracks",mypT_bins_.size()-1,mypT_bins_.data())));   
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeP"             ,new TH1F("h_probeP","momentum of probe track;track p (GeV); tracks",100,0.,100.)));   
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeEta"           ,new TH1F("h_probeEta","#eta of the probe track;track #eta;tracks",54,-2.8,2.8)));  
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probePhi"           ,new TH1F("h_probePhi","#phi of probe track;track #phi (rad);tracks",100,-3.15,3.15)));  
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeChi2"          ,new TH1F("h_probeChi2","",100.,0.,100.)));  //  "#chi^{2} of probe track;track chi^{2}; tracks",100,0.,100.))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeNormChi2"      ,new TH1F("h_probeNormChi2"," normalized #chi^{2} of probe track;track #chi^{2}/ndof; tracks",100,0.,10.)));
+
+  //h2_probeEtaPhi_       ,new TH1F("h2_probeEtaPhi","probe track #phi vs #eta;#eta of probe track;track #phi of probe track (rad); tracks",54,-2.8,2.8,100,-3.15,3.15);  
+  //h2_probeEtaPt_        ,new TH1F("h2_probeEtaPt","probe track p_{T} vs #eta;#eta of probe track;track p_{T} (GeV); tracks",54,-2.8,2.8,100,0.,50.);    
+
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeCharge"        ,new TH1F("h_probeCharge","charge of profe track;track charge Q;tracks",3,-1.5,1.5)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeQoverP"        ,new TH1F("h_probeQoverP","q/p of probe track; track Q/p (GeV^{-1});tracks",200,-1.,1.)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probedzRecoV"       ,new TH1F("h_probedzRecoV","d_{z}(V_{offline}) of probe track;track d_{z}(V_{off}) (cm);tracks",200,-1.,1.)));  
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probedxyRecoV"      ,new TH1F("h_probedxyRecoV","d_{xy}(V_{offline}) of probe track;track d_{xy}(V_{off}) (cm);tracks",200,-1.,1.)));      
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probedzRefitV"      ,new TH1F("h_probedzRefitV","d_{z}(V_{refit}) of probe track;track d_{z}(V_{fit}) (cm);tracks",200,-0.5,0.5)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probesignIP2DRefitV",new TH1F("h_probesignIPRefitV","ip_{2D}(V_{refit}) of probe track;track ip_{2D}(V_{fit}) (cm);tracks",200,-1.,1.)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probedxyRefitV"     ,new TH1F("h_probedxyRefitV","d_{xy}(V_{refit}) of probe track;track d_{xy}(V_{fit}) (cm);tracks",200,-0.5,0.5))); 
+
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probez0RefitV"      ,new TH1F("h_probez0RefitV","z_{0}(V_{refit}) of probe track;track z_{0}(V_{fit}) (cm);tracks",200,-1.,1.)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probed0RefitV"      ,new TH1F("h_probed0RefitV","d_{0}(V_{refit}) of probe track;track d_{0}(V_{fit}) (cm);tracks",200,-1.,1.)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probed3DRefitV"     ,new TH1F("h_probed3DRefitV","d_{3D}(V_{refit}) of probe track;track d_{3D}(V_{fit}) (cm);tracks",200,0.,1.))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probereszRefitV"    ,new TH1F("h_probeReszRefitV","z_{track} -z_{V_{refit}};track res_{z}(V_{refit}) (cm);tracks",200,-1.,1.))); 
+
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRecoVSigZ"     ,new TH1F("h_probeRecoVSigZ"  ,"Longitudinal DCA Significance (reco);d_{z}(V_{off})/#sigma_{dz};tracks",100,-8,8)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRecoVSigXY"    ,new TH1F("h_probeRecoVSigXY" ,"Transverse DCA Significance (reco);d_{xy}(V_{off})/#sigma_{dxy};tracks",100,-8,8)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRefitVSigZ"    ,new TH1F("h_probeRefitVSigZ" ,"Longitudinal DCA Significance (refit);d_{z}(V_{fit})/#sigma_{dz};tracks",100,-8,8)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRefitVSigXY"   ,new TH1F("h_probeRefitVSigXY","Transverse DCA Significance (refit);d_{xy}(V_{fit})/#sigma_{dxy};tracks",100,-8,8)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRefitVSig3D"   ,new TH1F("h_probeRefitVSig3D","3D DCA Significance (refit);d_{3D}/#sigma_{3D};tracks",100,0.,20.))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRefitVLogSig3D",new TH1F("h_probeRefitVLogSig3D","log_{10}(3D DCA-Significance) (refit);log_{10}(d_{3D}/#sigma_{3D});tracks",100,-5.,4.))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeRefitVSigResZ" ,new TH1F("h_probeRefitVSigResZ" ,"Longitudinal residual significance (refit);(z_{track} -z_{V_{fit}})/#sigma_{res_{z}};tracks",100,-8,8)));
+
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHits"          ,new TH1F("h_probeNRechits"    ,"N_{hits}     ;N_{hits}    ;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHits1D"        ,new TH1F("h_probeNRechits1D"  ,"N_{hits} 1D  ;N_{hits} 1D ;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHits2D"        ,new TH1F("h_probeNRechits2D"  ,"N_{hits} 2D  ;N_{hits} 2D ;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHitsInTIB"     ,new TH1F("h_probeNRechitsTIB" ,"N_{hits} TIB ;N_{hits} TIB;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHitsInTOB"     ,new TH1F("h_probeNRechitsTOB" ,"N_{hits} TOB ;N_{hits} TOB;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHitsInTID"     ,new TH1F("h_probeNRechitsTID" ,"N_{hits} TID ;N_{hits} TID;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHitsInTEC"     ,new TH1F("h_probeNRechitsTEC" ,"N_{hits} TEC ;N_{hits} TEC;tracks",40,-0.5,39.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHitsInBPIX"    ,new TH1F("h_probeNRechitsBPIX","N_{hits} BPIX;N_{hits} BPIX;tracks",40,-0.5,39.5)));
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeHitsInFPIX"    ,new TH1F("h_probeNRechitsFPIX","N_{hits} FPIX;N_{hits} FPIX;tracks",40,-0.5,39.5)));
+
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeL1Ladder"        ,new TH1F("h_probeL1Ladder","Ladder number (L1 hit); ladder number",22,-1.5,20.5))); 
+  theStreamData->_control_plots.insert(std::pair<std::string,TH1F*>("probeL1Module"        ,new TH1F("h_probeL1Module","Module number (L1 hit); module number",10,-1.5,8.5)));
+  //theStreamData->_control_plots.insert(std::pair<std::string,TH1I*>("probeHasBPixL1Overlap",new TH1I("h_probeHasBPixL1Overlap","n. hits in L1;n. L1-BPix hits;tracks",5,0,5)));
+
+}
+
+
+
 void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetup const& es, PVValidationStreamData* globalData) const {
   // Test: just print the map
   //std::cout << "[PVValidation::globalEndRunSummary] DEBUG : Printing results" << std::endl;
@@ -348,7 +500,7 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
 
 	PhaseSpaceBin did(it.first);
 
-	std::cout << std::endl << "[debug] *** Doing fit determination for channel " << did << " ***" << std::endl;
+	//std::cout << std::endl << "[debug] *** Doing fit determination for channel " << did << " ***" << std::endl;
 
 	histdxy->Write();
 	histdz->Write();
@@ -367,7 +519,14 @@ void StreamPVValidation::globalEndRunSummary(edm::Run const& run, edm::EventSetu
 	  }
 	}
       }
-      
+
+      TDirectory* ControlPlots = subdir->mkdir("ControlPlots");
+      ControlPlots->cd();
+      for (auto& it : globalData->_control_plots) {
+	TH1F* hist = it.second;
+	hist->Write();
+      }
+
       // book residuals vs phi histograms                                                                                     
       
       TDirectory* AbsTransPhiRes = _fs->file().mkdir("Abs_Transv_Phi_Residuals");
@@ -679,5 +838,24 @@ std::pair<Double_t,Double_t> StreamPVValidation::getMAD(TH1 *histo) const
 
 }
 
+// ------------ method to check the presence of pixel hits  ------------
+//*************************************************************
+bool StreamPVValidation::hasFirstLayerPixelHits(const reco::Track& track) const
+//*************************************************************
+{
+  using namespace reco;
+  const HitPattern& p = track.hitPattern();      
+  for (int i=0; i<p.numberOfAllHits(HitPattern::TRACK_HITS); i++) {
+    uint32_t pattern = p.getHitPattern(HitPattern::TRACK_HITS, i);   
+    if (p.pixelBarrelHitFilter(pattern) || p.pixelEndcapHitFilter(pattern) ) {
+      if (p.getLayer(pattern) == 1) {
+	if (p.validHitFilter(pattern)) {
+	  return true;
+	}
+      }
+    }
+  }
+  return false;
+} 
 
 DEFINE_FWK_MODULE(StreamPVValidation);

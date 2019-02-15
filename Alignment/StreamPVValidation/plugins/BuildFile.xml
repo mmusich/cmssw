@@ -5,6 +5,7 @@
   <use name="DataFormats/TrackReco"/>
   <use name="CommonTools/UtilAlgos"/>
   <use name="DataFormats/VertexReco"/>
+  <use name="TrackingTools/TransientTrack"/>
   <use name="boost"/>
   <use name="rootcore"/>
   <use name="rootspectrum"/>

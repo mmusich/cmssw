@@ -27,6 +27,7 @@
 #include <TMath.h>
 
 typedef std::map<uint32_t, TH1F*> HistogramMap;
+typedef std::map<std::string, TH1F*> ControlMap;
 
 // auxilliary class to store phase-space info
 struct PhaseSpaceBin {
@@ -74,10 +75,13 @@ class PVValidationStreamData {
 public:
   HistogramMap _hist_dxy; // Filled with transverse impact parameter
   HistogramMap _hist_dz;  // Filled with longitudinal impact parameter
+  ControlMap   _control_plots;
+
   TF1* _fgaus;
   int _nevents;
   int _nvertices;
   int _ntracks;
+
   inline void add(const PVValidationStreamData* data) {
     for (auto& it : _hist_dxy) {
       if (data->_hist_dxy.find(it.first) != data->_hist_dxy.end()) {
@@ -91,6 +95,12 @@ public:
       }
     }
 
+    for (auto& it : _control_plots) {
+      if (data->_control_plots.find(it.first) != data->_control_plots.end()) {
+	it.second->Add(data->_control_plots.at(it.first));
+      }
+    }
+
     _nevents    += data->_nevents;
     _nvertices  += data->_nvertices;
     _ntracks    += data->_ntracks;
@@ -99,6 +109,7 @@ public:
   inline void reset() {
     this->_hist_dxy.clear();
     this->_hist_dz.clear();
+    this->_control_plots.clear();
     if (_fgaus) {
       delete _fgaus;
       _fgaus = 0;
@@ -137,11 +148,14 @@ class StreamPVValidation :
 				      TString resType,
 				      TString varType) const ;
     
+  void bookTrackControlPlots(PVValidationStreamData*) const;
 
   void fillTrendPlotByIndex(TH1F* trendPlot,HistogramMap& h, TString fitPar_) const;
   std::pair<std::pair<Double_t,Double_t>, std::pair<Double_t,Double_t>  > fitResiduals(TH1 *hist) const;
   std::pair<Double_t,Double_t> getMedian(TH1 *histo) const;
   std::pair<Double_t,Double_t> getMAD(TH1 *histo) const;
+
+  bool hasFirstLayerPixelHits(const reco::Track& track) const;
 
   edm::Service<TFileService> _fs;
   mutable edm::SerialTaskQueue _queue; //queue is used to serialize access to output file
@@ -152,6 +166,11 @@ class StreamPVValidation :
   static constexpr double phiHig_ =  TMath::Pi();
   static constexpr double etaLow_ = -2.5;
   static constexpr double etaHig_ = 2.5;
+  
+  double  ptOfProbe_;
+  double  pOfProbe_;
+  double  etaOfProbe_;
+  double nHitsOfProbe_;
 
  public:
 
