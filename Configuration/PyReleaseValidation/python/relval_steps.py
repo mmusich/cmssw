@@ -1813,6 +1813,7 @@ steps['RECOHID18']=merge([{ '--scenario':'pp',
                             '--datatier':'AOD,DQMIO',
                             '--eventcontent':'AOD,DQM',
                             '--era':'Run2_2018_pp_on_AA',
+                            '--customise':'RecoTracker/TransientTrackingRecHit/customiseRemoveClusterRepair.doNotRunClusterRepair',
                             '-n':'10'
                             },steps['RECOHID15']])
 
