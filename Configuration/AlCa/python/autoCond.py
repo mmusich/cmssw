@@ -26,7 +26,8 @@ autoCond = {
     # GlobalTag for Run1 data reprocessing
     'run1_data'         :   '105X_dataRun2_v8',
     # GlobalTag for Run2 data reprocessing
-    'run2_data'         :   '105X_dataRun2_v8',
+    #'run2_data'         :   '105X_dataRun2_Candidate_2019_04_02_18_34_04',
+    'run2_data'         :   '105X_dataRun2_Candidate_2019_04_03_13_37_01',
     # GlobalTag for Run2 data relvals: allows customization to run with fixed L1 menu
     'run2_data_relval'  :   '105X_dataRun2_relval_v8',
     # GlobalTag for Run2 data 2018B relvals only: HEM-15-16 fail
