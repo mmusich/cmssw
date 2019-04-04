@@ -17,6 +17,7 @@ class OfflineValidation(GenericValidationData_CTSR, ParallelValidation, Validati
         "offlineModuleLevelProfiles": "True",
         "stripYResiduals": "False",
         "maxtracks": "0",
+        "multiIOV": "False",
         }
     deprecateddefaults = {
         "DMRMethod":"",
