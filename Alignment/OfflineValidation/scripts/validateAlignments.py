@@ -7,6 +7,11 @@ import optparse
 import datetime
 import shutil
 import fnmatch
+import fileinput
+import fileinput
+from abc import ABCMeta, abstractmethod
+import copy
+import itertools
 
 import six
 import Alignment.OfflineValidation.TkAlAllInOneTool.configTemplates \
@@ -71,21 +76,16 @@ class ParallelMergeJob(object):
             "-w %(conditions)s "
             "%(script)s"%repMap)
 
-class ValidationJob(object):
+class ValidationBase(object):
 
-    # these count the jobs of different varieties that are being run
-    crabCount = 0
-    interactCount = 0
-    batchCount = 0
-    batchJobIds = []
-    jobCount = 0
+    __metaclass__ = ABCMeta
 
     def __init__( self, validation, config, options ):
-        self.JobId=[]
+
         if validation[1] == "":
             # intermediate syntax
             valString = validation[0].split( "->" )[0]
-            alignments = validation[0].split( "->" )[1]
+            self.alignments = validation[0].split( "->" )[1]
             # force user to use the normal syntax
             if "->" in validation[0]:
                 msg = ("Instead of using the intermediate syntax\n'"
@@ -96,31 +96,65 @@ class ValidationJob(object):
                 raise AllInOneError(msg)
         else:
             valString = validation[0]
-            alignments = validation[1]
+            self.alignments = validation[1]
         valString = valString.split()
-        self.__valType = valString[0]
-        self.__valName = valString[1]
-        self.__commandLineOptions = options
-        self.__config = config
-        self.__preexisting = ("preexisting" in self.__valType)
-        if self.__valType[0] == "*":
-            self.__valType = self.__valType[1:]
-            self.__preexisting = True
+        self.valType = valString[0]
+        self.valName = valString[1]
+        self.commandLineOptions = options
+        self.config = config
+        self.preexisting = ("preexisting" in self.valType)
+        if self.valType[0] == "*":
+            self.valType = self.valType[1:]
+            self.preexisting = True
 
         # workaround for intermediate parallel version
-        if self.__valType == "offlineParallel":
+        if self.valType == "offlineParallel":
             print ("offlineParallel and offline are now the same.  To run an offline parallel validation,\n"
                    "just set parallelJobs to something > 1.  There is no reason to call it offlineParallel anymore.")
-            self.__valType = "offline"            
-        section = self.__valType + ":" + self.__valName
-        if not self.__config.has_section( section ):
+            self.valType = "offline"            
+        self.valSection = self.valType + ":" + self.valName
+        if not self.config.has_section( self.valSection ):
             raise AllInOneError("Validation '%s' of type '%s' is requested in"
-                                  " '[validation]' section, but is not defined."
+                                " '[validation]' section, but is not defined."
                                   "\nYou have to add a '[%s]' section."
-                                  %( self.__valName, self.__valType, section ))
-        self.validation = self.__getValidation( self.__valType, self.__valName,
-                                                alignments, self.__config,
-                                                options )
+                                  %( self.valName, self.valType, self.valSection ))
+
+
+    @abstractmethod
+    def createJob( self ):
+        pass
+
+    @abstractmethod
+    def runJob( self ):
+        pass
+
+    @abstractmethod
+    def getValidation( self ):
+        pass
+
+    @abstractmethod
+    def needsproxy(self):
+        pass
+
+
+class ValidationJob(ValidationBase):
+
+    # these count the jobs of different varieties that are being run
+    crabCount = 0
+    interactCount = 0
+    batchCount = 0
+    batchJobIds = []
+    jobCount = 0
+
+    def __init__( self, validation, config, options, *args, **kwargs ):
+
+        self.start = 0
+        self.end = args
+        self.JobId=[]
+        super(ValidationJob, self).__init__( validation, config, options )
+        self.validation = self.__getValidation( self.valType, self.valName,
+                                                  self.alignments, config,
+                                                  options )
 
     def __getValidation( self, valType, name, alignments, config, options ):
         if valType == "compare":
@@ -135,7 +169,7 @@ class ValidationJob(object):
                 firstRun = firstAlignList[1]
             else:
                 raise AllInOneError("Have to provide a run number for geometry comparison")
-            firstAlign = Alignment( firstAlignName, self.__config, firstRun )
+            firstAlign = Alignment( firstAlignName, config, firstRun )
             firstAlignName = firstAlign.name
             secondAlignList = alignmentsList[1].split()
             secondAlignName = secondAlignList[0].strip()
@@ -146,37 +180,37 @@ class ValidationJob(object):
                     secondRun = secondAlignList[1]
                 else:
                     raise AllInOneError("Have to provide a run number for geometry comparison")
-                secondAlign = Alignment( secondAlignName, self.__config,
+                secondAlign = Alignment( secondAlignName, config,
                                          secondRun )
                 secondAlignName = secondAlign.name
                 
             validation = GeometryComparison( name, firstAlign, secondAlign,
-                                             self.__config,
-                                             self.__commandLineOptions.getImages)
+                                             config,
+                                             self.commandLineOptions.getImages)
         elif valType == "offline":
             validation = OfflineValidation( name, 
-                Alignment( alignments.strip(), self.__config ), self.__config )
+                Alignment( alignments.strip(), config ), config )
         elif valType == "preexistingoffline":
-            validation = PreexistingOfflineValidation(name, self.__config)
+            validation = PreexistingOfflineValidation(name, config)
         elif valType == "offlineDQM":
             validation = OfflineValidationDQM( name, 
-                Alignment( alignments.strip(), self.__config ), self.__config )
+                Alignment( alignments.strip(), config ), config )
         elif valType == "mcValidate":
             validation = MonteCarloValidation( name, 
-                Alignment( alignments.strip(), self.__config ), self.__config )
+                Alignment( alignments.strip(), config ), config )
         elif valType == "preexistingmcValidate":
-            validation = PreexistingMonteCarloValidation(name, self.__config)
+            validation = PreexistingMonteCarloValidation(name, config)
         elif valType == "split":
             validation = TrackSplittingValidation( name, 
-                Alignment( alignments.strip(), self.__config ), self.__config )
+                Alignment( alignments.strip(), config ), config )
         elif valType == "preexistingsplit":
-            validation = PreexistingTrackSplittingValidation(name, self.__config)
+            validation = PreexistingTrackSplittingValidation(name, config)
         elif valType == "zmumu":
             validation = ZMuMuValidation( name, 
-                Alignment( alignments.strip(), self.__config ), self.__config )
+                Alignment( alignments.strip(), config ), config )
         elif valType == "primaryvertex":
             validation = PrimaryVertexValidation( name, 
-                Alignment( alignments.strip(), self.__config ), self.__config )
+                Alignment( alignments.strip(), config ), config )
         elif valType == "preexistingprimaryvertex":
             validation = PreexistingPrimaryVertexValidation(name, self.__config)
         elif valType == "overlap":
@@ -185,15 +219,18 @@ class ValidationJob(object):
         else:
             raise AllInOneError("Unknown validation mode '%s'"%valType)
 
+        print("config.get(IOV, iov)")
+        print (config.get("IOV", "iov"))
+
         return validation
 
     def __createJob( self, jobMode, outpath ):
         """This private method creates the needed files for the validation job.
            """
         self.validation.createConfiguration( outpath )
-        if self.__preexisting:
+        if self.preexisting:
             return
-        self.__scripts = sum([addIndex(script, self.validation.NJobs) for script in self.validation.createScript( outpath )], [])
+        self.scripts = sum([addIndex(script, self.validation.NJobs) for script in self.validation.createScript( outpath )], [])
         if jobMode.split( ',' )[0] == "crab":
             self.validation.createCrabCfg( outpath )
         return None
@@ -201,10 +238,10 @@ class ValidationJob(object):
     def createJob(self):
         """This is the method called to create the job files."""
         self.__createJob( self.validation.jobmode,
-                          os.path.abspath( self.__commandLineOptions.Name) )
+                          os.path.abspath( self.commandLineOptions.Name) )
 
     def runJob( self ):
-        if self.__preexisting:
+        if self.preexisting:
             if self.validation.jobid:
                 self.batchJobIds.append(self.validation.jobid)
             log = ">             " + self.validation.name + " is already validated."
@@ -214,12 +251,12 @@ class ValidationJob(object):
             if self.validation.jobid:
                 print("jobid {} will be ignored, since the validation {} is not preexisting".format(self.validation.jobid, self.validation.name))
 
-        general = self.__config.getGeneral()
+        general = self.config.getGeneral()
         log = ""
-        for script in self.__scripts:
+        for script in self.scripts:
             name = os.path.splitext( os.path.basename( script) )[0]
             ValidationJob.jobCount += 1
-            if self.__commandLineOptions.dryRun:
+            if self.commandLineOptions.dryRun:
                 print("%s would run: %s"%( name, os.path.basename( script) ))
                 continue
             log = ">             Validating "+name
@@ -269,7 +306,7 @@ class ValidationJob(object):
                 raise AllInOneError("Unknown 'jobmode'!\n"
                                       "Please change this parameter either in "
                                       "the [general] or in the ["
-                                      + self.__valType + ":" + self.__valName
+                                      + self.valType + ":" + self.valName
                                       + "] section to one of the following "
                                       "values:\n"
                                       "\tinteractive\n\tlxBatch, -q <queue>\n"
@@ -280,9 +317,96 @@ class ValidationJob(object):
     def getValidation( self ):
         return self.validation
 
-    @property
     def needsproxy(self):
-        return self.validation.needsproxy and not self.__preexisting and not self.__commandLineOptions.dryRun
+        return self.validation.needsproxy and not self.preexisting and not self.commandLineOptions.dryRun
+
+    def __iter__(self):
+        yield self
+
+    def __next__(self):
+        if self.start >= len(self.end):
+            raise StopIteration
+        else:
+            self.start += 1
+            return self.end[self.start-1]
+        
+
+class ValidationJobMultiIOV(ValidationBase):
+
+    def __init__( self, validation, config, options, outPath, *args, **kwargs):
+        self.start = 0
+        self.end = args
+        super(ValidationJobMultiIOV, self).__init__( validation, config, options )
+        self.optionMultiIOV = self.config.getboolean( self.valSection, "multiIOV" )
+        if self.optionMultiIOV == True:
+            self.validation = validation 
+            self.config = config 
+            self.options = options
+            self.outPath = outPath
+            self.validations = self.__performMultiIOV(self.validation, self.config,
+                                                  self.options, self.outPath)
+
+
+    def __performMultiIOV(self, validation, config, options, outPath):
+        validations = []
+        datasetList = self.config.get( self.valSection, "dataset" ).split( ", " )
+        for dataset in datasetList:
+            print(datasetList)
+            print(dataset)
+            sectionMultiIOV = "multiIOV:%s"%dataset
+            if not self.config.has_section(sectionMultiIOV):
+                raise AllInOneError("section'[%s]' not found. Please define the dataset"%sectionMultiIOV)
+            else:
+                datasetBaseName = self.config.get( sectionMultiIOV, "dataset" )
+                iovList = self.config.get( sectionMultiIOV, "iovs" ).split( ", " )
+                for iov in iovList:
+                    datasetName = datasetBaseName+"_since%s"%iov
+                    tmpConfig = BetterConfigParser()
+                    tmpConfig.read( options.config )
+                    general = tmpConfig.getGeneral()
+                    tmpConfig.add_section("IOV")
+                    tmpConfig.set("IOV", "iov", iov)
+                    tmpConfig.set( self.valSection, "dataset", datasetName )
+                    tmpConfig.set("internals","workdir",os.path.join(general["workdir"], options.Name, self.valType + "_" + self.valName + "_%s"%iov) )
+                    tmpConfig.set("internals","scriptsdir",os.path.join(outPath, self.valType + "_" + self.valName + "_" + iov) )
+                    tmpConfig.set("general","datadir",os.path.join(general["datadir"], options.Name, self.valType + "_" + self.valName + "_%s"%iov) )
+                    tmpConfig.set("general","logdir",os.path.join(general["logdir"], options.Name, self.valType + "_" + self.valName + "_%s"%iov) )
+                    tmpConfig.set("general","eosdir",os.path.join("AlignmentValidation", general["eosdir"], options.Name, self.valType + "_" + self.valName + "_%s"%iov) )
+                    tmpOptions = copy.deepcopy(options) 
+                    tmpOptions.Name = os.path.join(options.Name, self.valType + "_" + self.valName + "_%s"%iov)
+                    tmpOptions.config = tmpConfig
+                    newOutPath = os.path.abspath( tmpOptions.Name )
+                    if not os.path.exists( newOutPath ):
+                        os.makedirs( newOutPath )
+                    elif not os.path.isdir( newOutPath ):
+                        raise AllInOneError("the file %s is in the way rename the Job or move it away"%newOutPath)
+                    print(tmpOptions.Name)
+                    job = ValidationJob( validation, tmpConfig, tmpOptions, len(iovList) )
+                    validations.append(job)
+
+        return validations
+
+    def createJob( self ):
+        map( lambda validation: validation.createJob(), self.validations )
+
+    def runJob( self ):
+        return [validation.runJob() for validation in self.validations]
+
+    def getValidation( self ):
+        return [validation.getValidation() for validation in self.validations]
+
+    def needsproxy( self ):
+        return [validation.needsproxy() for validation in self.validations].join("and") and not self.preexisting and not self.commandLineOptions.dryRun
+
+    def __iter__(self):
+        yield self
+
+    def __next__(self):
+        if self.start >= len(self.end):
+            raise StopIteration
+        else:
+            self.start += 1
+            return self.end[self.start-1]
 
 
 ####################--- Functions ---############################
@@ -290,6 +414,9 @@ def createMergeScript( path, validations, options ):
     if(len(validations) == 0):
         raise AllInOneError("Cowardly refusing to merge nothing!")
 
+    #if len(validations[0]) != 1:
+    #    config = validations[0][0].config
+    #else:
     config = validations[0].config
     repMap = config.getGeneral()
     repMap.update({
@@ -303,7 +430,12 @@ def createMergeScript( path, validations, options ):
 
     comparisonLists = {} # directory of lists containing the validations that are comparable
     for validation in validations:
+        iov = validation.config.get("IOV", "iov")
+        validation.defaultReferenceName = iov
         for referenceName in validation.filesToCompare:
+            #referenceName = givenIOV
+            print("referenceName")
+            print(referenceName)
             validationtype = type(validation)
             if issubclass(validationtype, PreexistingValidation):
                 #find the actual validationtype
@@ -316,6 +448,8 @@ def createMergeScript( path, validations, options ):
                 comparisonLists[key].append(validation)
             else:
                 comparisonLists[key] = [validation]
+            print("comparisonLists")
+            print(comparisonLists)
 
     # introduced to merge individual validation outputs separately
     #  -> avoids problems with merge script
@@ -474,7 +608,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     optParser.add_option("-n", "--dryRun", dest="dryRun", action="store_true", default=False,
                          help="create all scripts and cfg File but do not start jobs (default=False)")
     optParser.add_option( "--getImages", dest="getImages", action="store_true", default=True,
-                          help="get all Images created during the process (default= True)")
+                         help="get all Images created during the process (default= True)")
     defaultConfig = "TkAlConfig.ini"
     optParser.add_option("-c", "--config", dest="config", default = defaultConfig,
                          help="configuration to use (default TkAlConfig.ini) this can be a comma-seperated list of all .ini file you want to merge", metavar="CONFIG")
@@ -497,11 +631,13 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
 
     (options, args) = optParser.parse_args(argv)
 
+
     if not options.restrictTo == None:
         options.restrictTo = options.restrictTo.split(",")
 
     options.config = [ os.path.abspath( iniFile ) for iniFile in \
-                       options.config.split( "," ) ]
+                       options.config.split( "," )]
+
     config = BetterConfigParser()
     outputIniFileSet = set( config.read( options.config ) )
     failedIniFiles = [ iniFile for iniFile in options.config if iniFile not in outputIniFileSet ]
@@ -601,18 +737,26 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
         shutil.copyfile(getCommandOutput2("voms-proxy-info --path").strip(), os.path.join(outPath, ".user_proxy"))
 
     validations = []
+    jobs = []
     for validation in config.items("validation"):
         alignmentList = [validation[1]]
         validationsToAdd = [(validation[0],alignment) \
                                 for alignment in alignmentList]
         validations.extend(validationsToAdd)
-    jobs = [ ValidationJob( validation, config, options) \
-                 for validation in validations ]
+    for validation in validations:
+        job = ValidationJobMultiIOV(validation, config, options, outPath, len(validations))
+        if (job.optionMultiIOV == True):
+            jobs.extend(job)
+        else:
+            jobs.extend( ValidationJob(validation, config, options) )
+
     for job in jobs:
         if job.needsproxy and not proxyexists:
             raise AllInOneError("At least one job needs a grid proxy, please init one.")
+    print(jobs)
     map( lambda job: job.createJob(), jobs )
     validations = [ job.getValidation() for job in jobs ]
+    validations = [item for sublist in validations for item in sublist]
 
     if options.mergeOfflineParallel:
         parallelMergeObjects=createMergeScript(outPath, validations, options)['parallelMergeObjects']
@@ -665,6 +809,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                             "-e %(logDir)s/%(jobName)s.stderr "
                             "-w %(conditions)s "
                             "%(logDir)s/%(script)s"%repMap)
+    
 
 if __name__ == "__main__":        
     # main(["-n","-N","test","-c","defaultCRAFTValidation.ini,latestObjects.ini","--getImages"])
