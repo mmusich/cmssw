@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #test execute: export CMSSW_BASE=/tmp/CMSSW && ./validateAlignments.py -c defaultCRAFTValidation.ini,test.ini -n -N test
 from __future__ import print_function
+from pprint import pprint
 import os
 import sys
 import optparse
@@ -145,6 +146,7 @@ class ValidationJob(ValidationBase):
     batchCount = 0
     batchJobIds = []
     jobCount = 0
+    condorConf = []
 
     def __init__( self, validation, config, options, *args, **kwargs ):
 
@@ -219,9 +221,6 @@ class ValidationJob(ValidationBase):
         else:
             raise AllInOneError("Unknown validation mode '%s'"%valType)
 
-        print("config.get(IOV, iov)")
-        print (config.get("IOV", "iov"))
-
         return validation
 
     def __createJob( self, jobMode, outpath ):
@@ -245,7 +244,6 @@ class ValidationJob(ValidationBase):
             if self.validation.jobid:
                 self.batchJobIds.append(self.validation.jobid)
             log = ">             " + self.validation.name + " is already validated."
-            print(log)
             return log
         else:
             if self.validation.jobid:
@@ -288,6 +286,10 @@ class ValidationJob(ValidationBase):
                 ValidationJob.batchJobIds.append(jobid)
                 log+=bsubOut
                 ValidationJob.batchCount += 1
+            
+            elif self.validation.jobmode.split( "," )[0] == "condor":
+                ValidationJob.condorConf.append((name[22:].replace(".", "_"), self.validation.config.items("IOV")[0][1], general["logdir"], script))
+
             elif self.validation.jobmode.split( "," )[0] == "crab":
                 os.chdir( general["logdir"] )
                 crabName = "crab." + os.path.basename( script )[:-3]
@@ -351,8 +353,6 @@ class ValidationJobMultiIOV(ValidationBase):
         validations = []
         datasetList = self.config.get( self.valSection, "dataset" ).split( ", " )
         for dataset in datasetList:
-            print(datasetList)
-            print(dataset)
             sectionMultiIOV = "multiIOV:%s"%dataset
             if not self.config.has_section(sectionMultiIOV):
                 raise AllInOneError("section'[%s]' not found. Please define the dataset"%sectionMultiIOV)
@@ -380,7 +380,6 @@ class ValidationJobMultiIOV(ValidationBase):
                         os.makedirs( newOutPath )
                     elif not os.path.isdir( newOutPath ):
                         raise AllInOneError("the file %s is in the way rename the Job or move it away"%newOutPath)
-                    print(tmpOptions.Name)
                     job = ValidationJob( validation, tmpConfig, tmpOptions, len(iovList) )
                     validations.append(job)
 
@@ -400,6 +399,37 @@ class ValidationJobMultiIOV(ValidationBase):
 
     def __iter__(self):
         yield self
+
+    @staticmethod
+    def runCondorJobs(outdir):
+        with open("validation.condor", "w") as condor:
+            condor.write("executable " + "= $(exe)" + "\n")
+            condor.write("universe " + "= vanilla" + "\n")
+            condor.write("log " + "= $(log)/log.log" + "\n")
+            condor.write("error " + "= $(log)/error.err" + "\n")
+            condor.write("out " + "= $(log)/out.out" + "\n")
+            condor.write("queue")
+             
+        with open("validation.dagman", "w") as dagman:
+            childs = {}
+
+            for jobInfo in ValidationJob.condorConf:
+                dagman.write("JOB {}_{}".format(jobInfo[0], jobInfo[1]) + "\t" + "validation.condor" + "\n")
+                childs.setdefault(jobInfo[0], []).append("{}_{}".format(jobInfo[0], jobInfo[1]))
+
+            dagman.write("JOB Merge " + "validation.condor" + "\n")
+            dagman.write("\n")
+
+            for jobInfo in ValidationJob.condorConf:
+                dagman.write("VAR {}_{} ".format(jobInfo[0], jobInfo[1]) + "exe='{}'".format(jobInfo[3]) + "\n")
+                dagman.write("VAR {}_{} ".format(jobInfo[0], jobInfo[1]) + "log='{}'".format(jobInfo[2]) + "\n")
+            dagman.write("VAR Merge " + "exe='{}/TkAlMerge.sh'".format(outdir) + "\n")
+            dagman.write("VAR Merge " + "log='{}'".format(outdir) + "\n")
+            dagman.write("\n")
+
+            dagman.write("PARENT Merge CHILD {}".format(" ".join([child for child in childs['minBias_FirstCollisions']])))
+
+        os.system("condor_submit_dag -f validation.dagman")
 
     def __next__(self):
         if self.start >= len(self.end):
@@ -434,8 +464,6 @@ def createMergeScript( path, validations, options ):
         validation.defaultReferenceName = iov
         for referenceName in validation.filesToCompare:
             #referenceName = givenIOV
-            print("referenceName")
-            print(referenceName)
             validationtype = type(validation)
             if issubclass(validationtype, PreexistingValidation):
                 #find the actual validationtype
@@ -448,8 +476,6 @@ def createMergeScript( path, validations, options ):
                 comparisonLists[key].append(validation)
             else:
                 comparisonLists[key] = [validation]
-            print("comparisonLists")
-            print(comparisonLists)
 
     # introduced to merge individual validation outputs separately
     #  -> avoids problems with merge script
@@ -753,7 +779,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     for job in jobs:
         if job.needsproxy and not proxyexists:
             raise AllInOneError("At least one job needs a grid proxy, please init one.")
-    print(jobs)
+
     map( lambda job: job.createJob(), jobs )
     validations = [ job.getValidation() for job in jobs ]
     validations = [item for sublist in validations for item in sublist]
@@ -764,7 +790,6 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
         createMergeScript(outPath, validations, options)
 
 
-    print()
     map( lambda job: job.runJob(), jobs )
 
     if options.autoMerge and ValidationJob.jobCount == ValidationJob.batchCount and config.getGeneral()["jobmode"].split(",")[0] == "lxBatch":
@@ -798,6 +823,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                 "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
                 "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in ValidationJob.batchJobIds]) + '"'
                 }
+
             for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
                 oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
                 if os.path.exists(oldlog):
@@ -809,6 +835,9 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                             "-e %(logDir)s/%(jobName)s.stderr "
                             "-w %(conditions)s "
                             "%(logDir)s/%(script)s"%repMap)
+
+    elif config.getGeneral()["jobmode"].split(",")[0] == "condor":
+        ValidationJobMultiIOV.runCondorJobs(options.Name)
     
 
 if __name__ == "__main__":        
