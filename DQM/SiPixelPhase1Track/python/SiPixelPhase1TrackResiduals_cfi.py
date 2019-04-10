@@ -35,9 +35,33 @@ SiPixelPhase1TrackResidualsResidualsY = SiPixelPhase1TrackResidualsResidualsX.cl
   xlabel = "(y_rec - y_pred) [cm]",
 )
 
+SiPixelPhase1TrackResidualsResidualsEdgeX = SiPixelPhase1TrackResidualsResidualsX.clone(
+    title = "Track Residuals X (edge pixel clusters)",
+    name = "resondedge_x",
+)
+
+SiPixelPhase1TrackResidualsResidualsEdgeY = SiPixelPhase1TrackResidualsResidualsY.clone(
+    title = "Track Residuals Y (edge pixel clusters)",
+    name = "resondedge_y",
+)
+
+SiPixelPhase1TrackResidualsResidualsOtherBadX = SiPixelPhase1TrackResidualsResidualsX.clone(
+    title = "Track Residuals X (other bad pixel clusters)",
+    name = "resotherbad_x",
+)
+
+SiPixelPhase1TrackResidualsResidualsOtherBadY = SiPixelPhase1TrackResidualsResidualsY.clone(
+    title = "Track Residuals Y (other bad pixel clusters)",
+    name = "resotherbad_y",
+)
+
 SiPixelPhase1TrackResidualsConf = cms.VPSet(
-  SiPixelPhase1TrackResidualsResidualsX,
-  SiPixelPhase1TrackResidualsResidualsY
+    SiPixelPhase1TrackResidualsResidualsX,
+    SiPixelPhase1TrackResidualsResidualsY,
+    SiPixelPhase1TrackResidualsResidualsEdgeX,
+    SiPixelPhase1TrackResidualsResidualsEdgeY,
+    SiPixelPhase1TrackResidualsResidualsOtherBadX,
+    SiPixelPhase1TrackResidualsResidualsOtherBadY
 )
 
 from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
