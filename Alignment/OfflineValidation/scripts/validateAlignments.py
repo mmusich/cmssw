@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #test execute: export CMSSW_BASE=/tmp/CMSSW && ./validateAlignments.py -c defaultCRAFTValidation.ini,test.ini -n -N test
 from __future__ import print_function
-from pprint import pprint
+import subprocess
 import os
 import sys
 import optparse
@@ -402,34 +402,42 @@ class ValidationJobMultiIOV(ValidationBase):
 
     @staticmethod
     def runCondorJobs(outdir):
-        with open("validation.condor", "w") as condor:
-            condor.write("executable " + "= $(exe)" + "\n")
-            condor.write("universe " + "= vanilla" + "\n")
-            condor.write("log " + "= $(log)/log.log" + "\n")
-            condor.write("error " + "= $(log)/error.err" + "\n")
-            condor.write("out " + "= $(log)/out.out" + "\n")
+        dagmanLog = "{}/daglogs".format(outdir)
+        os.system("mkdir -p {}".format(dagmanLog))
+
+
+        with open("{}/validation.condor".format(outdir), "w") as condor:
+            condor.write("universe = vanilla" + "\n")
+            condor.write("executable = $(exe)" + "\n")
+            condor.write("log = $(logdir)/log_$(Cluster).log" + "\n")
+            condor.write("error = $(logdir)/error_$(Cluster).err" + "\n")
+            condor.write("output = $(logdir)/out_$(Cluster).out" + "\n")
             condor.write("queue")
              
-        with open("validation.dagman", "w") as dagman:
+        with open("{}/validation.dagman".format(outdir), "w") as dagman:
             childs = {}
 
             for jobInfo in ValidationJob.condorConf:
-                dagman.write("JOB {}_{}".format(jobInfo[0], jobInfo[1]) + "\t" + "validation.condor" + "\n")
+                dagman.write("JOB {}_{} {}/validation.condor".format(jobInfo[0], jobInfo[1], outdir) + "\n")
                 childs.setdefault(jobInfo[0], []).append("{}_{}".format(jobInfo[0], jobInfo[1]))
 
-            dagman.write("JOB Merge " + "validation.condor" + "\n")
+            dagman.write("JOB Merge {}/validation.condor".format(outdir) + "\n")
             dagman.write("\n")
 
             for jobInfo in ValidationJob.condorConf:
-                dagman.write("VAR {}_{} ".format(jobInfo[0], jobInfo[1]) + "exe='{}'".format(jobInfo[3]) + "\n")
-                dagman.write("VAR {}_{} ".format(jobInfo[0], jobInfo[1]) + "log='{}'".format(jobInfo[2]) + "\n")
-            dagman.write("VAR Merge " + "exe='{}/TkAlMerge.sh'".format(outdir) + "\n")
-            dagman.write("VAR Merge " + "log='{}'".format(outdir) + "\n")
+                dagman.write('VARS {}_{} '.format(jobInfo[0], jobInfo[1]) + 'exe="{}"'.format(jobInfo[3]) + "\n")
+                dagman.write('VARS {}_{} '.format(jobInfo[0], jobInfo[1]) + 'logdir="{}"'.format(jobInfo[2]) + "\n")
+
+            dagman.write('VARS Merge ' + 'exe="{}/TkAlMerge.sh"'.format(outdir) + "\n")
+            dagman.write('VARS Merge ' + 'logdir="{}"'.format(outdir) + "\n")
             dagman.write("\n")
 
-            dagman.write("PARENT Merge CHILD {}".format(" ".join([child for child in childs['minBias_FirstCollisions']])))
+            dagman.write("PARENT {} CHILD Merge".format(" ".join([child for child in childs['minBias_FirstCollisions']])))
 
-        os.system("condor_submit_dag -f validation.dagman")
+        submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
+
+        for command in submitCommands:
+            subprocess.call(command.split(" "))
 
     def __next__(self):
         if self.start >= len(self.end):
@@ -837,7 +845,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                             "%(logDir)s/%(script)s"%repMap)
 
     elif config.getGeneral()["jobmode"].split(",")[0] == "condor":
-        ValidationJobMultiIOV.runCondorJobs(options.Name)
+        ValidationJobMultiIOV.runCondorJobs(outPath)
     
 
 if __name__ == "__main__":        
