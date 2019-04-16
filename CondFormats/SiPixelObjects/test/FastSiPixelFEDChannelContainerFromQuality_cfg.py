@@ -64,10 +64,20 @@ process.source = cms.Source("EmptySource",
 
 process.load("CondCore.CondDB.CondDB_cfi")
 process.load("CondFormats.SiPixelObjects.FastSiPixelFEDChannelContainerFromQuality_cfi")
-process.FastSiPixelFEDChannelContainerFromQuality.tagName  = "SiPixelQualityOffline_2017_threshold1percent_stuckTBM"
+#process.FastSiPixelFEDChannelContainerFromQuality.qualityTagName  = "SiPixelQualityOffline_2017_threshold1percent_stuckTBM"
+#process.FastSiPixelFEDChannelContainerFromQuality.startIOV = 1268368267018245
+#process.FastSiPixelFEDChannelContainerFromQuality.endIOV   = 1318907147191631
+#process.FastSiPixelFEDChannelContainerFromQuality.output   = "summary2017_StuckTBM.txt"
+
+#process.FastSiPixelFEDChannelContainerFromQuality.qualityTagName  = "SiPixelQualityOffline_2017_threshold1percent_prompt"
+#process.FastSiPixelFEDChannelContainerFromQuality.startIOV = 1268368267018245
+#process.FastSiPixelFEDChannelContainerFromQuality.endIOV   = 1318907147191657
+#process.FastSiPixelFEDChannelContainerFromQuality.output   = "summary2017_Prompt.txt"
+
+process.FastSiPixelFEDChannelContainerFromQuality.qualityTagName  = "SiPixelQualityOffline_2017_threshold1percent_other"
 process.FastSiPixelFEDChannelContainerFromQuality.startIOV = 1268368267018245
-process.FastSiPixelFEDChannelContainerFromQuality.endIOV   = 1318907147191631
-process.FastSiPixelFEDChannelContainerFromQuality.output   = "summary2017_StuckTBM.txt"
+process.FastSiPixelFEDChannelContainerFromQuality.endIOV   = 1318907147191657
+process.FastSiPixelFEDChannelContainerFromQuality.output   = "summary2017_Other.txt"
 
 process.p = cms.Path(process.FastSiPixelFEDChannelContainerFromQuality)
 
