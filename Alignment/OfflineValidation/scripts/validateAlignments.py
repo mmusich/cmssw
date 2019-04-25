@@ -145,8 +145,9 @@ class ValidationJob(ValidationBase):
     interactCount = 0
     batchCount = 0
     batchJobIds = []
+    batchJobs = {}
     jobCount = 0
-    condorConf = []
+    condorConf = {}
 
     def __init__( self, validation, config, options, *args, **kwargs ):
 
@@ -286,9 +287,20 @@ class ValidationJob(ValidationBase):
                 ValidationJob.batchJobIds.append(jobid)
                 log+=bsubOut
                 ValidationJob.batchCount += 1
+                iov = self.validation.config.items("IOV")[0][1]
+                key = (self.valName, iov, general["logdir"])
+                if key in ValidationJob.batchJobs:
+                    ValidationJob.batchJobs[key].append((jobid, self.validation.name))
+                else:
+                    ValidationJob.batchJobs[key] = [(jobid, self.validation.name)]
             
             elif self.validation.jobmode.split( "," )[0] == "condor":
-                ValidationJob.condorConf.append((name[22:].replace(".", "_"), self.validation.config.items("IOV")[0][1], general["logdir"], script))
+                iov = self.validation.config.items("IOV")[0][1]
+                key = (self.valName, iov)
+                if key in ValidationJob.condorConf:
+                    ValidationJob.condorConf[key].append((name[22:].replace(".", "_"), iov, general["logdir"], script))
+                else:
+                    ValidationJob.condorConf[key] = [(name[22:].replace(".", "_"), iov, general["logdir"], script)]
 
             elif self.validation.jobmode.split( "," )[0] == "crab":
                 os.chdir( general["logdir"] )
@@ -341,7 +353,7 @@ class ValidationJobMultiIOV(ValidationBase):
         super(ValidationJobMultiIOV, self).__init__( validation, config, options )
         self.optionMultiIOV = self.config.getboolean( self.valSection, "multiIOV" )
         if self.optionMultiIOV == True:
-            self.validation = validation 
+            self.validation = validation
             self.config = config 
             self.options = options
             self.outPath = outPath
@@ -366,6 +378,8 @@ class ValidationJobMultiIOV(ValidationBase):
                     general = tmpConfig.getGeneral()
                     tmpConfig.add_section("IOV")
                     tmpConfig.set("IOV", "iov", iov)
+                    tmpConfig.add_section("OptionMultiIOV")
+                    tmpConfig.set("OptionMultiIOV", "optionMultiIOV", True)
                     tmpConfig.set( self.valSection, "dataset", datasetName )
                     tmpConfig.set("internals","workdir",os.path.join(general["workdir"], options.Name, self.valType + "_" + self.valName + "_%s"%iov) )
                     tmpConfig.set("internals","scriptsdir",os.path.join(outPath, self.valType + "_" + self.valName + "_" + iov) )
@@ -391,17 +405,8 @@ class ValidationJobMultiIOV(ValidationBase):
     def runJob( self ):
         return [validation.runJob() for validation in self.validations]
 
-    def getValidation( self ):
-        return [validation.getValidation() for validation in self.validations]
-
-    def needsproxy( self ):
-        return [validation.needsproxy() for validation in self.validations].join("and") and not self.preexisting and not self.commandLineOptions.dryRun
-
-    def __iter__(self):
-        yield self
-
     @staticmethod
-    def runCondorJobs(outdir):
+    def runCondorJobs(outdir, mergeKeys):
         dagmanLog = "{}/daglogs".format(outdir)
         os.system("mkdir -p {}".format(dagmanLog))
 
@@ -415,29 +420,41 @@ class ValidationJobMultiIOV(ValidationBase):
             condor.write("queue")
              
         with open("{}/validation.dagman".format(outdir), "w") as dagman:
-            childs = {}
 
-            for jobInfo in ValidationJob.condorConf:
-                dagman.write("JOB {}_{} {}/validation.condor".format(jobInfo[0], jobInfo[1], outdir) + "\n")
-                childs.setdefault(jobInfo[0], []).append("{}_{}".format(jobInfo[0], jobInfo[1]))
+            for (valName, iov), alignments in six.iteritems(ValidationJob.condorConf):
+                parents = []
+                for jobInfo in alignments: 
+                    dagman.write("JOB {}_{} {}/validation.condor".format(jobInfo[0], iov, outdir) + "\n")
+                    dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'exe="{}"'.format(jobInfo[3]) + "\n")
+                    dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'logdir="{}"'.format(jobInfo[2]) + "\n")
+                    parents.append('{}_{}'.format(jobInfo[0], iov))
+                    dagman.write("\n")
 
-            dagman.write("JOB Merge {}/validation.condor".format(outdir) + "\n")
-            dagman.write("\n")
+                path =  os.path.join(jobInfo[2], "TkAlMerge.sh")
+                if os.path.exists( path ):
+                    dagman.write("JOB Merge_{}_{} {}/validation.condor".format(valName, iov, outdir) + "\n")
+                    dagman.write('VARS Merge_{}_{} '.format(valName, iov) + 'exe="{}"'.format(path) + "\n")
+                    dagman.write('VARS Merge_{}_{} '.format(valName, iov) + 'logdir="{}"'.format(jobInfo[2]) + "\n")
+                    dagman.write("\n")
+                    dagman.write('PARENT {} '.format(" ".join([parent for parent in parents])) + 'CHILD Merge_{}_{}'.format(valName, iov) + "\n")
+                    dagman.write("\n")
+                else:
+                    raise AllInOneError("Merge script '[%s]' not found!"%path)
 
-            for jobInfo in ValidationJob.condorConf:
-                dagman.write('VARS {}_{} '.format(jobInfo[0], jobInfo[1]) + 'exe="{}"'.format(jobInfo[3]) + "\n")
-                dagman.write('VARS {}_{} '.format(jobInfo[0], jobInfo[1]) + 'logdir="{}"'.format(jobInfo[2]) + "\n")
+            submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
+            print(submitCommands)
+            for command in submitCommands:
+                #print(command.split(" "))
+                subprocess.call(command.split(" "))
 
-            dagman.write('VARS Merge ' + 'exe="{}/TkAlMerge.sh"'.format(outdir) + "\n")
-            dagman.write('VARS Merge ' + 'logdir="{}"'.format(outdir) + "\n")
-            dagman.write("\n")
+    def getValidation( self ):
+        return [validation.getValidation() for validation in self.validations]
 
-            dagman.write("PARENT {} CHILD Merge".format(" ".join([child for child in childs['minBias_FirstCollisions']])))
+    def needsproxy( self ):
+        return [validation.needsproxy() for validation in self.validations].join("and") and not self.preexisting and not self.commandLineOptions.dryRun
 
-        submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
-
-        for command in submitCommands:
-            subprocess.call(command.split(" "))
+    def __iter__(self):
+        yield self
 
     def __next__(self):
         if self.start >= len(self.end):
@@ -511,6 +528,7 @@ def createMergeScript( path, validations, options ):
             if options.mergeOfflineParallel and validationType.valType=='offline' and validation.jobmode.split(",")[0]=="lxBatch":
                 repMapTemp=repMap.copy()
                 if validationType not in anythingToMerge:
+                    print(validationType)
                     anythingToMerge += [validationType]
                     #create init script
                     fileName="TkAlMergeInit"
@@ -564,6 +582,7 @@ def createMergeScript( path, validations, options ):
                 
             else:
                 if validationType not in anythingToMerge:
+                    print("I'm here")
                     anythingToMerge += [validationType]
                     repMap["doMerge"] += '\n\n\n\necho -e "\n\nMerging results from %s jobs"\n\n' % validationType.valType
                     repMap["beforeMerge"] += validationType.doInitMerge()
@@ -598,24 +617,47 @@ def createMergeScript( path, validations, options ):
         if issubclass(validationType, ValidationWithComparison):
             repMap["CompareAlignments"] += validationType.doComparison(validations)
     
+    filePath = []
     #if user wants to merge parallely and if there are valid parallel scripts, create handle for plotting job and set merge script name accordingly
     if options.mergeOfflineParallel and parallelMergeObjects!={}:
         parallelMergeObjects["continue"]=ParallelMergeJob("TkAlMergeFinal",os.path.join(path, "TkAlMergeFinal.sh"),[])
-        filePath = os.path.join(path, "TkAlMergeFinal.sh")
+        filePath.append(os.path.join(path, "TkAlMergeFinal.sh"))
     #if not merging parallel, add code to create results directory and set merge script name accordingly
+    elif config.has_section("IOV"):
+        for (validationType, referencename), validations in six.iteritems(comparisonLists):
+            repMap["RunValidationPlots"] = ""
+            repMap["CompareAlignments"] = "#run comparisons"
+            if issubclass(validationType, ValidationWithPlots):
+                repMap["RunValidationPlots"] += validationType.doRunPlots(validations)
+            if issubclass(validationType, ValidationWithComparison):
+                repMap["CompareAlignments"] += validationType.doComparison(validations)
+            repMap["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap)
+            scriptsdir = validations[0].config.get("internals","scriptsdir")
+            filePath.append(os.path.join(scriptsdir, "TkAlMerge.sh"))
+            #print(filePath)
     else:
         repMap["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap)
-        filePath = os.path.join(path, "TkAlMerge.sh")
+        filePath.append(os.path.join(path, "TkAlMerge.sh"))
     
+    mergeKeys = {}
+    for path in filePath:    
+        #filePath = os.path.join(path, "TkAlMerge.sh")
+        theFile = open( path, "w" )
+        theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap ) )
+        theFile.close()
+        os.chmod(path,0o755)
+        if "TkAlMerge" in mergeKeys:
+            mergeKeys["TkAlMerge"].append(path)
+        else:
+            mergeKeys["TkAlMerge"] = [path]
+        if "parallelMergeObjects" in mergeKeys:
+            mergeKeys["parallelMergeObjects"].append(parallelMergeObjects)
+        else:
+            mergeKeys["parallelMergeObjects"] = [parallelMergeObjects]
     
-    #filePath = os.path.join(path, "TkAlMerge.sh")
-    theFile = open( filePath, "w" )
-    theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap ) )
-    theFile.close()
-    os.chmod(filePath,0o755)
-    
+        
     if options.mergeOfflineParallel:
-        return {'TkAlMerge.sh':filePath, 'parallelMergeObjects':parallelMergeObjects}
+        return mergeKeys
     else:
         return filePath
     
@@ -793,7 +835,8 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     validations = [item for sublist in validations for item in sublist]
 
     if options.mergeOfflineParallel:
-        parallelMergeObjects=createMergeScript(outPath, validations, options)['parallelMergeObjects']
+        parallelMergeObjectsList = createMergeScript(outPath, validations, options)['parallelMergeObjects']
+        mergeKeys = createMergeScript(outPath, validations, options)
     else:
         createMergeScript(outPath, validations, options)
 
@@ -806,46 +849,65 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
         # after the jobs have finished
         
         #if parallel merge scripts: manage dependencies
-        if options.mergeOfflineParallel and parallelMergeObjects!={}:
-            initID=parallelMergeObjects["init"].runJob(config).split("<")[1].split(">")[0]
-            parallelIDs=[]
-            for parallelMergeScript in parallelMergeObjects["parallel"]:
-                parallelMergeScript.addDependency(initID)
-                for job in jobs:
-                    if isinstance(job.validation, OfflineValidation) and "TkAlMerge"+job.validation.alignmentToValidate.name==parallelMergeScript.name:
-                        parallelMergeScript.addDependency(job.JobId)
-                parallelIDs.append(parallelMergeScript.runJob(config).split("<")[1].split(">")[0])
-            parallelMergeObjects["continue"].addDependency(parallelIDs)
-            parallelMergeObjects["continue"].addDependency(ValidationJob.batchJobIds)
-            parallelMergeObjects["continue"].runJob(config)
+        for parallelMergeObjects in parallelMergeObjectsList:
+            if options.mergeOfflineParallel and parallelMergeObjects!={}:
+                initID=parallelMergeObjects["init"].runJob(config).split("<")[1].split(">")[0]
+                parallelIDs=[]
+                for parallelMergeScript in parallelMergeObjects["parallel"]:
+                    parallelMergeScript.addDependency(initID)
+                    for job in jobs:
+                        if isinstance(job.validation, OfflineValidation) and "TkAlMerge"+job.validation.alignmentToValidate.name==parallelMergeScript.name:
+                            parallelMergeScript.addDependency(job.JobId)
+                    parallelIDs.append(parallelMergeScript.runJob(config).split("<")[1].split(">")[0])
+                parallelMergeObjects["continue"].addDependency(parallelIDs)
+                parallelMergeObjects["continue"].addDependency(ValidationJob.batchJobIds)
+                parallelMergeObjects["continue"].runJob(config)
             
             
         
     
         else:
-            repMap = {
-                "commands": config.getGeneral()["jobmode"].split(",")[1],
-                "jobName": "TkAlMerge",
-                "logDir": config.getGeneral()["logdir"],
-                "script": "TkAlMerge.sh",
-                "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
-                "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in ValidationJob.batchJobIds]) + '"'
-                }
+            #repMap = {
+            #    "commands": config.getGeneral()["jobmode"].split(",")[1],
+            #    "jobName": "TkAlMerge_{}_{}".format(),
+            #    "logDir": config.getGeneral()["logdir"],
+            #    "script": "TkAlMerge.sh",
+            #    "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
+            #    "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in ValidationJob.batchJobIds]) + '"'
+            #    }
+            #
+            #for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
+            #    oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
+            #    if os.path.exists(oldlog):
+            #        os.remove(oldlog)
 
-            for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
-                oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
-                if os.path.exists(oldlog):
-                    os.remove(oldlog)
 
-            #issue job
-            getCommandOutput2("%(bsub)s %(commands)s "
-                            "-o %(logDir)s/%(jobName)s.stdout "
-                            "-e %(logDir)s/%(jobName)s.stderr "
-                            "-w %(conditions)s "
-                            "%(logDir)s/%(script)s"%repMap)
+            for (valName, iov, logdir), alignments in six.iteritems(ValidationJob.batchJobs):
+                alignmentDependencies = []
+                for jobInfo in alignments:
+                    alignmentDependencies.append(jobInfo[0]) #append jobID
+                #mergeName = "Merge_{}_{}".format(valName, iov)
+                repMap = {
+                        "commands": config.getGeneral()["jobmode"].split(",")[1],
+                        "jobName": "TkAlMerge.sh",
+                        "logDir": logdir,
+                        "script": "TkAlMerge.sh",
+                        "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
+                        "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in alignmentDependencies]) + '"'
+                        }
+
+                for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
+                    oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
+
+                #issue job
+                getCommandOutput2("%(bsub)s %(commands)s "
+                                  "-o %(logDir)s/%(jobName)s.stdout "
+                                  "-e %(logDir)s/%(jobName)s.stderr "
+                                  "-w %(conditions)s "
+                                  "%(logDir)s/%(script)s"%repMap)
 
     elif config.getGeneral()["jobmode"].split(",")[0] == "condor":
-        ValidationJobMultiIOV.runCondorJobs(outPath)
+        ValidationJobMultiIOV.runCondorJobs(outPath, mergeKeys)
     
 
 if __name__ == "__main__":        
