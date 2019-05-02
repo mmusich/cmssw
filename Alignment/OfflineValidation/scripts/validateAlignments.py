@@ -13,6 +13,7 @@ import fileinput
 from abc import ABCMeta, abstractmethod
 import copy
 import itertools
+import pprint
 
 import six
 import Alignment.OfflineValidation.TkAlAllInOneTool.configTemplates \
@@ -413,39 +414,41 @@ class ValidationJobMultiIOV(ValidationBase):
 
         with open("{}/validation.condor".format(outdir), "w") as condor:
             condor.write("universe = vanilla" + "\n")
-            condor.write("executable = $(exe)" + "\n")
-            condor.write("log = $(logdir)/log_$(Cluster).log" + "\n")
-            condor.write("error = $(logdir)/error_$(Cluster).err" + "\n")
-            condor.write("output = $(logdir)/out_$(Cluster).out" + "\n")
+            condor.write("executable = $(scriptName).sh" + "\n")
+            condor.write("log = $(scriptName).log" + "\n")
+            condor.write("error = $(scriptName).stderr" + "\n")
+            condor.write("output = $(scriptName).stdout" + "\n")
+            condor.write('requirements = (OpSysAndVer =?= "SLCern6")' + "\n")
             condor.write("queue")
              
         with open("{}/validation.dagman".format(outdir), "w") as dagman:
-
+            parents = {}
             for (valName, iov), alignments in six.iteritems(ValidationJob.condorConf):
-                parents = []
+                pprint.pprint((valName, iov))
+                parents[iov] = []
+                
                 for jobInfo in alignments: 
                     dagman.write("JOB {}_{} {}/validation.condor".format(jobInfo[0], iov, outdir) + "\n")
-                    dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'exe="{}"'.format(jobInfo[3]) + "\n")
-                    dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'logdir="{}"'.format(jobInfo[2]) + "\n")
-                    parents.append('{}_{}'.format(jobInfo[0], iov))
+                    dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'scriptName="{}"'.format('.'.join(jobInfo[3].split('.')[:-1])) + "\n")
+                    parents[iov].append('{}_{}'.format(jobInfo[0], iov))
                     dagman.write("\n")
 
                 path =  os.path.join(jobInfo[2], "TkAlMerge.sh")
                 if os.path.exists( path ):
                     dagman.write("JOB Merge_{}_{} {}/validation.condor".format(valName, iov, outdir) + "\n")
-                    dagman.write('VARS Merge_{}_{} '.format(valName, iov) + 'exe="{}"'.format(path) + "\n")
-                    dagman.write('VARS Merge_{}_{} '.format(valName, iov) + 'logdir="{}"'.format(jobInfo[2]) + "\n")
-                    dagman.write("\n")
-                    dagman.write('PARENT {} '.format(" ".join([parent for parent in parents])) + 'CHILD Merge_{}_{}'.format(valName, iov) + "\n")
+                    dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'scriptName="{}"'.format(os.path.join(jobInfo[2], "TkAlMerge")) + "\n")
                     dagman.write("\n")
                 else:
                     raise AllInOneError("Merge script '[%s]' not found!"%path)
 
-            submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
-            print(submitCommands)
-            for command in submitCommands:
-                #print(command.split(" "))
-                subprocess.call(command.split(" "))
+            for (valName, iov), alignments in six.iteritems(ValidationJob.condorConf):
+                dagman.write('PARENT {} '.format(" ".join([parent for parent in parents[iov]])) + 'CHILD Merge_{}_{}'.format(valName, iov) + "\n")
+
+        submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
+        print(submitCommands)
+        for command in submitCommands:
+        #print(command.split(" "))
+            subprocess.call(command.split(" "))
 
     def getValidation( self ):
         return [validation.getValidation() for validation in self.validations]
@@ -618,6 +621,7 @@ def createMergeScript( path, validations, options ):
             repMap["CompareAlignments"] += validationType.doComparison(validations)
     
     filePath = []
+    repMapList = []
     #if user wants to merge parallely and if there are valid parallel scripts, create handle for plotting job and set merge script name accordingly
     if options.mergeOfflineParallel and parallelMergeObjects!={}:
         parallelMergeObjects["continue"]=ParallelMergeJob("TkAlMergeFinal",os.path.join(path, "TkAlMergeFinal.sh"),[])
@@ -627,23 +631,35 @@ def createMergeScript( path, validations, options ):
         for (validationType, referencename), validations in six.iteritems(comparisonLists):
             repMap["RunValidationPlots"] = ""
             repMap["CompareAlignments"] = "#run comparisons"
+            repMap["createResultsDirectory"] = ""
+            repMap["workdir"] = validations[0].config.get("internals","workdir")
+            repMap["logdir"] = validations[0].config.get("general","logdir")
+            repMap["datadir"] = validations[0].config.get("general","datadir")
+            repMap["eosdir"] = validations[0].config.get("general","eosdir")
+            repMap["scriptsdir"] = validations[0].config.get("internals","scriptsdir")
             if issubclass(validationType, ValidationWithPlots):
                 repMap["RunValidationPlots"] += validationType.doRunPlots(validations)
             if issubclass(validationType, ValidationWithComparison):
                 repMap["CompareAlignments"] += validationType.doComparison(validations)
             repMap["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap)
             scriptsdir = validations[0].config.get("internals","scriptsdir")
+            print(comparisonLists)
+            print(validationType)
+            print(referencename)
             filePath.append(os.path.join(scriptsdir, "TkAlMerge.sh"))
+            print(scriptsdir)
+            pprint.pprint(repMap)
+            repMapList.append(repMap)
             #print(filePath)
     else:
         repMap["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap)
         filePath.append(os.path.join(path, "TkAlMerge.sh"))
     
     mergeKeys = {}
-    for path in filePath:    
+    for index, path in enumerate(filePath):    
         #filePath = os.path.join(path, "TkAlMerge.sh")
         theFile = open( path, "w" )
-        theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap ) )
+        theFile.write( replaceByMap( configTemplates.mergeTemplate, repMapList[index]) )
         theFile.close()
         os.chmod(path,0o755)
         if "TkAlMerge" in mergeKeys:
@@ -835,7 +851,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     validations = [item for sublist in validations for item in sublist]
 
     if options.mergeOfflineParallel:
-        parallelMergeObjectsList = createMergeScript(outPath, validations, options)['parallelMergeObjects']
+        #parallelMergeObjectsList = createMergeScript(outPath, validations, options)['parallelMergeObjects']
         mergeKeys = createMergeScript(outPath, validations, options)
     else:
         createMergeScript(outPath, validations, options)
@@ -889,12 +905,13 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                 #mergeName = "Merge_{}_{}".format(valName, iov)
                 repMap = {
                         "commands": config.getGeneral()["jobmode"].split(",")[1],
-                        "jobName": "TkAlMerge.sh",
+                        "jobName": "TkAlMerge",
                         "logDir": logdir,
                         "script": "TkAlMerge.sh",
                         "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
                         "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in alignmentDependencies]) + '"'
                         }
+                pprint.pprint(repMap)
 
                 for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
                     oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
