@@ -10,6 +10,7 @@ from . import configTemplates
 from .dataset import Dataset
 from .helperFunctions import replaceByMap, addIndex, getCommandOutput2, boolfromstring, pythonboolstring
 from .TkAlExceptions import AllInOneError
+import pprint
 
 class ValidationMetaClass(ABCMeta):
     sets = ["mandatories", "optionals", "needpackages"]
@@ -627,11 +628,32 @@ class ValidationWithPlots(GenericValidation):
         from .plottingOptions import PlottingOptions
         repmap = PlottingOptions(None, cls).copy()
         filename = replaceByMap(".oO[plottingscriptpath]Oo.", repmap)
+        print("filename before")
+        pprint.pprint(filename)
+        filename2 = replaceByMap(".oO[scriptsdir]Oo.", repmap)
+        print("filename2 before")
+        pprint.pprint(filename2)
+        filename3 = repmap["scriptsdir"]
+        print("filename3 before")
+        pprint.pprint(filename3)
+        #print("repMap after replacemnet")
+        #pprint.pprint(repmap)
         repmap["PlottingInstantiation"] = "\n".join(
                                                     replaceByMap(v.appendToPlots(), v.getRepMap()).rstrip("\n")
                                                          for v in validations
                                                    )
+        #pprint.pprint(repmap["PlottingInstantiation"])
+        print("filename")
+        pprint.pprint(filename)
+        filename2 = replaceByMap(".oO[scriptsdir]Oo.", repmap)
+        print("filename2")
+        pprint.pprint(filename2)
+        filename3 = repmap["scriptsdir"]
+        print("filename3")
+        pprint.pprint(filename3)
         plottingscript = replaceByMap(cls.plottingscripttemplate(), repmap)
+        print("repMap after setting file names")
+        pprint.pprint(repmap)
         with open(filename, 'w') as f:
             f.write(plottingscript)
 
