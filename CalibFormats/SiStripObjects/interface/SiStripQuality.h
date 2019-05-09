@@ -71,6 +71,7 @@ class SiStripQuality final : public SiStripBadStrip {
    * turns off all the strips associated to feds that are off for the RunInfo
    * but not for FedCabling.
    */
+  void cacheDetCabling(const SiStripDetCabling*);
   void add(const RunInfo *);
   void addInvalidConnectionFromCabling();
   void addNotConnectedConnectionFromCabling();

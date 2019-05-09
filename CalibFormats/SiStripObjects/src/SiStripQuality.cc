@@ -154,6 +154,11 @@ void SiStripQuality::add(const RunInfo *runInfo)
 
   if( !allFedsEmpty || useEmptyRunInfo_ ) {
     // Take the list of active feds from fedCabling
+
+    if(!SiStripDetCabling_) {
+      throw cms::Exception("SiStripQuality")<< " The SiStripDetCabling is not a valid pointer \n";
+    }
+
     auto ids = SiStripDetCabling_->fedCabling()->fedIds();
 
     std::vector<uint16_t> activeFedsFromCabling(ids.begin(), ids.end());
@@ -211,6 +216,11 @@ void SiStripQuality::add(const SiStripDetCabling *cab)
   SiStripDetCabling_=cab;
   addInvalidConnectionFromCabling();
   addNotConnectedConnectionFromCabling();
+}
+
+void SiStripQuality::cacheDetCabling(const SiStripDetCabling *cab)
+{
+  SiStripDetCabling_=cab;
 }
 
 void SiStripQuality::addNotConnectedConnectionFromCabling()

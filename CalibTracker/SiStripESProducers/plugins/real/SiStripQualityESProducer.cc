@@ -94,6 +94,15 @@ std::unique_ptr<SiStripQuality> SiStripQualityESProducer::produce(const SiStripQ
   }
   // We do this after all the others so we know it is done after the DetCabling (if any)
   if( doRunInfo ) {
+    
+    if(!cabling.product()){
+
+      edm::LogInfo("SiStripQualityESProducer") << "[SiStripQualityESProducer::produce] SiStripDetCabling has not been loaded yet." << std::endl;
+
+      iRecord.getRecord<SiStripDetCablingRcd>().get(tagName,cabling);
+      quality->cacheDetCabling( cabling.product() );
+    }
+
     iRecord.getRecord<RunInfoRcd>().get(runInfoTagName,runInfo);
     quality->add( runInfo.product() );
   }
