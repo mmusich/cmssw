@@ -34,6 +34,7 @@
 // include ROOT
 #include "TH2F.h"
 #include "TF1.h"
+#include "TRatioPlot.h"
 #include "TGraphErrors.h"
 #include "TLegend.h"
 #include "TCanvas.h"
@@ -394,13 +395,30 @@ namespace {
       h_first.SetMaximum(theMax*1.30);
       h_last.SetMaximum(theMax*1.30);
 
-      h_first.Draw();
-      h_last.Draw("same");
+      //h_first.Draw();
+      //h_last.Draw("same");
+
+      auto rp = new TRatioPlot(&h_first,&h_last);
+      rp->SetLeftMargin(0.15); 
+      rp->SetRightMargin(0.05);
+      rp->SetSeparationMargin(0.01);
+      rp->SetLowBottomMargin(0.35); 
+      rp->Draw();
+      rp->GetLowerRefGraph()->GetYaxis()->SetTitle("ratio");
+      rp->GetLowerRefGraph()->SetLineColor(kBlue);
+
+      rp->GetLowerRefGraph()->GetXaxis()->CenterTitle(true);
+      rp->GetLowerRefGraph()->GetYaxis()->CenterTitle(true);
+
+      rp->GetLowerRefGraph()->SetMinimum(0.);
+      rp->GetLowerRefGraph()->SetMaximum(2.);
 
       TLegend legend = TLegend(0.52,0.82,0.95,0.9);
       legend.SetHeader("SiStrip Noise comparison","C"); // option "C" allows to center the header
-      legend.AddEntry(&h_first,("IOV: "+std::to_string(std::get<0>(firstiov))).c_str(),"F");
-      legend.AddEntry(&h_last, ("IOV: "+std::to_string(std::get<0>(lastiov))).c_str(),"F");
+      //legend.AddEntry(&h_first,("IOV: "+std::to_string(std::get<0>(firstiov))+"#mu: "+std::to_string(h_first.GetMean())+ " ADC").c_str(),"F");
+      //legend.AddEntry(&h_last, ("IOV: "+std::to_string(std::get<0>(lastiov))+"#mu: "+std::to_string(h_last.GetMean())+" ADC").c_str(),"F");    
+      legend.AddEntry(&h_first, (formLegend(std::to_string(std::get<0>(firstiov)),h_first.GetMean())).c_str(),"F"); 
+      legend.AddEntry(&h_last,  (formLegend(std::to_string(std::get<0>(lastiov)),h_last.GetMean())).c_str()  ,"F");    
       legend.SetTextSize(0.025);
       legend.Draw("same");
 
@@ -414,6 +432,11 @@ namespace {
     std::string opType(SiStripPI::OpMode mode) {
       std::string types[3] = {"Strip","APV","Module"};
       return types[mode];
+    }
+
+    std::string formLegend(const std::string &s, const float mean){
+      std::string out(Form("IOV: %s #mu: %.2f ADC counts",s.c_str(),mean));
+      return out;
     }
 
   };
@@ -513,8 +536,9 @@ namespace {
 
       TLegend legend = TLegend(0.52,0.82,0.95,0.9);
       legend.SetHeader("SiStrip Noise comparison","C"); // option "C" allows to center the header
-      legend.AddEntry(h_first.get(),("IOV: "+std::to_string(std::get<0>(firstiov))).c_str(),"F");
-      legend.AddEntry(h_last.get(), ("IOV: "+std::to_string(std::get<0>(lastiov))).c_str(),"F");
+      legend.AddEntry(h_first.get(),("IOV: "+std::to_string(std::get<0>(firstiov))+"#mu: "+std::to_string(h_first.get()->GetMean())+"  ADC").c_str(),"F");
+      legend.AddEntry(h_last.get(), ("IOV: "+std::to_string(std::get<0>(lastiov))+"#mu: "+std::to_string(h_last.get()->GetMean())+" ADC").c_str(),"F");
+
       legend.SetTextSize(0.025);
       legend.Draw("same");
 

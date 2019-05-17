@@ -127,6 +127,68 @@ namespace {
   };
 
   /************************************************
+    TrackerMap of SiStripBadStrip (r-phi/stereo)
+  *************************************************/
+  class SiStripBadModuleRphiStereoTrackerMap : public cond::payloadInspector::PlotImage<SiStripBadStrip> {
+  public:
+    SiStripBadModuleRphiStereoTrackerMap () : cond::payloadInspector::PlotImage<SiStripBadStrip>( "Tracker Map of Rphi/stereo SiStrip Bad Strips" ),
+					      m_trackerTopo{StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath())}
+    {
+      setSingleIov( true );
+    }
+
+    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
+      auto iov = iovs.front();
+      std::shared_ptr<SiStripBadStrip> payload = fetchPayload( std::get<1>(iov) );
+
+      std::string titleMap = "Module with at least a bad Strip (payload : "+std::get<1>(iov)+")";
+
+      std::unique_ptr<TrackerMap> tmap = std::unique_ptr<TrackerMap>(new TrackerMap("SiStripBadStrips"));
+      tmap->setTitle(titleMap);
+      tmap->setPalette(1);
+      
+      std::vector<uint32_t> detid;
+      payload->getDetIds(detid);
+      
+      for (const auto & d : detid) {
+	
+	int subid = DetId(d).subdetId(); 
+	int stereo = 0;
+
+	switch (subid) {
+	case StripSubdetector::TIB:
+	  stereo = m_trackerTopo.tibStereo(d);
+	  break;
+	case StripSubdetector::TOB:
+	  stereo = m_trackerTopo.tobStereo(d);	  
+	  break;
+	case StripSubdetector::TEC:
+	  stereo = m_trackerTopo.tecStereo(d);
+	  break;
+	case StripSubdetector::TID:
+	  stereo = m_trackerTopo.tidStereo(d);
+	  break;
+	}
+
+	if(!stereo){
+	  tmap->fill(d,0.);
+	}else{
+	  tmap->fill(d,1.);
+	}
+      } // loop over detIds
+      
+      //=========================
+      
+      std::string fileName(m_imageFileName);
+      tmap->save(true,0,1.,fileName);
+
+      return true;
+    }
+  private:
+    TrackerTopology m_trackerTopo;
+  };
+
+  /************************************************
     TrackerMap of SiStripBadStrip (bad strips fraction)
   *************************************************/
   class SiStripBadStripFractionTrackerMap : public cond::payloadInspector::PlotImage<SiStripBadStrip> {
@@ -1172,6 +1234,7 @@ namespace {
 PAYLOAD_INSPECTOR_MODULE(SiStripBadStrip){
   PAYLOAD_INSPECTOR_CLASS(SiStripBadStripTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripBadModuleTrackerMap);
+  PAYLOAD_INSPECTOR_CLASS(SiStripBadModuleRphiStereoTrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripBadStripFractionTrackerMap);
   PAYLOAD_INSPECTOR_CLASS(SiStripBadStripFractionByRun);
   PAYLOAD_INSPECTOR_CLASS(SiStripBadStripTIBFractionByRun); 
