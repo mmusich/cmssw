@@ -288,12 +288,19 @@ class ValidationJob(ValidationBase):
                 ValidationJob.batchJobIds.append(jobid)
                 log+=bsubOut
                 ValidationJob.batchCount += 1
-                iov = self.validation.config.items("IOV")[0][1]
-                key = (self.valName, iov, general["logdir"])
-                if key in ValidationJob.batchJobs:
-                    ValidationJob.batchJobs[key].append((jobid, self.validation.name))
+                if self.validation.config.has_section("IOV"):
+                    iov = self.validation.config.items("IOV")[0][1]
+                    key = (self.valName, iov, general["logdir"])
+                    if key in ValidationJob.batchJobs:
+                        ValidationJob.batchJobs[key].append((jobid, self.validation.name))
+                    else:
+                        ValidationJob.batchJobs[key] = [(jobid, self.validation.name)]
                 else:
-                    ValidationJob.batchJobs[key] = [(jobid, self.validation.name)]
+                    key = (self.valName, 1, general["logdir"])
+                    if key in ValidationJob.batchJobs:
+                        ValidationJob.batchJobs[key].append((jobid, self.validation.name))
+                    else:
+                        ValidationJob.batchJobs[key] = [(jobid, self.validation.name)]
             
             elif self.validation.jobmode.split( "," )[0] == "condor":
                 iov = self.validation.config.items("IOV")[0][1]
@@ -419,6 +426,7 @@ class ValidationJobMultiIOV(ValidationBase):
             condor.write("error = $(scriptName).stderr" + "\n")
             condor.write("output = $(scriptName).stdout" + "\n")
             condor.write('requirements = (OpSysAndVer =?= "SLCern6")' + "\n")
+            condor.write('+JobFlavour = "tomorrow"' + "\n")
             condor.write("queue")
              
         with open("{}/validation.dagman".format(outdir), "w") as dagman:
@@ -489,8 +497,9 @@ def createMergeScript( path, validations, options ):
 
     comparisonLists = {} # directory of lists containing the validations that are comparable
     for validation in validations:
-        iov = validation.config.get("IOV", "iov")
-        validation.defaultReferenceName = iov
+        if validation.config.has_section("IOV"):
+            iov = validation.config.get("IOV", "iov")
+            validation.defaultReferenceName = iov
         for referenceName in validation.filesToCompare:
             #referenceName = givenIOV
             validationtype = type(validation)
@@ -579,6 +588,7 @@ def createMergeScript( path, validations, options ):
 		        #fill mergeParallelResults area of mergeTemplate
 		        repMapTemp["DownloadData"] = replaceByMap( configTemplates.mergeParallelResults, repMapTemp )
 		        #fill runValidationPlots area of mergeTemplate
+                        validation.getRepMap()
 		        repMapTemp["RunValidationPlots"] = validationType.doRunPlots(validations)
 		        
 		        #create script file
@@ -628,6 +638,7 @@ def createMergeScript( path, validations, options ):
         #print("before")
         #pprint.pprint(repMap[(validationType, referencename)]["RunValidationPlots"])
         if issubclass(validationType, ValidationWithPlots):
+            validation.getRepMap()
             repMap[(validationType, referencename)]["RunValidationPlots"] = validationType.doRunPlots(validations)
         #print("after")
         #pprint.pprint(repMap[(validationType, referencename)]["RunValidationPlots"])
@@ -763,8 +774,12 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     options.config = [ os.path.abspath( iniFile ) for iniFile in \
                        options.config.split( "," )]
 
+    pprint.pprint(options.config)
+
     config = BetterConfigParser()
     outputIniFileSet = set( config.read( options.config ) )
+    pprint.pprint("A")
+    pprint.pprint(config.items("validation"))
     failedIniFiles = [ iniFile for iniFile in options.config if iniFile not in outputIniFileSet ]
 
     # Check for missing ini file
@@ -804,6 +819,9 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     # set output path
     outPath = os.path.abspath( options.Name )
 
+    pprint.pprint("B")
+    pprint.pprint(config.items("validation"))
+
     # Check status of submitted jobs and return
     if options.crabStatus:
         os.chdir( outPath )
@@ -840,6 +858,9 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     config.set("general","logdir",os.path.join(general["logdir"],options.Name) )
     config.set("general","eosdir",os.path.join("AlignmentValidation", general["eosdir"], options.Name) )
 
+    pprint.pprint("C")
+    pprint.pprint(config.items("validation"))
+
     if not os.path.exists( outPath ):
         os.makedirs( outPath )
     elif not os.path.isdir( outPath ):
@@ -863,17 +884,23 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
 
     validations = []
     jobs = []
+    pprint.pprint("D")
+    pprint.pprint(config.items("validation"))
     for validation in config.items("validation"):
         alignmentList = [validation[1]]
         validationsToAdd = [(validation[0],alignment) \
                                 for alignment in alignmentList]
         validations.extend(validationsToAdd)
+        pprint.pprint(alignmentList)
+    pprint.pprint(validations)
     for validation in validations:
         job = ValidationJobMultiIOV(validation, config, options, outPath, len(validations))
         if (job.optionMultiIOV == True):
             jobs.extend(job)
+            print("multi iov")
         else:
-            jobs.extend( ValidationJob(validation, config, options) )
+            jobs.extend( ValidationJob(validation, config, options, 1) )
+            print("normal")
 
     for job in jobs:
         if job.needsproxy and not proxyexists:
@@ -881,10 +908,12 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
 
     map( lambda job: job.createJob(), jobs )
     validations = [ job.getValidation() for job in jobs ]
+    #pprint.pprint(jobs)
+    #pprint.pprint(validations)
     validations = [item for sublist in validations for item in sublist]
 
     if options.mergeOfflineParallel:
-        #parallelMergeObjectsList = createMergeScript(outPath, validations, options)['parallelMergeObjects']
+        parallelMergeObjectsList = createMergeScript(outPath, validations, options)['parallelMergeObjects']
         mergeKeys = createMergeScript(outPath, validations, options)
     else:
         createMergeScript(outPath, validations, options)
@@ -930,21 +959,20 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
             #    if os.path.exists(oldlog):
             #        os.remove(oldlog)
 
-
             for (valName, iov, logdir), alignments in six.iteritems(ValidationJob.batchJobs):
                 alignmentDependencies = []
                 for jobInfo in alignments:
                     alignmentDependencies.append(jobInfo[0]) #append jobID
                 #mergeName = "Merge_{}_{}".format(valName, iov)
                 repMap = {
-                        "commands": config.getGeneral()["jobmode"].split(",")[1],
-                        "jobName": "TkAlMerge",
-                        "logDir": logdir,
-                        "script": "TkAlMerge.sh",
-                        "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
-                        "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in alignmentDependencies]) + '"'
-                        }
-                #pprint.pprint(repMap)
+                    "commands": config.getGeneral()["jobmode"].split(",")[1],
+                    "jobName": "TkAlMerge",
+                    "logDir": logdir,
+                    "script": "TkAlMerge.sh",
+                    "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
+                    "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in alignmentDependencies]) + '"'
+                    }
+                pprint.pprint(repMap)
 
                 for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
                     oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
@@ -955,6 +983,7 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                                   "-e %(logDir)s/%(jobName)s.stderr "
                                   "-w %(conditions)s "
                                   "%(logDir)s/%(script)s"%repMap)
+
 
     elif config.getGeneral()["jobmode"].split(",")[0] == "condor":
         ValidationJobMultiIOV.runCondorJobs(outPath, mergeKeys)
