@@ -42,8 +42,7 @@ process.prefer_conditionsIn.oO[rcdName]Oo. = cms.ESPrefer("PoolDBESSource", "con
 ######################################################################
 ######################################################################
 #batch job execution
-scriptTemplate="""
-#!/bin/bash
+scriptTemplate="""#!/bin/bash
 #init
 #ulimit -v 3072000
 #export STAGE_SVCCLASS=cmscafuser
@@ -84,6 +83,7 @@ fi
 #run
 pwd
 df -h .
+which cmsRun
 .oO[CommandLine]Oo.
 echo "----"
 echo "List of files in $(pwd):"
@@ -129,16 +129,27 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process(".oO[ProcessName]Oo.")
 
+print("datasetDefinition")
 .oO[datasetDefinition]Oo.
+print("Bookkeeping")
 .oO[Bookkeeping]Oo.
+print("LoadBasicModules")
 .oO[LoadBasicModules]Oo.
+print("TrackSelectionRefitting")
 .oO[TrackSelectionRefitting]Oo.
+print("LoadGlobalTagTemplate")
 .oO[LoadGlobalTagTemplate]Oo.
+print("condLoad")
 .oO[condLoad]Oo.
+print("ValidationConfig")
 .oO[ValidationConfig]Oo.
+print("FileOutputTemplate")
 .oO[FileOutputTemplate]Oo.
 
+print("DefinePath")
 .oO[DefinePath]Oo.
+
+print("Done")
 """
 
 
@@ -216,8 +227,7 @@ process.seqTrackselRefit*.oO[ValidationSequence]Oo.)
 
 ######################################################################
 ######################################################################
-mergeTemplate="""
-#!/bin/bash
+mergeTemplate="""#!/bin/bash
 CWD=`pwd -P`
 cd .oO[CMSSW_BASE]Oo./src
 export SCRAM_ARCH=.oO[SCRAM_ARCH]Oo.
@@ -266,8 +276,7 @@ find . -name "*.stdout" -exec gzip -f {} \;
 
 ######################################################################
 ######################################################################
-mergeParallelOfflineTemplate="""
-#!/bin/bash
+mergeParallelOfflineTemplate="""#!/bin/bash
 CWD=`pwd -P`
 cd .oO[CMSSW_BASE]Oo./src
 export SCRAM_ARCH=.oO[SCRAM_ARCH]Oo.

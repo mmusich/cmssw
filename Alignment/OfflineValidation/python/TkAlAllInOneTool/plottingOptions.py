@@ -11,6 +11,7 @@ from primaryVertexValidation import PrimaryVertexValidation
 from TkAlExceptions import AllInOneError
 from trackSplittingValidation import TrackSplittingValidation
 from zMuMuValidation import ZMuMuValidation
+import pprint
 
 class BasePlottingOptions(object):
     __metaclass__ = ValidationMetaClass
@@ -238,4 +239,8 @@ def PlottingOptions(config, valType):
         if config is None:
             raise ValueError("Have to provide a config the first time you call PlottingOptions for {}".format(valType))
         globalDictionaries.plottingOptions[valType] = plottingOptionsClasses[valType](config)
+    #print("valType")
+    #print(valType)
+    #print("globalDictionaries.plottingOptions[valType].getRepMap()")
+    #pprint.pprint(globalDictionaries.plottingOptions[valType].getRepMap())
     return globalDictionaries.plottingOptions[valType].getRepMap()
