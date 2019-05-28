@@ -432,7 +432,6 @@ class ValidationJobMultiIOV(ValidationBase):
         with open("{}/validation.dagman".format(outdir), "w") as dagman:
             parents = {}
             for (valName, iov), alignments in six.iteritems(ValidationJob.condorConf):
-                pprint.pprint((valName, iov))
                 parents[iov] = []
                 
                 for jobInfo in alignments: 
@@ -454,9 +453,8 @@ class ValidationJobMultiIOV(ValidationBase):
                 dagman.write('PARENT {} '.format(" ".join([parent for parent in parents[iov]])) + 'CHILD Merge_{}_{}'.format(valName, iov) + "\n")
 
         submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
-        print(submitCommands)
+
         for command in submitCommands:
-        #print(command.split(" "))
             subprocess.call(command.split(" "))
 
     def getValidation( self ):
@@ -481,19 +479,7 @@ def createMergeScript( path, validations, options ):
     if(len(validations) == 0):
         raise AllInOneError("Cowardly refusing to merge nothing!")
 
-    #if len(validations[0]) != 1:
-    #    config = validations[0][0].config
-    #else:
     repMap = {}
-    #repMap = [config.getGeneral() TODO delete
-    #repMap.update({
-    #        "DownloadData":"",
-    #        "CompareAlignments":"",
-    #        "RunValidationPlots":"",
-    #        "CMSSW_BASE": os.environ["CMSSW_BASE"],
-    #        "SCRAM_ARCH": os.environ["SCRAM_ARCH"],
-    #        "CMSSW_RELEASE_BASE": os.environ["CMSSW_RELEASE_BASE"],
-    #        })
 
     comparisonLists = {} # directory of lists containing the validations that are comparable
     for validation in validations:
@@ -539,11 +525,8 @@ def createMergeScript( path, validations, options ):
     anythingToMerge = []
     mergeKeys = {}
     filePaths = []
-    
-    
-    #prepare dictionary containing handle objects for parallel merge batch jobs
-    if options.mergeOfflineParallel:
-        parallelMergeObjects={}
+    parallelMergeObjects={}
+
     for (validationType, referencename), validations in six.iteritems(comparisonLists):
         for validation in validations:
             #parallel merging
@@ -553,7 +536,6 @@ def createMergeScript( path, validations, options ):
 		    if options.mergeOfflineParallel and validationType.valType=='offline' and validation.jobmode.split(",")[0]=="lxBatch":
 		        repMapTemp=repMap[(validationType, referencename)].copy()
 		        if validationType not in anythingToMerge:
-		            print(validationType)
 		            anythingToMerge += [validationType]
 		            #create init script
 		            fileName="TkAlMergeInit"
@@ -635,76 +617,32 @@ def createMergeScript( path, validations, options ):
 
         repMap[(validationType, referencename)]["RunValidationPlots"] = ""
         repMap[(validationType, referencename)]["plottingscriptpath"] = ""
-        #print("before")
-        #pprint.pprint(repMap[(validationType, referencename)]["RunValidationPlots"])
         if issubclass(validationType, ValidationWithPlots):
             validation.getRepMap()
             repMap[(validationType, referencename)]["RunValidationPlots"] = validationType.doRunPlots(validations)
-        #print("after")
-        #pprint.pprint(repMap[(validationType, referencename)]["RunValidationPlots"])
 
         repMap[(validationType, referencename)]["CompareAlignments"] = "#run comparisons"
         if issubclass(validationType, ValidationWithComparison):
             repMap[(validationType, referencename)]["CompareAlignments"] += validationType.doComparison(validations)
     
-            #filePath = []
-    #repMapList = []
     #if user wants to merge parallely and if there are valid parallel scripts, create handle for plotting job and set merge script name accordingly
         if options.mergeOfflineParallel and parallelMergeObjects!={}:
             parallelMergeObjects["continue"]=ParallelMergeJob("TkAlMergeFinal",os.path.join(path, "TkAlMergeFinal.sh"),[])
             filePath = os.path.join(path, "TkAlMergeFinal.sh")
     #if not merging parallel, add code to create results directory and set merge script name accordingly
         elif validation.config.has_section("IOV"):
-            #for (validationType, referencename), validations in six.iteritems(comparisonLists):
-            #repMap["RunValidationPlots"] = ""
-            #repMap["CompareAlignments"] = "#run comparisons"
-            #repMap["createResultsDirectory"] = ""
-            #repMap["workdir"] = ""
-            #repMap["logdir"] = ""
-            #repMap["datadir"] = ""
-            #repMap["eosdir"] = ""
-            #repMap["scriptsdir"] = ""
-            #repMap["workdir"] = validations[0].config.get("internals","workdir")
-            #repMap["logdir"] = validations[0].config.get("general","logdir")
-            #repMap["datadir"] = validations[0].config.get("general","datadir")
-            #repMap["eosdir"] = validations[0].config.get("general","eosdir")
-            #repMap["scriptsdir"] = validations[0].config.get("internals","scriptsdir")
-            #if issubclass(validationType, ValidationWithPlots):
-            #    repMap["RunValidationPlots"] += validationType.doRunPlots(validations)
-            #if issubclass(validationType, ValidationWithComparison):
-            #    repMap["CompareAlignments"] += validationType.doComparison(validations)
-            #copyRepMap = copy.deepcopy(repMap)
             repMap[(validationType, referencename)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referencename)])
-            #pprint.pprint("validation length:")
-            #pprint.pprint(len(validations))
-            #for v in validations:
-            #    pprint.pprint(v.getRepMap())
-            #scriptsdir = validations[0].config.get("internals","scriptsdir")
-            #print(comparisonLists)
-            #print(validationType)
-            #print(referencename)
             filePath = os.path.join(repMap[(validationType, referencename)]["scriptsdir"], "TkAlMerge.sh")
-            #print(scriptsdir)
-            #pprint.pprint(repMap)
-            #copyRepMap = copy.deepcopy(repMap)
-            #repMapList.append(copyRepMap)
-            #print(filePath)
         else:
             repMap[(validationType, referencename)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referencename)])
             filePath = os.path.join(path, "TkAlMerge.sh")
     
-
-        #filePath = os.path.join(path, "TkAlMerge.sh")
-        #pprint.pprint(repMap[(validationType, referencename)])
         theFile = open( filePath, "w" )
         theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap[(validationType, referencename)]) )
-        #pprint.pprint(repMapList[index])
         theFile.close()
         os.chmod(path,0o755)
         filePaths.append(filePath)
 
-    #print(len(filePath))
-    #pprint.pprint(filePath)
     for path in filePaths:    
         if "TkAlMerge" in mergeKeys:
             mergeKeys["TkAlMerge"].append(path)
@@ -774,12 +712,8 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     options.config = [ os.path.abspath( iniFile ) for iniFile in \
                        options.config.split( "," )]
 
-    pprint.pprint(options.config)
-
     config = BetterConfigParser()
     outputIniFileSet = set( config.read( options.config ) )
-    pprint.pprint("A")
-    pprint.pprint(config.items("validation"))
     failedIniFiles = [ iniFile for iniFile in options.config if iniFile not in outputIniFileSet ]
 
     # Check for missing ini file
@@ -819,9 +753,6 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     # set output path
     outPath = os.path.abspath( options.Name )
 
-    pprint.pprint("B")
-    pprint.pprint(config.items("validation"))
-
     # Check status of submitted jobs and return
     if options.crabStatus:
         os.chdir( outPath )
@@ -858,9 +789,6 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
     config.set("general","logdir",os.path.join(general["logdir"],options.Name) )
     config.set("general","eosdir",os.path.join("AlignmentValidation", general["eosdir"], options.Name) )
 
-    pprint.pprint("C")
-    pprint.pprint(config.items("validation"))
-
     if not os.path.exists( outPath ):
         os.makedirs( outPath )
     elif not os.path.isdir( outPath ):
@@ -884,23 +812,20 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
 
     validations = []
     jobs = []
-    pprint.pprint("D")
-    pprint.pprint(config.items("validation"))
+    mergeKeys = {}
+
     for validation in config.items("validation"):
         alignmentList = [validation[1]]
         validationsToAdd = [(validation[0],alignment) \
                                 for alignment in alignmentList]
         validations.extend(validationsToAdd)
-        pprint.pprint(alignmentList)
-    pprint.pprint(validations)
+
     for validation in validations:
         job = ValidationJobMultiIOV(validation, config, options, outPath, len(validations))
         if (job.optionMultiIOV == True):
             jobs.extend(job)
-            print("multi iov")
         else:
             jobs.extend( ValidationJob(validation, config, options, 1) )
-            print("normal")
 
     for job in jobs:
         if job.needsproxy and not proxyexists:
@@ -908,8 +833,6 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
 
     map( lambda job: job.createJob(), jobs )
     validations = [ job.getValidation() for job in jobs ]
-    #pprint.pprint(jobs)
-    #pprint.pprint(validations)
     validations = [item for sublist in validations for item in sublist]
 
     if options.mergeOfflineParallel:
@@ -972,7 +895,6 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
                     "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
                     "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in alignmentDependencies]) + '"'
                     }
-                pprint.pprint(repMap)
 
                 for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
                     oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
