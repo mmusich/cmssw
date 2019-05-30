@@ -33,6 +33,29 @@ GaussVtxSigmaZ4cmSmearingParameters = cms.PSet(
     SigmaZ = cms.double(4.0),
     TimeOffset = cms.double(0.0)
 )
+
+# Gaussian smearing as GaussVtxSigmaZ4cm but centered as the 2018 realistic one
+GaussVtxSigmaZ4cmRealisticSmearingParameters = cms.PSet(
+    MeanX = cms.double(0.0107682),
+    MeanY = cms.double(0.041722),
+    MeanZ = cms.double(0.0),
+    SigmaY = cms.double(0.0015),
+    SigmaX = cms.double(0.0015),
+    SigmaZ = cms.double(4.0),
+    TimeOffset = cms.double(0.0)
+)
+
+# Gaussian smearing as GaussVtxSigmaZ4cm but centered in (0.1,-0.08)
+GaussVtxSigmaZ4cmDisplacedSmearingParameters = cms.PSet(
+    MeanX = cms.double(0.1),
+    MeanY = cms.double(-0.08),
+    MeanZ = cms.double(0.0),
+    SigmaY = cms.double(0.0015),
+    SigmaX = cms.double(0.0015),
+    SigmaZ = cms.double(4.0),
+    TimeOffset = cms.double(0.0)
+)
+
 # Gaussian smearing
 # Flat optics for Run3 - Low SigmaZ
 # SigmaZ = 4.2 cm
@@ -665,6 +688,33 @@ Realistic25ns13TeVEarly2018CollisionVtxSmearingParameters = cms.PSet(
     Y0 = cms.double(0.041722 ),
     Z0 = cms.double(0.035748 )
 )
+
+# as the 2018 realistic but centered in (0,0)
+Realistic25ns13TeVEarly2018CollisionCenteredVtxSmearingParameters = cms.PSet(
+    Phi = cms.double(0.0),
+    BetaStar = cms.double(30.0),
+    Emittance = cms.double(1.634e-8),
+    Alpha = cms.double(0.0),
+    SigmaZ = cms.double(3.5),
+    TimeOffset = cms.double(0.0),
+    X0 = cms.double(0.000),
+    Y0 = cms.double(0.000 ),
+    Z0 = cms.double(0.035748)
+)
+
+# as the 2018 realistic but centered in (0.1,-0.08)
+Realistic25ns13TeVEarly2018CollisionDisplacedVtxSmearingParameters = cms.PSet(
+    Phi = cms.double(0.0),
+    BetaStar = cms.double(30.0),
+    Emittance = cms.double(1.634e-8),
+    Alpha = cms.double(0.0),
+    SigmaZ = cms.double(3.5),
+    TimeOffset = cms.double(0.0),
+    X0 = cms.double(0.1),
+    Y0 = cms.double(-0.08 ),
+    Z0 = cms.double(0.035748 )
+)
+
 
 # Run3 possible beam parameters
 # Round optics - Low SigmaZ = 3.4 cm
