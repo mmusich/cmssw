@@ -57,7 +57,7 @@ export X509_USER_PROXY=.oO[scriptsdir]Oo./.user_proxy
 cd .oO[CMSSW_BASE]Oo./src
 export SCRAM_ARCH=.oO[SCRAM_ARCH]Oo.
 eval `scramv1 ru -sh`
-#rfmkdir -p .oO[datadir]Oo. &>! /dev/null
+#mkdir -p .oO[datadir]Oo. &>! /dev/null
 
 #remove possible result file from previous runs
 previous_results=$(ls /eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo.)
@@ -71,7 +71,7 @@ done
 
 if [[ $HOSTNAME = lxplus[0-9]*[.a-z0-9]* ]] # check for interactive mode
 then
-    rfmkdir -p .oO[workdir]Oo.
+    mkdir -p .oO[workdir]Oo.
     rm -f .oO[workdir]Oo./*
     cd .oO[workdir]Oo.
 else
@@ -95,9 +95,9 @@ echo ""
 
 
 #retrieve
-rfmkdir -p .oO[logdir]Oo. >&! /dev/null
+mkdir -p .oO[logdir]Oo. >&! /dev/null
 gzip -f LOGFILE_*_.oO[name]Oo..log
-find . -maxdepth 1 -name "LOGFILE*.oO[alignmentName]Oo.*" -print | xargs -I {} bash -c "rfcp {} .oO[logdir]Oo."
+find . -maxdepth 1 -name "LOGFILE*.oO[alignmentName]Oo.*" -print | xargs -I {} bash -c "cp {} .oO[logdir]Oo."
 
 #copy root files to eos
 mkdir -p /eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo.
@@ -312,8 +312,8 @@ root_files=$(ls /eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[e
 ######################################################################
 createResultsDirectoryTemplate="""
 #create results-directory and copy used configuration there
-rfmkdir -p .oO[datadir]Oo.
-rfcp .oO[logdir]Oo./usedConfiguration.ini .oO[datadir]Oo.
+mkdir -p .oO[datadir]Oo.
+cp .oO[logdir]Oo./usedConfiguration.ini .oO[datadir]Oo.
 """
 
 

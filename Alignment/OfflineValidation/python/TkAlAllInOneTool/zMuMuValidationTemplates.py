@@ -253,13 +253,13 @@ eos mkdir -p /store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo./p
 for RootOutputFile in $(ls *root )
 do
     xrdcp -f ${RootOutputFile}  root://eoscms//eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo./
-    rfcp ${RootOutputFile}  .oO[workingdir]Oo.
+    cp ${RootOutputFile}  .oO[workingdir]Oo.
 done
 
 mkdir -p .oO[plotsdir]Oo.
 for PngOutputFile in $(ls *png ); do
     xrdcp -f ${PngOutputFile}  root://eoscms//eos/cms/store/group/alca_trackeralign/AlignmentValidation/.oO[eosdir]Oo./plots/
-    rfcp ${PngOutputFile}  .oO[plotsdir]Oo.
+    cp ${PngOutputFile}  .oO[plotsdir]Oo.
 done
 
 
@@ -275,7 +275,7 @@ echo  -----------------------
 mergeZmumuPlotsExecution="""
 #merge Z->mumu histograms
 
-rfcp .oO[mergeZmumuPlotsScriptPath]Oo. .
+cp .oO[mergeZmumuPlotsScriptPath]Oo. .
 root -l -x -b -q TkAlMergeZmumuPlots.C++
 
 """

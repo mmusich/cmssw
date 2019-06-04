@@ -101,7 +101,7 @@ class OfflineValidation(GenericValidationData_CTSR, ParallelValidation, Validati
             theFile.write(replaceByMap(configTemplates.mergeOfflineParJobsTemplate, {}))
         result = super(OfflineValidation, cls).initMerge()
         result += ("cp .oO[Alignment/OfflineValidation]Oo./scripts/merge_TrackerOfflineValidation.C .\n"
-                   "rfcp .oO[mergeOfflineParJobsScriptPath]Oo. .\n")
+                   "cp .oO[mergeOfflineParJobsScriptPath]Oo. .\n")
         return result
 
     def appendToMerge(self):
