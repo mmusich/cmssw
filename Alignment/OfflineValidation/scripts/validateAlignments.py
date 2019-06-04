@@ -425,7 +425,7 @@ class ValidationJobMultiIOV(ValidationBase):
             condor.write("log = $(scriptName).log" + "\n")
             condor.write("error = $(scriptName).stderr" + "\n")
             condor.write("output = $(scriptName).stdout" + "\n")
-            condor.write('requirements = (OpSysAndVer =?= "SLCern6")' + "\n")
+            condor.write('requirements = (OpSysAndVer =?= "CentOS7")' + '\n')
             condor.write('+JobFlavour = "tomorrow"' + "\n")
             condor.write("queue")
              
@@ -868,20 +868,6 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
         
     
         else:
-            #repMap = {
-            #    "commands": config.getGeneral()["jobmode"].split(",")[1],
-            #    "jobName": "TkAlMerge_{}_{}".format(),
-            #    "logDir": config.getGeneral()["logdir"],
-            #    "script": "TkAlMerge.sh",
-            #    "bsub": "/afs/cern.ch/cms/caf/scripts/cmsbsub",
-            #    "conditions": '"' + " && ".join(["ended(" + jobId + ")" for jobId in ValidationJob.batchJobIds]) + '"'
-            #    }
-            #
-            #for ext in ("stdout", "stderr", "stdout.gz", "stderr.gz"):
-            #    oldlog = "%(logDir)s/%(jobName)s."%repMap + ext
-            #    if os.path.exists(oldlog):
-            #        os.remove(oldlog)
-
             for (valName, iov, logdir), alignments in six.iteritems(ValidationJob.batchJobs):
                 alignmentDependencies = []
                 for jobInfo in alignments:
