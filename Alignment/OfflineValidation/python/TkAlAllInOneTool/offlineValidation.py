@@ -97,6 +97,8 @@ class OfflineValidation(GenericValidationData_CTSR, ParallelValidation, Validati
     def initMerge(cls):
         from .plottingOptions import PlottingOptions
         outFilePath = replaceByMap(".oO[scriptsdir]Oo./TkAlOfflineJobsMerge.C", PlottingOptions(None, cls.valType))
+        print("outFilePath")
+        print(outFilePath)
         with open(outFilePath, "w") as theFile:
             theFile.write(replaceByMap(configTemplates.mergeOfflineParJobsTemplate, {}))
         result = super(OfflineValidation, cls).initMerge()
