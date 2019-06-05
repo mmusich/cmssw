@@ -527,82 +527,24 @@ def createMergeScript( path, validations, options ):
     filePaths = []
     parallelMergeObjects={}
 
-    for (validationType, referencename), validations in six.iteritems(comparisonLists):
+    for (validationType, referenceName), validations in comparisonLists.iteritems():
         for validation in validations:
             #parallel merging
-            if not (isinstance(validation, PreexistingValidation)
-                or validation.NJobs == 1
-                or not isinstance(validation, ParallelValidation)):
-		    if options.mergeOfflineParallel and validationType.valType=='offline' and validation.jobmode.split(",")[0]=="lxBatch":
-		        repMapTemp=repMap[(validationType, referencename)].copy()
-		        if validationType not in anythingToMerge:
-		            anythingToMerge += [validationType]
-		            #create init script
-		            fileName="TkAlMergeInit"
-		            filePath = os.path.join(path, fileName+".sh")
-		            theFile = open( filePath, "w" )
-		            repMapTemp["createResultsDirectory"]="#!/bin/bash"
-		            repMapTemp["createResultsDirectory"]+=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMapTemp)
-		            theFile.write( replaceByMap( configTemplates.createResultsDirectoryTemplate, repMapTemp ) )
-		            theFile.close()
-		            os.chmod(filePath,0o755)
-		            #create handle
-		            parallelMergeObjects["init"]=ParallelMergeJob(fileName, filePath,[])
-		            #clear 'create result directory' code
-		            repMapTemp["createResultsDirectory"]=""
-		        
-		        #edit repMapTmp as necessary:
-		        #fill contents of mergeParallelResults
-		        repMapTemp["beforeMerge"] += validationType.doInitMerge()
-		        repMapTemp["doMerge"] += '\n\n\n\necho -e "\n\nMerging results from %s jobs with alignment %s"\n\n' % (validationType.valType,validation.alignmentToValidate.name)
-		        repMapTemp["doMerge"] += validation.doMerge()
-		        for f in validation.getRepMap()["outputFiles"]:
+            if not (isinstance(validation, PreexistingValidation) or validation.NJobs == 1 or not isinstance(validation, ParallelValidation)):
+                if (validationtype, referenceName) not in anythingToMerge:
+                    anythingToMerge.append((validationtype, referenceName))
+                    repMap[(validationType, referenceName)]["doMerge"] += '\n\n\n\necho -e "\n\nMerging results from %s jobs"\n\n' % validationType.valType
+                    validation.getRepMap()
+                    repMap[(validationType, referenceName)]["beforeMerge"] += validationType.doInitMerge()
+                repMap[(validationType, referenceName)]["doMerge"] += validation.doMerge()
+                for f in validation.getRepMap()["outputFiles"]:
 		            longName = os.path.join("/eos/cms/store/group/alca_trackeralign/AlignmentValidation/",
 		                                    validation.getRepMap()["eosdir"], f)
-		            repMapTemp["rmUnmerged"] += "    rm "+longName+"\n"
-		        
-		        repMapTemp["rmUnmerged"] += ("else\n"
-		                                     "    echo -e \\n\"WARNING: Merging failed, unmerged"
-		                                     " files won't be deleted.\\n"
-		                                     "(Ignore this warning if merging was done earlier)\"\n"
-		                                     "fi\n")
-		        
-		        #fill mergeParallelResults area of mergeTemplate
-		        repMapTemp["DownloadData"] = replaceByMap( configTemplates.mergeParallelResults, repMapTemp )
-		        #fill runValidationPlots area of mergeTemplate
-                        validation.getRepMap()
-		        repMapTemp["RunValidationPlots"] = validationType.doRunPlots(validations)
-		        
-		        #create script file
-		        fileName="TkAlMergeOfflineValidation"+validation.name+validation.alignmentToValidate.name
-		        filePath = os.path.join(path, fileName+".sh")
-		        theFile = open( filePath, "w" )
-		        theFile.write( replaceByMap( configTemplates.mergeParallelOfflineTemplate, repMapTemp ) )
-		        theFile.close()
-		        os.chmod(filePath,0o755)
-		        #create handle object
-		        if "parallel" in parallelMergeObjects:
-		            parallelMergeObjects["parallel"].append(ParallelMergeJob(fileName, filePath,[]))
-		        else:
-		            parallelMergeObjects["parallel"]=[ParallelMergeJob(fileName, filePath,[])]
-		        continue
-		    
-		    
-		    else:
-		        if (validationtype, referenceName) not in anythingToMerge:
-		            anythingToMerge.append((validationtype, referenceName))
-		            repMap[(validationType, referencename)]["doMerge"] += '\n\n\n\necho -e "\n\nMerging results from %s jobs"\n\n' % validationType.valType
-                            validation.getRepMap()
-		            repMap[(validationType, referencename)]["beforeMerge"] += validationType.doInitMerge()
-		        repMap[(validationType, referencename)]["doMerge"] += validation.doMerge()
-		        for f in validation.getRepMap()["outputFiles"]:
-		            longName = os.path.join("/eos/cms/store/group/alca_trackeralign/AlignmentValidation/",
-		                                    validation.getRepMap()["eosdir"], f)
-		            repMap[(validationType, referencename)]["rmUnmerged"] += "    rm "+longName+"\n"
+		            repMap[(validationType, referenceName)]["rmUnmerged"] += "    rm "+longName+"\n"
 		        
 		        
     
-        repMap[(validationType, referencename)]["rmUnmerged"] += ("else\n"
+        repMap[(validationType, referenceName)]["rmUnmerged"] += ("else\n"
                                                                   "    echo -e \\n\"WARNING: Merging failed, unmerged"
                                                                   " files won't be deleted.\\n"
                                                                   "(Ignore this warning if merging was done earlier)\"\n"
@@ -611,35 +553,31 @@ def createMergeScript( path, validations, options ):
     
     
         if anythingToMerge:
-            repMap[(validationType, referencename)]["DownloadData"] += replaceByMap( configTemplates.mergeParallelResults, repMap[(validationType, referencename)] )
+            repMap[(validationType, referenceName)]["DownloadData"] += replaceByMap( configTemplates.mergeParallelResults, repMap[(validationType, referenceName)] )
         else:
-            repMap[(validationType, referencename)]["DownloadData"] = ""
+            repMap[(validationType, referenceName)]["DownloadData"] = ""
 
 
-        repMap[(validationType, referencename)]["RunValidationPlots"] = ""
-        repMap[(validationType, referencename)]["plottingscriptpath"] = ""
+        repMap[(validationType, referenceName)]["RunValidationPlots"] = ""
+        repMap[(validationType, referenceName)]["plottingscriptpath"] = ""
         if issubclass(validationType, ValidationWithPlots):
             validation.getRepMap()
-            repMap[(validationType, referencename)]["RunValidationPlots"] = validationType.doRunPlots(validations)
+            repMap[(validationType, referenceName)]["RunValidationPlots"] = validationType.doRunPlots(validations)
 
-        repMap[(validationType, referencename)]["CompareAlignments"] = "#run comparisons"
+        repMap[(validationType, referenceName)]["CompareAlignments"] = "#run comparisons"
         if issubclass(validationType, ValidationWithComparison):
-            repMap[(validationType, referencename)]["CompareAlignments"] += validationType.doComparison(validations)
+            repMap[(validationType, referenceName)]["CompareAlignments"] += validationType.doComparison(validations)
     
-    #if user wants to merge parallely and if there are valid parallel scripts, create handle for plotting job and set merge script name accordingly
-        if options.mergeOfflineParallel and parallelMergeObjects!={}:
-            parallelMergeObjects["continue"]=ParallelMergeJob("TkAlMergeFinal",os.path.join(path, "TkAlMergeFinal.sh"),[])
-            filePath = os.path.join(path, "TkAlMergeFinal.sh")
     #if not merging parallel, add code to create results directory and set merge script name accordingly
-        elif validation.config.has_section("IOV"):
-            repMap[(validationType, referencename)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referencename)])
-            filePath = os.path.join(repMap[(validationType, referencename)]["scriptsdir"], "TkAlMerge.sh")
+        if validation.config.has_section("IOV"):
+            repMap[(validationType, referenceName)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referenceName)])
+            filePath = os.path.join(repMap[(validationType, referenceName)]["scriptsdir"], "TkAlMerge.sh")
         else:
-            repMap[(validationType, referencename)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referencename)])
+            repMap[(validationType, referenceName)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referenceName)])
             filePath = os.path.join(path, "TkAlMerge.sh")
     
         theFile = open( filePath, "w" )
-        theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap[(validationType, referencename)]) )
+        theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap[(validationType, referenceName)]) )
         theFile.close()
         os.chmod(path,0o755)
         filePaths.append(filePath)
