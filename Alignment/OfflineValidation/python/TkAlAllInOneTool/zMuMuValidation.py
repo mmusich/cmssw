@@ -21,6 +21,7 @@ class ZMuMuValidation(GenericValidationData, ValidationWithPlots):
         "etaminneg" : "-2.4",
         "etamaxpos" : "2.4",
         "etaminpos" : "-2.4",
+        "multiIOV": "False",
         }
     deprecateddefaults = {
         "resonance": "",
