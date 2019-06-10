@@ -182,15 +182,15 @@ export SCRAM_ARCH=.oO[SCRAM_ARCH]Oo.
 eval `scram runtime -sh`
 cd $cwd
 
-rfmkdir -p .oO[datadir]Oo.
-rfmkdir -p .oO[workingdir]Oo.
-rfmkdir -p .oO[logdir]Oo.
+mkdir -p .oO[datadir]Oo.
+mkdir -p .oO[workingdir]Oo.
+mkdir -p .oO[logdir]Oo.
 rm -f .oO[logdir]Oo./*.stdout
 rm -f .oO[logdir]Oo./*.stderr
 
 if [[ $HOSTNAME = lxplus[0-9]*[.a-z0-9]* ]] # check for interactive mode
 then
-    rfmkdir -p .oO[workdir]Oo.
+    mkdir -p .oO[workdir]Oo.
     rm -f .oO[workdir]Oo./*
     cd .oO[workdir]Oo.
 else
