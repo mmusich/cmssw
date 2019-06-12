@@ -37,6 +37,7 @@ class GeometryComparison(GenericValidation):
         "dbeta_max":"-99999",
         "dgamma_min":"-99999",
         "dgamma_max":"-99999",
+        "multiIOV":"False",
         }
     mandatories = {"levels", "dbOutput"}
     valType = "compare"

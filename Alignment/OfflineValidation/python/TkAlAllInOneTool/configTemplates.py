@@ -131,24 +131,15 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process(".oO[ProcessName]Oo.")
 
-print("datasetDefinition")
 .oO[datasetDefinition]Oo.
-print("Bookkeeping")
 .oO[Bookkeeping]Oo.
-print("LoadBasicModules")
 .oO[LoadBasicModules]Oo.
-print("TrackSelectionRefitting")
 .oO[TrackSelectionRefitting]Oo.
-print("LoadGlobalTagTemplate")
 .oO[LoadGlobalTagTemplate]Oo.
-print("condLoad")
 .oO[condLoad]Oo.
-print("ValidationConfig")
 .oO[ValidationConfig]Oo.
-print("FileOutputTemplate")
 .oO[FileOutputTemplate]Oo.
 
-print("DefinePath")
 .oO[DefinePath]Oo.
 
 print("Done")
