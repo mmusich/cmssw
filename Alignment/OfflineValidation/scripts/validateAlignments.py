@@ -241,11 +241,16 @@ class ValidationJob(ValidationBase):
                     iov = self.validation.config.get("IOV", "iov")
                 else:
                     iov = "singleIOV"
+                scriptPaths = script.split("/")
+                scriptName = scriptPaths[-1]
+                scriptName = scriptName.split(".") 
+                jobName = "%s"%scriptName[1]+"_%s"%scriptName[2]
                 key = (self.valName, iov)
                 if key in ValidationJob.condorConf:
-                    ValidationJob.condorConf[key].append((name[22:].replace(".", "_"), script, general["logdir"]))
+                    #name[22:].replace(".", "_")
+                    ValidationJob.condorConf[key].append((jobName, script, general["logdir"]))
                 else:
-                    ValidationJob.condorConf[key] = [(name[22:].replace(".", "_"), script, general["logdir"])]
+                    ValidationJob.condorConf[key] = [(jobName, script, general["logdir"])]
             else:
                 raise AllInOneError("Unknown 'jobmode'!\n"
                                       "Please change this parameter either in "
@@ -389,12 +394,12 @@ class ValidationJobMultiIOV(ValidationBase):
         with open("{}/validation.dagman".format(outdir), "w") as dagman:
             parents = {}
             for (valName, iov), alignments in six.iteritems(ValidationJob.condorConf):
-                parents[iov] = []
                 
+                parents[(valName, iov)] = []
                 for jobInfo in alignments: 
                     dagman.write("JOB {}_{} {}/validation.condor".format(jobInfo[0], iov, outdir) + "\n")
                     dagman.write('VARS {}_{} '.format(jobInfo[0], iov) + 'scriptName="{}"'.format('.'.join(jobInfo[1].split('.')[:-1])) + "\n")
-                    parents[iov].append('{}_{}'.format(jobInfo[0], iov))
+                    parents[(valName, iov)].append('{}_{}'.format(jobInfo[0], iov))
                     dagman.write("\n")
 
                 path =  os.path.join(jobInfo[2], "TkAlMerge.sh")
@@ -406,8 +411,10 @@ class ValidationJobMultiIOV(ValidationBase):
                     raise AllInOneError("Merge script '[%s]' not found!"%path)
 
             for (valName, iov), alignments in six.iteritems(ValidationJob.condorConf):
-                dagman.write('PARENT {} '.format(" ".join([parent for parent in parents[iov]])) + 'CHILD Merge_{}_{}'.format(valName, iov) + "\n")
+                dagman.write('PARENT {} '.format(" ".join([parent for parent in parents[(valName, iov)]])) + 'CHILD Merge_{}_{}'.format(valName, iov) + "\n")
 
+        #print("condorConf")
+        #pprint.pprint(ValidationJob.condorConf)
         submitCommands = ["condor_submit_dag -no_submit -outfile_dir {} {}/validation.dagman".format(dagmanLog, outdir), "condor_submit {}/validation.dagman.condor.sub".format(outdir)]
 
         for command in submitCommands:
@@ -482,7 +489,11 @@ def createMergeScript( path, validations, options ):
     anythingToMerge = []
 
     for (validationType, referenceName), validations in comparisonLists.iteritems():
+        #pprint.pprint("validations")
+        #pprint.pprint(validations)
         for validation in validations:
+            #pprint.pprint("validation in validations")
+            #pprint.pprint(validation)
             #parallel merging
             if not (isinstance(validation, PreexistingValidation) or validation.NJobs == 1 or not isinstance(validation, ParallelValidation)):
                 if (validationtype, referenceName) not in anythingToMerge:
@@ -520,18 +531,28 @@ def createMergeScript( path, validations, options ):
         if issubclass(validationType, ValidationWithComparison):
             repMap[(validationType, referenceName)]["CompareAlignments"] += validationType.doComparison(validations)
     
-       #if not merging parallel, add code to create results directory and set merge script name accordingly
-        #if validation.config.has_section("IOV"):
-        repMap[(validationType, referenceName)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referenceName)])
-        filePath = os.path.join(repMap[(validationType, referenceName)]["scriptsdir"], "TkAlMerge.sh")
-        #else:
-        #    repMap[(validationType, referenceName)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referenceName)])
-        #    filePath = os.path.join(path, "TkAlMerge.sh")
+        #if not merging parallel, add code to create results directory and set merge script name accordingly
+        if validation.config.has_section("IOV"):
+            repMap[(validationType, referenceName)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referenceName)])
+            filePath = os.path.join(repMap[(validationType, referenceName)]["scriptsdir"], "TkAlMerge.sh")
+        else:
+            repMap[(validationType, referenceName)]["createResultsDirectory"]=replaceByMap(configTemplates.createResultsDirectoryTemplate, repMap[(validationType, referenceName)])
+            filePath = os.path.join(path, "TkAlMerge.sh")
     
         theFile = open( filePath, "w" )
         theFile.write( replaceByMap( configTemplates.mergeTemplate, repMap[(validationType, referenceName)]) )
         theFile.close()
         os.chmod(path,0o755)
+        #print("scriptsdir")
+        #pprint.pprint(repMap[(validationType, referenceName)]["scriptsdir"])
+        #print("workdir")
+        #pprint.pprint(repMap[(validationType, referenceName)]["workdir"])
+        #print("datadir")
+        #pprint.pprint(repMap[(validationType, referenceName)]["datadir"])
+        #print("eosdir")
+        #pprint.pprint(repMap[(validationType, referenceName)]["eosdir"])
+        #print("logdir")
+        #pprint.pprint(repMap[(validationType, referenceName)]["logdir"])
     
 def loadTemplates( config ):
     if config.has_section("alternateTemplates"):
@@ -541,6 +562,14 @@ def loadTemplates( config ):
             newTemplateName = config.get("alternateTemplates", templateName )
             #print "replacing default %s template by %s"%( templateName, newTemplateName)
             configTemplates.alternateTemplate(templateName, newTemplateName)
+
+def flatten(l):
+    for el in l:
+        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+            for sub in flatten(el):
+                yield sub
+        else:
+            yield el
 
     
 ####################--- Main ---############################
@@ -665,7 +694,10 @@ To merge the outcome of all validation procedures run TkAlMerge.sh in your valid
 
     map( lambda job: job.createJob(), jobs )
     validations = [ job.getValidation() for job in jobs ]
+    #flatten(validations)
     validations = [item for sublist in validations for item in sublist]
+    #print("validations")
+    #pprint.pprint(validations)
 
     createMergeScript(outPath, validations, options)
 
