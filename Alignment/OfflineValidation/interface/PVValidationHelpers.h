@@ -64,6 +64,13 @@ namespace PVValHelper {
     END_OF_PLOTS = 7,
   };
 
+  enum detectorPhase {
+    phase0 = 0,
+    phase1 = 1,
+    phase2 = 2,
+    END_OF_PHASES = 3,
+  };
+
   struct histodetails {
     int histobins;
     std::map<std::pair<residualType, plotVariable>, std::pair<float, float>> range;

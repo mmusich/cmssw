@@ -43,7 +43,7 @@ void PVValHelper::fillByIndex(std::vector<TH1F*>& h, unsigned int index, double 
 //*************************************************************
 {
   assert(!h.empty());
-  if (index <= h.size()) {
+  if (index < h.size()) {
     h[index]->Fill(x);
   } else {
     edm::LogWarning("PVValidationHelpers") << "Trying to fill non-existing Histogram with index " << index
