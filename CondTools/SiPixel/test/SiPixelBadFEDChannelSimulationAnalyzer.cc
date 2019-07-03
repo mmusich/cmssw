@@ -88,7 +88,7 @@ void SiPixelBadFEDChannelSimulationAnalyzer::beginJob()
   BPixBadRocsFromQuality_=0;
   FPixBadRocsFromQuality_=0;
 
-  h_totalBadRocs = fs->make<TH1F>("totalBadRocs","Bad ROCs PDF;n. of total bad ROCs;probability",1000,0.,10000.);
+  h_totalBadRocs = fs->make<TH1F>("totalBadRocs","Bad ROCs PDF;n. of total bad ROCs;probability",10000,0.,10000.);
   h_BPixBadRocs  = fs->make<TH1F>("BPixBadRocs","BPix Bad ROCs PDF;n. of BPix bad ROCc;probability",6000,0.,6000.);
   h_FPixBadRocs  = fs->make<TH1F>("FPixBadRocs","FPix Bad ROCs PDF;n. of BPix bad ROCs;probability",5000,0.,5000.);
 }
@@ -220,8 +220,8 @@ void SiPixelBadFEDChannelSimulationAnalyzer::analyze(const edm::Event& e, const 
     auto counts = this->countBadRocsInFEDChannel(PixelFEDChannelCollection_);
     
     h_totalBadRocs->Fill(TotalBadRocsFromQuality_+ std::get<0>(counts),scenarios.second); 
-    h_BPixBadRocs ->Fill(BPixBadRocsFromQuality_+ std::get<0>(counts),scenarios.second);  
-    h_FPixBadRocs ->Fill(FPixBadRocsFromQuality_+ std::get<0>(counts),scenarios.second);  
+    h_BPixBadRocs ->Fill(BPixBadRocsFromQuality_ + std::get<1>(counts),scenarios.second);  
+    h_FPixBadRocs ->Fill(FPixBadRocsFromQuality_ + std::get<2>(counts),scenarios.second);  
   }
 
   std::vector<std::string> allScenarios = quality_map->getScenarioList();
