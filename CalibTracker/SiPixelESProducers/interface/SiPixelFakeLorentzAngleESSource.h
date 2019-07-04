@@ -48,5 +48,6 @@ protected:
 
 private:
   edm::FileInPath fp_;
+  const double LAValue_;
 };
 #endif

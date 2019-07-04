@@ -27,7 +27,9 @@
 // constructors and destructor
 //
 SiPixelFakeLorentzAngleESSource::SiPixelFakeLorentzAngleESSource(const edm::ParameterSet& conf_)
-    : fp_(conf_.getParameter<edm::FileInPath>("file")) {
+  : fp_(conf_.getParameter<edm::FileInPath>("file")),
+    LAValue_(conf_.getParameter<double>("LAValue"))
+{
   edm::LogInfo("SiPixelFakeLorentzAngleESSource::SiPixelFakeLorentzAngleESSource");
   //the following line is needed to tell the framework what
   // data is being produced
@@ -50,10 +52,10 @@ std::unique_ptr<SiPixelLorentzAngle> SiPixelFakeLorentzAngleESSource::produce(co
   // Loop over detectors
   for (std::vector<uint32_t>::const_iterator detit = DetIds.begin(); detit != DetIds.end(); detit++) {
     nmodules++;
-    float langle = 0.106;
+    float langle = LAValue_;
     //std::cout << "detid " << (*detit) << std::endl;
 
-    if (!obj->putLorentzAngle(*detit, langle))
+    if (!obj->putLorentzAngle(*detit,langle))
       edm::LogError("SiPixelFakeLorentzAngleESSource")
           << "[SiPixelFakeLorentzAngleESSource::produce] detid already exists" << std::endl;
   }
