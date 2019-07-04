@@ -112,7 +112,7 @@ process.source = cms.Source("PoolSource",
                             )
 
 process.maxEvents = cms.untracked.PSet(
-     input = cms.untracked.int32(100)
+     input = cms.untracked.int32(200)
 )
 #process.source.skipEvents=cms.untracked.uint32(0*250000/40)
 
@@ -268,7 +268,7 @@ process.noscraping = cms.EDFilter("FilterOutScraping",
 
 process.load("Alignment.CommonAlignment.filterOutLowPt_cfi")
 process.filterOutLowPt.src = "generalTracks"
-process.filterOutLowPt.ptmin = 3.
+process.filterOutLowPt.ptmin = 1.5
 process.filterOutLowPt.runControl = False
 if(isMultipleRuns):
      process.filterOutLowPt.runControlNumber.extend((runboundary))
@@ -294,8 +294,8 @@ if isDA:
                                            isLightNtuple = cms.bool(True),
                                            askFirstLayerHit = cms.bool(False),
                                            forceBeamSpot = cms.untracked.bool(False),
-                                           probePt  = cms.untracked.double(3.0),
-                                           probeEta = cms.untracked.double(2.5),
+                                           probePt  = cms.untracked.double(1.5),
+                                           probeEta = cms.untracked.double(4.0),
                                            doBPix   = cms.untracked.bool(True),
                                            doFPix   = cms.untracked.bool(True),
                                            numberOfBins = cms.untracked.int32(48),
@@ -368,7 +368,7 @@ else:
 
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string('PrimaryVertexValidation_phase2_test0.root')
+    fileName = cms.string('PrimaryVertexValidation_phase2_test1.root')
 )
 
 
