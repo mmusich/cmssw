@@ -1377,7 +1377,7 @@ void PrimaryVertexValidation::beginJob() {
   h_probePtRebin_ = ProbeFeatures.make<TH1F>(
       "h_probePtRebin", "p_{T} of probe track;track p_{T} (GeV); tracks", mypT_bins_.size() - 1, mypT_bins_.data());
   h_probeP_ = ProbeFeatures.make<TH1F>("h_probeP", "momentum of probe track;track p (GeV); tracks", 100, 0., 100.);
-  h_probeEta_ = ProbeFeatures.make<TH1F>("h_probeEta", "#eta of the probe track;track #eta;tracks", 54, -2.8, 2.8);
+  h_probeEta_ = ProbeFeatures.make<TH1F>("h_probeEta", "#eta of the probe track;track #eta;tracks", 54,-etaOfProbe_,etaOfProbe_ );
   h_probePhi_ = ProbeFeatures.make<TH1F>("h_probePhi", "#phi of probe track;track #phi (rad);tracks", 100, -3.15, 3.15);
 
   h2_probeEtaPhi_ =
