@@ -370,6 +370,7 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     h_etaMax->SetBinContent(1., etaOfProbe_);
     h_nbins->SetBinContent(1., nBins_);
     h_nLadders->SetBinContent(1., nLadders_);
+    h_nModZ->SetBinContent(1., nModZ_);
     h_pTinfo->SetBinContent(1., mypT_bins_.size());
     h_pTinfo->SetBinContent(2., minPt_);
     h_pTinfo->SetBinContent(3., maxPt_);
@@ -1369,6 +1370,7 @@ void PrimaryVertexValidation::beginJob() {
 
   h_nbins = EventFeatures.make<TH1F>("nbins", "nbins", 1, -0.5, 0.5);
   h_nLadders = EventFeatures.make<TH1F>("nladders", "n. ladders", 1, -0.5, 0.5);
+  h_nModZ = EventFeatures.make<TH1F>("nModZ", "n. modules along z", 1, -0.5, 0.5);
 
   // probe track histograms
   TFileDirectory ProbeFeatures = fs->mkdir("ProbeTrackFeatures");
