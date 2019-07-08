@@ -298,6 +298,7 @@ ofstream outfile("FittedDeltaZ.txt");
 
 Int_t nBins_     = 48;
 Int_t nLadders_  = 20;
+Int_t nModZ_     =  8;
 const Int_t nPtBins_ = 48;
 Float_t _boundMin   = -0.5;
 Float_t _boundSx    = (nBins_/4.)-0.5;
@@ -495,21 +496,23 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
   TH1F* dzLadderResiduals[nFiles_][nLadders_];
   TH1F* dxyLadderResiduals[nFiles_][nLadders_];
 
-  TH1F* dzNormModZResiduals[nFiles_][8];
-  TH1F* dxyNormModZResiduals[nFiles_][8];
+  TH1F* dzNormModZResiduals[nFiles_][nModZ_];
+  TH1F* dxyNormModZResiduals[nFiles_][nModZ_];
   
-  TH1F* dzModZResiduals[nFiles_][8];
-  TH1F* dxyModZResiduals[nFiles_][8];
+  TH1F* dzModZResiduals[nFiles_][nModZ_];
+  TH1F* dxyModZResiduals[nFiles_][nModZ_];
 
   // for sanity checks
   TH1F* theEtaHistos[nFiles_];
   TH1F* thebinsHistos[nFiles_];
   TH1F* theLaddersHistos[nFiles_];
+  TH1F* theModZHistos[nFiles_];
   TH1F* thePtInfoHistos[nFiles_];
 
   double theEtaMax_[nFiles_];
   double theNBINS[nFiles_];
   double theLadders[nFiles_];
+  double theModZ[nFiles_];
 
   double thePtMax[nFiles_];
   double thePtMin[nFiles_];
@@ -552,6 +555,15 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
     } else {
       theLadders[i] = -1.;
       std::cout<<"File n. "<<i<<" getting the default n. ladders: "<< theLadders[i]<<std::endl;
+    }
+
+    if(gDirectory->GetListOfKeys()->Contains("nModZ")){
+      gDirectory->GetObject("nModZ",theModZHistos[i]);
+      theModZ[i] = theModZHistos[i]->GetBinContent(1)/theModZHistos[i]->GetEntries();
+      std::cout<<"File n. "<<i<<" has theNModZ["<<i<<"] = "<< theModZ[i]<<std::endl;
+    } else {
+      theModZ[i] = -1.;
+      std::cout<<"File n. "<<i<<" getting the default n. modules along Z: "<< theModZ[i]<<std::endl;
     }
 
     if(gDirectory->GetListOfKeys()->Contains("pTinfo")){
@@ -684,8 +696,12 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
 	dxyLadderResiduals[i][iLadder]     =  (TH1F*)fins[i]->Get(Form("PVValidation/Abs_Transv_ladderNoOverlap_Residuals/histo_dxy_ladder_plot%i",iLadder));
 	
       }
-      
-      for (Int_t iMod=0;iMod<8;iMod++){
+
+    }
+
+    if(theModZ[i]>0) {
+
+      for (Int_t iMod=0;iMod<theModZ[i];iMod++){
 	
 	dzNormModZResiduals[i][iMod]  =  (TH1F*)fins[i]->Get(Form("PVValidation/Norm_Long_modZ_Residuals/histo_norm_dz_modZ_plot%i",iMod));
 	dxyNormModZResiduals[i][iMod] =  (TH1F*)fins[i]->Get(Form("PVValidation/Norm_Transv_modZ_Residuals/histo_norm_dxy_modZ_plot%i",iMod));
@@ -747,6 +763,20 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
     nLadders_ = theLadders[0];
     std::cout<<"======================================================"<<std::endl;
     std::cout<<"FitPVResiduals::FitPVResiduals(): the number of ladders is: "<< nLadders_ << std::endl;
+    std::cout<<"======================================================"<<std::endl;
+  }
+
+  // checks if the geometries are consistent to produce the moduleZ plots
+  if(check(theModZ,nFiles_)){
+    std::cout<<"======================================================"<<std::endl;
+    std::cout<<"FitPVResiduals::FitPVResiduals(): the number of ladders is different"<<std::endl;
+    std::cout<<"won't do the ladder analysis..."<<std::endl;
+    std::cout<<"======================================================"<<std::endl;
+    nModZ_ = -1;
+  } else {
+    nModZ_ = theModZ[0];
+    std::cout<<"======================================================"<<std::endl;
+    std::cout<<"FitPVResiduals::FitPVResiduals(): the number of ladders is: "<< nModZ_ << std::endl;
     std::cout<<"======================================================"<<std::endl;
   }
 
@@ -914,16 +944,18 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
     }
 
     if(nLadders_>0){
-
       dxyLadderMeanTrend[i]  = new TH1F(Form("means_dxy_ladder_%i",i),"#LT d_{xy} #GT vs Layer 1 ladder;ladder number;#LT d_{xy} #GT [#mum]",theLadders[i],0.,theLadders[i]);
       dxyLadderWidthTrend[i] = new TH1F(Form("widths_dxy_ladder_%i",i),"#sigma(d_{xy}) vs Layer 1 ladder;ladder number;#sigma(d_{xy}) [#mum]",theLadders[i],0.,theLadders[i]);
       dzLadderMeanTrend[i]   = new TH1F(Form("means_dz_ladder_%i",i),"#LT d_{z} #GT vs Layer 1 ladder;ladder number;#LT d_{z} #GT [#mum]",theLadders[i],0.,theLadders[i]);  
-      dzLadderWidthTrend[i]  = new TH1F(Form("widths_dz_ladder_%i",i),"#sigma(d_{z}) vs Layer 1 ladder;ladder number;#sigma(d_{z}) [#mum]",theLadders[i],0.,theLadders[i]);
+      dzLadderWidthTrend[i]  = new TH1F(Form("widths_dz_ladder_%i",i),"#sigma(d_{z}) vs Layer 1 ladder;ladder number;#sigma(d_{z}) [#mum]",theLadders[i],0.,theLadders[i]); 
+    }
+
+    if(nModZ_>0){
       
-      dxyModZMeanTrend[i]    = new TH1F(Form("means_dxy_modZ_%i",i),"#LT d_{xy} #GT vs Layer 1 module number;module number;#LT d_{xy} #GT [#mum]",8,0.,8.);
-      dxyModZWidthTrend[i]   = new TH1F(Form("widths_dxy_modZ_%i",i),"#sigma(d_{xy}) vs Layer 1 module number;module number;#sigma(d_{xy}) [#mum]",8,0.,8.);
-      dzModZMeanTrend[i]     = new TH1F(Form("means_dz_modZ_%i",i),"#LT d_{z} #GT vs Layer 1 module number;module number;#LT d_{z} #GT [#mum]",8,0.,8.);  
-      dzModZWidthTrend[i]    = new TH1F(Form("widths_dz_modZ_%i",i),"#sigma(d_{z}) vs Layer 1 module number;module number;#sigma(d_{z}) [#mum]",8,0.,8.);
+      dxyModZMeanTrend[i]    = new TH1F(Form("means_dxy_modZ_%i",i),"#LT d_{xy} #GT vs Layer 1 module number;module number;#LT d_{xy} #GT [#mum]",theModZ[i],0.,theModZ[i]);
+      dxyModZWidthTrend[i]   = new TH1F(Form("widths_dxy_modZ_%i",i),"#sigma(d_{xy}) vs Layer 1 module number;module number;#sigma(d_{xy}) [#mum]",theModZ[i],0.,theModZ[i]);
+      dzModZMeanTrend[i]     = new TH1F(Form("means_dz_modZ_%i",i),"#LT d_{z} #GT vs Layer 1 module number;module number;#LT d_{z} #GT [#mum]",theModZ[i],0.,theModZ[i]);  
+      dzModZWidthTrend[i]    = new TH1F(Form("widths_dz_modZ_%i",i),"#sigma(d_{z}) vs Layer 1 module number;module number;#sigma(d_{z}) [#mum]",theModZ[i],0.,theModZ[i]);
 
     }
 
@@ -954,11 +986,15 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
       dxyNormLadderWidthTrend[i] = new TH1F(Form("widths_dxyNorm_ladder_%i",i),"#sigma(d_{xy}/#sigma_{d_{xy}}) vs Layer 1 ladder;ladder number;#sigma(d_{xy}/#sigma_{d_{xy}})",theLadders[i],0.,theLadders[i]);
       dzNormLadderMeanTrend[i]   = new TH1F(Form("means_dzNorm_ladder_%i",i),"#LT d_{z}/#sigma_{d_{z}} #GT vs Layer 1 ladder;ladder number;#LT d_{z}/#sigma_{d_{z}} #GT",theLadders[i],0.,theLadders[i]);  
       dzNormLadderWidthTrend[i]  = new TH1F(Form("widths_dzNorm_ladder_%i",i),"#sigma(d_{z}/#sigma_{d_{z}}) vs Layer 1 ladder;ladder number;#sigma(d_{z}/#sigma_{d_{z}})",theLadders[i],0.,theLadders[i]);
-      
-      dxyNormModZMeanTrend[i]    = new TH1F(Form("means_dxyNorm_modZ_%i",i),"#LT d_{xy}/#sigma_{d_{xy}} #GT vs Layer 1 module number;module number;#LT d_{xy}/#sigma_{d_{xy}} #GT",8,0.,8.);
-      dxyNormModZWidthTrend[i]   = new TH1F(Form("widths_dxyNorm_modZ_%i",i),"#sigma(d_{xy}/#sigma_{d_{xy}}) vs Layer 1 module number;module number;#sigma(d_{xy}/#sigma_{d_{xy}})",8,0.,8.);
-      dzNormModZMeanTrend[i]     = new TH1F(Form("means_dzNorm_modZ_%i",i),"#LT d_{z}/#sigma_{d_{z}} #GT vs Layer 1 module number;module number;#LT d_{z}/#sigma_{d_{z}} #GT",8,0.,8.);  
-      dzNormModZWidthTrend[i]    = new TH1F(Form("widths_dzNorm_modZ_%i",i),"#sigma(d_{z}/#sigma_{d_{z}}) vs Layer 1 module number;module number;#sigma(d_{z}/#sigma_{d_{z}})",8,0.,8.);
+     
+    }
+
+    if(nModZ_>0){
+
+      dxyNormModZMeanTrend[i]    = new TH1F(Form("means_dxyNorm_modZ_%i",i),"#LT d_{xy}/#sigma_{d_{xy}} #GT vs Layer 1 module number;module number;#LT d_{xy}/#sigma_{d_{xy}} #GT",theModZ[i],0.,theModZ[i]);
+      dxyNormModZWidthTrend[i]   = new TH1F(Form("widths_dxyNorm_modZ_%i",i),"#sigma(d_{xy}/#sigma_{d_{xy}}) vs Layer 1 module number;module number;#sigma(d_{xy}/#sigma_{d_{xy}})",theModZ[i],0.,theModZ[i]);
+      dzNormModZMeanTrend[i]     = new TH1F(Form("means_dzNorm_modZ_%i",i),"#LT d_{z}/#sigma_{d_{z}} #GT vs Layer 1 module number;module number;#LT d_{z}/#sigma_{d_{z}} #GT",theModZ[i],0.,theModZ[i]);  
+      dzNormModZWidthTrend[i]    = new TH1F(Form("widths_dzNorm_modZ_%i",i),"#sigma(d_{z}/#sigma_{d_{z}}) vs Layer 1 module number;module number;#sigma(d_{z}/#sigma_{d_{z}})",theModZ[i],0.,theModZ[i]);
 
     }
 
@@ -1020,10 +1056,14 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
       FillTrendPlot(dzLadderMeanTrend[i]  ,dzLadderResiduals[i] ,params::MEAN,"else",nLadders_); 
       FillTrendPlot(dzLadderWidthTrend[i] ,dzLadderResiduals[i] ,params::WIDTH,"else",nLadders_);
       
-      FillTrendPlot(dxyModZMeanTrend[i] ,dxyModZResiduals[i],params::MEAN,"else",8); 
-      FillTrendPlot(dxyModZWidthTrend[i],dxyModZResiduals[i],params::WIDTH,"else",8);
-      FillTrendPlot(dzModZMeanTrend[i]  ,dzModZResiduals[i] ,params::MEAN,"else",8); 
-      FillTrendPlot(dzModZWidthTrend[i] ,dzModZResiduals[i] ,params::WIDTH,"else",8);
+    }
+
+    if(nModZ_>0){
+
+      FillTrendPlot(dxyModZMeanTrend[i] ,dxyModZResiduals[i],params::MEAN,"else",nModZ_); 
+      FillTrendPlot(dxyModZWidthTrend[i],dxyModZResiduals[i],params::WIDTH,"else",nModZ_);
+      FillTrendPlot(dzModZMeanTrend[i]  ,dzModZResiduals[i] ,params::MEAN,"else",nModZ_); 
+      FillTrendPlot(dzModZWidthTrend[i] ,dzModZResiduals[i] ,params::WIDTH,"else",nModZ_);
     }
 
     MakeNiceTrendPlotStyle(dxyPhiMeanTrend[i],colors[i],markers[i]);
@@ -1058,7 +1098,9 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
       MakeNiceTrendPlotStyle(dxyLadderWidthTrend[i],colors[i],markers[i]);
       MakeNiceTrendPlotStyle(dzLadderMeanTrend[i],colors[i],markers[i]);  
       MakeNiceTrendPlotStyle(dzLadderWidthTrend[i],colors[i],markers[i]); 
-      
+    }
+
+    if(nModZ_>0){      
       MakeNiceTrendPlotStyle(dxyModZMeanTrend[i] ,colors[i],markers[i]);
       MakeNiceTrendPlotStyle(dxyModZWidthTrend[i],colors[i],markers[i]);
       MakeNiceTrendPlotStyle(dzModZMeanTrend[i]  ,colors[i],markers[i]);
@@ -1091,11 +1133,13 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
       FillTrendPlot(dxyNormLadderWidthTrend[i],dxyNormLadderResiduals[i],params::WIDTH,"else",nLadders_);
       FillTrendPlot(dzNormLadderMeanTrend[i]  ,dzNormLadderResiduals[i] ,params::MEAN,"else",nLadders_); 
       FillTrendPlot(dzNormLadderWidthTrend[i] ,dzNormLadderResiduals[i] ,params::WIDTH,"else",nLadders_);
-      
-      FillTrendPlot(dxyNormModZMeanTrend[i] ,dxyNormModZResiduals[i],params::MEAN,"else",8); 
-      FillTrendPlot(dxyNormModZWidthTrend[i],dxyNormModZResiduals[i],params::WIDTH,"else",8);
-      FillTrendPlot(dzNormModZMeanTrend[i]  ,dzNormModZResiduals[i] ,params::MEAN,"else",8); 
-      FillTrendPlot(dzNormModZWidthTrend[i] ,dzNormModZResiduals[i] ,params::WIDTH,"else",8);
+    }
+
+    if(nModZ_>0){      
+      FillTrendPlot(dxyNormModZMeanTrend[i] ,dxyNormModZResiduals[i],params::MEAN,"else",nModZ_); 
+      FillTrendPlot(dxyNormModZWidthTrend[i],dxyNormModZResiduals[i],params::WIDTH,"else",nModZ_);
+      FillTrendPlot(dzNormModZMeanTrend[i]  ,dzNormModZResiduals[i] ,params::MEAN,"else",nModZ_); 
+      FillTrendPlot(dzNormModZWidthTrend[i] ,dzNormModZResiduals[i] ,params::WIDTH,"else",nModZ_);
     }      
 
     MakeNiceTrendPlotStyle(dxyNormPhiMeanTrend[i],colors[i],markers[i]);
@@ -1122,7 +1166,9 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
       MakeNiceTrendPlotStyle(dxyNormLadderWidthTrend[i],colors[i],markers[i]);
       MakeNiceTrendPlotStyle(dzNormLadderMeanTrend[i],colors[i],markers[i]);  
       MakeNiceTrendPlotStyle(dzNormLadderWidthTrend[i],colors[i],markers[i]); 
-      
+    }
+
+    if(nModZ_>0){
       MakeNiceTrendPlotStyle(dxyNormModZMeanTrend[i] ,colors[i],markers[i]);
       MakeNiceTrendPlotStyle(dxyNormModZWidthTrend[i],colors[i],markers[i]);
       MakeNiceTrendPlotStyle(dzNormModZMeanTrend[i]  ,colors[i],markers[i]);
@@ -1383,7 +1429,7 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
 
   // Bias plots (ladders and module number)
 
-  if(nLadders_>0){
+  if(nLadders_>0 && nModZ_>0){
     TCanvas *BiasesCanvasLayer1 = new TCanvas("BiasCanvasLayer1","BiasCanvasLayer1",1200,1200);
     arrangeBiasCanvas(BiasesCanvasLayer1,dxyLadderMeanTrend,dzLadderMeanTrend,dxyModZMeanTrend, dzModZMeanTrend,nFiles_,LegLabels,theDate,setAutoLimits);
     
@@ -1436,7 +1482,7 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
   ResolutionsCanvasXY->SaveAs("ResolutionsCanvasXY_"+theStrDate+theStrAlignment+".pdf");
   ResolutionsCanvasXY->SaveAs("ResolutionsCanvasXY_"+theStrDate+theStrAlignment+".png");
 
-  if(nLadders_>0){
+  if(nLadders_>0 && nModZ_>0){
 
     TCanvas *ResolutionsCanvasLayer1 = new TCanvas("ResolutionsCanvasLayer1","ResolutionsCanvasLayer1",1200,1200);
     arrangeBiasCanvas(ResolutionsCanvasLayer1,dxyLadderWidthTrend,dzLadderWidthTrend,dxyModZWidthTrend,dzModZWidthTrend,nFiles_,LegLabels,theDate,setAutoLimits);
@@ -1455,7 +1501,7 @@ void FitPVResiduals(TString namesandlabels,bool stdres,bool do2DMaps,TString the
   PullsCanvas->SaveAs("PullsCanvas_"+theStrDate+theStrAlignment+".pdf");
   PullsCanvas->SaveAs("PullsCanvas_"+theStrDate+theStrAlignment+".png");
 
-  if(nLadders_>0){
+  if(nLadders_>0  && nModZ_>0){
     TCanvas *PullsCanvasLayer1 = new TCanvas("PullsCanvasLayer1","PullsCanvasLayer1",1200,1200);
     arrangeBiasCanvas(PullsCanvasLayer1,dxyNormLadderWidthTrend,dzNormLadderWidthTrend,dxyNormModZWidthTrend,dzNormModZWidthTrend,nFiles_,LegLabels,theDate,setAutoLimits);
     
@@ -3351,10 +3397,10 @@ void makeNewXAxis (TH1F *h)
     ndiv = 510;
   } else if (myTitle.Contains("ladder")) {
     axmin = 0.5;
-    axmax = 12.5;
+    axmax = nLadders_+0.5;
   } else if (myTitle.Contains("modZ")) {
     axmin = 0.5;
-    axmax = 8.5;
+    axmax = nModZ_+0.5;
   } else if (myTitle.Contains("h_probe")){
     ndiv = 505;
     axmin = h->GetXaxis()->GetBinCenter(h->GetXaxis()->GetFirst());

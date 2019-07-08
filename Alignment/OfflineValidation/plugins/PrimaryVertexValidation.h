@@ -287,6 +287,7 @@ private:
   TH1F* h_etaMax;
   TH1F* h_nbins;
   TH1F* h_nLadders;
+  TH1F* h_nModZ;
   TH1F* h_pTinfo;
 
   // ---- directly histograms // ===> unbiased residuals
