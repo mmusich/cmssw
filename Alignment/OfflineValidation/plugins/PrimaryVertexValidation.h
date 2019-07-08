@@ -309,6 +309,7 @@ private:
   TH1F* h_etaMax;
   TH1F* h_nbins;
   TH1F* h_nLadders;
+  TH1F* h_nModZ;
   TH1F* h_pTinfo;
 
   std::map<unsigned int, std::pair<long long, long long> > runNumbersTimesLog_;
