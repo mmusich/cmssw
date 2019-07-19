@@ -16,108 +16,57 @@ theRefitter = RefitType.COMMON
 # Event source and run selection
 ###################################################################
 readFiles = cms.untracked.vstring()
-readFiles.extend(['/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/86C0A7EC-51CB-EE48-9C0B-B91670154650.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/8B2CBEA2-F5AF-E049-9402-53DE3B6D3F1F.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/E83C6143-BD6E-7549-8978-1EE67A84AA16.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/9845F48C-8EF6-BB4C-BCED-0D1652F29746.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/D7D82C49-A142-7844-ABBA-40A959F62EC0.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/76F2841B-ABA9-974A-B072-30A5593E673A.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/4C3A88B5-93CE-A841-829A-EEF8ED5D4830.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/A6B527CA-0A02-D445-853F-D19284C56F07.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/95406C81-3C2F-BC4A-9022-6C463A164F25.root',
-                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/48EE1FA4-B32A-804B-BC23-576269B04D2F.root'])
+# readFiles.extend(['/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/86C0A7EC-51CB-EE48-9C0B-B91670154650.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/8B2CBEA2-F5AF-E049-9402-53DE3B6D3F1F.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/E83C6143-BD6E-7549-8978-1EE67A84AA16.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/9845F48C-8EF6-BB4C-BCED-0D1652F29746.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/D7D82C49-A142-7844-ABBA-40A959F62EC0.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/76F2841B-ABA9-974A-B072-30A5593E673A.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/4C3A88B5-93CE-A841-829A-EEF8ED5D4830.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/A6B527CA-0A02-D445-853F-D19284C56F07.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/95406C81-3C2F-BC4A-9022-6C463A164F25.root',
+#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/106X_upgrade2023_realistic_v2_2023D41noPU-v1/10000/48EE1FA4-B32A-804B-BC23-576269B04D2F.root'])
 
 
-# readFiles.extend(['/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/555C0759-09FE-0046-8085-D545868BF33E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/62ACFD1E-53AA-EA40-974E-F23946D3A334.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/50F72458-F36A-5B48-9DF9-DE5CECD79A9C.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3842BDAA-2F7C-F147-ABC7-518F24BBAE8E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F73AAC10-43D4-8944-AA79-62A52F09D873.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/6F229504-807B-FF43-A2C9-BA4EC96D6AFF.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/2C17A33B-ED11-2642-A51B-94726EDB653A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/95B10E60-1620-A549-A565-B8B7D927D439.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/53F1F4B2-F997-6747-ABA2-0E978BED35CC.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/30F70274-207A-6746-B41D-6D7F56717A3D.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F8487FC0-55FB-784F-A6F7-5C2524882BB9.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/7AA63EE0-B4CD-DB48-8E83-ACB5F796A0DE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3339E49A-1625-4A4D-B4E1-D98DAEFC16D3.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/D0147BE3-B976-9B46-8F99-BDAAB737BCB2.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/A794C730-E260-3A43-91A1-0153621B343E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/59532262-BF00-1541-B1D9-4712F03D135E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3DF00831-4F84-E747-AA17-7B6B529B0CAA.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/76D4C367-08F6-3A46-AC29-35F881B0F2CB.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F28DAFD7-2680-1347-B74A-28A34FA13C2A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/7F4EBBB1-4FEF-C348-B3CB-8F11A4AB2920.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/1A7C6898-C1BE-894B-B16A-F77B6DCF9B36.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/026E2F7B-7C24-4549-9A7E-F79284F2476E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/CF580862-D478-A04B-9F0D-2D61717D67EE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/5B4C64CA-DBDF-0741-AAA2-ED2399960038.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/A9460131-BF74-1F4C-A72B-4919B950F1C0.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/B1617A96-168E-5345-9387-B4106FB21A35.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/71031544-6693-774E-AEF7-2182A67BCAE8.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/C2AFBBFC-78C4-9B4F-9D01-50881850E0E5.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/93B3C631-3618-FC49-85DB-7A8D56953D70.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/39C966DF-D800-1B40-8F3E-3B72F1809D4A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/2F9574D3-230B-5D40-B7E2-02B187D2BB5D.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/CB128082-8580-5A4F-9E35-6928E9633F3A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/8672C46C-4A54-2A4F-A49B-7D483992B601.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/5AB3B09D-1C52-E347-99D3-89ED655F5461.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/21964C59-4F51-D547-9954-FBB1039BDE45.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/CD944D0D-FC94-0144-8DDF-45010AA548DE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/A325D5A8-26DC-7B44-91E4-40A3830E99AD.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/DAEE95FC-9A88-9744-AB72-F30CB0C49883.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/D9E2D9DB-9F71-A841-8546-0CFCE8DA0246.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/0B289B7D-2EC7-E54B-BC6B-9E030280C4C9.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/9187599A-0243-074F-8A81-3DE0C9A598FC.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/380DE24C-0A60-634A-B556-0826AF4A34BB.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/B41FBDE9-C7F1-BE4E-94A0-21CC665ACC4E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3EED97D5-602F-B149-B216-8EA2B8A92895.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/1591BCF8-5F03-8A46-A8B7-C6EA3C9D4436.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/B06EB80D-367B-C247-9CCF-4AD97466DFFB.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/EB36B45E-8D43-DD4D-A95E-E86421893F6A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/723343A7-295F-DC42-9D05-12999B23F285.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/05A88B31-2B62-DB46-803A-973B5647ADB8.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/ACC18E8D-1BB8-AE43-8002-301612B07C71.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/9E5875FC-FDA3-744A-BDB7-B05AD0165D92.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/2DA3467C-C791-A84F-8EED-593A6DAF5729.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/4599436A-E771-AE49-90D0-DB1159ACE2ED.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/EE448134-A5D9-2F4A-9AA6-DFA093A7F816.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/621663CB-0D7E-D941-B9A7-095025AD49F0.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/C2A794E6-061B-1047-B892-7D30A7F6EF21.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/86D71772-2043-1144-841D-959234913B72.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/644CD466-10B8-D84B-947A-E493E8B80A3E.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/6FE26C63-430A-4B4B-9C36-4E1B8C1D7D7A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/73D14617-E03D-AF4D-BE77-7626CAAC7539.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/8C50C6C7-D33C-8547-91E1-D8BCDFF55480.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F0E6BF12-1CA8-BD41-8697-B0764D5CA2A6.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/FC2AA92A-61AC-7849-9737-4D0241A92028.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/9474753E-84EE-214D-BE6E-D9AC2C9F5CA2.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/6093C6EC-B3ED-E34E-8DFE-49FF2785C8B1.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/963AF724-8BDD-9F4B-9D05-B6214A841EA5.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/41FD5C0F-9670-0448-AE65-BE79050CD75C.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/8E97EAF5-D8AC-6547-8576-ED8AE65406AD.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/49C91CDB-ACDF-9E4F-BFB5-7CEAA92439B3.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3D1CCC98-F0AF-DA43-A98D-3A23D0E058F6.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/9EE6C490-C86E-4D47-9C1C-547A57F27104.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/DB58A270-12D1-0F42-8D77-C21B8386EE27.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/4B0CABC8-377E-C24D-AB4F-DF012BFF0F21.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/1560B8A0-D1D2-274D-A4F2-6C356CBA523F.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/596A0C85-1A25-1C44-A467-9CF26E5BDDDE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/B00D2796-9F78-2B45-9763-62CEF19154EB.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/5BBEDC51-CD0A-9148-94E5-9741C7860E7A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/791AC46F-0B74-EB4C-8032-6B19B5DAA0DF.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/FA7718BC-6F71-3745-B957-BAAD6B6F751A.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/B53F30BE-23A0-E24A-B731-B85ADDB5F1E4.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/4F34E503-9274-C34F-88A3-CAEEB9B98DBE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/2728AC5C-A208-2B45-A2E6-BC982C07F1D6.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/30DFE3F4-1903-A147-BE35-43FDAF758EF2.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/02DCB543-9C2B-7040-B714-48341CE2D0F2.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/1373B73D-9763-DD46-A420-93B04B0440AE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/70E8F4DF-9630-1346-9071-73FDC930C4BE.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/07C406F2-64FE-F745-AD74-A4AC1C5E6BEA.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3A6DD6E5-773C-B847-B893-80DFA4A812BB.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/E97AA353-4004-844E-A80D-4DD8467D0411.root',
-#                   '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/6C857B6B-BA22-0741-86D6-39BBE9076A8E.root'])
+readFiles.extend(['/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/555C0759-09FE-0046-8085-D545868BF33E.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/62ACFD1E-53AA-EA40-974E-F23946D3A334.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/50F72458-F36A-5B48-9DF9-DE5CECD79A9C.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3842BDAA-2F7C-F147-ABC7-518F24BBAE8E.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F73AAC10-43D4-8944-AA79-62A52F09D873.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/6F229504-807B-FF43-A2C9-BA4EC96D6AFF.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/2C17A33B-ED11-2642-A51B-94726EDB653A.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/95B10E60-1620-A549-A565-B8B7D927D439.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/53F1F4B2-F997-6747-ABA2-0E978BED35CC.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/30F70274-207A-6746-B41D-6D7F56717A3D.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F8487FC0-55FB-784F-A6F7-5C2524882BB9.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/7AA63EE0-B4CD-DB48-8E83-ACB5F796A0DE.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3339E49A-1625-4A4D-B4E1-D98DAEFC16D3.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/D0147BE3-B976-9B46-8F99-BDAAB737BCB2.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/A794C730-E260-3A43-91A1-0153621B343E.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/59532262-BF00-1541-B1D9-4712F03D135E.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/3DF00831-4F84-E747-AA17-7B6B529B0CAA.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/76D4C367-08F6-3A46-AC29-35F881B0F2CB.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/F28DAFD7-2680-1347-B74A-28A34FA13C2A.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/7F4EBBB1-4FEF-C348-B3CB-8F11A4AB2920.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/1A7C6898-C1BE-894B-B16A-F77B6DCF9B36.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/026E2F7B-7C24-4549-9A7E-F79284F2476E.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/CF580862-D478-A04B-9F0D-2D61717D67EE.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/5B4C64CA-DBDF-0741-AAA2-ED2399960038.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/A9460131-BF74-1F4C-A72B-4919B950F1C0.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/B1617A96-168E-5345-9387-B4106FB21A35.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/71031544-6693-774E-AEF7-2182A67BCAE8.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/C2AFBBFC-78C4-9B4F-9D01-50881850E0E5.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/93B3C631-3618-FC49-85DB-7A8D56953D70.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/39C966DF-D800-1B40-8F3E-3B72F1809D4A.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/2F9574D3-230B-5D40-B7E2-02B187D2BB5D.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/CB128082-8580-5A4F-9E35-6928E9633F3A.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/8672C46C-4A54-2A4F-A49B-7D483992B601.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/5AB3B09D-1C52-E347-99D3-89ED655F5461.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/21964C59-4F51-D547-9954-FBB1039BDE45.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/CD944D0D-FC94-0144-8DDF-45010AA548DE.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/A325D5A8-26DC-7B44-91E4-40A3830E99AD.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/DAEE95FC-9A88-9744-AB72-F30CB0C49883.root',
+                  '/store/relval/CMSSW_10_6_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU25ns_106X_upgrade2023_realistic_v2_2023D41PU200-v1/10000/D9E2D9DB-9F71-A841-8546-0CFCE8DA0246.root'])
 
 process.source = cms.Source("PoolSource",
                             fileNames = readFiles ,
@@ -125,7 +74,7 @@ process.source = cms.Source("PoolSource",
                             )
 
 process.maxEvents = cms.untracked.PSet(
-     input = cms.untracked.int32(10000)
+     input = cms.untracked.int32(1000)
 )
 #process.source.skipEvents=cms.untracked.uint32(0*250000/40)
 
@@ -137,7 +86,7 @@ process.options = cms.untracked.PSet(
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.destinations = ['cout', 'cerr']
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 10
 process.MessageLogger.statistics.append('cout')
 
 
@@ -391,8 +340,8 @@ process.TFileService = cms.Service("TFileService",
                                    #fileName = cms.string('PrimaryVertexValidation_phase2_test1.root')
                                    #fileName = cms.string('PrimaryVertexValidation_phase2_test1NoPU.root')
                                    #fileName = cms.string('PrimaryVertexValidation_phase2_commonRefit.root')
-                                   fileName  = cms.string('justAtest.root')
-)
+                                   fileName  = cms.string('justAtestPU.root')
+                                   )
 
 
 
