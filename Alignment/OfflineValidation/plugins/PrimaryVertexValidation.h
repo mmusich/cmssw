@@ -167,7 +167,7 @@ class PrimaryVertexValidation : public edm::one::EDAnalyzer<edm::one::SharedReso
   //=======================
   void SetVarToZero();  
 
-  static const int nMaxtracks_ = 1000;
+  static const int nMaxtracks_ = 10000;
   static const int cmToum = 10000;
   static const int nPtBins_ = 48;
 
