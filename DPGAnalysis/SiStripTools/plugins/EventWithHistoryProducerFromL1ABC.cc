@@ -34,7 +34,9 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "DataFormats/Scalers/interface/L1AcceptBunchCrossing.h"
+#include "DataFormats/TCDS/interface/TCDSRecord.h"
 #include "DPGAnalysis/SiStripTools/interface/EventWithHistory.h"
+
 //
 // class decleration
 //
@@ -52,6 +54,7 @@ private:
   // ----------member data ---------------------------
 
   edm::EDGetTokenT<L1AcceptBunchCrossingCollection> _l1abccollectionToken;
+  edm::EDGetTokenT<TCDSRecord> _tcdsRecordToken;
   const bool _forceNoOffset;
   std::map<edm::EventNumber_t, long long> _offsets;
   long long _curroffset;
@@ -71,7 +74,10 @@ private:
 //
 EventWithHistoryProducerFromL1ABC::EventWithHistoryProducerFromL1ABC(const edm::ParameterSet& iConfig)
     : _l1abccollectionToken(
-          mayConsume<L1AcceptBunchCrossingCollection>(iConfig.getParameter<edm::InputTag>("l1ABCCollection"))),
+                            mayConsume<L1AcceptBunchCrossingCollection>(iConfig.getParameter<edm::InputTag>("l1ABCCollection"))),
+      _tcdsRecordToken(
+                           mayConsume<TCDSRecord>(iConfig.getParameter<edm::InputTag>("tcdsRecordLabel"))),
+      
       _forceNoOffset(iConfig.getUntrackedParameter<bool>("forceNoOffset", false)),
       _offsets(),
       _curroffset(0),
@@ -104,17 +110,25 @@ void EventWithHistoryProducerFromL1ABC::produce(edm::Event& iEvent, const edm::E
   } else {
     Handle<L1AcceptBunchCrossingCollection> pIn;
     iEvent.getByToken(_l1abccollectionToken, pIn);
+    Handle<TCDSRecord> tcds_pIn;
+    iEvent.getByToken(_tcdsRecordToken, tcds_pIn);
+    const auto& tcdsRecord = *tcds_pIn.product();
 
     // offset computation
-
     long long orbitoffset = 0;
     int bxoffset = 0;
-    if (!_forceNoOffset) {
-      for (L1AcceptBunchCrossingCollection::const_iterator l1abc = pIn->begin(); l1abc != pIn->end(); ++l1abc) {
-        if (l1abc->l1AcceptOffset() == 0) {
-          orbitoffset = (long long)l1abc->orbitNumber() - (long long)iEvent.orbitNumber();
-          bxoffset = l1abc->bunchCrossing() - iEvent.bunchCrossing();
-        }
+
+    if (tcds_pIn.isValid()) {
+      orbitoffset = (long long) tcdsRecord.getOrbitNr() - (long long) iEvent.orbitNumber();
+      bxoffset = tcdsRecord.getBXID() - iEvent.bunchCrossing();
+    } else {
+      if (!_forceNoOffset) {
+	for (L1AcceptBunchCrossingCollection::const_iterator l1abc = pIn->begin(); l1abc != pIn->end(); ++l1abc) {
+	  if (l1abc->l1AcceptOffset() == 0) {
+	    orbitoffset = (long long)l1abc->orbitNumber() - (long long)iEvent.orbitNumber();
+	    bxoffset = l1abc->bunchCrossing() - iEvent.bunchCrossing();
+	  }
+	}
       }
     }
 
@@ -122,7 +136,6 @@ void EventWithHistoryProducerFromL1ABC::produce(edm::Event& iEvent, const edm::E
     iEvent.put(std::move(pOut));
 
     // monitor offset
-
     long long absbxoffset = orbitoffset * 3564 + bxoffset;
 
     if (_offsets.empty()) {
