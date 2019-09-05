@@ -59,7 +59,7 @@ private:
   std::vector<float> puBinEdges_;
   std::vector<float> zBinEdges_;
 
-  SiStripApvSimulationParameters* myAPVSimulationParameters;
+  std::unique_ptr<SiStripApvSimulationParameters> myAPVSimulationParameters;
 };
 
 //
@@ -89,10 +89,10 @@ SiStripApvSimulationParametersBuilder::SiStripApvSimulationParametersBuilder(con
                         iConfig.getParameter<edm::FileInPath>("apvBaselinesFile_tob5"),
                         iConfig.getParameter<edm::FileInPath>("apvBaselinesFile_tob6")};
   //now do what ever initialization is needed
-  myAPVSimulationParameters = new SiStripApvSimulationParameters();
+  //  myAPVSimulationParameters = new SiStripApvSimulationParameters();
 }
 
-SiStripApvSimulationParametersBuilder::~SiStripApvSimulationParametersBuilder() { delete  myAPVSimulationParameters; }
+SiStripApvSimulationParametersBuilder::~SiStripApvSimulationParametersBuilder() {} // delete  myAPVSimulationParameters; }
 
 //
 // member functions
@@ -114,7 +114,7 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersBu
   }
   baselineBinEdges.push_back(baseline_max_);
 
-  SiStripApvSimulationParameters::LayerParameters layerParams{zBinEdges_, puBinEdges_, baselineBinEdges};
+  SiStripApvSimulationParameters::LayerParameters layerParams(zBinEdges_, puBinEdges_, baselineBinEdges);
 
   // Read apv baselines from text files
   std::vector<double> theAPVBaselines;
@@ -146,11 +146,12 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersBu
   // Put baselines into histograms
   for (auto const& apvBaseline : theAPVBaselines | boost::adaptors::indexed(0)) {
     unsigned int binInCurrentHistogram = apvBaseline.index() % baseline_nBins_ + 1;
-    unsigned int binInZ = int(apvBaseline.index()) / (nPUBins * baseline_nBins_) +1;
-    unsigned int binInPU = int(apvBaseline.index() - binInZ * (nPUBins)*baseline_nBins_) / baseline_nBins_ +1;
+    unsigned int binInZ = int(apvBaseline.index()) / (nPUBins * baseline_nBins_);
+    unsigned int binInPU = int(apvBaseline.index() - binInZ * (nPUBins)*baseline_nBins_) / baseline_nBins_;
 
-    layerParams.setBinContent(binInZ, binInPU, binInCurrentHistogram, apvBaseline.value());
+    layerParams.setBinContent(binInZ+1, binInPU+1, binInCurrentHistogram, apvBaseline.value());
   }
+
   return layerParams;
 }
 
@@ -159,8 +160,9 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersBu
 // ------------ method called for each event  ------------
 void SiStripApvSimulationParametersBuilder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   
-  for (unsigned int i{0}; i != baselineFiles_TIB_.size(); ++i) {
+  myAPVSimulationParameters = std::make_unique<SiStripApvSimulationParameters>(baselineFiles_TIB_.size(), baselineFiles_TOB_.size());
 
+  for (unsigned int i{0}; i != baselineFiles_TIB_.size(); ++i) {
     if ( ! myAPVSimulationParameters->putTIB(i + 1, makeLayerParameters(baselineFiles_TIB_[i].fullPath())) ) {
       throw cms::Exception("SiStripApvSimulationParameters") << "Could not add parameters for TIB layer " << (i+1);
     } else {
@@ -189,7 +191,7 @@ void SiStripApvSimulationParametersBuilder::endJob() {
   if (poolDbService.isAvailable()) {
     cond::Time_t valid_time = poolDbService->currentTime();
     // this writes the payload to begin in current run defined in cfg
-    poolDbService->writeOne(myAPVSimulationParameters, valid_time,"SiStripApvSimulationParametersRcd");
+    poolDbService->writeOne(myAPVSimulationParameters.get(), valid_time,"SiStripApvSimulationParametersRcd");
   }
 }
 
