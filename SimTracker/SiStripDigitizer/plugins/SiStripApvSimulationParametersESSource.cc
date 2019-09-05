@@ -1,4 +1,5 @@
 #include "FWCore/Framework/interface/ESProducer.h"
+#include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
@@ -6,13 +7,16 @@
 #include <fstream>
 #include <boost/range/adaptor/indexed.hpp>
 
-class SiStripApvSimulationParametersESProducer : public edm::ESProducer {
+class SiStripApvSimulationParametersESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
 public:
-  explicit SiStripApvSimulationParametersESProducer(const edm::ParameterSet& conf);
-  ~SiStripApvSimulationParametersESProducer() override {}
+  explicit SiStripApvSimulationParametersESSource(const edm::ParameterSet& conf);
+  ~SiStripApvSimulationParametersESSource() override {}
 
   std::unique_ptr<SiStripApvSimulationParameters> produce(const SiStripApvSimulationParametersRcd& record);
 
+  void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
+                      const edm::IOVSyncValue& iov,
+                      edm::ValidityInterval& iValidity) override;
 private:
   std::vector<edm::FileInPath> baselineFiles_TOB_;
   std::vector<edm::FileInPath> baselineFiles_TIB_;
@@ -25,11 +29,13 @@ private:
   SiStripApvSimulationParameters::LayerParameters makeLayerParameters(const std::string& apvBaselinesFileName) const;
 };
 
-SiStripApvSimulationParametersESProducer::SiStripApvSimulationParametersESProducer(const edm::ParameterSet& conf)
+SiStripApvSimulationParametersESSource::SiStripApvSimulationParametersESSource(const edm::ParameterSet& conf)
     : baseline_nBins_(conf.getParameter<unsigned int>("apvBaselines_nBinsPerBaseline")),
       baseline_min_(conf.getParameter<double>("apvBaselines_minBaseline")),
       baseline_max_(conf.getParameter<double>("apvBaselines_maxBaseline")) {
   setWhatProduced(this);
+  findingRecord<SiStripApvSimulationParametersRcd>();
+
   for (const auto x : conf.getParameter<std::vector<double>>("apvBaselines_puBinEdges")) {
     puBinEdges_.push_back(x);
   }
@@ -48,7 +54,13 @@ SiStripApvSimulationParametersESProducer::SiStripApvSimulationParametersESProduc
                         conf.getParameter<edm::FileInPath>("apvBaselinesFile_tob6")};
 }
 
-SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersESProducer::makeLayerParameters(
+void SiStripApvSimulationParametersESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
+							    const edm::IOVSyncValue& iov,
+							    edm::ValidityInterval& iValidity) {
+  iValidity = edm::ValidityInterval{iov.beginOfTime(), iov.endOfTime()};
+}
+
+SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersESSource::makeLayerParameters(
     const std::string& apvBaselinesFileName) const {
   // Prepare histograms
   unsigned int nZBins = zBinEdges_.size();
@@ -96,8 +108,8 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersES
   // Put baselines into histograms
   for (auto const& apvBaseline : theAPVBaselines | boost::adaptors::indexed(0)) {
     unsigned int binInCurrentHistogram = apvBaseline.index() % baseline_nBins_ + 1;
-    unsigned int binInZ = int(apvBaseline.index()) / (nPUBins * baseline_nBins_) + 1;
-    unsigned int binInPU = int(apvBaseline.index() - binInZ * (nPUBins)*baseline_nBins_) / baseline_nBins_ + 1;
+    unsigned int binInZ = int(apvBaseline.index()) / (nPUBins * baseline_nBins_);
+    unsigned int binInPU = int(apvBaseline.index() - binInZ * (nPUBins)*baseline_nBins_) / baseline_nBins_;
 
     layerParams.setBinContent(binInZ, binInPU, binInCurrentHistogram, apvBaseline.value());
   }
@@ -105,7 +117,7 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersES
   return layerParams;
 }
 
-std::unique_ptr<SiStripApvSimulationParameters> SiStripApvSimulationParametersESProducer::produce(
+std::unique_ptr<SiStripApvSimulationParameters> SiStripApvSimulationParametersESSource::produce(
     const SiStripApvSimulationParametersRcd& record) {
   auto apvSimParams =
       std::make_unique<SiStripApvSimulationParameters>(baselineFiles_TIB_.size(), baselineFiles_TOB_.size());
@@ -126,5 +138,5 @@ std::unique_ptr<SiStripApvSimulationParameters> SiStripApvSimulationParametersES
   return apvSimParams;
 }
 
-#include "FWCore/Framework/interface/ModuleFactory.h"
-DEFINE_FWK_EVENTSETUP_MODULE(SiStripApvSimulationParametersESProducer);
+#include "FWCore/Framework/interface/SourceFactory.h"
+DEFINE_FWK_EVENTSETUP_SOURCE(SiStripApvSimulationParametersESSource);
