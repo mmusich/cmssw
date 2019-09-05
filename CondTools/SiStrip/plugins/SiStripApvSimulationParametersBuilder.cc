@@ -20,15 +20,14 @@
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
 #include "CondFormats/SiStripObjects/interface/SiStripApvSimulationParameters.h"
+ #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/ESWatcher.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include <boost/range/adaptor/indexed.hpp>
@@ -147,8 +146,8 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersBu
   // Put baselines into histograms
   for (auto const& apvBaseline : theAPVBaselines | boost::adaptors::indexed(0)) {
     unsigned int binInCurrentHistogram = apvBaseline.index() % baseline_nBins_ + 1;
-    unsigned int binInZ = int(apvBaseline.index()) / (nPUBins * baseline_nBins_);
-    unsigned int binInPU = int(apvBaseline.index() - binInZ * (nPUBins)*baseline_nBins_) / baseline_nBins_;
+    unsigned int binInZ = int(apvBaseline.index()) / (nPUBins * baseline_nBins_) +1;
+    unsigned int binInPU = int(apvBaseline.index() - binInZ * (nPUBins)*baseline_nBins_) / baseline_nBins_ +1;
 
     layerParams.setBinContent(binInZ, binInPU, binInCurrentHistogram, apvBaseline.value());
   }
@@ -161,10 +160,20 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersBu
 void SiStripApvSimulationParametersBuilder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   
   for (unsigned int i{0}; i != baselineFiles_TIB_.size(); ++i) {
-    myAPVSimulationParameters->putTIB(i + 1, makeLayerParameters(baselineFiles_TIB_[i].fullPath()));
+
+    if ( ! myAPVSimulationParameters->putTIB(i + 1, makeLayerParameters(baselineFiles_TIB_[i].fullPath())) ) {
+      throw cms::Exception("SiStripApvSimulationParameters") << "Could not add parameters for TIB layer " << (i+1);
+    } else {
+      LogDebug("SiStripApvSimulationParameters") << "Added parameters for TIB layer " << (i+1);
+    }
   }
+
   for (unsigned int i{0}; i != baselineFiles_TOB_.size(); ++i) {
-    myAPVSimulationParameters->putTOB(i + 1, makeLayerParameters(baselineFiles_TOB_[i].fullPath()));
+    if ( ! myAPVSimulationParameters->putTOB(i + 1, makeLayerParameters(baselineFiles_TOB_[i].fullPath())) ) {
+      throw cms::Exception("SiStripApvSimulationParameters") << "Could not add parameters for TOB layer " << (i+1);
+    } else {
+      LogDebug("SiStripApvSimulationParameters") << "Added parameters for TOB layer " << (i+1);
+    }
   }
 
 }

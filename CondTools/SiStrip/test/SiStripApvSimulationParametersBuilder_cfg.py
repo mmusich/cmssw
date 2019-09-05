@@ -9,7 +9,7 @@ process.MessageLogger.categories.append("SiStripApvSimulationParametersBuilder")
 process.MessageLogger.categories.append("SiStripApvSimulationParameters")  
 process.MessageLogger.destinations = cms.untracked.vstring("cout")
 process.MessageLogger.cout = cms.untracked.PSet(
-    threshold = cms.untracked.string("INFO"),
+    threshold = cms.untracked.string("DEBUG"),
     default   = cms.untracked.PSet(limit = cms.untracked.int32(0)),                       
     FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
                                    reportEvery = cms.untracked.int32(1000)
