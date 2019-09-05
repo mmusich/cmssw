@@ -20,7 +20,6 @@
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
 #include "CondFormats/SiStripObjects/interface/SiStripApvSimulationParameters.h"
- #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/ESWatcher.h"
@@ -28,6 +27,7 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include <boost/range/adaptor/indexed.hpp>
@@ -88,11 +88,9 @@ SiStripApvSimulationParametersBuilder::SiStripApvSimulationParametersBuilder(con
                         iConfig.getParameter<edm::FileInPath>("apvBaselinesFile_tob4"),
                         iConfig.getParameter<edm::FileInPath>("apvBaselinesFile_tob5"),
                         iConfig.getParameter<edm::FileInPath>("apvBaselinesFile_tob6")};
-  //now do what ever initialization is needed
-  //  myAPVSimulationParameters = new SiStripApvSimulationParameters();
 }
 
-SiStripApvSimulationParametersBuilder::~SiStripApvSimulationParametersBuilder() {} // delete  myAPVSimulationParameters; }
+SiStripApvSimulationParametersBuilder::~SiStripApvSimulationParametersBuilder() {}
 
 //
 // member functions
@@ -160,6 +158,7 @@ SiStripApvSimulationParameters::LayerParameters SiStripApvSimulationParametersBu
 // ------------ method called for each event  ------------
 void SiStripApvSimulationParametersBuilder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   
+  // intialize the returned pointer
   myAPVSimulationParameters = std::make_unique<SiStripApvSimulationParameters>(baselineFiles_TIB_.size(), baselineFiles_TOB_.size());
 
   for (unsigned int i{0}; i != baselineFiles_TIB_.size(); ++i) {
