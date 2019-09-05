@@ -34,6 +34,7 @@ bool SiStripApvSimulationParameters::putTIB(SiStripApvSimulationParameters::laye
         << "[" << __PRETTY_FUNCTION__ << "] layer index " << layer << " out of range [1," << m_nTIB << "]";
     return false;
   }
+
   m_barrelParam[layer - 1] = params;
   m_barrelParam_zInt[layer - 1] = calculateZInt(params);
   return true;
@@ -41,9 +42,9 @@ bool SiStripApvSimulationParameters::putTIB(SiStripApvSimulationParameters::laye
 
 bool SiStripApvSimulationParameters::putTOB(SiStripApvSimulationParameters::layerid layer,
                                             SiStripApvSimulationParameters::LayerParameters&& params) {
-  if ((layer > m_nTIB + m_nTOB) || (layer < m_nTIB + 1)) {
+  if ((layer > m_nTOB) || (layer < 1)) {
     edm::LogError("SiStripApvSimulationParameters") << "[" << __PRETTY_FUNCTION__ << "] layer index " << layer
-                                                    << " out of range [" << m_nTIB + 1 << "," << m_nTOB << ")";
+						    << " out of range [1," << m_nTOB << ")";
     return false;
   }
   m_barrelParam[m_nTIB + layer - 1] = params;
