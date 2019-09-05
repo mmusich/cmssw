@@ -138,3 +138,9 @@ run2_common.toModify(SiStripSimBlock,
                      CouplingConstantsRunIIDecW = True,  #for TID and TEC
                      APVShapeDecoFile =cms.FileInPath("SimTracker/SiStripDigitizer/data/APVShapeDeco_320.txt")
                      )
+
+from Configuration.Eras.Modifier_run2_SiStrip_2016_cff import sistrip_2016
+sistrip_2016.toModify(SiStripSimBlock,
+                      #includeAPVSimulation = True
+                      includeAPVSimulation = False
+                      )
