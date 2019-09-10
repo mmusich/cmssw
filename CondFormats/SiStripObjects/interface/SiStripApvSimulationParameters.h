@@ -17,11 +17,16 @@ namespace CLHEP {
 class SiStripApvSimulationParameters {
 public:
   using layerid = unsigned int;
+  using wheelid = unsigned int;
   using LayerParameters = PhysicsTools::Calibration::HistogramF3D;
 
-  SiStripApvSimulationParameters(layerid nTIB, layerid nTOB) : m_nTIB(nTIB), m_nTOB(nTOB) {
+  SiStripApvSimulationParameters(layerid nTIB, layerid nTOB, wheelid nTID, wheelid nTEC) :
+    m_nTIB(nTIB), m_nTOB(nTOB), m_nTID(nTID), m_nTEC(nTEC)
+  {
     m_barrelParam.resize(m_nTIB + m_nTOB);
     m_barrelParam_xInt.resize(m_nTIB + m_nTOB);
+    m_endcapParam.resize(m_nTID + m_nTEC);
+    m_endcapParam_xInt.resize(m_nTID + m_nTEC);
   }
   SiStripApvSimulationParameters() {}
   ~SiStripApvSimulationParameters() {}
@@ -34,8 +39,17 @@ public:
   bool putTOB(layerid layer, const LayerParameters& params) { return putTOB(layer, LayerParameters(params)); }
   bool putTOB(layerid layer, LayerParameters&& params);
 
+  bool putTID(wheelid wheel, const LayerParameters& params) { return putTID(wheel, LayerParameters(params)); }
+  bool putTID(wheelid wheel, LayerParameters&& params);
+
+  bool putTEC(wheelid wheel, const LayerParameters& params) { return putTEC(wheel, LayerParameters(params)); }
+  bool putTEC(wheelid wheel, LayerParameters&& params);
+
   const LayerParameters& getTIB(layerid layer) const { return m_barrelParam[layer - 1]; }
   const LayerParameters& getTOB(layerid layer) const { return m_barrelParam[m_nTIB + layer - 1]; }
+
+  const LayerParameters& getTID(wheelid wheel) const { return m_barrelParam[wheel - 1]; }
+  const LayerParameters& getTEC(wheelid wheel) const { return m_barrelParam[m_nTID + wheel - 1]; }
 
   float sampleTIB(layerid layer, float z, float pu, CLHEP::HepRandomEngine* engine) const {
     return sampleBarrel(layer - 1, z, pu, engine);
@@ -44,12 +58,24 @@ public:
     return sampleBarrel(m_nTIB + layer - 1, z, pu, engine);
   };
 
+  float sampleTID(wheelid wheel, float z, float pu, CLHEP::HepRandomEngine* engine) const {
+    return sampleEndcap(wheel - 1, z, pu, engine);
+  }
+  float sampleTEC(wheelid wheel, float z, float pu, CLHEP::HepRandomEngine* engine) const {
+    return sampleEndcap(m_nTID + wheel - 1, z, pu, engine);
+  };
+
 private:
-  layerid m_nTIB, m_nTOB;
+  layerid m_nTIB, m_nTOB, m_nTID, m_nTEC;
   std::vector<PhysicsTools::Calibration::HistogramF3D> m_barrelParam;
   std::vector<PhysicsTools::Calibration::HistogramF2D> m_barrelParam_xInt;
 
+  std::vector<PhysicsTools::Calibration::HistogramF3D> m_endcapParam;
+  std::vector<PhysicsTools::Calibration::HistogramF2D> m_endcapParam_xInt;
+
   float sampleBarrel(layerid layerIdx, float z, float pu, CLHEP::HepRandomEngine* engine) const;
+  float sampleEndcap(wheelid wheelIdx, float z, float pu, CLHEP::HepRandomEngine* engine) const;
+
 
   COND_SERIALIZABLE;
 };
