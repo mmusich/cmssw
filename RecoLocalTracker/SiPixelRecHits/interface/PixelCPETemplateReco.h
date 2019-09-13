@@ -85,8 +85,6 @@ private:
   int forwardTemplateID_;
   std::string templateDir_;
 
-  //bool DoCosmics_;
-  //bool LoadTemplatesFromDB_;
 };
 
 #endif

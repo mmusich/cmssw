@@ -60,8 +60,10 @@ PixelCPEGeneric::PixelCPEGeneric(edm::ParameterSet const& conf,
   IrradiationBiasCorrection_ = conf.getParameter<bool>("IrradiationBiasCorrection");
   DoCosmics_ = conf.getParameter<bool>("DoCosmics");
 
-  // Upgrade means phase 2
-  isUpgrade_ = conf.getParameter<bool>("Upgrade");
+  // it's for Phase-2 upgrade
+  isUpgrade_ = false;
+  if (conf.getParameter<bool>("Upgrade"))
+    isUpgrade_ = true;
 
   // For cosmics force the use of simple errors
   if ((DoCosmics_))

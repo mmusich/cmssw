@@ -115,9 +115,6 @@ private:
   float minChargeRatio_;
   float maxSizeMismatchInY_;
 
-  //bool DoCosmics_;
-  //bool LoadTemplatesFromDB_;
-
   // read sub-detectors to recommend 2D
   class Rule {
   public:
