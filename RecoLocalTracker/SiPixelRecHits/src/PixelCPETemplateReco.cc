@@ -53,11 +53,6 @@ PixelCPETemplateReco::PixelCPETemplateReco(edm::ParameterSet const& conf,
   //cout << endl;
   //cout << "Constructing PixelCPETemplateReco::PixelCPETemplateReco(...)................................................." << endl;
   //cout << endl;
-
-  // Configurable parameters
-  //DoCosmics_ = conf.getParameter<bool>("DoCosmics"); // Not used in templates
-  //LoadTemplatesFromDB_ = conf.getParameter<bool>("LoadTemplatesFromDB"); // Moved to Base
-
   //cout << " PixelCPETemplateReco : (int)LoadTemplatesFromDB_ = " << (int)LoadTemplatesFromDB_ << endl;
   //cout << "field_magnitude = " << field_magnitude << endl;
 

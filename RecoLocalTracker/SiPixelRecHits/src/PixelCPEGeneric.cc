@@ -58,9 +58,8 @@ PixelCPEGeneric::PixelCPEGeneric(edm::ParameterSet const& conf,
   TruncatePixelCharge_ = conf.getParameter<bool>("TruncatePixelCharge");
   IrradiationBiasCorrection_ = conf.getParameter<bool>("IrradiationBiasCorrection");
   DoCosmics_ = conf.getParameter<bool>("DoCosmics");
-  //LoadTemplatesFromDB_       = conf.getParameter<bool>("LoadTemplatesFromDB");
 
-  // no clear what upgrade means, is it phase1, phase2? Probably delete.
+  // it's for Phase-2 upgrade
   isUpgrade_ = false;
   if (conf.getParameter<bool>("Upgrade"))
     isUpgrade_ = true;
