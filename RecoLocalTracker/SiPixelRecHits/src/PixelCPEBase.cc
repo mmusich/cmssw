@@ -463,7 +463,6 @@ SiPixelRecHitQuality::QualWordType PixelCPEBase::rawQualityWord(ClusterParam& th
 }
 
 void PixelCPEBase::fillPSetDescription(edm::ParameterSetDescription& desc) {
-  desc.add<bool>("LoadTemplatesFromDB", true);
   desc.add<bool>("Alpha2Order", true);
   desc.add<int>("ClusterProbComputationFlag", 0);
   desc.add<bool>("useLAWidthFromDB", true);

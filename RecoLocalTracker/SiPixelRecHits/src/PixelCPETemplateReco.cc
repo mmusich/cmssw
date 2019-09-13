@@ -10,6 +10,9 @@
 // MessageLogger
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+// for the fillPSetDescription
+#include "FWCore/ParameterSet/interface/EmptyGroupDescription.h"
+
 // Magnetic field
 #include "MagneticField/Engine/interface/MagneticField.h"
 
@@ -545,9 +548,12 @@ LocalError PixelCPETemplateReco::localError(DetParam const& theDetParam, Cluster
 }
 
 void PixelCPETemplateReco::fillPSetDescription(edm::ParameterSetDescription& desc) {
-  desc.add<int>("barrelTemplateID", 0);
-  desc.add<int>("forwardTemplateID", 0);
-  desc.add<int>("directoryWithTemplates", 0);
+   desc.ifValue(edm::ParameterDescription<bool>("LoadTemplatesFromDB", true, false),
+		true  >> edm::EmptyGroupDescription() or
+		false >> (edm::ParameterDescription<int>("barrelTemplateID",  0, true) and
+			  edm::ParameterDescription<int>("forwardTemplateID", 0, true) and
+			  edm::ParameterDescription<int>("directoryWithTemplates", 0, true)
+			  ))->setComment("If LoadTemplatesFromDB is false, then one needs to specify these three parameters");
   desc.add<int>("speed", -2);
   desc.add<bool>("UseClusterSplitter", false);
 }

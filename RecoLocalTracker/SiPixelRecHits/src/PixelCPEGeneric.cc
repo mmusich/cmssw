@@ -629,6 +629,7 @@ LocalError PixelCPEGeneric::localError(DetParam const& theDetParam, ClusterParam
 }
 
 void PixelCPEGeneric::fillPSetDescription(edm::ParameterSetDescription& desc) {
+  desc.add<bool>("LoadTemplatesFromDB", true);
   desc.add<double>("eff_charge_cut_highX", 1.0);
   desc.add<double>("eff_charge_cut_highY", 1.0);
   desc.add<double>("eff_charge_cut_lowX", 0.0);
