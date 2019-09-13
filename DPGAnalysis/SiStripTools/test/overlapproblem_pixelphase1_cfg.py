@@ -47,29 +47,8 @@ process.load('SLHCUpgradeSimulations.Geometry.fakeConditions_Phase1_R30F12_cff')
 
 #process.KFFittingSmootherWithOutliersRejectionAndRK.LogPixelProbabilityCut = cms.double(-16.0)
 
-process.PixelCPEGenericESProducer = cms.ESProducer("PixelCPEGenericESProducer",
-                                                   EdgeClusterErrorX = cms.double(50.0),
-                                                   DoCosmics = cms.bool(False),
-                                                   LoadTemplatesFromDB = cms.bool(False),
-                                                   UseErrorsFromTemplates = cms.bool(False),
-                                                   eff_charge_cut_highX = cms.double(1.0),
-                                                   TruncatePixelCharge = cms.bool(False),
-                                                   size_cutY = cms.double(3.0),
-                                                   size_cutX = cms.double(3.0),
-                                                   inflate_all_errors_no_trk_angle = cms.bool(False),
-                                                   IrradiationBiasCorrection = cms.bool(False),
-                                                   TanLorentzAnglePerTesla = cms.double(0.106),
-                                                   inflate_errors = cms.bool(False),
-                                                   eff_charge_cut_lowX = cms.double(0.0),
-                                                   eff_charge_cut_highY = cms.double(1.0),
-                                                   ClusterProbComputationFlag = cms.int32(0),
-                                                   EdgeClusterErrorY = cms.double(85.0),
-                                                   ComponentName = cms.string('PixelCPEGeneric'),
-                                                   eff_charge_cut_lowY = cms.double(0.0),
-                                                   PixelErrorParametrization = cms.string('NOTcmsim'),
-                                                   Alpha2Order = cms.bool(True),
-                                                   Upgrade = cms.bool(True)
-                                                   )
+
+process.load("RecoLocalTracker.SiPixelRecHits.PixelCPEGeneric_cfi")
 
 #process.siPixelRecHits.CPE = cms.string('PixelCPEGeneric')
 

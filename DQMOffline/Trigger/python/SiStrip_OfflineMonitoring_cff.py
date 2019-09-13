@@ -63,34 +63,15 @@ HLTSiStripMonitorCluster.TH1NClusStrip = cms.PSet(
         xmax = cms.double(99999.5),
         xmin = cms.double(-0.5)
     )
-hltESPPixelCPETemplateReco = cms.ESProducer( "PixelCPETemplateRecoESProducer",
-  LoadTemplatesFromDB = cms.bool( True ),
-  ComponentName = cms.string( "hltESPPixelCPETemplateReco" ),
-  Alpha2Order = cms.bool( True ),
-  ClusterProbComputationFlag = cms.int32( 0 ),
-  speed = cms.int32( -2 ),
-  UseClusterSplitter = cms.bool( False )
+
+from RecoLocalTracker.SiPixelRecHits.PixelCPETemplateReco_cfi import templates
+hltESPPixelCPETemplateReco = templates.clone(
+    ComponentName = cms.string( "hltESPPixelCPETemplateReco" )
 )
 
-hltESPPixelCPEGeneric = cms.ESProducer( "PixelCPEGenericESProducer",
-  EdgeClusterErrorX = cms.double( 50.0 ),
-  DoCosmics = cms.bool( False ),
-  LoadTemplatesFromDB = cms.bool( True ),
-  UseErrorsFromTemplates = cms.bool( True ),
-  eff_charge_cut_highX = cms.double( 1.0 ),
-  TruncatePixelCharge = cms.bool( True ),
-  size_cutY = cms.double( 3.0 ),
-  size_cutX = cms.double( 3.0 ),
-  inflate_all_errors_no_trk_angle = cms.bool( False ),
-  IrradiationBiasCorrection = cms.bool( False ),
-  inflate_errors = cms.bool( False ),
-  eff_charge_cut_lowX = cms.double( 0.0 ),
-  eff_charge_cut_highY = cms.double( 1.0 ),
-  ClusterProbComputationFlag = cms.int32( 0 ),
-  EdgeClusterErrorY = cms.double( 85.0 ),
-  ComponentName = cms.string( "hltESPPixelCPEGeneric" ),
-  eff_charge_cut_lowY = cms.double( 0.0 ),
-  Alpha2Order = cms.bool( True )
+from RecoLocalTracker.SiPixelRecHits.PixelCPEGeneric_cfi import PixelCPEGenericESProducer
+hltESPPixelCPEGeneric = PixelCPEGenericESProducer.clone(
+    ComponentName = cms.string( "hltESPPixelCPEGeneric" )
 )
 
 hltESPTTRHBuilderAngleAndTemplate = cms.ESProducer( "TkTransientTrackingRecHitBuilderESProducer",
