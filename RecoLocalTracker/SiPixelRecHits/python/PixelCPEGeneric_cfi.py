@@ -12,10 +12,7 @@ run3_common.toModify(PixelCPEGenericESProducer, IrradiationBiasCorrection = True
 # FIXME::Is the Upgrade variable actually used?
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 phase2_tracker.toModify(PixelCPEGenericESProducer, 
-  UseErrorsFromTemplates = False,
-  LoadTemplatesFromDB = False,
   TruncatePixelCharge = False,
   IrradiationBiasCorrection = False,
-  DoCosmics = False,
-  Upgrade = cms.bool(True)
+  Upgrade = False
 )
