@@ -84,7 +84,6 @@ private:
   int barrelTemplateID_;
   int forwardTemplateID_;
   std::string templateDir_;
-
 };
 
 #endif

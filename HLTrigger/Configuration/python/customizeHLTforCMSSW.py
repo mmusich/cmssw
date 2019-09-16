@@ -217,11 +217,21 @@ def customiseFor32291(process):
 
     return process
 
+def customiseForXXXXX(process) :
+
+    for producer in esproducers_by_type(process, "PixelCPETemplateRecoESProducer"):
+        if hasattr(producer, "directoryWithTemplates"): del producer.directoryWithTemplates
+        if hasattr(producer, "barrelTemplateID"): del producer.barrelTemplateID
+        if hasattr(producer, "forwardTemplateID"): del producer.forwardTemplateID
+
+    return process
+
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
     # add call to action function in proper order: newest last!
     # process = customiseFor12718(process)
     process = customiseFor32291(process)
+    process = customiseForXXXXX(process)
 
     return process
