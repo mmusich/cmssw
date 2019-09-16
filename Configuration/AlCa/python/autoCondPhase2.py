@@ -37,13 +37,13 @@ allTags["SimLA"] = {
 allTags["GenError"] = {
     'T6'  : ( ','.join( [ 'SiPixelGenErrorDBOject_phase2_T6_v0_mc'  ,SiPixelGenErrorRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
     'T14' : ( ','.join( [ 'SiPixelGenErrorDBOject_phase2_T14_v0_mc' ,SiPixelGenErrorRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
-    'T15' : ( ','.join( [ 'SiPixelGenErrorDBOject_phase2_T15_v0_mc' ,SiPixelGenErrorRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
+    'T15' : ( ','.join( [ 'SiPixelGenErrorDBObject_phase2_T15_v0_mc_25x100' ,SiPixelGenErrorRecord,connectionString, "", "2019-09-16 09:00:00.000"] ), ),
 }
 
 allTags["Template"] = {
     'T6'  : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T6_v0_mc'  ,SiPixelTemplatesRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
     'T14' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T14_v0_mc' ,SiPixelTemplatesRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
-    'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc' ,SiPixelTemplatesRecord,connectionString, "" , "2019-07-15 12:00:00.000"] ), ),
+    'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc_25x100' ,SiPixelTemplatesRecord,connectionString, "" , "2019-09-16 09:00:00.000"] ), ),
 }
 
 allTags["Template2Dnum"] = {
@@ -59,7 +59,7 @@ allTags["Template2Dden"] = {
 }
 
 # list of active tags to be replaced
-activeKeys = ["LA","LAWidth","SimLA"]
+activeKeys = ["LA","LAWidth","SimLA","GenError","Template"]
 
 # list of geometries supported
 activeDets = ["T6","T14","T15"]
@@ -70,7 +70,7 @@ for det in activeDets:
        appendedTags += allTags[key][det]
     phase2GTs["phase2_realistic_"+det] = ('phase2_realistic', appendedTags)
 
-# method called in autoAlCa
+# method called in autoCond
 def autoCondPhase2(autoCond):
     for key,val in six.iteritems(phase2GTs):
         if len(val)==1 :
