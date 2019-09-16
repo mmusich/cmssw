@@ -723,7 +723,7 @@ PixelCPEClusterRepair::Rule::Rule(const std::string& str) {
 }  //end Rule::Rule
 
 void PixelCPEClusterRepair::fillPSetDescription(edm::ParameterSetDescription& desc) {
-  desc.ifValue(edm::ParameterDescription<bool>("LoadTemplatesFromDB", true, false),
+  desc.ifValue(edm::ParameterDescription<bool>("LoadTemplatesFromDB", true, true),
 	       true  >> edm::EmptyGroupDescription() or
 	       false >> (edm::ParameterDescription<int>("barrelTemplateID",  0, true) and
 			 edm::ParameterDescription<int>("forwardTemplateID", 0, true) and
