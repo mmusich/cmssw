@@ -724,11 +724,11 @@ PixelCPEClusterRepair::Rule::Rule(const std::string& str) {
 
 void PixelCPEClusterRepair::fillPSetDescription(edm::ParameterSetDescription& desc) {
   desc.ifValue(edm::ParameterDescription<bool>("LoadTemplatesFromDB", true, true),
-	       true  >> edm::EmptyGroupDescription() or
-	       false >> (edm::ParameterDescription<int>("barrelTemplateID",  0, true) and
-			 edm::ParameterDescription<int>("forwardTemplateID", 0, true) and
-			 edm::ParameterDescription<int>("directoryWithTemplates", 0, true)
-			 ))->setComment("If LoadTemplatesFromDB is false, then one needs to specify these three parameters");
+               true >> edm::EmptyGroupDescription() or
+                   false >> (edm::ParameterDescription<int>("barrelTemplateID", 0, true) and
+                             edm::ParameterDescription<int>("forwardTemplateID", 0, true) and
+                             edm::ParameterDescription<int>("directoryWithTemplates", 0, true)))
+      ->setComment("If LoadTemplatesFromDB is false, then one needs to specify these three parameters");
   desc.add<int>("speed", -2);
   desc.add<bool>("UseClusterSplitter", false);
   desc.add<double>("MaxSizeMismatchInY", 0.3);
