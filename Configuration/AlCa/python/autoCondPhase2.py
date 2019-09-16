@@ -15,24 +15,26 @@ allTags={}
 allTags["LA"] = {
     'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T6_v0_mc'  ,SiPixelLARecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
     'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T14_v0_mc' ,SiPixelLARecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
-    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T15_v0_mc' ,SiPixelLARecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
+    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_T15_v0_mc' ,SiPixelLARecord,connectionString, "", "2019-09-16 09:00:00.000"] ), ),
 }
 
 allTags["LAWidth"] = {
     'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T6_v0_mc'  ,SiPixelLARecord,connectionString, "forWidth", "2019-07-15 12:00:00.000"] ), ),
     'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T14_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-07-15 12:00:00.000"] ), ),
-    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-07-15 12:00:00.000"] ), ),
+    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "forWidth", "2019-09-16 09:00:00.000"] ), ),
+}
+
+allTags["LAfromAlignment"] = {
+    'T6'  : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T6_v0_mc'  ,SiPixelLARecord,connectionString, "fromAlignment", "2019-07-15 12:00:00.000"] ), ),
+    'T14' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T14_v0_mc' ,SiPixelLARecord,connectionString, "fromAlignment", "2019-07-15 12:00:00.000"] ), ),
+    'T15' : ( ','.join( [ 'SiPixelLorentzAngle_phase2_forWidth_T15_v0_mc' ,SiPixelLARecord,connectionString, "fromAlignment", "2019-09-16 09:00:00.000"] ), ),
 }
 
 allTags["SimLA"] = {
     'T6'  : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T6_v0_mc'  ,SiPixelSimLARecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
     'T14' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T14_v0_mc' ,SiPixelSimLARecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
-    'T15' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T15_v0_mc' ,SiPixelSimLARecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
+    'T15' : ( ','.join( [ 'SiPixelSimLorentzAngle_phase2_T15_v0_mc' ,SiPixelSimLARecord,connectionString, "", "2019-09-16 09:00:00.000"] ), ),
 }
-
-##
-## All of the following conditions are not yet in active use, but will be activated in GT along the way
-##
 
 allTags["GenError"] = {
     'T6'  : ( ','.join( [ 'SiPixelGenErrorDBOject_phase2_T6_v0_mc'  ,SiPixelGenErrorRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
@@ -45,6 +47,10 @@ allTags["Template"] = {
     'T14' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T14_v0_mc' ,SiPixelTemplatesRecord,connectionString, "", "2019-07-15 12:00:00.000"] ), ),
     'T15' : ( ','.join( [ 'SiPixelTemplateDBObject_phase2_T15_v0_mc_25x100' ,SiPixelTemplatesRecord,connectionString, "" , "2019-09-16 09:00:00.000"] ), ),
 }
+
+##
+## All of the following conditions are not yet in active use, but will be activated in GT along the way
+##
 
 allTags["Template2Dnum"] = {
     'T6'  : ( ','.join( [ 'SiPixel2DTemplateDBObject_phase2_T6_v0_num'  ,SiPixel2DTemplatesRecord,connectionString, "numerator", "2019-07-15 12:00:00.000"] ), ),
@@ -59,7 +65,7 @@ allTags["Template2Dden"] = {
 }
 
 # list of active tags to be replaced
-activeKeys = ["LA","LAWidth","SimLA","GenError","Template"]
+activeKeys = ["LA","LAWidth","SimLA","LAfromAlignment","GenError","Template"]
 
 # list of geometries supported
 activeDets = ["T6","T14","T15"]
