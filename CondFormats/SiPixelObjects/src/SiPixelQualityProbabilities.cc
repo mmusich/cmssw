@@ -22,7 +22,13 @@ SiPixelQualityProbabilities::probabilityVec SiPixelQualityProbabilities::getProb
   if (it != m_probabilities.end()) {
     return it->second;
   } else {
-    throw cms::Exception("SiPixelQualityProbabilities") << "No Probabilities are defined for PU bin " << puBin << "\n";
+    unsigned int theMaxPU = getPileUpBins().back();
+    if(puBin > theMaxPU){
+      edm::LogWarning("SiPixelQualityProbabilities") << "Trying to mix PU " << puBin << ". This exceeds the maximum PU ("<< theMaxPU <<") in the SiPixelQualityProbabilities parametrization, falling back to lumi-weighted average. \n ";
+      return m_probabilities.at(0);
+    } else {
+      throw cms::Exception("SiPixelQualityProbabilities") << "No Probabilities are defined for PU bin " << puBin << "\n";
+    }
   }
 }
 
