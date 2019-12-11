@@ -7,6 +7,7 @@
 
 namespace edm {
   class Event;
+  class EventSetup;
   class ParameterSet;
 }  // namespace edm
 
@@ -23,13 +24,13 @@ public:
   ~CalibrationTrackSelector();
 
   /// select tracks
-  Tracks select(const Tracks &tracks, const edm::Event &evt) const;
+  Tracks select(const Tracks &tracks, const edm::Event &evt, const edm::EventSetup &eSetup) const;
 
 private:
   /// apply basic cuts on pt,eta,phi,nhit
-  Tracks basicCuts(const Tracks &tracks, const edm::Event &evt) const;
+  Tracks basicCuts(const Tracks &tracks, const edm::Event &evt, const edm::EventSetup &eSetup) const;
   /// checking hit requirements beyond simple number of valid hits
-  bool detailedHitsCheck(const reco::Track *track, const edm::Event &evt) const;
+  bool detailedHitsCheck(const reco::Track *track, const edm::Event &evt, const edm::EventSetup &eSetup) const;
   bool isHit2D(const TrackingRecHit &hit) const;
   bool isOkCharge(const TrackingRecHit *therechit) const;
   bool isIsolated(const TrackingRecHit *therechit, const edm::Event &evt) const;
@@ -54,7 +55,12 @@ private:
   const edm::InputTag rphirecHitsTag_;
   const edm::InputTag matchedrecHitsTag_;
   const unsigned int nHitMin2D_;
-  const int minHitsinTIB_, minHitsinTOB_, minHitsinTID_, minHitsinTEC_, minHitsinBPIX_, minHitsinFPIX_;
+
+  const int minHitsinTIB_, minHitsinTOB_, minHitsinTID_, minHitsinTEC_;
+  const int minHitsinBPIX_, minHitsinFPIX_, minHitsinPIX_;
+  const int minHitsinTIDplus_, minHitsinTIDminus_, minHitsinTECplus_, minHitsinTECminus_;
+  const int minHitsinFPIXplus_, minHitsinFPIXminus_;
+  const int minHitsinENDCAP_, minHitsinENDCAPplus_, minHitsinENDCAPminus_;
 };
 
 #endif

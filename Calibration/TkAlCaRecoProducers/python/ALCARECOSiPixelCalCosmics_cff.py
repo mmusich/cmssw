@@ -13,27 +13,43 @@ ALCARECOSiPixelCalCosmicsDCSFilter = DPGAnalysis.Skims.skim_detstatus_cfi.dcssta
     DebugOn      = cms.untracked.bool(False)
 )
 
-from ALCARECOSiPixelCalSingleMuon_cff import ALCARECOSiPixelCalSingleMuonHLTFilter 
+from ALCARECOSiPixelCalSingleMuon_cff import ALCARECOSiPixelCalSingleMuonHLTFilter
 ALCARECOSiPixelCalCosmicsHLTFilter = ALCARECOSiPixelCalSingleMuonHLTFilter.clone(
     HLTPaths = ["HLT_*"],
     eventSetupPathsKey = ''
 )
 
-from ALCARECOSiPixelCalSingleMuon_cff import ALCARECOSiPixelCalSingleMuon 
-ALCARECOSiPixelCalCosmics = ALCARECOSiPixelCalSingleMuon.clone(
+# from ALCARECOSiPixelCalSingleMuon_cff import ALCARECOSiPixelCalSingleMuon
+# ALCARECOSiPixelCalCosmics = ALCARECOSiPixelCalSingleMuon.clone(
+#     filter = True,
+#     applyBasicCuts = True,
+#     ptMin = 3.,
+#     ptMax = 99999.,
+#     pMin = 0.,
+#     pMax = 99999.,
+#     etaMin = -99., ##-2.4 keep also what is going through...
+#     etaMax = 99., ## 2.4 ...both TEC with flat slope
+#     chi2nMax = 3.,
+#     applyMultiplicityFilter = False,
+#     applyNHighestPt = True, ## select only highest pT track
+#     nHighestPt = 1,
+#     src = 'ctfWithMaterialTracksP5',
+# )
+# ALCARECOSiPixelCalCosmics.minHitsPerSubDet.inPIXEL = 1
+
+from Calibration.TkAlCaRecoProducers.CalibrationTrackSelector_cfi import *
+ALCARECOSiPixelCalCosmics = CalibrationTrackSelector.clone(
     filter = True,
     applyBasicCuts = True,
-    ptMin = 0.,
-    ptMax = 99999.,
-    pMin = 0.,
-    pMax = 99999.,
+    ptMin  = 3.,
+    ptMax  = 99999.,
     etaMin = -99., ##-2.4 keep also what is going through...
-    etaMax = 99., ## 2.4 ...both TEC with flat slope
-    chi2nMax = 999999.,
+    etaMax = 99.,  ## 2.4 ...both TEC with flat slope
+    chi2nMax = 3.,
     applyMultiplicityFilter = False,
     applyNHighestPt = True, ## select only highest pT track
     nHighestPt = 1,
-    src = 'ctfWithMaterialTracksP5',
+    src = 'ctfWithMaterialTracksP5'
 )
 ALCARECOSiPixelCalCosmics.minHitsPerSubDet.inPIXEL = 1
 

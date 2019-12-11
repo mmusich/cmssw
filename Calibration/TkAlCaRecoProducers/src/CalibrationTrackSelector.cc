@@ -1,5 +1,6 @@
 #include "Calibration/TkAlCaRecoProducers/interface/CalibrationTrackSelector.h"
 
+#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -14,8 +15,11 @@
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
 #include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "Geometry/Records/interface/TrackerTopologyRcd.h"
 
 const int kBPIX = PixelSubdetector::PixelBarrel;
 const int kFPIX = PixelSubdetector::PixelEndcap;
@@ -54,7 +58,18 @@ CalibrationTrackSelector::CalibrationTrackSelector(const edm::ParameterSet &cfg)
       minHitsinTID_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inTID")),
       minHitsinTEC_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inTEC")),
       minHitsinBPIX_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inBPIX")),
-      minHitsinFPIX_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inFPIX")) {
+      minHitsinFPIX_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inFPIX")),
+      minHitsinPIX_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inPIXEL")),
+      minHitsinTIDplus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inTIDplus")),
+      minHitsinTIDminus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inTIDminus")),
+      minHitsinTECplus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inTECplus")),
+      minHitsinTECminus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inTECminus")),
+      minHitsinFPIXplus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inFPIXplus")),
+      minHitsinFPIXminus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inFPIXminus")),
+      minHitsinENDCAP_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inENDCAP")),
+      minHitsinENDCAPplus_(cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inENDCAPplus")),
+      minHitsinENDCAPminus_(
+          cfg.getParameter<edm::ParameterSet>("minHitsPerSubDet").getParameter<int>("inENDCAPminus")) {
   if (applyBasicCuts_)
     edm::LogInfo("CalibrationTrackSelector")
         << "applying basic track cuts ..."
@@ -79,8 +94,18 @@ CalibrationTrackSelector::CalibrationTrackSelector(const edm::ParameterSet &cfg)
         << "only retain hits with at least " << minHitChargeStrip_ << " ADC counts of total cluster charge";
 
   edm::LogInfo("CalibrationTrackSelector")
-      << "Minimum number of hits in TIB/TID/TOB/TEC/BPIX/FPIX = " << minHitsinTIB_ << "/" << minHitsinTID_ << "/"
-      << minHitsinTOB_ << "/" << minHitsinTEC_ << "/" << minHitsinBPIX_ << "/" << minHitsinFPIX_;
+      << "Minimum number of hits in TIB/TID/TOB/TEC/BPIX/FPIX/PIXEL = " << minHitsinTIB_ << "/" << minHitsinTID_ << "/"
+      << minHitsinTOB_ << "/" << minHitsinTEC_ << "/" << minHitsinBPIX_ << "/" << minHitsinFPIX_ << "/"
+      << minHitsinPIX_;
+
+  edm::LogInfo("CalibrationTrackSelector")
+      << "Minimum number of hits in TID+/TID-/TEC+/TEC-/FPIX+/FPIX- = " << minHitsinTIDplus_ << "/"
+      << minHitsinTIDminus_ << "/" << minHitsinTECplus_ << "/" << minHitsinTECminus_ << "/" << minHitsinFPIXplus_ << "/"
+      << minHitsinFPIXminus_;
+
+  edm::LogInfo("CalibrationTrackSelector")
+      << "Minimum number of hits in EndCap (TID+TEC)/EndCap+/EndCap- = " << minHitsinENDCAP_ << "/"
+      << minHitsinENDCAPplus_ << "/" << minHitsinENDCAPminus_;
 }
 
 // destructor -----------------------------------------------------------------
@@ -89,7 +114,9 @@ CalibrationTrackSelector::~CalibrationTrackSelector() {}
 
 // do selection ---------------------------------------------------------------
 
-CalibrationTrackSelector::Tracks CalibrationTrackSelector::select(const Tracks &tracks, const edm::Event &evt) const {
+CalibrationTrackSelector::Tracks CalibrationTrackSelector::select(const Tracks &tracks,
+                                                                  const edm::Event &evt,
+                                                                  const edm::EventSetup &eSetup) const {
   if (applyMultiplicityFilter_ && multiplicityOnInput_ &&
       (tracks.size() < static_cast<unsigned int>(minMultiplicity_) ||
        tracks.size() > static_cast<unsigned int>(maxMultiplicity_))) {
@@ -99,7 +126,7 @@ CalibrationTrackSelector::Tracks CalibrationTrackSelector::select(const Tracks &
   Tracks result = tracks;
   // apply basic track cuts (if selected)
   if (applyBasicCuts_)
-    result = this->basicCuts(result, evt);
+    result = this->basicCuts(result, evt, eSetup);
 
   // filter N tracks with highest Pt (if selected)
   if (applyNHighestPt_)
@@ -122,7 +149,8 @@ CalibrationTrackSelector::Tracks CalibrationTrackSelector::select(const Tracks &
 // make basic cuts ------------------------------------------------------------
 
 CalibrationTrackSelector::Tracks CalibrationTrackSelector::basicCuts(const Tracks &tracks,
-                                                                     const edm::Event &evt) const {
+                                                                     const edm::Event &evt,
+                                                                     const edm::EventSetup &eSetup) const {
   Tracks result;
 
   for (Tracks::const_iterator it = tracks.begin(); it != tracks.end(); ++it) {
@@ -138,7 +166,7 @@ CalibrationTrackSelector::Tracks CalibrationTrackSelector::basicCuts(const Track
 
     if (pt > ptMin_ && pt < ptMax_ && eta > etaMin_ && eta < etaMax_ && phi > phiMin_ && phi < phiMax_ &&
         nhit >= nHitMin_ && nhit <= nHitMax_ && chi2n < chi2nMax_) {
-      if (this->detailedHitsCheck(trackp, evt))
+      if (this->detailedHitsCheck(trackp, evt, eSetup))
         result.push_back(trackp);
     }
   }
@@ -148,14 +176,27 @@ CalibrationTrackSelector::Tracks CalibrationTrackSelector::basicCuts(const Track
 
 //-----------------------------------------------------------------------------
 
-bool CalibrationTrackSelector::detailedHitsCheck(const reco::Track *trackp, const edm::Event &evt) const {
-  // checking hit requirements beyond simple number of valid hits
+bool CalibrationTrackSelector::detailedHitsCheck(const reco::Track *trackp,
+                                                 const edm::Event &evt,
+                                                 const edm::EventSetup &eSetup) const {
+  //Retrieve tracker topology from geometry
+  edm::ESHandle<TrackerTopology> tTopoHandle;
+  eSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+  const TrackerTopology *const tTopo = tTopoHandle.product();
 
-  if (minHitsinTIB_ || minHitsinTOB_ || minHitsinTID_ || minHitsinTEC_ || minHitsinFPIX_ || minHitsinBPIX_ ||
-      nHitMin2D_ || chargeCheck_ || applyIsolation_) {  // any detailed hit cut is active, so have to check
+  // checking hit requirements beyond simple number of valid hits
+  if (minHitsinTIB_ || minHitsinTOB_ || minHitsinTID_ || minHitsinTEC_ || minHitsinENDCAP_ || minHitsinENDCAPplus_ ||
+      minHitsinENDCAPminus_ || minHitsinTIDplus_ || minHitsinTIDminus_ || minHitsinFPIXplus_ || minHitsinFPIXminus_ ||
+      minHitsinTECplus_ || minHitsinTECminus_ || minHitsinFPIX_ || minHitsinBPIX_ || minHitsinPIX_ || nHitMin2D_ ||
+      chargeCheck_ || applyIsolation_) {  // any detailed hit cut is active, so have to check
 
     int nhitinTIB = 0, nhitinTOB = 0, nhitinTID = 0;
-    int nhitinTEC = 0, nhitinBPIX = 0, nhitinFPIX = 0;
+    int nhitinTEC = 0, nhitinBPIX = 0, nhitinFPIX = 0, nhitinPIXEL = 0;
+    int nhitinENDCAP = 0, nhitinENDCAPplus = 0, nhitinENDCAPminus = 0;
+    int nhitinTIDplus = 0, nhitinTIDminus = 0;
+    int nhitinFPIXplus = 0, nhitinFPIXminus = 0;
+    int nhitinTECplus = 0, nhitinTECminus = 0;
+
     unsigned int nHit2D = 0;
     unsigned int thishit = 0;
 
@@ -179,6 +220,7 @@ bool CalibrationTrackSelector::detailedHitsCheck(const reco::Track *trackp, cons
       if (!hit->isValid())
         continue;  // only real hits count as in trackp->numberOfValidHits()
       const DetId detId(hit->geographicalId());
+      const int subdetId = detId.subdetId();
       if (detId.det() != DetId::Tracker) {
         edm::LogError("DetectorMismatch")
             << "@SUB=CalibrationTrackSelector::detailedHitsCheck"
@@ -188,18 +230,45 @@ bool CalibrationTrackSelector::detailedHitsCheck(const reco::Track *trackp, cons
         return false;
       if (applyIsolation_ && (!this->isIsolated(hit, evt)))
         return false;
-      if (StripSubdetector::TIB == detId.subdetId())
+
+      if (SiStripDetId::TIB == subdetId)
         ++nhitinTIB;
-      else if (StripSubdetector::TOB == detId.subdetId())
+      else if (SiStripDetId::TOB == subdetId)
         ++nhitinTOB;
-      else if (StripSubdetector::TID == detId.subdetId())
+      else if (SiStripDetId::TID == subdetId) {
         ++nhitinTID;
-      else if (StripSubdetector::TEC == detId.subdetId())
+        ++nhitinENDCAP;
+
+        if (tTopo->tidIsZMinusSide(detId)) {
+          ++nhitinTIDminus;
+          ++nhitinENDCAPminus;
+        } else if (tTopo->tidIsZPlusSide(detId)) {
+          ++nhitinTIDplus;
+          ++nhitinENDCAPplus;
+        }
+      } else if (SiStripDetId::TEC == subdetId) {
         ++nhitinTEC;
-      else if (kBPIX == detId.subdetId())
+        ++nhitinENDCAP;
+
+        if (tTopo->tecIsZMinusSide(detId)) {
+          ++nhitinTECminus;
+          ++nhitinENDCAPminus;
+        } else if (tTopo->tecIsZPlusSide(detId)) {
+          ++nhitinTECplus;
+          ++nhitinENDCAPplus;
+        }
+      } else if (kBPIX == subdetId) {
         ++nhitinBPIX;
-      else if (kFPIX == detId.subdetId())
+        ++nhitinPIXEL;
+      } else if (kFPIX == subdetId) {
         ++nhitinFPIX;
+        ++nhitinPIXEL;
+
+        if (tTopo->pxfSide(detId) == 1)
+          ++nhitinFPIXminus;
+        else if (tTopo->pxfSide(detId) == 2)
+          ++nhitinFPIXplus;
+      }
       // Do not call isHit2D(..) if already enough 2D hits for performance
       // reason:
       if (nHit2D < nHitMin2D_ && this->isHit2D(*hit))
