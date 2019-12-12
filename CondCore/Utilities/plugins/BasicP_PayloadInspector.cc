@@ -20,30 +20,31 @@ namespace {
     float getFromPayload(cond::BasicPayload& payload) override { return payload.m_data0; }
   };
 
-class BasicPayload_data0_withInput : public cond::payloadInspector::HistoryPlot<cond::BasicPayload, float> {
+  class BasicPayload_data0_withInput : public cond::payloadInspector::HistoryPlot<cond::BasicPayload, float> {
   public:
-    BasicPayload_data0_withInput() : cond::payloadInspector::HistoryPlot<cond::BasicPayload, float>("Example Trend", "data0") {
+    BasicPayload_data0_withInput()
+        : cond::payloadInspector::HistoryPlot<cond::BasicPayload, float>("Example Trend", "data0") {
       cond::payloadInspector::PlotBase::addInputParam("Offset");
       cond::payloadInspector::PlotBase::addInputParam("Factor");
       cond::payloadInspector::PlotBase::addInputParam("Scale");
     }
     ~BasicPayload_data0_withInput() override = default;
-    float getFromPayload(cond::BasicPayload& payload) override { 
+    float getFromPayload(cond::BasicPayload& payload) override {
       float v = payload.m_data0;
       auto paramValues = cond::payloadInspector::PlotBase::inputParamValues();
-      auto ip = paramValues.find( "Factor");
-      if( ip != paramValues.end() ){
-	v = v*boost::lexical_cast<float>( ip->second );
+      auto ip = paramValues.find("Factor");
+      if (ip != paramValues.end()) {
+        v = v * boost::lexical_cast<float>(ip->second);
       }
-      ip = paramValues.find( "Offset");
-      if( ip != paramValues.end() ){
-	v = v+ boost::lexical_cast<float>( ip->second );
+      ip = paramValues.find("Offset");
+      if (ip != paramValues.end()) {
+        v = v + boost::lexical_cast<float>(ip->second);
       }
-      ip = paramValues.find( "Scale");
-      if( ip != paramValues.end() ){
-	v = v*boost::lexical_cast<float>( ip->second );
+      ip = paramValues.find("Scale");
+      if (ip != paramValues.end()) {
+        v = v * boost::lexical_cast<float>(ip->second);
       }
-      return v; 
+      return v;
     }
   };
 
