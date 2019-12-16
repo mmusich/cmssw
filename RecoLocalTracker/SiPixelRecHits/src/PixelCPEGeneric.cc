@@ -296,7 +296,7 @@ LocalPoint PixelCPEGeneric::localPosition(DetParam const& theDetParam, ClusterPa
 #endif
 
   //--- &&& Note that the cuts below should not be hardcoded (like in Orca and
-  //--- &&& CPEFromDetPosition/PixelCPEInitial), but rather be
+  //--- &&& CPEFromDetPosition), but rather be
   //--- &&& externally settable (but tracked) parameters.
 
   //--- Position, including the half lorentz shift

@@ -283,7 +283,6 @@ void PixelCPEBase::computeAnglesFromTrajectory(DetParam const& theDetParam,
 //-----------------------------------------------------------------------------
 //  Compute alpha_ and beta_ from the position of this DetUnit.
 //  &&& DOES NOT WORK FOR NOW. d.k. 6/06
-// The angles from dets are calculated internaly in the PixelCPEInitial class
 //-----------------------------------------------------------------------------
 // G. Giurgiu, 12/01/06 : implement the function
 void PixelCPEBase::computeAnglesFromDetPosition(DetParam const& theDetParam, ClusterParam& theClusterParam) const {

@@ -24,7 +24,6 @@ from RecoLocalTracker.SiStripRecHitConverter.StripCPE_cfi import *
 from RecoLocalTracker.SiStripRecHitConverter.StripCPEfromTrackAngle_cfi import *
 from RecoLocalTracker.SiStripRecHitConverter.SiStripRecHitMatcher_cfi import *
 # pixelCPE
-from RecoLocalTracker.SiPixelRecHits.PixelCPEParmError_cfi import *
 #TransientTrackingBuilder
 from RecoTracker.TransientTrackingRecHit.TransientTrackingRecHitBuilder_cfi import *
 import RecoTracker.MeasurementDet.MeasurementTrackerESProducer_cfi

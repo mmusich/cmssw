@@ -148,9 +148,6 @@ include "TrackingTools/MaterialEffects/data/OppositeMaterialPropagator.cfi"
 # stripCPE
 include "RecoLocalTracker/SiStripRecHitConverter/data/StripCPEfromTrackAngle.cfi"
 
-# pixelCPE
-include "RecoLocalTracker/SiPixelRecHits/data/PixelCPEParmError.cfi"
-
 #TransientTrackingBuilder
 include "RecoTracker/TransientTrackingRecHit/data/TransientTrackingRecHitBuilder.cfi"
 
