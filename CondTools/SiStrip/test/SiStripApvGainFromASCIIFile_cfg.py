@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("ICALIB")
 process.source = cms.Source("EmptyIOVSource",
-    firstValue = cms.uint64(235679),
-    lastValue = cms.uint64(235679),
+    firstValue = cms.uint64(325642),
+    lastValue = cms.uint64(325642),
     timetype = cms.string('runnumber'),
     interval = cms.uint64(1)
 )
@@ -23,7 +23,7 @@ process.load('Configuration.Geometry.GeometryIdeal_cff')
 
 #Setup the SiSTripFedCabling and the SiStripDetCabling
 process.load("CondCore.DBCommon.CondDBCommon_cfi")
-process.CondDBCommon.connect='frontier://FrontierProd/CMS_COND_31X_STRIP'
+process.CondDBCommon.connect='frontier://FrontierProd/CMS_CONDITIONS'
 
 process.poolDBESSource = cms.ESSource( 'PoolDBESSource',
                                        process.CondDBCommon,
