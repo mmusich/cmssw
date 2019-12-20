@@ -13,60 +13,54 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
 
+#include <cstdint>
 #include <map>
 #include <vector>
-#include <stdint.h>
-
 
 class SiStripDetCabling;
 
-
 class SiStripApvGainFromFileBuilder : public edm::EDAnalyzer {
-
- public:
-
+public:
   //enum ExceptionType = { NotConnected, ZeroGainFromScan, NegativeGainFromScan };
 
-  typedef std::map< uint32_t,float > Gain;
+  typedef std::map<uint32_t, float> Gain;
 
   typedef struct {
-                   uint32_t  det_id;
-                   uint16_t  offlineAPV_id;
-                   int       onlineAPV_id;
-                   int       FED_id;
-                   int       FED_ch;
-                   int       i2cAdd;
-                   bool      is_connected;
-                   bool      is_scanned;
-                   float     gain_from_scan;
-                   float     gain_in_db;
-                 } Summary;
+    uint32_t det_id;
+    uint16_t offlineAPV_id;
+    int onlineAPV_id;
+    int FED_id;
+    int FED_ch;
+    int i2cAdd;
+    bool is_connected;
+    bool is_scanned;
+    float gain_from_scan;
+    float gain_in_db;
+  } Summary;
 
   /** Brief Constructor.
-   */ 
-  explicit SiStripApvGainFromFileBuilder( const edm::ParameterSet& iConfig);
+   */
+  explicit SiStripApvGainFromFileBuilder(const edm::ParameterSet& iConfig);
 
   /** Brief Destructor performing the memory cleanup.
-   */ 
-  ~SiStripApvGainFromFileBuilder();
+   */
+  ~SiStripApvGainFromFileBuilder() override;
 
   /** Brief One dummy-event analysis to create the database record.
-   */ 
-  virtual void analyze(const edm::Event& , const edm::EventSetup& );
+   */
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
 
-
- private:
-  edm::FileInPath gfp_;          /*!< File Path for the ideal geometry. */
-  edm::FileInPath tfp_;          /*!< File Path for the tickmark scan with the APV gains. */
-  double gainThreshold_;         /*!< Threshold for accepting the APV gain in the tickmark scan file. */
-  double dummyAPVGain_;          /*!< Dummy value for the APV gain. */
-  bool putDummyIntoUncabled_;    /*!< Flag for putting the dummy gain in the channels not actuall cabled. */
-  bool putDummyIntoUnscanned_;   /*!< Flag for putting the dummy gain in the chennals not scanned. */
+private:
+  edm::FileInPath gfp_;        /*!< File Path for the ideal geometry. */
+  edm::FileInPath tfp_;        /*!< File Path for the tickmark scan with the APV gains. */
+  double gainThreshold_;       /*!< Threshold for accepting the APV gain in the tickmark scan file. */
+  double dummyAPVGain_;        /*!< Dummy value for the APV gain. */
+  bool putDummyIntoUncabled_;  /*!< Flag for putting the dummy gain in the channels not actuall cabled. */
+  bool putDummyIntoUnscanned_; /*!< Flag for putting the dummy gain in the chennals not scanned. */
   bool putDummyIntoOffChannels_; /*!< Flag for putting the dummy gain in the channels that were off during the tickmark scan. */
   bool putDummyIntoBadChannels_; /*!< Flag for putting the dummy gain in the channels with negative gains. */
   bool outputMaps_;              /*!< Flag for dumping the internal maps on ASCII files. */
   bool outputSummary_;           /*!< Flag for dumping the summary of the exceptions during the DB filling. */
-
 
   edm::ESHandle<SiStripDetCabling> detCabling_; /*!< Description of detector cabling. */
 
@@ -81,7 +75,7 @@ class SiStripApvGainFromFileBuilder : public edm::EDAnalyzer {
    * tickmark scan are collected in the summary vector. The summary list is
    * dumped in the SiStripApvGainSummary.txt at the end of the job. 
    */
-  std::vector<Summary> summary_;    /*!< Collection of channel with no DB filling exceptions. */ 
+  std::vector<Summary> summary_; /*!< Collection of channel with no DB filling exceptions. */
 
   /** Brief Collection of the exceptions encountered when filling the DB. 
    * An exception occur for all the non-cabled channels ( no gain associated
@@ -92,7 +86,6 @@ class SiStripApvGainFromFileBuilder : public edm::EDAnalyzer {
    */
   std::vector<Summary> ex_summary_; /*!< Collection of DB filling exceptions. */
 
-
   /** Brief Read the ASCII file containing the tickmark gains.
    * This method reads the ASCII files that contains the tickmark heights for 
    * every APV. The heights are first translated into gains, dividing by 640,
@@ -102,7 +95,7 @@ class SiStripApvGainFromFileBuilder : public edm::EDAnalyzer {
    * into separate maps.
    *   Negative gain: channels sending bad data at the tickmark scan. 
    *   Zero gain    : channels switched off during the tickmark scan. 
-   */ 
+   */
   void read_tickmark(void);
 
   /** Brief Returns the mapping among channels and gain heights for the APVs.
@@ -117,7 +110,7 @@ class SiStripApvGainFromFileBuilder : public edm::EDAnalyzer {
    * This method dumps the detector id <-> gain maps into acii files separated
    * for each APV. The basenmae of for the acii file has to be provided as a
    * input parameter.
-   */ 
+   */
   void output_maps(std::vector<Gain*>* maps, const char* basename) const;
 
   /** Brief Dump the exceptions summary on a ASCII file.
@@ -132,16 +125,16 @@ class SiStripApvGainFromFileBuilder : public edm::EDAnalyzer {
 
   /** Brief Format the output line for the channel summary.
    */
-  void format_summary (std::stringstream& line, Summary summary) const;
+  void format_summary(std::stringstream& line, Summary summary) const;
 
   /** Brief Find the gain value for a pair det_id, APV_id in the internal maps.
    */
   bool gain_from_maps(uint32_t det_id, int onlineAPV_id, float& gain);
-  void gain_from_maps(uint32_t det_id, uint16_t totalAPVs, std::vector< std::pair<int,float> >& gain) const;
+  void gain_from_maps(uint32_t det_id, uint16_t totalAPVs, std::vector<std::pair<int, float> >& gain) const;
 
   /** Brief Convert online APV id into offline APV id.
    */
-  int online2offline(uint16_t onlineAPV_id, uint16_t totalAPVs) const; 
+  int online2offline(uint16_t onlineAPV_id, uint16_t totalAPVs) const;
 };
 
 #endif
