@@ -318,6 +318,17 @@ ALCARECOTkAlBeamHaloTrackingDQM = ALCARECOTkAlZMuMuTrackingDQM.clone(
     BSFolderName = "AlCaReco/"+__selectionName+"/BeamSpot"
 )
 
+ALCARECOTkAlBeamHaloTkAlDQM = ALCARECOTkAlZMuMuTkAlDQM.clone(
+#names and desigantions
+    TrackProducer = 'ALCARECO'+__selectionName,
+    AlgoName = 'ALCARECO'+__selectionName,
+    FolderName = "AlCaReco/"+__selectionName,
+    ReferenceTrackProducer = 'beamhaloTracks',
+    # margins and settings
+    fillInvariantMass = False,
+    TrackPtMax = 250
+)
+
 # no BeamHalo HLT bits yet
 #from Alignment.CommonAlignmentProducer.ALCARECOTkAlBeamHalo_cff import ALCARECOTkAlBeamHaloHLT
 #ALCARECOTkAlBeamHaloHLTDQM = hltMonBitSummary.clone(
@@ -327,7 +338,7 @@ ALCARECOTkAlBeamHaloTrackingDQM = ALCARECOTkAlZMuMuTrackingDQM.clone(
 #    eventSetupPathsKey =  ALCARECOTkAlBeamHaloHLT.eventSetupPathsKey.value()
 #)
 
-ALCARECOTkAlBeamHaloDQM = cms.Sequence( ALCARECOTkAlBeamHaloTrackingDQM 
+ALCARECOTkAlBeamHaloDQM = cms.Sequence( ALCARECOTkAlBeamHaloTrackingDQM + ALCARECOTkAlBeamHaloTkAlDQM
 #+ ALCARECOTkAlBeamHaloHLTDQM 
 )
 
