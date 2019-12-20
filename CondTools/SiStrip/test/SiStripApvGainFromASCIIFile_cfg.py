@@ -10,7 +10,6 @@ process.source = cms.Source("EmptyIOVSource",
 )
 
 
-
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.threshold = cms.untracked.string('DEBUG')
 process.MessageLogger.cout.threshold = cms.untracked.string('DEBUG')
@@ -19,28 +18,31 @@ process.MessageLogger.destinations = cms.untracked.vstring('cout')
 process.MessageLogger.cout = cms.untracked.PSet( threshold = cms.untracked.string('DEBUG'))
 
 #process.load('Configuration.Geometry.GeometryDB_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')
+#process.load('Configuration.Geometry.GeometryIdeal_cff')
+
+process.load("Configuration.Geometry.GeometryExtended2017_cff")
+process.load("Geometry.TrackerGeometryBuilder.trackerParameters_cfi")
+process.TrackerTopologyEP = cms.ESProducer("TrackerTopologyEP")
 
 #Setup the SiSTripFedCabling and the SiStripDetCabling
-process.load("CondCore.DBCommon.CondDBCommon_cfi")
-process.CondDBCommon.connect='frontier://FrontierProd/CMS_CONDITIONS'
+process.load("CondCore.CondDB.CondDB_cfi")
+process.CondDB.connect='frontier://FrontierProd/CMS_CONDITIONS'
 
-process.poolDBESSource = cms.ESSource( 'PoolDBESSource',
-                                       process.CondDBCommon,
-                                       BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
-                                       toGet = cms.VPSet( 
-                                                          cms.PSet( record = cms.string('SiStripFedCablingRcd'),
-                                                                    tag    = cms.string('SiStripFedCabling_GR10_v1_hlt')
+process.poolDBESSource = cms.ESSource('PoolDBESSource',
+                                      process.CondDB,
+                                      BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
+                                      toGet = cms.VPSet( cms.PSet(record = cms.string('SiStripFedCablingRcd'),
+                                                                  tag    = cms.string('SiStripFedCabling_GR10_v1_hlt')
                                                                   )
                                                         )
                                      )
                                                                     
 process.load("CalibTracker.SiStripESProducers.SiStripConnectivity_cfi")
 
-
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
 )
+
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
     DBParameters = cms.PSet(
