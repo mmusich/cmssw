@@ -4,3 +4,11 @@ __init__.py
 .#*
 #*#
 *~
+*.o
+*.so
+*.root
+*.pdf
+*.ini
+*.old
+*.bckp
+
