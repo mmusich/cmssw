@@ -95,12 +95,14 @@ private:
 
   enum class PclHLS : int {
     NotInPCL = -1,
+    TPEHalfCylinderXplusZminus = 0,
+    TPEHalfCylinderXminusZminus = 1,
     TPBHalfBarrelXplus = 2,
     TPBHalfBarrelXminus = 3,
     TPEHalfCylinderXplusZplus = 4,
     TPEHalfCylinderXminusZplus = 5,
-    TPEHalfCylinderXplusZminus = 0,
-    TPEHalfCylinderXminusZminus = 1
+    TPBLadder = 6,
+    TPEPanel = 7,
   };
 
   //========================= PRIVATE METHODS ==================================

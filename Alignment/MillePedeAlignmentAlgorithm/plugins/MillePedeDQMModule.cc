@@ -268,6 +268,6 @@ int MillePedeDQMModule ::getIndexFromString(const std::string& alignableId) {
     return 4;
   } else {
     throw cms::Exception("LogicError") << "@SUB=MillePedeDQMModule::getIndexFromString\n"
-                                       << "Retrieving conversion for not supported Alignable partition" << alignableId;
+                                       << "Retrieving conversion for not supported Alignable partition " << alignableId;
   }
 }

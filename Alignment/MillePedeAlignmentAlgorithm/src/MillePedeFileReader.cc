@@ -1,5 +1,6 @@
 /*** Header file ***/
 #include "Alignment/MillePedeAlignmentAlgorithm/interface/MillePedeFileReader.h"
+#include "Alignment/CommonAlignment/interface/AlignableObjectId.h"
 
 /*** system includes ***/
 #include <cmath>  // include floating-point std::abs functions
@@ -104,6 +105,8 @@ void MillePedeFileReader ::readMillePedeResultFile() {
   std::map<std::string, std::array<float, 6> > thresholds_;
   std::map<std::string, std::array<float, 6> > errors_;
 
+  AlignableObjectId alignableObjectId{AlignableObjectId::Geometry::General};
+
   std::vector<std::string> alignables_ = theThresholds_->getAlignableList();
   for (auto& ali : alignables_) {
     cutoffs_[ali] = theThresholds_->getCut(ali);
@@ -136,6 +139,9 @@ void MillePedeFileReader ::readMillePedeResultFile() {
         auto alignableLabel = std::stoul(tokens[0]);
         auto alignableIndex = alignableLabel % 10 - 1;
         const auto alignable = pedeLabeler_->alignableFromLabel(alignableLabel);
+        const auto paramNum = pedeLabeler_->paramNumFromLabel(alignableLabel);
+        align::StructureType type = alignable->alignableObjectId();
+        align::ID id = alignable->id();
 
         double ObsMove = std::stof(tokens[3]) * multiplier_[alignableIndex];
         double ObsErr = std::stof(tokens[4]) * multiplier_[alignableIndex];
@@ -176,11 +182,15 @@ void MillePedeFileReader ::readMillePedeResultFile() {
               break;
           }
         } else {
+          edm::LogError("MillePedeFileReader")
+              << "Currently not able to handle coordinate: " << coord << " (" << paramNum << ")  "
+              << Form(" %s with ID %d (subdet %d)", alignableObjectId.idToString(type), id, DetId(id).subdetId())
+              << std::endl;
           continue;
         }
 
         edm::LogVerbatim("MillePedeFileReader")
-            << " alignableLabel: " << alignableLabel << " with alignableIndex " << alignableIndex << " detIndex"
+            << " alignableLabel: " << alignableLabel << " with alignableIndex " << alignableIndex << " detIndex "
             << detIndex << "\n"
             << " i.e. detLabel: " << detLabel << " (" << coord << ")\n"
             << " has movement: " << ObsMove << " +/- " << ObsErr << "\n"
@@ -279,6 +289,10 @@ MillePedeFileReader::PclHLS MillePedeFileReader ::getHLS(const Alignable* aligna
               << "@SUB=MillePedeFileReader::getHLS\n"
               << "Found a pixel endcap number that should not exist: " << tns.tpe().endcapNumber(alignable->id());
       }
+    case align::TPBLadder:
+      return PclHLS::TPBLadder;
+    case align::TPEPanel:
+      return PclHLS::TPEPanel;
     default:
       return PclHLS::NotInPCL;
   }
@@ -298,7 +312,12 @@ std::string MillePedeFileReader::getStringFromHLS(MillePedeFileReader::PclHLS HL
       return "TPEHalfCylinderXminusZplus";
     case PclHLS::TPEHalfCylinderXplusZplus:
       return "TPEHalfCylinderXplusZplus";
+    case PclHLS::TPBLadder:
+      return "TPBLadder";
+    case PclHLS::TPEPanel:
+      return "TPEPanel";
     default:
+      //return "NotInPCL";
       throw cms::Exception("LogicError")
           << "@SUB=MillePedeFileReader::getStringFromHLS\n"
           << "Found an alignable structure not possible to map in the default AlignPCLThresholds partitions";
