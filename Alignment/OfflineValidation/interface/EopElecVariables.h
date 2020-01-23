@@ -6,37 +6,43 @@
 
 // container to hold data to be written into TTree
 struct EopElecVariables {
-
   /// constructor initialises to empty values
-  EopElecVariables()  {clear();}
+  EopElecVariables() { clear(); }
   ~EopElecVariables() {}
   /// set to empty values
-  void clear(){
+  void clear() {
     /// doubles
-    outerRadius = chi2 = normalizedChi2 = p = pt = 
-      ptError = theta = eta = phi = SC_energy = 
-      HcalEnergyIn01 = HcalEnergyIn02 = HcalEnergyIn03 = HcalEnergyIn04 = 
-      HcalEnergyIn05 = SC_etaWidth = SC_phiWidth = fbrem =
-      SC_eta = SC_phi = pIn = pOut = etaIn = phiIn = etaOut = phiOut = 
-      px = py = pz = dRto1stSC = dRto2ndSC = 0.;
+    outerRadius = chi2 = normalizedChi2 = p = pt = ptError = theta = eta = phi = SC_energy = HcalEnergyIn01 =
+        HcalEnergyIn02 = HcalEnergyIn03 = HcalEnergyIn04 = HcalEnergyIn05 = SC_etaWidth = SC_phiWidth = fbrem = SC_eta =
+            SC_phi = pIn = pOut = etaIn = phiIn = etaOut = phiOut = px = py = pz = dRto1stSC = dRto2ndSC = 0.;
     /// integers
-    charge = nHits = nLostHits = SC_nBasicClus =  
-      SC_algoID = RunNumber = EvtNumber = 0;
+    charge = nHits = nLostHits = SC_nBasicClus = SC_algoID = RunNumber = EvtNumber = 0;
     /// booleans
     innerOk = isEcalDriven = isTrackerDriven = SC_isBarrel = SC_isEndcap = false;
 
-    MaxPtIn01 = 0.; SumPtIn01 = 0.; NoTrackIn0015 = true;
-    MaxPtIn02 = 0.; SumPtIn02 = 0.; NoTrackIn0020 = true;
-    MaxPtIn03 = 0.; SumPtIn03 = 0.; NoTrackIn0025 = true;
-    MaxPtIn04 = 0.; SumPtIn04 = 0.; NoTrackIn0030 = true;
-    MaxPtIn05 = 0.; SumPtIn05 = 0.; NoTrackIn0035 = true; NoTrackIn0040 = true;
+    MaxPtIn01 = 0.;
+    SumPtIn01 = 0.;
+    NoTrackIn0015 = true;
+    MaxPtIn02 = 0.;
+    SumPtIn02 = 0.;
+    NoTrackIn0020 = true;
+    MaxPtIn03 = 0.;
+    SumPtIn03 = 0.;
+    NoTrackIn0025 = true;
+    MaxPtIn04 = 0.;
+    SumPtIn04 = 0.;
+    NoTrackIn0030 = true;
+    MaxPtIn05 = 0.;
+    SumPtIn05 = 0.;
+    NoTrackIn0035 = true;
+    NoTrackIn0040 = true;
 
-    px_rejected_track=0.;
-    py_rejected_track=0.;
-    pz_rejected_track=0.;
-    p_rejected_track=0.;
+    px_rejected_track = 0.;
+    py_rejected_track = 0.;
+    pz_rejected_track = 0.;
+    p_rejected_track = 0.;
   }
-  
+
   Int_t charge;
   Int_t nHits;
   Int_t nLostHits;
@@ -101,5 +107,5 @@ struct EopElecVariables {
   Int_t RunNumber;
   Int_t EvtNumber;
 };
- 
+
 #endif
