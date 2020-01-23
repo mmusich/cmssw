@@ -17,6 +17,7 @@
 <use   name="CommonTools/UtilAlgos"/>
 <use   name="CommonTools/Utils"/>
 <use   name="RecoMuon/TrackingTools"/>
+<use   name="HLTrigger/HLTcore"/>
 <use   name="TrackingTools/TransientTrack"/>
 <use   name="SimDataFormats/Track"/>
 <use   name="SimDataFormats/GeneratorProducts"/>
@@ -47,6 +48,8 @@
 <use   name="root"/>
 <use   name="TrackingTools/TrackAssociator"/>
 <use   name="Geometry/CaloGeometry"/>
+<use   name="RecoEcal/EgammaClusterAlgos"/>
+<use   name="DataFormats/EgammaCandidates"/>
 <use   name="rootmath"/>
 <use   name="rootrflx"/>
 <use   name="rootcore"/>

@@ -1,4 +1,5 @@
 <lcgdict>
   <class name="TkOffTreeVariables"/>
   <class name="EopVariables"/>
+  <class name="EopElecVariables"/>
 </lcgdict>
