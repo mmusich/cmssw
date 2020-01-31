@@ -278,7 +278,7 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   if ((pDD->isThere(GeomDetEnumerators::P2PXB)) || (pDD->isThere(GeomDetEnumerators::P2PXEC))) {
     phase_ = PVValHelper::phase2;
     nLadders_ = 12;
-    nModZ_    = 9;
+    nModZ_ = 9;
 
     if (h_dxy_ladderOverlap_.size() != nLadders_) {
       PVValHelper::shrinkHistVectorToFit(h_dxy_ladderOverlap_, nLadders_);
@@ -294,14 +294,15 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     }
 
     if (debug_) {
-      edm::LogInfo("PrimaryVertexValidation") << " pixel phase2 setup, nLadders: " << nLadders_ << " nModules:"<< nModZ_;
+      edm::LogInfo("PrimaryVertexValidation")
+          << " pixel phase2 setup, nLadders: " << nLadders_ << " nModules:" << nModZ_;
     }
 
   } else if ((pDD->isThere(GeomDetEnumerators::P1PXB)) || (pDD->isThere(GeomDetEnumerators::P1PXEC))) {
     // switch on the phase1
     phase_ = PVValHelper::phase1;
     nLadders_ = 12;
-    nModZ_    = 8;
+    nModZ_ = 8;
 
     if (h_dxy_ladderOverlap_.size() != nLadders_) {
       PVValHelper::shrinkHistVectorToFit(h_dxy_ladderOverlap_, nLadders_);
@@ -328,13 +329,14 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     }
 
     if (debug_) {
-      edm::LogInfo("PrimaryVertexValidation") << " pixel phase1 setup, nLadders: " << nLadders_ << " nModules:"<< nModZ_;
+      edm::LogInfo("PrimaryVertexValidation")
+          << " pixel phase1 setup, nLadders: " << nLadders_ << " nModules:" << nModZ_;
     }
 
   } else {
     phase_ = PVValHelper::phase0;
     nLadders_ = 20;
-    nModZ_    = 8;
+    nModZ_ = 8;
 
     if (h_dxy_modZ_.size() != nModZ_) {
       PVValHelper::shrinkHistVectorToFit(h_dxy_modZ_, nModZ_);
@@ -348,24 +350,25 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     }
 
     if (debug_) {
-      edm::LogInfo("PrimaryVertexValidation") << " pixel phase0 setup, nLadders: " << nLadders_ << " nModules:"<< nModZ_;
+      edm::LogInfo("PrimaryVertexValidation")
+          << " pixel phase0 setup, nLadders: " << nLadders_ << " nModules:" << nModZ_;
     }
   }
 
-  switch(phase_){
-  case PVValHelper::phase0: 
-    etaOfProbe_ = std::min(etaOfProbe_, PVValHelper::max_eta_phase0);
-    break;
-  case PVValHelper::phase1:
-    etaOfProbe_ = std::min(etaOfProbe_, PVValHelper::max_eta_phase1);
-    break;
-  case PVValHelper::phase2:
-    etaOfProbe_ = std::min(etaOfProbe_, PVValHelper::max_eta_phase2);
-    break;
-  default:
-    edm::LogWarning("LogicError") << "Unknown detector phase: " << phase_ ;
+  switch (phase_) {
+    case PVValHelper::phase0:
+      etaOfProbe_ = std::min(etaOfProbe_, PVValHelper::max_eta_phase0);
+      break;
+    case PVValHelper::phase1:
+      etaOfProbe_ = std::min(etaOfProbe_, PVValHelper::max_eta_phase1);
+      break;
+    case PVValHelper::phase2:
+      etaOfProbe_ = std::min(etaOfProbe_, PVValHelper::max_eta_phase2);
+      break;
+    default:
+      edm::LogWarning("LogicError") << "Unknown detector phase: " << phase_;
   }
-  
+
   if (h_etaMax->GetEntries() == 0.) {
     h_etaMax->SetBinContent(1., etaOfProbe_);
     h_nbins->SetBinContent(1., nBins_);
@@ -498,17 +501,17 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
           float etaL = theDetails_.trendbins[PVValHelper::eta][i + 1];
 
           if (tracketa >= etaF && tracketa < etaL) {
-            PVValHelper::fillByIndex(a_dxyEtaBiasResiduals, i, dxyRes * cmToum,"1");
-            PVValHelper::fillByIndex(a_dzEtaBiasResiduals, i, dzRes * cmToum,"2");
-            PVValHelper::fillByIndex(n_dxyEtaBiasResiduals, i, (dxyRes) / dxy_err,"3");
-            PVValHelper::fillByIndex(n_dzEtaBiasResiduals, i, (dzRes) / dz_err,"4");
+            PVValHelper::fillByIndex(a_dxyEtaBiasResiduals, i, dxyRes * cmToum, "1");
+            PVValHelper::fillByIndex(a_dzEtaBiasResiduals, i, dzRes * cmToum, "2");
+            PVValHelper::fillByIndex(n_dxyEtaBiasResiduals, i, (dxyRes) / dxy_err, "3");
+            PVValHelper::fillByIndex(n_dzEtaBiasResiduals, i, (dzRes) / dz_err, "4");
           }
 
           if (trackphi >= phiF && trackphi < phiL) {
-            PVValHelper::fillByIndex(a_dxyPhiBiasResiduals, i, dxyRes * cmToum,"5");
-            PVValHelper::fillByIndex(a_dzPhiBiasResiduals, i, dzRes * cmToum,"6");
-            PVValHelper::fillByIndex(n_dxyPhiBiasResiduals, i, (dxyRes) / dxy_err,"7");
-            PVValHelper::fillByIndex(n_dzPhiBiasResiduals, i, (dzRes) / dz_err,"8");
+            PVValHelper::fillByIndex(a_dxyPhiBiasResiduals, i, dxyRes * cmToum, "5");
+            PVValHelper::fillByIndex(a_dzPhiBiasResiduals, i, dzRes * cmToum, "6");
+            PVValHelper::fillByIndex(n_dxyPhiBiasResiduals, i, (dxyRes) / dxy_err, "7");
+            PVValHelper::fillByIndex(n_dzPhiBiasResiduals, i, (dzRes) / dz_err, "8");
 
             for (int j = 0; j < nBins_; j++) {
               float etaJ = theDetails_.trendbins[PVValHelper::eta][j];
@@ -692,9 +695,9 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
         if ((*iHit)->isValid()) {
           //if (this->isHit2D(**iHit)) {
           //  ++nRecHit2D;
-	  // } else {
-	  ++nRecHit1D;
-	  // }
+          // } else {
+          ++nRecHit1D;
+          // }
         }
       }
 
@@ -927,19 +930,19 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
               if (std::abs(tracketa) < 1.5 && (trackpt >= pTF && trackpt < pTL)) {
                 if (debug_)
                   edm::LogInfo("PrimaryVertexValidation") << "passes this cut: " << mypT_bins_[ipTBin] << std::endl;
-                PVValHelper::fillByIndex(h_dxy_pT_, ipTBin, dxyFromMyVertex * cmToum,"9");
-                PVValHelper::fillByIndex(h_dz_pT_, ipTBin, dzFromMyVertex * cmToum,"10");
-                PVValHelper::fillByIndex(h_norm_dxy_pT_, ipTBin, dxyFromMyVertex / s_ip2dpv_err,"11");
-                PVValHelper::fillByIndex(h_norm_dz_pT_, ipTBin, dzFromMyVertex / dz_err,"12");
+                PVValHelper::fillByIndex(h_dxy_pT_, ipTBin, dxyFromMyVertex * cmToum, "9");
+                PVValHelper::fillByIndex(h_dz_pT_, ipTBin, dzFromMyVertex * cmToum, "10");
+                PVValHelper::fillByIndex(h_norm_dxy_pT_, ipTBin, dxyFromMyVertex / s_ip2dpv_err, "11");
+                PVValHelper::fillByIndex(h_norm_dz_pT_, ipTBin, dzFromMyVertex / dz_err, "12");
 
                 if (std::abs(tracketa) < 1.) {
                   if (debug_)
                     edm::LogInfo("PrimaryVertexValidation")
                         << "passes tight eta cut: " << mypT_bins_[ipTBin] << std::endl;
-                  PVValHelper::fillByIndex(h_dxy_Central_pT_, ipTBin, dxyFromMyVertex * cmToum,"13");
-                  PVValHelper::fillByIndex(h_dz_Central_pT_, ipTBin, dzFromMyVertex * cmToum,"14");
-                  PVValHelper::fillByIndex(h_norm_dxy_Central_pT_, ipTBin, dxyFromMyVertex / s_ip2dpv_err,"15");
-                  PVValHelper::fillByIndex(h_norm_dz_Central_pT_, ipTBin, dzFromMyVertex / dz_err,"16");
+                  PVValHelper::fillByIndex(h_dxy_Central_pT_, ipTBin, dxyFromMyVertex * cmToum, "13");
+                  PVValHelper::fillByIndex(h_dz_Central_pT_, ipTBin, dzFromMyVertex * cmToum, "14");
+                  PVValHelper::fillByIndex(h_norm_dxy_Central_pT_, ipTBin, dxyFromMyVertex / s_ip2dpv_err, "15");
+                  PVValHelper::fillByIndex(h_norm_dz_Central_pT_, ipTBin, dzFromMyVertex / dz_err, "16");
                 }
               }
             }
@@ -1033,14 +1036,15 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
               n_dzVsEta->Fill(tracketa, z0 / z0_error);
 
               if (ladder_num > 0 && module_num > 0) {
-                LogDebug("PrimaryVertexValidation") << " ladder_num: " << ladder_num << " module_num: " << module_num << std::endl;
+                LogDebug("PrimaryVertexValidation")
+                    << " ladder_num: " << ladder_num << " module_num: " << module_num << std::endl;
 
-                PVValHelper::fillByIndex(h_dxy_modZ_, module_num - 1, dxyFromMyVertex * cmToum,"17");
-                PVValHelper::fillByIndex(h_dz_modZ_, module_num - 1, dzFromMyVertex * cmToum,"18");
-                PVValHelper::fillByIndex(h_norm_dxy_modZ_, module_num - 1, dxyFromMyVertex / s_ip2dpv_err,"19");
-                PVValHelper::fillByIndex(h_norm_dz_modZ_, module_num - 1, dzFromMyVertex / dz_err,"20");
+                PVValHelper::fillByIndex(h_dxy_modZ_, module_num - 1, dxyFromMyVertex * cmToum, "17");
+                PVValHelper::fillByIndex(h_dz_modZ_, module_num - 1, dzFromMyVertex * cmToum, "18");
+                PVValHelper::fillByIndex(h_norm_dxy_modZ_, module_num - 1, dxyFromMyVertex / s_ip2dpv_err, "19");
+                PVValHelper::fillByIndex(h_norm_dz_modZ_, module_num - 1, dzFromMyVertex / dz_err, "20");
 
-                PVValHelper::fillByIndex(h_dxy_ladder_, ladder_num - 1, dxyFromMyVertex * cmToum,"21");
+                PVValHelper::fillByIndex(h_dxy_ladder_, ladder_num - 1, dxyFromMyVertex * cmToum, "21");
 
                 LogDebug("PrimaryVertexValidation") << "h_dxy_ladder size:" << h_dxy_ladder_.size() << std::endl;
 
@@ -1050,12 +1054,11 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
                   PVValHelper::fillByIndex(h_dxy_ladderOverlap_, ladder_num - 1, dxyFromMyVertex * cmToum);
                 }
 
-
                 h2_probePassingLayer1Map_->Fill(module_num, ladder_num);
 
-                PVValHelper::fillByIndex(h_dz_ladder_, ladder_num - 1, dzFromMyVertex * cmToum,"22");
-                PVValHelper::fillByIndex(h_norm_dxy_ladder_, ladder_num - 1, dxyFromMyVertex / s_ip2dpv_err,"23");
-                PVValHelper::fillByIndex(h_norm_dz_ladder_, ladder_num - 1, dzFromMyVertex / dz_err,"24");
+                PVValHelper::fillByIndex(h_dz_ladder_, ladder_num - 1, dzFromMyVertex * cmToum, "22");
+                PVValHelper::fillByIndex(h_norm_dxy_ladder_, ladder_num - 1, dxyFromMyVertex / s_ip2dpv_err, "23");
+                PVValHelper::fillByIndex(h_norm_dz_ladder_, ladder_num - 1, dzFromMyVertex / dz_err, "24");
               }
 
               // filling the binned distributions
@@ -1379,23 +1382,24 @@ void PrimaryVertexValidation::beginJob() {
   h_probePtRebin_ = ProbeFeatures.make<TH1F>(
       "h_probePtRebin", "p_{T} of probe track;track p_{T} (GeV); tracks", mypT_bins_.size() - 1, mypT_bins_.data());
   h_probeP_ = ProbeFeatures.make<TH1F>("h_probeP", "momentum of probe track;track p (GeV); tracks", 100, 0., 100.);
-  h_probeEta_ = ProbeFeatures.make<TH1F>("h_probeEta", "#eta of the probe track;track #eta;tracks", 54,-etaOfProbe_,etaOfProbe_ );
+  h_probeEta_ = ProbeFeatures.make<TH1F>(
+      "h_probeEta", "#eta of the probe track;track #eta;tracks", 54, -etaOfProbe_, etaOfProbe_);
   h_probePhi_ = ProbeFeatures.make<TH1F>("h_probePhi", "#phi of probe track;track #phi (rad);tracks", 100, -3.15, 3.15);
 
   h2_probeEtaPhi_ =
       ProbeFeatures.make<TH2F>("h2_probeEtaPhi",
                                "probe track #phi vs #eta;#eta of probe track;track #phi of probe track (rad); tracks",
                                54,
-                               -2.8,
-                               2.8,
+			       -etaOfProbe_,
+                               etaOfProbe_,
                                100,
-                               -3.15,
-                               3.15);
+                               -M_PI,
+                               M_PI);
   h2_probeEtaPt_ = ProbeFeatures.make<TH2F>("h2_probeEtaPt",
                                             "probe track p_{T} vs #eta;#eta of probe track;track p_{T} (GeV); tracks",
                                             54,
-                                            -2.8,
-                                            2.8,
+					    -etaOfProbe_,
+					    etaOfProbe_,
                                             100,
                                             0.,
                                             50.);
@@ -1477,12 +1481,12 @@ void PrimaryVertexValidation::beginJob() {
       "h2_probeLayer1Map", "Position in Layer 1 of first hit;module number;ladder number", 8, 0.5, 8.5, 12, 0.5, 12.5);
   h2_probePassingLayer1Map_ = ProbeFeatures.make<TH2F>("h2_probePassingLayer1Map",
                                                        "Position in Layer 1 of first hit;module number;ladder number",
-                                                       8,
+                                                       nModZ_,
                                                        0.5,
-                                                       8.5,
-                                                       12,
+						       nModZ_+0.5,
+                                                       nLadders_,
                                                        0.5,
-                                                       12.5);
+                                                       nLadders_+0.5);
   h_probeHasBPixL1Overlap_ =
       ProbeFeatures.make<TH1I>("h_probeHasBPixL1Overlap", "n. hits in L1;n. L1-BPix hits;tracks", 5, -0.5, 4.5);
   h_probeL1ClusterProb_ = ProbeFeatures.make<TH1F>(
@@ -1684,7 +1688,7 @@ void PrimaryVertexValidation::beginJob() {
   // book residuals as function of nLadders and nModules
 
   for (unsigned int iLadder = 0; iLadder < nLadders_; iLadder++) {
-    for (unsigned int iModule = 0; iModule < 8; iModule++) {
+    for (unsigned int iModule = 0; iModule < nModZ_; iModule++) {
       a_dxyL1ResidualsMap[iLadder][iModule] =
           AbsL1Map.make<TH1F>(Form("histo_dxy_ladder%i_module%i", iLadder, iModule),
                               Form("d_{xy} ladder=%i module=%i;d_{xy} [#mum];tracks", iLadder, iModule),
@@ -2770,18 +2774,18 @@ void PrimaryVertexValidation::endJob() {
 
   a_dxyL1MeanMap = Mean2DMapsDir.make<TH2F>("means_dxy_l1map",
                                             "#LT d_{xy} #GT map;module number [z];ladder number [#varphi]",
-                                            8,
+                                            nModZ_,
                                             0.,
-                                            8.,
+                                            nModZ_,
                                             nLadders_,
                                             0.,
                                             nLadders_);
 
   a_dzL1MeanMap = Mean2DMapsDir.make<TH2F>("means_dz_l1map",
                                            "#LT d_{z} #GT map;module number [z];ladder number [#varphi]",
-                                           8,
+                                           nModZ_,
                                            0.,
-                                           8.,
+                                           nModZ_,
                                            nLadders_,
                                            0.,
                                            nLadders_);
@@ -2789,36 +2793,36 @@ void PrimaryVertexValidation::endJob() {
   n_dxyL1MeanMap =
       Mean2DMapsDir.make<TH2F>("norm_means_dxy_l1map",
                                "#LT d_{xy}/#sigma_{d_{xy}} #GT map;module number [z];ladder number [#varphi]",
-                               8,
+                               nModZ_,
                                0.,
-                               8.,
+                               nModZ_,
                                nLadders_,
                                0.,
                                nLadders_);
 
   n_dzL1MeanMap = Mean2DMapsDir.make<TH2F>("norm_means_dz_l1map",
                                            "#LT d_{z}/#sigma_{d_{z}} #GT map;module number [z];ladder number [#varphi]",
-                                           8,
+                                           nModZ_,
                                            0.,
-                                           8.,
+                                           nModZ_,
                                            nLadders_,
                                            0.,
                                            nLadders_);
 
   a_dxyL1WidthMap = Width2DMapsDir.make<TH2F>("widths_dxy_l1map",
                                               "#sigma_{d_{xy}} map;module number [z];ladder number [#varphi]",
-                                              8,
+                                              nModZ_,
                                               0.,
-                                              8.,
+                                              nModZ_,
                                               nLadders_,
                                               0.,
                                               nLadders_);
 
   a_dzL1WidthMap = Width2DMapsDir.make<TH2F>("widths_dz_l1map",
                                              "#sigma_{d_{z}} map;module number [z];ladder number [#varphi]",
-                                             8,
+                                             nModZ_,
                                              0.,
-                                             8.,
+                                             nModZ_,
                                              nLadders_,
                                              0.,
                                              nLadders_);
@@ -2826,9 +2830,9 @@ void PrimaryVertexValidation::endJob() {
   n_dxyL1WidthMap =
       Width2DMapsDir.make<TH2F>("norm_widths_dxy_l1map",
                                 "width(d_{xy}/#sigma_{d_{xy}}) map;module number [z];ladder number [#varphi]",
-                                8,
+                                nModZ_,
                                 0.,
-                                8.,
+                                nModZ_,
                                 nLadders_,
                                 0.,
                                 nLadders_);
@@ -2836,9 +2840,9 @@ void PrimaryVertexValidation::endJob() {
   n_dzL1WidthMap =
       Width2DMapsDir.make<TH2F>("norm_widths_dz_l1map",
                                 "width(d_{z}/#sigma_{d_{z}}) map;module number [z];ladder number [#varphi]",
-                                8,
+                                nModZ_,
                                 0.,
-                                8.,
+                                nModZ_,
                                 nLadders_,
                                 0.,
                                 nLadders_);
@@ -3002,15 +3006,15 @@ void PrimaryVertexValidation::endJob() {
 
   // 2D Maps of residuals in bins of L1 modules
 
-  fillMap(a_dxyL1MeanMap, a_dxyL1ResidualsMap, PVValHelper::MEAN, 8, nLadders_);
-  fillMap(a_dxyL1WidthMap, a_dxyL1ResidualsMap, PVValHelper::WIDTH, 8, nLadders_);
-  fillMap(a_dzL1MeanMap, a_dzL1ResidualsMap, PVValHelper::MEAN, 8, nLadders_);
-  fillMap(a_dzL1WidthMap, a_dzL1ResidualsMap, PVValHelper::WIDTH, 8, nLadders_);
+  fillMap(a_dxyL1MeanMap, a_dxyL1ResidualsMap, PVValHelper::MEAN, nModZ_, nLadders_);
+  fillMap(a_dxyL1WidthMap, a_dxyL1ResidualsMap, PVValHelper::WIDTH, nModZ_, nLadders_);
+  fillMap(a_dzL1MeanMap, a_dzL1ResidualsMap, PVValHelper::MEAN, nModZ_, nLadders_);
+  fillMap(a_dzL1WidthMap, a_dzL1ResidualsMap, PVValHelper::WIDTH, nModZ_, nLadders_);
 
-  fillMap(n_dxyL1MeanMap, n_dxyL1ResidualsMap, PVValHelper::MEAN, 8, nLadders_);
-  fillMap(n_dxyL1WidthMap, n_dxyL1ResidualsMap, PVValHelper::WIDTH, 8, nLadders_);
-  fillMap(n_dzL1MeanMap, n_dzL1ResidualsMap, PVValHelper::MEAN, 8, nLadders_);
-  fillMap(n_dzL1WidthMap, n_dzL1ResidualsMap, PVValHelper::WIDTH, 8, nLadders_);
+  fillMap(n_dxyL1MeanMap, n_dxyL1ResidualsMap, PVValHelper::MEAN, nModZ_, nLadders_);
+  fillMap(n_dxyL1WidthMap, n_dxyL1ResidualsMap, PVValHelper::WIDTH, nModZ_, nLadders_);
+  fillMap(n_dzL1MeanMap, n_dzL1ResidualsMap, PVValHelper::MEAN, nModZ_, nLadders_);
+  fillMap(n_dzL1WidthMap, n_dzL1ResidualsMap, PVValHelper::WIDTH, nModZ_, nLadders_);
 }
 
 //*************************************************************
