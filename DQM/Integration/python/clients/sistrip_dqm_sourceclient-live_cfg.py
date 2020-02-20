@@ -260,6 +260,7 @@ if (process.runType.getRunType() == process.runType.cosmic_run or process.runTyp
 
     process.p = cms.Path(process.scalersRawToDigi*
                          process.APVPhases*
+                         process.unpackTcds*
                          process.consecutiveHEs*
                          process.hltTriggerTypeFilter*
                          process.siStripFEDCheck *
@@ -364,6 +365,7 @@ if (process.runType.getRunType() == process.runType.pp_run or process.runType.ge
     process.p = cms.Path(
         process.scalersRawToDigi*
         process.APVPhases*
+        process.unpackTcds*
         process.consecutiveHEs*
         process.hltTriggerTypeFilter*
         process.siStripFEDCheck *
