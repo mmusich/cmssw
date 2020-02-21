@@ -204,19 +204,24 @@ void SiStripChannelGainMultiIOVFixer::analyze(const edm::Event& iEvent, const ed
     std::map<std::pair<uint32_t, int>, float> theMap, oldPayloadMap;
 
     for (const auto& d : detid) {
-      SiStripApvGain::Range range = SiStripApvGain_->getRange(d, m_gainType);
+      const auto range = SiStripApvGain_->getRange(d, m_gainType);
+      const auto gainRange = SiStripApvGain_->getRange(d);
+
       const auto& info = typeAndLayerFromDetId(d, tTopo);
       float nAPV = 0;
 
       for (int it = 0; it < range.second - range.first; it++) {
         nAPV += 1;
         float Gain = SiStripApvGain_->getApvGain(it, range);
+        float totalGain = SiStripApvGain_->getApvGain(it, gainRange);
+
         std::pair<uint32_t, int> index = std::make_pair(d, nAPV);
 
         oldPayloadMap[index] = Gain;
 
         if (Gain > m_threshold) {
-          std::cout << d << ", APV " << nAPV << ": G2 Gain = " << Gain << " | " << info << std::endl;
+          std::cout << d << ", APV " << nAPV << ": G2 Gain = " << Gain << " Total Gain = " << totalGain << " | "
+                    << tTopo->print(d) << std::endl;  //info << std::endl;
           theMap[index] = m_target;
         } else {
           theMap[index] = Gain;
