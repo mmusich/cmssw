@@ -45,7 +45,7 @@ MonitorTrackResiduals_hi.Mod_On              = False
 
 
 
-SiStripDQMTier0_hi = cms.Sequence(APVPhases * consecutiveHEs *
+SiStripDQMTier0_hi = cms.Sequence(APVPhases * unpackTcds*consecutiveHEs *
                                   siStripFEDCheck * siStripFEDMonitor *
                                   SiStripMonitorDigi * SiStripMonitorCluster *
                                   SiStripMonitorTrack_hi *

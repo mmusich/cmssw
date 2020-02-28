@@ -139,32 +139,32 @@ from RecoLuminosity.LumiProducer.lumiProducer_cff import *
 # Sequence
 #removed modules using TkDetMap service
 #SiStripDQMTier0 = cms.Sequence(
-#    APVPhases*consecutiveHEs*siStripFEDCheck
+#    APVPhases*unpackTcds*consecutiveHEs*siStripFEDCheck
 #    *MonitorTrackResiduals
 #    *dqmInfoSiStrip)
 
 #SiStripDQMTier0Common = cms.Sequence(
-#    APVPhases*consecutiveHEs*siStripFEDCheck
+#    APVPhases*unpackTcds*consecutiveHEs*siStripFEDCheck
 #    *dqmInfoSiStrip)
 
 #SiStripDQMTier0MinBias = cms.Sequence(
-#    APVPhases*consecutiveHEs*siStripFEDCheck
+#    APVPhases*unpackTcds*consecutiveHEs*siStripFEDCheck
 #    *SiStripMonitorTrackMB*MonitorTrackResiduals
 #    *dqmInfoSiStrip)
 
 SiStripDQMTier0 = cms.Sequence(
-    APVPhases*consecutiveHEs*siStripFEDCheck*siStripFEDMonitor*SiStripMonitorDigi*SiStripMonitorClusterBPTX
+    APVPhases*unpackTcds*consecutiveHEs*siStripFEDCheck*siStripFEDMonitor*SiStripMonitorDigi*SiStripMonitorClusterBPTX
     *SiStripMonitorTrackCommon*SiStripMonitorTrackIB*refittedForPixelDQM*MonitorTrackResiduals
     *dqmInfoSiStrip)
 from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
 
 SiStripDQMTier0Common = cms.Sequence(
-    APVPhases*consecutiveHEs*siStripFEDCheck*siStripFEDMonitor*SiStripMonitorDigi*SiStripMonitorClusterBPTX        
+    APVPhases*unpackTcds*consecutiveHEs*siStripFEDCheck*siStripFEDMonitor*SiStripMonitorDigi*SiStripMonitorClusterBPTX
     *SiStripMonitorTrackCommon*SiStripMonitorTrackIB
     *dqmInfoSiStrip)
 
 SiStripDQMTier0MinBias = cms.Sequence(
-    APVPhases*consecutiveHEs*siStripFEDCheck*siStripFEDMonitor*SiStripMonitorDigi*SiStripMonitorClusterBPTX
+    APVPhases*unpackTcds*consecutiveHEs*siStripFEDCheck*siStripFEDMonitor*SiStripMonitorDigi*SiStripMonitorClusterBPTX
     *SiStripMonitorTrackMB*SiStripMonitorTrackIB*refittedForPixelDQM*MonitorTrackResiduals
     *dqmInfoSiStrip)
 
