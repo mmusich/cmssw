@@ -36,7 +36,7 @@ DQMProvInfo::DQMProvInfo(const edm::ParameterSet& ps) {
       ps.getUntrackedParameter<edm::InputTag>("tcdsData", edm::InputTag("tcdsDigis", "tcdsRecord")));
 
   // Used to get the DCS bits:
-  dcsRecordToken_ = consumes<DCSRecord>(edm::InputTag("onlineMetaDataRawToDigi"));
+  dcsRecordToken_ = consumes<DCSRecord>(edm::InputTag("onlineMetaDataDigis"));
 
   // Initialization of the global tag
   globalTag_ = "MODULE::DEFAULT";  // default
