@@ -29,6 +29,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <boost/range/adaptor/indexed.hpp>
 
 // user include files
 
@@ -36,6 +37,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CondFormats/AlignmentRecord/interface/GlobalPositionRcd.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
+#include "CondFormats/RunInfo/interface/RunInfo.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLatency.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -147,6 +149,26 @@ public:
   TH1D *hHit;
   TH1D *hHit2D;
 
+  TH1D *hBPixResXPrime;
+  TH1D *hFPixResXPrime;
+  TH1D *hFPixZPlusResXPrime;
+  TH1D *hFPixZMinusResXPrime;
+
+  TH1D *hBPixResYPrime;
+  TH1D *hFPixResYPrime;
+  TH1D *hFPixZPlusResYPrime;
+  TH1D *hFPixZMinusResYPrime;
+
+  TH1D *hBPixResXPull;
+  TH1D *hFPixResXPull;
+  TH1D *hFPixZPlusResXPull;
+  TH1D *hFPixZMinusResXPull;
+
+  TH1D *hBPixResYPull;
+  TH1D *hFPixResYPull;
+  TH1D *hFPixZPlusResYPull;
+  TH1D *hFPixZMinusResYPull;
+
   TH1D *hHitCountVsXBPix;
   TH1D *hHitCountVsXFPix;
   TH1D *hHitCountVsYBPix;
@@ -159,6 +181,19 @@ public:
 
   TH1D *hHitCountVsThetaFPix;
   TH1D *hHitCountVsPhiFPix;
+
+  TH1D *hHitCountVsXFPixPlus;
+  TH1D *hHitCountVsXFPixMinus;
+  TH1D *hHitCountVsYFPixPlus;
+  TH1D *hHitCountVsYFPixMinus;
+  TH1D *hHitCountVsZFPixPlus;
+  TH1D *hHitCountVsZFPixMinus;
+
+  TH1D *hHitCountVsThetaFPixPlus;
+  TH1D *hHitCountVsPhiFPixPlus;
+
+  TH1D *hHitCountVsThetaFPixMinus;
+  TH1D *hHitCountVsPhiFPixMinus;
 
   TH1D *hHitPlus;
   TH1D *hHitMinus;
@@ -239,6 +274,25 @@ public:
   TH1D *modeByRun_;
   TH1D *fieldByRun_;
 
+  TH1D *tracksByRun_;
+  TH1D *hitsByRun_;
+
+  TH1D *trackRatesByRun_;
+  TH1D *eventRatesByRun_;
+
+  TH1D *hitsinBPixByRun_;
+  TH1D *hitsinFPixByRun_;
+
+  std::map<unsigned int, TH1D *> barrelLayersResidualsX;
+  std::map<unsigned int, TH1D *> barrelLayersPullsX;
+  std::map<unsigned int, TH1D *> barrelLayersResidualsY;
+  std::map<unsigned int, TH1D *> barrelLayersPullsY;
+
+  std::map<unsigned int, TH1D *> endcapDisksResidualsX;
+  std::map<unsigned int, TH1D *> endcapDisksPullsX;
+  std::map<unsigned int, TH1D *> endcapDisksResidualsY;
+  std::map<unsigned int, TH1D *> endcapDisksPullsY;
+
   int ievt;
   int itrks;
   int mode;
@@ -259,6 +313,9 @@ public:
   std::map<std::string, std::pair<int, int> > triggerMap_;
   std::map<int, std::pair<int, float> > conditionsMap_;
   std::map<int, std::pair<int, int> > runInfoMap_;
+  std::map<int, std::array<int, 6> > runHitsMap_;
+
+  std::map<int, float> timeMap_;
 
   //*************************************************************
   void analyze(const edm::Event &event, const edm::EventSetup &setup) override
@@ -277,6 +334,11 @@ public:
     edm::ESHandle<TrackerGeometry> geometry;
     setup.get<TrackerDigiGeometryRecord>().get(geometry);
     const TrackerGeometry *theGeometry = &(*geometry);
+
+    //topology setup
+    edm::ESHandle<TrackerTopology> tTopoHandle;
+    setup.get<TrackerTopologyRcd>().get(tTopoHandle);
+    const TrackerTopology *const tTopo = tTopoHandle.product();
 
     // switch on the phase1
     if ((theGeometry->isThere(GeomDetEnumerators::P1PXB)) || (theGeometry->isThere(GeomDetEnumerators::P1PXEC))) {
@@ -322,11 +384,19 @@ public:
     int nHighPurityTracks = 0;
 
     for (auto track = tC.cbegin(); track != tC.cend(); track++) {
+      auto const &residuals = track->extra()->residuals();
+
       unsigned int nHit2D = 0;
-      for (auto iHit = track->recHitsBegin(); iHit != track->recHitsEnd(); ++iHit) {
+      int h_index = 0;
+      for (auto iHit = track->recHitsBegin(); iHit != track->recHitsEnd(); ++iHit, ++h_index) {
         if (this->isHit2D(**iHit)) {
           ++nHit2D;
         }
+
+        double resX = residuals.residualX(h_index);
+        double resY = residuals.residualY(h_index);
+        double resErrX = residuals.pullX(h_index);
+        double resErrY = residuals.pullY(h_index);
 
         const DetId &detId = (*iHit)->geographicalId();
         const GeomDet *geomDet(theGeometry->idToDet(detId));
@@ -338,17 +408,29 @@ public:
             unsigned int subid = detId.subdetId();
             int detid_db = detId.rawId();
 
-            if (!isPhase1_)
+            if (!isPhase1_) {
               pmap->fill(detid_db, 1);
+            }
+
+            float uOrientation(-999.F), vOrientation(-999.F);
+            LocalPoint lUDirection(1., 0., 0.), lVDirection(0., 1., 0.);
 
             LocalPoint lp = (*iHit)->localPosition();
             //LocalError le = (*iHit)->localPositionError();
+
+            GlobalPoint gUDirection = geomDet->surface().toGlobal(lUDirection);
+            GlobalPoint gVDirection = geomDet->surface().toGlobal(lVDirection);
 
             GlobalPoint GP = geomDet->surface().toGlobal(lp);
 
             if ((subid == PixelSubdetector::PixelBarrel) || (subid == PixelSubdetector::PixelEndcap)) {
               // 1 = PXB, 2 = PXF
               if (subid == PixelSubdetector::PixelBarrel) {
+                int layer_num = tTopo->pxbLayer(detid_db);
+
+                uOrientation = deltaPhi(gUDirection.barePhi(), GP.barePhi()) >= 0. ? +1.F : -1.F;
+                vOrientation = gVDirection.z() - GP.z() >= 0 ? +1.F : -1.F;
+
                 hHitCountVsThetaBPix->Fill(GP.theta());
                 hHitCountVsPhiBPix->Fill(GP.phi());
 
@@ -356,13 +438,68 @@ public:
                 hHitCountVsXBPix->Fill(GP.x());
                 hHitCountVsYBPix->Fill(GP.y());
 
+                hBPixResXPrime->Fill(uOrientation * resX * 10000.);
+                hBPixResYPrime->Fill(vOrientation * resY * 10000.);
+                hBPixResXPull->Fill(resErrX);
+                hBPixResYPull->Fill(resErrY);
+
+                //std::cout<<"layer: "<<layer_num<<std::endl;
+
+                fillByIndex(barrelLayersResidualsX, layer_num, uOrientation * resX * 10000.);
+                fillByIndex(barrelLayersPullsX, layer_num, resErrX);
+                fillByIndex(barrelLayersResidualsY, layer_num, vOrientation * resY * 10000.);
+                fillByIndex(barrelLayersPullsY, layer_num, resErrY);
+
               } else if (subid == PixelSubdetector::PixelEndcap) {
+                uOrientation = gUDirection.perp() - GP.perp() >= 0 ? +1.F : -1.F;
+                vOrientation = deltaPhi(gVDirection.barePhi(), GP.barePhi()) >= 0. ? +1.F : -1.F;
+
+                int side_num = tTopo->pxfSide(detid_db);
+                int disk_num = tTopo->pxfDisk(detid_db);
+
+                int packedTopo = disk_num + 12 * (side_num - 1);
+
                 hHitCountVsThetaFPix->Fill(GP.theta());
                 hHitCountVsPhiFPix->Fill(GP.phi());
 
                 hHitCountVsZFPix->Fill(GP.z());
                 hHitCountVsXFPix->Fill(GP.x());
                 hHitCountVsYFPix->Fill(GP.y());
+
+                hFPixResXPrime->Fill(uOrientation * resX * 10000.);
+                hFPixResYPrime->Fill(vOrientation * resY * 10000.);
+                hFPixResXPull->Fill(resErrX);
+                hFPixResYPull->Fill(resErrY);
+
+                fillByIndex(endcapDisksResidualsX, packedTopo, uOrientation * resX * 10000.);
+                fillByIndex(endcapDisksPullsX, packedTopo, resErrX);
+                fillByIndex(endcapDisksResidualsY, packedTopo, vOrientation * resY * 10000.);
+                fillByIndex(endcapDisksPullsY, packedTopo, resErrY);
+
+                if (side_num == 1) {
+                  hHitCountVsXFPixMinus->Fill(GP.x());
+                  hHitCountVsYFPixMinus->Fill(GP.y());
+                  hHitCountVsZFPixMinus->Fill(GP.z());
+                  hHitCountVsThetaFPixMinus->Fill(GP.theta());
+                  hHitCountVsPhiFPixMinus->Fill(GP.phi());
+
+                  hFPixZMinusResXPrime->Fill(uOrientation * resX * 10000.);
+                  hFPixZMinusResYPrime->Fill(vOrientation * resY * 10000.);
+                  hFPixZMinusResXPull->Fill(resErrX);
+                  hFPixZMinusResYPull->Fill(resErrY);
+
+                } else {
+                  hHitCountVsXFPixPlus->Fill(GP.x());
+                  hHitCountVsYFPixPlus->Fill(GP.y());
+                  hHitCountVsZFPixPlus->Fill(GP.z());
+                  hHitCountVsThetaFPixPlus->Fill(GP.theta());
+                  hHitCountVsPhiFPixPlus->Fill(GP.phi());
+
+                  hFPixZPlusResXPrime->Fill(uOrientation * resX * 10000.);
+                  hFPixZPlusResYPrime->Fill(vOrientation * resY * 10000.);
+                  hFPixZPlusResXPull->Fill(resErrX);
+                  hFPixZPlusResYPull->Fill(resErrY);
+                }
               }
             }
           }
@@ -380,6 +517,13 @@ public:
       hnhTID->Fill(track->hitPattern().numberOfValidStripTIDHits());
       hnhTOB->Fill(track->hitPattern().numberOfValidStripTOBHits());
       hnhTEC->Fill(track->hitPattern().numberOfValidStripTECHits());
+
+      runHitsMap_[event.run()][0] += track->hitPattern().numberOfValidPixelBarrelHits();
+      runHitsMap_[event.run()][1] += track->hitPattern().numberOfValidPixelEndcapHits();
+      runHitsMap_[event.run()][2] += track->hitPattern().numberOfValidStripTIBHits();
+      runHitsMap_[event.run()][3] += track->hitPattern().numberOfValidStripTIDHits();
+      runHitsMap_[event.run()][4] += track->hitPattern().numberOfValidStripTOBHits();
+      runHitsMap_[event.run()][5] += track->hitPattern().numberOfValidStripTECHits();
 
       // fill hit composition histogram
       if (track->hitPattern().numberOfValidPixelBarrelHits() != 0) {
@@ -654,11 +798,6 @@ public:
           << "run number:" << run.run() << " magnetic field: " << B_ << " [T]" << std::endl;
     }
 
-    //topology setup
-    //edm::ESHandle<TrackerTopology> tTopoHandle;
-    //setup.get<TrackerTopologyRcd>().get(tTopoHandle);
-    //const TrackerTopology* const tTopo = tTopoHandle.product();
-
     //SiStrip Latency
     edm::ESHandle<SiStripLatency> apvlat;
     setup.get<SiStripLatencyRcd>().get(apvlat);
@@ -670,6 +809,29 @@ public:
 
     conditionsMap_[run.run()].first = mode;
     conditionsMap_[run.run()].second = B_;
+
+    // edm::ESHandle<RunInfo> runInfo;
+    // setup.get<RunInfoRcd>().get(runInfo);
+    // //float average_current = runInfo.product()->m_avg_current;
+    // //float uptimeInSeconds = runInfo.product()->m_run_intervall_micros;
+
+    edm::ESHandle<RunInfo> sum;
+    setup.get<RunInfoRcd>().get(sum);
+    const RunInfo *summary = sum.product();
+    time_t start_time = summary->m_start_time_ll;
+    ctime(&start_time);
+    time_t end_time = summary->m_stop_time_ll;
+    ctime(&end_time);
+
+    /*
+      std::cout<< " start_time " << start_time << "( " << summary->m_start_time_str <<" )" 
+      << " end_time "   << end_time   << "( " << summary->m_stop_time_str  <<" )" << std::endl;
+    */
+
+    double seconds = difftime(end_time, start_time) / 1.0e+6;
+    //std::cout<<" diff: "<< seconds << "s" << std::endl;
+
+    timeMap_[run.run()] = seconds;
   }
 
   //*************************************************************
@@ -732,6 +894,42 @@ public:
     hHit = fs->make<TH1D>("h_nHits", "Number of hits;track n. hits;tracks", 50, -0.5, 49.5);
     hHit2D = fs->make<TH1D>("h_nHit2D", "Number of 2D hits; number of 2D hits;tracks", 20, 0, 20);
 
+    hBPixResXPrime =
+        fs->make<TH1D>("h_BPixResXPrime", "BPix track X-residuals;res_{X'} [#mum];hits", 100, -2000., 2000.);
+    hFPixResXPrime =
+        fs->make<TH1D>("h_FPixResXPrime", "FPix track X-residuals;res_{X'} [#mum];hits", 100, -2000., 2000.);
+    hFPixZPlusResXPrime =
+        fs->make<TH1D>("h_FPixZPlusResXPrime", "FPix (Z+) track X-residuals;res_{X'} [#mum];hits", 100, -2000., 2000.);
+    hFPixZMinusResXPrime =
+        fs->make<TH1D>("h_FPixZMinusResXPrime", "FPix (Z-) track X-residuals;res_{X'} [#mum];hits", 100, -2000., 2000.);
+
+    hBPixResYPrime =
+        fs->make<TH1D>("h_BPixResYPrime", "BPix track Y-residuals;res_{Y'} [#mum];hits", 100, -2000., 2000.);
+    hFPixResYPrime =
+        fs->make<TH1D>("h_FPixResYPrime", "FPix track Y-residuals;res_{Y'} [#mum];hits", 100, -2000., 2000.);
+    hFPixZPlusResYPrime =
+        fs->make<TH1D>("h_FPixZPlusResYPrime", "FPix (Z+) track Y-residuals;res_{Y'} [#mum];hits", 100, -2000., 2000.);
+    hFPixZMinusResYPrime =
+        fs->make<TH1D>("h_FPixZMinusResYPrime", "FPix (Z-) track Y-residuals;res_{Y'} [#mum];hits", 100, -2000., 2000.);
+
+    hBPixResXPull =
+        fs->make<TH1D>("h_BPixResXPull", "BPix track X-pulls;res_{X'}/#sigma_{res_{X'}};hits", 100, -5., 5.);
+    hFPixResXPull =
+        fs->make<TH1D>("h_FPixResXPull", "FPix track X-pulls;res_{X'}/#sigma_{res_{X'}};hits", 100, -5., 5.);
+    hFPixZPlusResXPull =
+        fs->make<TH1D>("h_FPixZPlusResXPull", "FPix (Z+) track X-pulls;res_{X'}/#sigma_{res_{X'}};hits", 100, -5., 5.);
+    hFPixZMinusResXPull =
+        fs->make<TH1D>("h_FPixZMinusResXPull", "FPix (Z-) track X-pulls;res_{X'}/#sigma_{res_{X'}};hits", 100, -5., 5.);
+
+    hBPixResYPull =
+        fs->make<TH1D>("h_BPixResYPull", "BPix track Y-pulls;res_{Y'}/#sigma_{res_{Y'}};hits", 100, -5., 5.);
+    hFPixResYPull =
+        fs->make<TH1D>("h_FPixResYPull", "FPix track Y-pulls;res_{Y'}/#sigma_{res_{Y'}};hits", 100, -5., 5.);
+    hFPixZPlusResYPull =
+        fs->make<TH1D>("h_FPixZPlusResYPull", "FPix (Z+) track Y-pulls;res_{Y'}/#sigma_{res_{Y'}};hits", 100, -5., 5.);
+    hFPixZMinusResYPull =
+        fs->make<TH1D>("h_FPixZMinusResYPull", "FPix (Z-) track Y-pulls;res_{Y'}/#sigma_{res_{Y'}};hits", 100, -5., 5.);
+
     hHitCountVsZBPix = fs->make<TH1D>("h_HitCountVsZBpix", "Number of BPix hits vs z;hit global z;hits", 60, -30, 30);
     hHitCountVsZFPix =
         fs->make<TH1D>("h_HitCountVsZFpix", "Number of FPix hits vs z;hit global z;hits", 100, -100, 100);
@@ -751,6 +949,51 @@ public:
         fs->make<TH1D>("h_HitCountVsThetaFpix", "Number of FPix hits vs #theta;hit global #theta;hits", 40, 0., M_PI);
     hHitCountVsPhiFPix =
         fs->make<TH1D>("h_HitCountVsPhiFpix", "Number of FPix hits vs #phi;hit global #phi;hits", 20, -M_PI, M_PI);
+
+    // two sides of FPix
+
+    hHitCountVsZFPixPlus =
+        fs->make<TH1D>("h_HitCountVsZFPixPlus", "Number of FPix(Z+) hits vs z;hit global z;hits", 60, 15., 60);
+    hHitCountVsZFPixMinus =
+        fs->make<TH1D>("h_HitCountVsZFPixMinus", "Number of FPix(Z-) hits vs z;hit global z;hits", 100, -60., -15.);
+
+    hHitCountVsXFPixPlus =
+        fs->make<TH1D>("h_HitCountVsXFPixPlus", "Number of FPix(Z+) hits vs x;hit global x;hits", 20, -20, 20);
+    hHitCountVsXFPixMinus =
+        fs->make<TH1D>("h_HitCountVsXFPixMinus", "Number of FPix(Z-) hits vs x;hit global x;hits", 20, -20, 20);
+
+    hHitCountVsYFPixPlus =
+        fs->make<TH1D>("h_HitCountVsYFPixPlus", "Number of FPix(Z+) hits vs y;hit global y;hits", 20, -20, 20);
+    hHitCountVsYFPixMinus =
+        fs->make<TH1D>("h_HitCountVsYFPixMinus", "Number of FPix(Z-) hits vs y;hit global y;hits", 20, -20, 20);
+
+    hHitCountVsThetaFPixPlus = fs->make<TH1D>(
+        "h_HitCountVsThetaFPixPlus", "Number of FPix(Z+) hits vs #theta;hit global #theta;hits", 20, 0., TMath::Pi());
+    hHitCountVsPhiFPixPlus = fs->make<TH1D>("h_HitCountVsPhiFPixPlus",
+                                            "Number of FPix(Z+) hits vs #phi;hit global #phi;hits",
+                                            20,
+                                            -TMath::Pi(),
+                                            TMath::Pi());
+
+    hHitCountVsThetaFPixMinus = fs->make<TH1D>(
+        "h_HitCountVsThetaFPixMinus", "Number of FPix(Z+) hits vs #theta;hit global #theta;hits", 40, 0., TMath::Pi());
+    hHitCountVsPhiFPixMinus = fs->make<TH1D>("h_HitCountVsPhiFPixMinus",
+                                             "Number of FPix(Z+) hits vs #phi;hit global #phi;hits",
+                                             20,
+                                             -TMath::Pi(),
+                                             TMath::Pi());
+
+    TFileDirectory ByLayerResiduals = fs->mkdir("ByLayerResiduals");
+    barrelLayersResidualsX = bookResidualsHistogram(ByLayerResiduals, 4, "X", "Res", "BPix");
+    endcapDisksResidualsX = bookResidualsHistogram(ByLayerResiduals, 24, "X", "Res", "FPix");
+    barrelLayersResidualsY = bookResidualsHistogram(ByLayerResiduals, 4, "Y", "Res", "BPix");
+    endcapDisksResidualsY = bookResidualsHistogram(ByLayerResiduals, 24, "Y", "Res", "FPix");
+
+    TFileDirectory ByLayerPulls = fs->mkdir("ByLayerPulls");
+    barrelLayersPullsX = bookResidualsHistogram(ByLayerPulls, 4, "X", "Pull", "BPix");
+    endcapDisksPullsX = bookResidualsHistogram(ByLayerPulls, 24, "X", "Pull", "FPix");
+    barrelLayersPullsY = bookResidualsHistogram(ByLayerPulls, 4, "Y", "Pull", "BPix");
+    endcapDisksPullsY = bookResidualsHistogram(ByLayerPulls, 24, "Y", "Pull", "FPix");
 
     hEta = fs->make<TH1D>("h_Eta", "Track pseudorapidity; track #eta;tracks", 100, -etaMax_, etaMax_);
     hPhi = fs->make<TH1D>("h_Phi", "Track azimuth; track #phi;tracks", 100, -M_PI, M_PI);
@@ -1083,19 +1326,64 @@ public:
                                  theRuns_.front() - 0.5,
                                  theRuns_.back() + 0.5);
 
-    for (const auto &the_r : theRuns_) {
-      if (conditionsMap_.find(the_r)->second.first != 0) {
+    tracksByRun_ =
+        fs->make<TH1D>("tracksByRun", "n. AlCaReco Tracks by run number;;n. of tracks", nRuns, -0.5, nRuns - 0.5);
+    hitsByRun_ = fs->make<TH1D>("histByRun", "n. of hits by run number;;n. of hits", nRuns, -0.5, nRuns - 0.5);
+
+    trackRatesByRun_ = fs->make<TH1D>(
+        "trackRatesByRun", "rate of AlCaReco Tracks by run number;;n. of tracks/s", nRuns, -0.5, nRuns - 0.5);
+    eventRatesByRun_ = fs->make<TH1D>(
+        "eventRatesByRun", "rate of AlCaReco Events by run number;;n. of events/s", nRuns, -0.5, nRuns - 0.5);
+
+    hitsinBPixByRun_ = fs->make<TH1D>(
+        "histinBPixByRun", "n. of hits in BPix by run number;;n. of BPix hits", nRuns, -0.5, nRuns - 0.5);
+    hitsinFPixByRun_ = fs->make<TH1D>(
+        "histinFPixByRun", "n. of hits in FPix by run number;;n. of FPix hits", nRuns, -0.5, nRuns - 0.5);
+
+    for (const auto &the_r : theRuns_ | boost::adaptors::indexed(1)) {
+      int indexing = the_r.index();
+      auto runnumber = the_r.value();
+      double runTime = timeMap_.find(runnumber)->second;
+
+      if (conditionsMap_.find(runnumber)->second.first != 0) {
         edm::LogPrint("GeneralPurposeTrackAnalyzer")
-            << "run:" << the_r << " | isPeak: " << std::setw(4) << conditionsMap_.find(the_r)->second.first
-            << "| B-field: " << conditionsMap_.find(the_r)->second.second << " [T]"
-            << "| events: " << std::setw(10) << runInfoMap_.find(the_r)->second.first << ", tracks " << std::setw(10)
-            << runInfoMap_.find(the_r)->second.second << std::endl;
+            << "run:" << runnumber << " | isPeak: " << std::setw(4) << conditionsMap_.find(runnumber)->second.first
+            << "| B-field: " << conditionsMap_.find(runnumber)->second.second << " [T]"
+            << "| events: " << std::setw(10) << runInfoMap_.find(runnumber)->second.first << "(rate: " << std::setw(10)
+            << (runInfoMap_.find(runnumber)->second.first) / runTime << " ev/s)"
+            << ", tracks " << std::setw(10) << runInfoMap_.find(runnumber)->second.second << "(rate: " << std::setw(10)
+            << (runInfoMap_.find(runnumber)->second.second) / runTime << " trk/s)" << std::endl;
       }
 
-      modeByRun_->SetBinContent((the_r - theRuns_.front()) + 1, conditionsMap_.find(the_r)->second.first);
-      fieldByRun_->SetBinContent((the_r - theRuns_.front()) + 1, conditionsMap_.find(the_r)->second.second);
-      modeByRun_->GetXaxis()->SetBinLabel((the_r - theRuns_.front()) + 1, std::to_string(the_r).c_str());
-      fieldByRun_->GetXaxis()->SetBinLabel((the_r - theRuns_.front()) + 1, std::to_string(the_r).c_str());
+      modeByRun_->SetBinContent(indexing, conditionsMap_.find(runnumber)->second.first);
+      fieldByRun_->SetBinContent(indexing, conditionsMap_.find(runnumber)->second.second);
+      modeByRun_->GetXaxis()->SetBinLabel(indexing, std::to_string(runnumber).c_str());
+      fieldByRun_->GetXaxis()->SetBinLabel(indexing, std::to_string(runnumber).c_str());
+
+      tracksByRun_->SetBinContent(indexing, runInfoMap_.find(runnumber)->second.first);
+      tracksByRun_->GetXaxis()->SetBinLabel(indexing, Form("%d", runnumber));
+      hitsByRun_->SetBinContent(indexing, runInfoMap_.find(runnumber)->second.second);
+      hitsByRun_->GetXaxis()->SetBinLabel(indexing, Form("%d", runnumber));
+
+      hitsinBPixByRun_->SetBinContent(indexing, (runHitsMap_.find(runnumber)->second)[0]);
+      hitsinBPixByRun_->GetXaxis()->SetBinLabel(indexing, Form("%d", runnumber));
+      hitsinFPixByRun_->SetBinContent(indexing, (runHitsMap_.find(runnumber)->second)[1]);
+      hitsinFPixByRun_->GetXaxis()->SetBinLabel(indexing, Form("%d", runnumber));
+
+      trackRatesByRun_->SetBinContent(indexing, (runInfoMap_.find(runnumber)->second.second) / runTime);
+      trackRatesByRun_->GetXaxis()->SetBinLabel(indexing, Form("%d", runnumber));
+      eventRatesByRun_->SetBinContent(indexing, (runInfoMap_.find(runnumber)->second.first) / runTime);
+      eventRatesByRun_->GetXaxis()->SetBinLabel(indexing, Form("%d", runnumber));
+
+      constexpr const char *subdets[]{"BPix", "FPix", "TIB", "TID", "TOB", "TEC"};
+
+      edm::LogPrint("GeneralPurposeTrackAnalyzer") << "*******************************" << std::endl;
+      edm::LogPrint("GeneralPurposeTrackAnalyzer") << "Hits by Sub-det" << std::endl;
+      for (const auto &entry : runHitsMap_.find(runnumber)->second | boost::adaptors::indexed(0)) {
+        int si = entry.index();
+        edm::LogPrint("GeneralPurposeTrackAnalyzer") << subdets[si] << " " << entry.value() << std::endl;
+      }
+      edm::LogPrint("GeneralPurposeTrackAnalyzer") << "*******************************" << std::endl;
     }
 
     pmap->save(true, 0, 0, "pixelmap.pdf", 600, 800);
@@ -1146,6 +1434,101 @@ public:
       }
     }
     // never reached...
+  }
+
+  //*************************************************************
+  // Generic booker function
+  //*************************************************************
+  std::map<unsigned int, TH1D *> bookResidualsHistogram(
+      TFileDirectory dir, unsigned int theNLayers, TString resType, TString varType, TString detType) {
+    TH1F::SetDefaultSumw2(kTRUE);
+
+    std::pair<Double_t, Double_t> limits;
+
+    if (varType.Contains("Res")) {
+      limits = std::make_pair(-1000., 1000);
+    } else {
+      limits = std::make_pair(-3., 3.);
+    }
+
+    std::map<unsigned int, TH1D *> h;
+
+    for (unsigned int i = 1; i <= theNLayers; i++) {
+      const char *name_;
+      const char *title_;
+      const char *xAxisTitle_;
+
+      if (varType.Contains("Res")) {
+        xAxisTitle_ = (TString("res_{" + resType + "'} [#mum]")).Data();
+      } else {
+        xAxisTitle_ = (TString("res_{" + resType + "'}/#sigma_{res_{" + resType + "`}}")).Data();
+      }
+
+      unsigned int side = -1;
+      unsigned int plane = i;
+
+      if (detType.Contains("FPix")) {
+        side = (i - 1) / 12 + 1;
+        plane = (i - 1) % 12 + 1;
+
+        TString theSide = "";
+        if (side == 1)
+          theSide = "Z-";
+        else
+          theSide = "Z+";
+
+        name_ = Form("h_%s%s%s_side%i_disk%i", detType.Data(), varType.Data(), resType.Data(), side, plane);
+        title_ = Form("%s (%s, disk %i) track %s-%s;%s;hits",
+                      detType.Data(),
+                      theSide.Data(),
+                      plane,
+                      resType.Data(),
+                      varType.Data(),
+                      xAxisTitle_);
+
+      } else {
+        name_ = Form("h_%s%s%s_layer%i", detType.Data(), varType.Data(), resType.Data(), i);
+        title_ =
+            Form("%s (layer %i) track %s-%s;%s;hits", detType.Data(), i, resType.Data(), varType.Data(), xAxisTitle_);
+
+        //std::cout<<"bookResidualsHistogram(): "<<i<<" layer:"<<i<<std::endl;
+      }
+
+      h[i] = dir.make<TH1D>(name_, title_, 100, limits.first, limits.second);
+    }
+
+    return h;
+  }
+
+  //*************************************************************
+  // Generic filler function
+  //*************************************************************
+  void fillByIndex(std::map<unsigned int, TH1D *> &h, unsigned int index, double x) {
+    if (h.count(index) != 0) {
+      //if(TString(h[index]->GetName()).Contains("BPix"))
+      //std::cout<<"fillByIndex() index: "<< index << " filling histogram: "<< h[index]->GetName() << std::endl;
+
+      double min = h[index]->GetXaxis()->GetXmin();
+      double max = h[index]->GetXaxis()->GetXmax();
+      if (x < min)
+        h[index]->Fill(min);
+      else if (x >= max)
+        h[index]->Fill(0.99999 * max);
+      else
+        h[index]->Fill(x);
+    } else {
+      std::istringstream ss(h[1]->GetName());
+      std::string token;
+
+      std::vector<std::string> infoVector;
+      while (std::getline(ss, token, '_')) {
+        infoVector.push_back(token);
+      }
+
+      throw edm::Exception(edm::errors::LogicError)
+          << " GeneralTrackAnalyzer::fillByIndex(): the packed toplogy index " << index << " is invalid. \n "
+          << "Maximum allowed packed topology index for histogram " << infoVector[1] << " is " << h.size() << std::endl;
+    }
   }
 };
 
