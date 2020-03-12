@@ -723,7 +723,7 @@ void FitPVResiduals(TString namesandlabels, bool stdres, bool do2DMaps, TString 
 
     // residuals vs pT
 
-    for (Int_t l = 0; l < thePTBINS[i] -1; l++) {
+    for (Int_t l = 0; l < thePTBINS[i] - 1; l++) {
       dxyPtResiduals[i][l] = (TH1F *)fins[i]->Get(Form("PVValidation/Abs_Transv_pT_Residuals/histo_dxy_pT_plot%i", l));
       dzPtResiduals[i][l] = (TH1F *)fins[i]->Get(Form("PVValidation/Abs_Long_pT_Residuals/histo_dz_pT_plot%i", l));
 
@@ -2930,7 +2930,7 @@ std::pair<params::measurement, params::measurement> fitResidualsCB(TH1 *hist)
 void FillTrendPlot(TH1F *trendPlot, TH1F *residualsPlot[100], params::estimator fitPar_, TString var_, Int_t myBins_)
 //*************************************************************
 {
-  std::cout<<"trendPlot name: "<<trendPlot->GetName()<<std::endl;
+  std::cout << "trendPlot name: " << trendPlot->GetName() << std::endl;
 
   // float phiInterval = (360.)/myBins_;
   float phiInterval = (2 * TMath::Pi() / myBins_);

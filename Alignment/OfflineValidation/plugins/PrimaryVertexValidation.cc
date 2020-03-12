@@ -1390,7 +1390,7 @@ void PrimaryVertexValidation::beginJob() {
       ProbeFeatures.make<TH2F>("h2_probeEtaPhi",
                                "probe track #phi vs #eta;#eta of probe track;track #phi of probe track (rad); tracks",
                                54,
-			       -etaOfProbe_,
+                               -etaOfProbe_,
                                etaOfProbe_,
                                100,
                                -M_PI,
@@ -1398,8 +1398,8 @@ void PrimaryVertexValidation::beginJob() {
   h2_probeEtaPt_ = ProbeFeatures.make<TH2F>("h2_probeEtaPt",
                                             "probe track p_{T} vs #eta;#eta of probe track;track p_{T} (GeV); tracks",
                                             54,
-					    -etaOfProbe_,
-					    etaOfProbe_,
+                                            -etaOfProbe_,
+                                            etaOfProbe_,
                                             100,
                                             0.,
                                             50.);
@@ -1483,10 +1483,10 @@ void PrimaryVertexValidation::beginJob() {
                                                        "Position in Layer 1 of first hit;module number;ladder number",
                                                        nModZ_,
                                                        0.5,
-						       nModZ_+0.5,
+                                                       nModZ_ + 0.5,
                                                        nLadders_,
                                                        0.5,
-                                                       nLadders_+0.5);
+                                                       nLadders_ + 0.5);
   h_probeHasBPixL1Overlap_ =
       ProbeFeatures.make<TH1I>("h_probeHasBPixL1Overlap", "n. hits in L1;n. L1-BPix hits;tracks", 5, -0.5, 4.5);
   h_probeL1ClusterProb_ = ProbeFeatures.make<TH1F>(
