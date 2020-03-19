@@ -360,6 +360,7 @@ void DiDispStaMuonMonitor::fillDescriptions(edm::ConfigurationDescriptions& desc
   edm::ParameterSetDescription genericTriggerEventPSet;
   genericTriggerEventPSet.add<bool>("andOr");
   genericTriggerEventPSet.add<edm::InputTag>("dcsInputTag", edm::InputTag("scalersRawToDigi"));
+  genericTriggerEventPSet.add<edm::InputTag>("dcsRecordInputTag", edm::InputTag("onlineMetaDataDigis"));
   genericTriggerEventPSet.add<std::vector<int>>("dcsPartitions", {});
   genericTriggerEventPSet.add<bool>("andOrDcs", false);
   genericTriggerEventPSet.add<bool>("errorReplyDcs", true);
