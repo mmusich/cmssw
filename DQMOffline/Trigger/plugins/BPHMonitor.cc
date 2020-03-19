@@ -1247,6 +1247,7 @@ void BPHMonitor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) 
   edm::ParameterSetDescription genericTriggerEventPSet;
   genericTriggerEventPSet.add<bool>("andOr");
   genericTriggerEventPSet.add<edm::InputTag>("dcsInputTag", edm::InputTag("scalersRawToDigi"));
+  genericTriggerEventPSet.add<edm::InputTag>("dcsRecordInputTag", edm::InputTag("onlineMetaDataDigis"));
   genericTriggerEventPSet.add<edm::InputTag>("hltInputTag", edm::InputTag("TriggerResults::HLT"));
   genericTriggerEventPSet.add<std::vector<int>>("dcsPartitions", {});
   genericTriggerEventPSet.add<bool>("andOrDcs", false);
