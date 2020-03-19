@@ -293,6 +293,7 @@ void TrackToTrackComparisonHists::fillDescriptions(edm::ConfigurationDescription
   edm::ParameterSetDescription genericTriggerEventPSet;
   genericTriggerEventPSet.add<bool>("andOr", false);
   genericTriggerEventPSet.add<edm::InputTag>("dcsInputTag", edm::InputTag("scalersRawToDigi"));
+  genericTriggerEventPSet.add<edm::InputTag>("dcsRecordInputTag", edm::InputTag("onlineMetaDataDigis"));
   genericTriggerEventPSet.add<std::vector<int> >("dcsPartitions", {24, 25, 26, 27, 28, 29});  // 24-27: strip, 28-29
   genericTriggerEventPSet.add<bool>("andOrDcs", false);
   genericTriggerEventPSet.add<bool>("errorReplyDcs", true);
