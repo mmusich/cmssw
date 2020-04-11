@@ -55,6 +55,30 @@ public:
     // subdetId: BPix=1, FPix=2
     return (pixid/1000)%10;
   }
+
+  static const std::string getNameFromPixID(const unsigned int pixid){
+    std::string input = std::to_string(pixid);
+
+    int subdetid = getPixelSubDetector(pixid);
+    std::string out = subdetid==1 ? "BPix" : "FPix";
+
+    switch(subdetid){
+    case 1: // BPix
+      {
+	out=out+" Layer "+input[1];
+	break;
+      }
+    case 2: // FPix
+      {
+	out=out+" Side "+input[1]+" Disk "+input[2]+" Ring "+input[3];
+	break;
+      }
+    default:
+      edm::LogError("SiPixelCalDB") << "Should never ever be here!" << std::endl;
+      break;
+    }
+    return out;
+  }
   
   static const PixelId detIdToPixelId(const unsigned int detid, const TrackerTopology* trackTopo, const bool phase1){
     DetId detId = DetId(detid);

@@ -40,7 +40,7 @@ void SiPixelVCalReader::analyze(const edm::Event& e, const edm::EventSetup& iSet
     slope  = it->second.slope;
     offset = it->second.offset;
     unsigned int subdet = SiPixelVCalDB::getPixelSubDetector(pixid);
-    std::cout  << "pixid " << pixid << " \t VCal slope " << slope << ", offset " << offset << std::endl;
+    std::cout  << "pixid " << pixid << " ( " <<std::setw(25) << std::left << SiPixelVCalDB::getNameFromPixID(pixid) << " )" <<" \t VCal slope " << slope << ", offset " << offset << std::endl;
     edm::LogInfo("SiPixelVCalReader") << "pixid " << pixid << " \t VCal slope " << slope << ", offset " << offset;
     if (subdet==static_cast<int>(PixelSubdetector::PixelBarrel)) {
       slopeBPix_->Fill(slope);
