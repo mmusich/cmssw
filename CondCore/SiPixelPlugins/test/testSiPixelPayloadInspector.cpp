@@ -4,6 +4,7 @@
 #include "CondCore/SiPixelPlugins/plugins/SiPixelLorentzAngle_PayloadInspector.cc"
 #include "CondCore/SiPixelPlugins/plugins/SiPixelQuality_PayloadInspector.cc"
 #include "CondCore/SiPixelPlugins/plugins/SiPixelGainCalibrationOffline_PayloadInspector.cc"
+#include "CondCore/SiPixelPlugins/plugins/SiPixelTemplateDBObject_PayloadInspector.cc"
 #include "FWCore/PluginManager/interface/PluginManager.h"
 #include "FWCore/PluginManager/interface/standard.h"
 #include "FWCore/PluginManager/interface/SharedLibrary.h"
@@ -117,4 +118,20 @@ int main(int argc, char** argv) {
   SiPixelGainCalibrationOfflineCorrelations histo16;
   histo16.process(connectionString, tag, runTimeType, end, end);
   std::cout << histo16.data() << std::endl;
+
+  // SiPixelTemplates
+
+  tag = "SiPixelTemplateDBObject38Tv3_express";
+  start = boost::lexical_cast<unsigned long long>(326083);
+  end = boost::lexical_cast<unsigned long long>(326083);
+
+  std::cout << "## Exercising SiPixelTemplates plots " << std::endl;
+
+  SiPixelTemplateIDsBPixMap histo17;
+  histo17.process(connectionString, tag, runTimeType, end, end);
+  std::cout << histo17.data() << std::endl;
+
+  SiPixelTemplateLAFPixMap histo18;
+  histo18.process(connectionString, tag, runTimeType, end, end);
+  std::cout << histo18.data() << std::endl;
 }
