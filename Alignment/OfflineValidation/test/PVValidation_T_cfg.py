@@ -51,10 +51,6 @@ process.source = cms.Source("PoolSource",
                             )
 
 #process.load("Alignment.OfflineValidation.DATASETTEMPLATE");
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.destinations = ['cout', 'cerr']
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-
 runboundary = RUNBOUNDARYTEMPLATE
 process.source.firstRun = cms.untracked.uint32(int(runboundary))
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTSTEMPLATE) )
