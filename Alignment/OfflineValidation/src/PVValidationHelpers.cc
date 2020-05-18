@@ -230,8 +230,9 @@ Measurement1D PVValHelper::getMAD(TH1F *histo)
 std::pair<Measurement1D, Measurement1D> PVValHelper::fitResiduals(TH1 *hist)
 //*************************************************************
 {
-  //float fitResult(9999);
-  //if (hist->GetEntries() < 20) return ;
+  if (hist->GetEntries() < 20){
+    return std::make_pair(Measurement1D(0.,0.),Measurement1D(0.,0.));
+  }
   
   float mean  = hist->GetMean();
   float sigma = hist->GetRMS();

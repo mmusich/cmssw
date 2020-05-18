@@ -102,7 +102,7 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
   edm::InputTag VertexCollectionTag_ = iConfig.getParameter<edm::InputTag>("VertexCollectionTag");
   theVertexCollectionToken = consumes<reco::VertexCollection>(VertexCollectionTag_);
 
-  edm::InputTag BeamspotTag_ = edm::InputTag("offlineBeamSpot");
+  edm::InputTag BeamspotTag_ = iConfig.getUntrackedParameter<edm::InputTag>("BeamSpotTag",edm::InputTag("offlineBeamSpot"));
   theBeamspotToken = consumes<reco::BeamSpot>(BeamspotTag_);
 
   // select and configure the track filter 
