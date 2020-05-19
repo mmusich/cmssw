@@ -2,12 +2,14 @@ import six
 from Configuration.StandardSequences.CondDBESSource_cff import GlobalTag as essource
 connectionString = essource.connect.value()
 
-SiPixelLARecord           =   "SiPixelLorentzAngleRcd"                  
-SiPixelSimLARecord        =   "SiPixelLorentzAngleSimRcd"   
-SiPixelGenErrorRecord     =   "SiPixelGenErrorDBObjectRcd"       
-SiPixelTemplatesRecord    =   "SiPixelTemplateDBObjectRcd"       
-SiPixel2DTemplatesRecord  =   "SiPixel2DTemplateDBObjectRcd"     
+SiPixelLARecord           =   "SiPixelLorentzAngleRcd"
+SiPixelSimLARecord        =   "SiPixelLorentzAngleSimRcd"
+SiPixelGenErrorRecord     =   "SiPixelGenErrorDBObjectRcd"
+SiPixelTemplatesRecord    =   "SiPixelTemplateDBObjectRcd"
+SiPixel2DTemplatesRecord  =   "SiPixel2DTemplateDBObjectRcd"
 TrackerDTCCablingRecord   =   "TrackerDetToDTCELinkCablingMapRcd"
+TrackerLARecord           =   "SiPhase2OuterTrackerLorentzAngleRcd"
+TrackerSimLARecord        =   "SiPhase2OuterTrackerLorentzAngleSimRcd"
 
 #combines in a single dict of dict the tags defined below
 allTags={}
@@ -60,6 +62,26 @@ allTags["Template"] = {
 }
 
 ##
+## Outer Tracker records
+##
+
+tempConnectionString="sqlite_file:/tmp/musich/CMSSW_11_1_X_2020-05-17-2300/src/CondTools/SiPhase2Tracker/test/OTLorentzAngles.db"
+
+allTags["OTLA"] = {
+    'T6'  : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T6_v0'  ,TrackerLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+    'T14' : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T15_v0' ,TrackerLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+    'T15' : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T15_v0' ,TrackerLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+    'T19' : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T15_v0' ,TrackerLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+}
+
+allTags["SimOTLA"] = {
+    'T6'  : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T6_v0'  ,TrackerSimLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+    'T14' : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T15_v0' ,TrackerSimLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+    'T15' : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T15_v0' ,TrackerSimLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+    'T19' : ( ','.join( [ 'SiPhase2OuterTrackerLorentzAngle_T15_v0' ,TrackerSimLARecord,tempConnectionString, "", "2020-05-19 14:00:00.000"] ), ),  #uH = 0.07/T
+}
+
+##
 ## All of the following conditions are not yet in active use, but will be activated in GT along the way
 ##
 
@@ -76,7 +98,7 @@ allTags["Template2Dden"] = {
 }
 
 # list of active tags to be replaced
-activeKeys = ["DTCCabling","LA","LAWidth","SimLA","LAfromAlignment","GenError","Template"]
+activeKeys = ["DTCCabling","LA","LAWidth","SimLA","LAfromAlignment","GenError","Template","SimOTLA","OTLA"]
 
 # list of geometries supported
 activeDets = ["T6","T14","T15","T19"]
