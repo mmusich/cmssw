@@ -8,6 +8,7 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
 #include "CalibTracker/Records/interface/SiStripDependentRecords.h"
+#include "CondFormats/DataRecord/interface/SiPhase2OuterTrackerCondDataRecords.h"
 #include "boost/mpl/vector.hpp"
 
 class TkStripCPERecord
@@ -20,6 +21,8 @@ class TkStripCPERecord
                                                                                SiStripLatencyRcd,
                                                                                SiStripNoisesRcd,
                                                                                SiStripApvGainRcd,
-                                                                               SiStripBadChannelRcd> > {};
+                                                                               SiStripBadChannelRcd,
+                                                                               SiPhase2OuterTrackerLorentzAngleRcd> > {
+};
 
 #endif
