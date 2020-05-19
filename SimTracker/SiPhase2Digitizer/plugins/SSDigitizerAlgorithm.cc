@@ -15,12 +15,11 @@
 
 using namespace edm;
 
-void SSDigitizerAlgorithm::init(const edm::EventSetup& es) { 
-
+void SSDigitizerAlgorithm::init(const edm::EventSetup& es) {
   if (use_LorentzAngle_DB_)  // Get Lorentz angle from DB record
     es.get<SiPhase2OuterTrackerLorentzAngleSimRcd>().get(SiPhase2OTLorentzAngle_);
-  
-  es.get<TrackerDigiGeometryRecord>().get(geom_); 
+
+  es.get<TrackerDigiGeometryRecord>().get(geom_);
 }
 
 SSDigitizerAlgorithm::SSDigitizerAlgorithm(const edm::ParameterSet& conf)
