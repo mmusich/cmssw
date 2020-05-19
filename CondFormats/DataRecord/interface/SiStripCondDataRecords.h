@@ -62,11 +62,4 @@ class SiStripApvSimulationParametersRcd
 /*Records for upgrade */
 class Phase2TrackerCablingRcd : public edm::eventsetup::EventSetupRecordImplementation<Phase2TrackerCablingRcd> {};
 
-/*Record associated to SiPhase2OuterTrackerLorentzAngle Object: the SimRcd is used in simulation only*/
-class SiPhase2OuterTrackerLorentzAngleRcd
-    : public edm::eventsetup::DependentRecordImplementation<SiPhase2OuterTrackerLorentzAngleRcd,
-                                                            boost::mpl::vector<TrackerTopologyRcd> > {};
-class SiPhase2OuterTrackerLorentzAngleSimRcd
-    : public edm::eventsetup::EventSetupRecordImplementation<SiPhase2OuterTrackerLorentzAngleSimRcd> {};
-
 #endif
