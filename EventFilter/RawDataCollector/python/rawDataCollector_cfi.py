@@ -34,3 +34,7 @@ run2_GEM_2017.toModify( rawDataCollector.RawCollectionList, func = lambda list: 
 
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
 run3_GEM.toModify( rawDataCollector.RawCollectionList, func = lambda list: list.append(cms.InputTag("gemPacker")) )
+
+# Phase-2 Tracker
+from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
+phase2_tracker.toModify( rawDataCollector.RawCollectionList, func = lambda list: list.remove(cms.InputTag("SiStripDigiToRaw")) )

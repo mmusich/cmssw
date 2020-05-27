@@ -180,12 +180,15 @@ std::unique_ptr<MeasurementTracker> MeasurementTrackerESProducer::produce(const 
   }
 
   const ClusterParameterEstimator<Phase2TrackerCluster1D> *ptr_phase2TrackerCPE = nullptr;
+  const StripClusterParameterEstimator *ptr_SiStripTrackerCPE = nullptr;
   if (usePhase2_) {
     ptr_phase2TrackerCPE = &iRecord.get(phase2TrackerCPEToken_);
+  } else {
+    ptr_SiStripTrackerCPE = &iRecord.get(stripCPEToken_);
   }
   return std::make_unique<MeasurementTrackerImpl>(badStripCuts_,
                                                   &iRecord.get(pixelCPEToken_),
-                                                  &iRecord.get(stripCPEToken_),
+                                                  ptr_SiStripTrackerCPE,
                                                   &iRecord.get(hitMatcherToken_),
                                                   &iRecord.get(trackerTopologyToken_),
                                                   &iRecord.get(trackerGeomToken_),
