@@ -7,11 +7,11 @@ options = VarParsing.VarParsing("analysis")
 MODE_ANALYZE, MODE_REMAP = 0, 1
 RECHITS, DIGIS, CLUSTERS = 1, 2, 3
 
-dataSourceDic = { RECHITS : "generalTracks",
+dataSourceDic = { RECHITS : "ALCARECOTkAlMinBias", #"generalTracks",
                   DIGIS   : "siStripDigis",
                   CLUSTERS: "siStripClusters" }
 
-defaultAnylyzeMode = RECHITS
+defaultAnylyzeMode = RECHITS #DIGIS # RECHITS
 
 ###################### OPTIONS HANDLER
 
@@ -28,15 +28,14 @@ options.register ("analyzeMode",
                   "Analyze Mode") 
 
 options.register ("eventLimit",                                  
-                  100,               
+                  -1,               
                   VarParsing.VarParsing.multiplicity.singleton, 
                   VarParsing.VarParsing.varType.int,         
                   "Limits Events Processed in Analyze Mode") 
 
 options.register ("inputRootFile",                                  
-                #   "DQM_V0001_SiStrip_R000305516.root", 
-                  "file:RECO_file.root",   
-                    # "/store/express/Run2017H/ExpressPhysics/FEVT/Express-v1/000/306/936/00000/ECE8DA52-3ACF-E711-84A0-02163E0141ED.root",                       
+                  "/store/express/Run2018D/StreamExpressAlignment/ALCARECO/TkAlMinBias-Express-v1/000/324/980/00000/00E8FB8F-D3AB-C442-BCC2-FEEAE63EA711.root",
+#/store/express/Run2018E/ExpressPhysics/FEVT/Express-v1/000/325/465/00000/171E431B-4973-B743-8F72-8645AE49D27C.root",
                   VarParsing.VarParsing.multiplicity.singleton, 
                   VarParsing.VarParsing.varType.string,         
                   "Source Data File - either for analyze or remap")   
@@ -55,7 +54,7 @@ options.register (
                   "Collection Source")    #??
 
 options.register ("globalTag",                                  # option name
-                  "92X_upgrade2017_realistic_v11",                # default value
+                  "auto:run2_data",                             # default value
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.string,         # string, bool, int, or float
                   "Global Tag")                                 # ? help ?
@@ -96,8 +95,15 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, "")
 
-process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
-process.TkDetMap = cms.Service("TkDetMap")
+#process.load("DQM.SiStripCommon.TkHistoMap_cff")
+#process.TkDetMap = cms.Service("TkDetMap")
+process.load("CalibTracker.SiStripCommon.TkDetMapESProducer_cfi")
+#process.SiStripDetInfoFileReader = cms.Service("SiStripDetInfoFileReader")
+#process.TkDetMap = cms.Service("TkDetMap")
+
+#### Add these lines to produce a tracker map
+process.load("DQMServices.Core.DQMStore_cfg")
+#process.TkDetMap = cms.Service("TkDetMap")
 
 # Output root file name:
 process.TFileService = cms.Service("TFileService", fileName = cms.string('outputStrip.root') )
