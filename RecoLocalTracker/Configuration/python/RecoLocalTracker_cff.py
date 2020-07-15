@@ -9,12 +9,20 @@ from RecoLocalTracker.SiStripRecHitConverter.SiStripRecHitMatcher_cfi import *
 from RecoLocalTracker.SiStripRecHitConverter.StripCPEfromTrackAngle_cfi import *
 from RecoLocalTracker.SiStripZeroSuppression.SiStripZeroSuppression_cfi import *
 from RecoLocalTracker.SiStripClusterizer.SiStripClusterizer_cfi import *
+from RecoLocalTracker.SiStripClusterizer.SiStripClusters2ApproxClusters_cfi import *
+from RecoLocalTracker.SiStripClusterizer.SiStripApproxClusters2Clusters_cfi import *
 from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterizerPreSplitting_cfi import *
 from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import *
 from RecoLocalTracker.SubCollectionProducers.clustersummaryproducer_cfi import *
 
 pixeltrackerlocalrecoTask = cms.Task(siPixelClustersPreSplitting,siPixelRecHitsPreSplitting)
 striptrackerlocalrecoTask = cms.Task(siStripZeroSuppression,siStripClusters,siStripMatchedRecHits)
+_striptrackerApproxlocalrecoTask = cms.Task(siStripZeroSuppression,siStripClusters,SiStripClusters2ApproxClusters,SiStripApproxClusters2Clusters,siStripMatchedRecHits)
+
+## add the approximate clusters loop
+from Configuration.ProcessModifiers.approxSiStripClusters_cff import approxSiStripClusters
+approxSiStripClusters.toReplaceWith(striptrackerlocalrecoTask,_striptrackerApproxlocalrecoTask)
+
 trackerlocalrecoTask = cms.Task(pixeltrackerlocalrecoTask,striptrackerlocalrecoTask,clusterSummaryProducer)
 
 pixeltrackerlocalreco = cms.Sequence(pixeltrackerlocalrecoTask)
