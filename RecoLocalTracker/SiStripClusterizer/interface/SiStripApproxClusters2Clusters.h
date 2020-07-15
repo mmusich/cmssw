@@ -14,19 +14,15 @@
 #include <vector>
 #include <memory>
 
-class SiStripApproxClusters2Clusters: public edm::stream::EDProducer<>  {
-
+class SiStripApproxClusters2Clusters : public edm::stream::EDProducer<> {
 public:
-
   explicit SiStripApproxClusters2Clusters(const edm::ParameterSet& conf);
   void produce(edm::Event&, const edm::EventSetup&) override;
 
 private:
-
   edm::InputTag inputClusters;
-  edm::EDGetTokenT< edmNew::DetSetVector<SiStripApproximateCluster> > clusterToken;  
+  edm::EDGetTokenT<edmNew::DetSetVector<SiStripApproximateCluster> > clusterToken;
 };
 
 DEFINE_FWK_MODULE(SiStripApproxClusters2Clusters);
 #endif
-

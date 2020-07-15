@@ -9,25 +9,33 @@
 
 namespace DataFormats_SiStripApproximateCluster {
   struct dictionary2 {
-
-
     edmNew::DetSetVector<SiStripApproximateCluster> dsvn;
 
-    edm::Wrapper< SiStripApproximateCluster > dummy0;
-    edm::Wrapper< std::vector<SiStripApproximateCluster>  > dummy1;
+    edm::Wrapper<SiStripApproximateCluster> dummy0;
+    edm::Wrapper<std::vector<SiStripApproximateCluster> > dummy1;
 
-    edm::Wrapper< edmNew::DetSetVector<SiStripApproximateCluster> > dummy4_bis;
-    
+    edm::Wrapper<edmNew::DetSetVector<SiStripApproximateCluster> > dummy4_bis;
+
     edm::Wrapper<edm::ContainerMask<edmNew::DetSetVector<SiStripApproximateCluster> > > dummy_w_cm1;
 
-    std::vector<edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,SiStripApproximateCluster,edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector> > dummy_v;
-    edmNew::DetSetVector<edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,SiStripApproximateCluster,edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector> > dumm_dtvr;
-    edm::Wrapper<edmNew::DetSetVector<edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,SiStripApproximateCluster,edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector> > > dumm_dtvr_w;
+    std::vector<edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,
+                         SiStripApproximateCluster,
+                         edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector> >
+        dummy_v;
+    edmNew::DetSetVector<edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,
+                                  SiStripApproximateCluster,
+                                  edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector> >
+        dumm_dtvr;
+    edm::Wrapper<edmNew::DetSetVector<edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,
+                                               SiStripApproximateCluster,
+                                               edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector> > >
+        dumm_dtvr_w;
 
-
-    edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>, SiStripApproximateCluster, edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector > refNew;
+    edm::Ref<edmNew::DetSetVector<SiStripApproximateCluster>,
+             SiStripApproximateCluster,
+             edmNew::DetSetVector<SiStripApproximateCluster>::FindForDetSetVector>
+        refNew;
   };
-}
+}  // namespace DataFormats_SiStripApproximateCluster
 
-
-#endif // SISTRIPAPPROXIMATECLUSTER_CLASSES_H
+#endif  // SISTRIPAPPROXIMATECLUSTER_CLASSES_H
