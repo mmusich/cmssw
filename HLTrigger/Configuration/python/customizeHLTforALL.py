@@ -5,6 +5,13 @@ def customizeHLTforAll(process, menuType = "GRun", _customInfo = None):
     if (_customInfo is not None):
 
         _maxEvents = _customInfo['maxEvents']
+
+        ##
+        ## If the GT gets to be customized, there is no reason why
+        ## it should carry over the customization from the default
+        ##
+        process.GlobalTag.toGet = cms.VPSet()
+
         _globalTag = _customInfo['globalTag']
         _inputFile = _customInfo['inputFile']
         _realData  = _customInfo['realData']

@@ -25,6 +25,17 @@ l1Menus= {
     'PRef'         : ( ','.join( [ 'L1Menu_pp502Collisions2017_v4_m6_xml'                    ,l1tMenuRecord,connectionString,l1tMenuLabel, "2017-11-03 18:00:00.000"] ), ),
 }
 
+###
+### N.B.: this hack is temporarily needed in order to cope with the change of pixel gain calibration schema in PR https://github.com/cms-sw/cmssw/pull/29951
+### also for the Run 2 data IOVs, which are needed for timing and rate studies of the Run 3 HLT menu 
+### The pixel gain data payload cannot be changed in the base GT in order to not spoil offline reconstruction in data RelVals
+###
+
+pixelGains={
+    'HLT'     : ( ','.join ( [ 'SiPixelGainCalibrationHLT_2009runs_ScaledForVCal_hlt',"SiPixelGainCalibrationForHLTRcd", connectionString,"", "2020-08-21 15:30:00.000"] ), ),
+    'Offline' : ( ','.join ( [ 'SiPixelGainCalibration_2009runs_ScaledForVCal_hlt'   ,"SiPixelGainCalibrationOfflineRcd",connectionString,"", "2020-08-21 15:30:00.000"] ), ),
+}
+
 hltGTs = {
 
 #   'symbolic GT'            : ('base GT',[('payload1',payload2')])
@@ -44,7 +55,7 @@ hltGTs = {
     'run2_hlt_Fake1'         : ('run2_hlt_relval'         ,l1Menus['Fake1']),
     'run2_hlt_Fake2'         : ('run2_hlt_relval'         ,l1Menus['Fake2']),
     'run3_hlt_FULL'          : ('run2_hlt_relval'         ,l1Menus['FULL']),
-    'run3_hlt_GRun'          : ('run2_hlt_relval'         ,l1Menus['GRun']),
+    'run3_hlt_GRun'          : ('run2_hlt_relval'         ,l1Menus['GRun']+pixelGains['HLT']+pixelGains['Offline']),
     'run3_hlt_HIon'          : ('run2_hlt_relval_hi'      ,l1Menus['HIon']),
     'run3_hlt_PIon'          : ('run2_hlt_relval'         ,l1Menus['PIon']),
     'run3_hlt_PRef'          : ('run2_hlt_relval'         ,l1Menus['PRef']),
