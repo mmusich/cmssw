@@ -134,18 +134,23 @@ SiPixelGainCalibScaler::SiPixelGainCalibScaler(const edm::ParameterSet& iConfig)
 
   for (auto& thePSet : m_parameters) {
     const unsigned int phase(thePSet.getParameter<unsigned int>("phase"));
-    if (phase == 0) {
-      phase0VCal.init(thePSet.getParameter<double>("conversionFactor"),
-                      thePSet.getParameter<double>("conversionFactorL1"),
-                      thePSet.getParameter<double>("offset"),
-                      thePSet.getParameter<double>("offsetL1"));
-    } else if (phase == 1) {
-      phase1VCal.init(thePSet.getParameter<double>("conversionFactor"),
-                      thePSet.getParameter<double>("conversionFactorL1"),
-                      thePSet.getParameter<double>("offset"),
-                      thePSet.getParameter<double>("offsetL1"));
-    } else {
-      throw cms::Exception("LogicError") << "Unrecongnized phase: " << phase << ". Exiting!";
+    switch (phase) {
+      case 0: {
+        phase0VCal.init(thePSet.getParameter<double>("conversionFactor"),
+                        thePSet.getParameter<double>("conversionFactorL1"),
+                        thePSet.getParameter<double>("offset"),
+                        thePSet.getParameter<double>("offsetL1"));
+        break;
+      }
+      case 1: {
+        phase1VCal.init(thePSet.getParameter<double>("conversionFactor"),
+                        thePSet.getParameter<double>("conversionFactorL1"),
+                        thePSet.getParameter<double>("offset"),
+                        thePSet.getParameter<double>("offsetL1"));
+        break;
+      }
+      default:
+        throw cms::Exception("LogicError") << "Unrecongnized phase: " << phase << ". Exiting!";
     }
   }
 }
