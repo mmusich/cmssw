@@ -28,10 +28,10 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.categories.append("SiPixelGainCalibScaler")  
 process.MessageLogger.destinations = cms.untracked.vstring("cout")
 process.MessageLogger.cout = cms.untracked.PSet(
-    threshold = cms.untracked.string("WARNING"),
+    threshold = cms.untracked.string("INFO"),
     default   = cms.untracked.PSet(limit = cms.untracked.int32(0)),                       
     FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
-                                   reportEvery = cms.untracked.int32(1000)
+                                   reportEvery = cms.untracked.int32(100000)
                                    ),                                                      
     SiPixelGainCalibScaler = cms.untracked.PSet( limit = cms.untracked.int32(-1))
     )
@@ -41,6 +41,9 @@ process.load("Configuration.Geometry.GeometryRecoDB_cff") # Ideal geometry and i
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag,options.globalTag, '')
+
+### Dirty trick to avoid geometry mismatches
+process.trackerGeometryDB.applyAlignment = False
 
 ##
 ## Selects the output record
@@ -77,12 +80,23 @@ process.source = cms.Source("EmptySource",
 process.demo = cms.EDAnalyzer('SiPixelGainCalibScaler',
                               isForHLT = cms.bool(options.forHLT),
                               record = cms.string(MyRecord),
-                              conversionFactor = cms.double(47.),
-                              conversionFactorL1 = cms.double(50.),
-                              offset = cms.double(-60.),
-                              offsetL1 = cms.double(-670.)
+                              parameters = cms.VPSet(
+                                  cms.PSet(
+                                      conversionFactor = cms.double(65.),
+                                      conversionFactorL1 = cms.double(65.),
+                                      offset = cms.double(-414.),
+                                      offsetL1 = cms.double(-414.),
+                                      phase = cms.uint32(0)
+                                  ),
+                                  cms.PSet(
+                                      conversionFactor = cms.double(47.),
+                                      conversionFactorL1 = cms.double(50.),
+                                      offset = cms.double(-60.),
+                                      offsetL1 = cms.double(-670.),
+                                      phase = cms.uint32(1)
+                                  )
                               )
-
+                          )
 ##
 ## Database output service
 ##
@@ -91,7 +105,7 @@ process.load("CondCore.CondDB.CondDB_cfi")
 ##
 ## Output database (in this case local sqlite file)
 ##
-process.CondDB.connect = 'sqlite_file:modifiedGains'+process.GlobalTag.globaltag._value+("_HLTGain" if options.forHLT else "_offlineGain")+".db"
+process.CondDB.connect = 'sqlite_file:TEST_modifiedGains_'+process.GlobalTag.globaltag._value+("_HLTGain" if options.forHLT else "_offlineGain")+".db"
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
                                           process.CondDB,
                                           timetype = cms.untracked.string('runnumber'),

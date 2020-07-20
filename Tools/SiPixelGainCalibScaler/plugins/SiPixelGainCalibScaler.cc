@@ -56,6 +56,41 @@
 // from  edm::one::EDAnalyzer<>
 // This will improve performance in multithreaded jobs.
 
+namespace gainScale {
+  struct VCalInfo {
+  private:
+    double m_conversionFactor;
+    double m_conversionFactorL1;
+    double m_offset;
+    double m_offsetL1;
+
+  public:
+    // default constructor
+    VCalInfo() : m_conversionFactor(0.), m_conversionFactorL1(0.), m_offset(0.), m_offsetL1(0.) {}
+
+    // initialize
+    void init(double conversionFactor, double conversionFactorL1, double offset, double offsetL1) {
+      m_conversionFactor = conversionFactor;
+      m_conversionFactorL1 = conversionFactorL1;
+      m_offset = offset;
+      m_offsetL1 = offsetL1;
+    }
+
+    void printAllInfo() {
+      edm::LogVerbatim("SiPixelGainCalibScaler") << " conversion factor      : " << m_conversionFactor << "\n"
+                                                 << " conversion factor (L1) : " << m_conversionFactorL1 << "\n"
+                                                 << " offset                 : " << m_offset << "\n"
+                                                 << " offset            (L1) : " << m_offsetL1 << "\n";
+    }
+
+    double getConversionFactor() { return m_conversionFactor; }
+    double getConversionFactorL1() { return m_conversionFactorL1; }
+    double getOffset() { return m_offset; }
+    double getOffsetL1() { return m_offsetL1; }
+    virtual ~VCalInfo() {}
+  };
+}  // namespace gainScale
+
 class SiPixelGainCalibScaler : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
   explicit SiPixelGainCalibScaler(const edm::ParameterSet&);
@@ -71,13 +106,13 @@ private:
   void computeAndStorePalyoads(const edm::EventSetup& iSetup, const tokenType& token);
 
   // ----------member data ---------------------------
-  std::string recordName_;
-  bool isForHLT_;
-  double conversionFactor_;
-  double conversionFactorL1_;
-  double offset_;
-  double offsetL1_;
-  bool verbose_;
+  const std::string recordName_;
+  const bool isForHLT_;
+  const bool verbose_;
+  const std::vector<edm::ParameterSet> m_parameters;
+
+  gainScale::VCalInfo phase0VCal;
+  gainScale::VCalInfo phase1VCal;
 
   edm::ESGetToken<SiPixelGainCalibrationForHLT, SiPixelGainCalibrationForHLTRcd> gainHLTCalibToken_;
   edm::ESGetToken<SiPixelGainCalibrationOffline, SiPixelGainCalibrationOfflineRcd> gainOfflineCalibToken_;
@@ -92,13 +127,27 @@ private:
 SiPixelGainCalibScaler::SiPixelGainCalibScaler(const edm::ParameterSet& iConfig)
     : recordName_(iConfig.getParameter<std::string>("record")),
       isForHLT_(iConfig.getParameter<bool>("isForHLT")),
-      conversionFactor_(iConfig.getParameter<double>("conversionFactor")),
-      conversionFactorL1_(iConfig.getParameter<double>("conversionFactorL1")),
-      offset_(iConfig.getParameter<double>("offset")),
-      offsetL1_(iConfig.getParameter<double>("offsetL1")),
-      verbose_(iConfig.getUntrackedParameter<bool>("verbose", false)) {
+      verbose_(iConfig.getUntrackedParameter<bool>("verbose", false)),
+      m_parameters(iConfig.getParameter<std::vector<edm::ParameterSet> >("parameters")) {
   gainHLTCalibToken_ = esConsumes<SiPixelGainCalibrationForHLT, SiPixelGainCalibrationForHLTRcd>();
   gainOfflineCalibToken_ = esConsumes<SiPixelGainCalibrationOffline, SiPixelGainCalibrationOfflineRcd>();
+
+  for (auto& thePSet : m_parameters) {
+    const unsigned int phase(thePSet.getParameter<unsigned int>("phase"));
+    if (phase == 0) {
+      phase0VCal.init(thePSet.getParameter<double>("conversionFactor"),
+                      thePSet.getParameter<double>("conversionFactorL1"),
+                      thePSet.getParameter<double>("offset"),
+                      thePSet.getParameter<double>("offsetL1"));
+    } else if (phase == 1) {
+      phase1VCal.init(thePSet.getParameter<double>("conversionFactor"),
+                      thePSet.getParameter<double>("conversionFactorL1"),
+                      thePSet.getParameter<double>("offset"),
+                      thePSet.getParameter<double>("offsetL1"));
+    } else {
+      throw cms::Exception("LogicError") << "Unrecongnized phase: " << phase << ". Exiting!";
+    }
+  }
 }
 
 SiPixelGainCalibScaler::~SiPixelGainCalibScaler() {}
@@ -131,13 +180,33 @@ void SiPixelGainCalibScaler::analyze(const edm::Event& iEvent, const edm::EventS
 // ------------ template method to construct the payloads  ------------
 template <class tokenType, class PayloadType>
 void SiPixelGainCalibScaler::computeAndStorePalyoads(const edm::EventSetup& iSetup, const tokenType& token) {
+  gainScale::VCalInfo myVCalInfo;
+
+  //=======================================================
+  // Retrieve geometry information
+  //=======================================================
+  edm::ESHandle<TrackerGeometry> pDD;
+  iSetup.get<TrackerDigiGeometryRecord>().get(pDD);
+  edm::LogInfo("SiPixelGainCalibScaler") << "There are: " << pDD->dets().size() << " detectors";
+
+  // switch on the phase1
+  if ((pDD->isThere(GeomDetEnumerators::P1PXB)) || (pDD->isThere(GeomDetEnumerators::P1PXEC))) {
+    myVCalInfo = phase1VCal;
+    edm::LogInfo("SiPixelGainCalibScaler") << " ==> This is a phase1 IOV";
+  } else {
+    myVCalInfo = phase0VCal;
+    edm::LogInfo("SiPixelGainCalibScaler") << " ==> This is a phase0 IOV";
+  }
+
+  myVCalInfo.printAllInfo();
+
   // if need the ESHandle to check if the SetupData was there or not
   auto payload = iSetup.getHandle(token);
   std::vector<uint32_t> detids;
   payload->getDetIds(detids);
 
   float mingain = payload->getGainLow();
-  float maxgain = (payload->getGainHigh()) * conversionFactorL1_;
+  float maxgain = (payload->getGainHigh()) * myVCalInfo.getConversionFactorL1();
   float minped = payload->getPedLow();
   float maxped = payload->getPedHigh() * 1.10;
 
@@ -212,11 +281,11 @@ void SiPixelGainCalibScaler::computeAndStorePalyoads(const edm::EventSetup& iSet
         //
 
         if (isLayer1) {
-          gain = gain * conversionFactorL1_;
-          ped = ped - offsetL1_ / gain;
+          gain = gain * myVCalInfo.getConversionFactorL1();
+          ped = ped - myVCalInfo.getOffsetL1() / gain;
         } else {
-          gain = gain * conversionFactor_;
-          ped = ped - offset_ / gain;
+          gain = gain * myVCalInfo.getConversionFactor();
+          ped = ped - myVCalInfo.getOffset() / gain;
         }
 
         if (verbose_)
@@ -276,11 +345,39 @@ void SiPixelGainCalibScaler::fillDescriptions(edm::ConfigurationDescriptions& de
   edm::ParameterSetDescription desc;
   desc.add<std::string>("record", "SiPixelGainCalibrationForHLTRcd");
   desc.add<bool>("isForHLT", true);
-  desc.add<double>("conversionFactor", 47.);
-  desc.add<double>("conversionFactorL1", 50.);
-  desc.add<double>("offset", -60.);
-  desc.add<double>("offsetL1", -670.);
-  desc.add<bool>("verbose", false);
+
+  edm::ParameterSetDescription vcalInfos;
+  vcalInfos.add<unsigned int>("phase");
+  vcalInfos.add<double>("conversionFactor");
+  vcalInfos.add<double>("conversionFactorL1");
+  vcalInfos.add<double>("offset");
+  vcalInfos.add<double>("offsetL1");
+
+  std::vector<edm::ParameterSet> tmp;
+  tmp.reserve(2);
+  {
+    edm::ParameterSet phase0VCal;
+    phase0VCal.addParameter<unsigned int>("phase", 0);
+    phase0VCal.addParameter<double>("conversionFactor", 65.);
+    phase0VCal.addParameter<double>("conversionFactorL1", 65.);
+    phase0VCal.addParameter<double>("offset", -414.);
+    phase0VCal.addParameter<double>("offsetL1", -414.);
+    tmp.push_back(phase0VCal);
+  }
+  {
+    edm::ParameterSet phase1VCal;
+    phase1VCal.addParameter<unsigned int>("phase", 1);
+    phase1VCal.addParameter<double>("conversionFactor", 47.);
+    phase1VCal.addParameter<double>("conversionFactorL1", 50.);
+    phase1VCal.addParameter<double>("offset", -60.);
+    phase1VCal.addParameter<double>("offsetL1", -670.);
+    tmp.push_back(phase1VCal);
+  }
+  desc.addVPSet("parameters", vcalInfos, tmp);
+
+  desc.addUntracked<bool>("verbose", false);
+
+  descriptions.add("siPixelGainCalibScaler", desc);
 }
 
 //define this as a plug-in
