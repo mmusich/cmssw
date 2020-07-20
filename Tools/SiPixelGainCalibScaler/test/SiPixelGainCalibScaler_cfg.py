@@ -19,6 +19,11 @@ options.register ('forHLT',
                   VarParsing.VarParsing.varType.bool,          # string, int, or float
                   "is for SiPixelGainCalibrationForHLT")
 
+options.register ('firstRun',
+                  1,VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.VarParsing.varType.int,          # string, int, or float
+                  "first run to be processed")
+
 options.parseArguments()
 
 ##
@@ -58,6 +63,7 @@ else:
 ## Printing options
 ##
 print("Using Global Tag:", process.GlobalTag.globaltag._value)
+print("first run to be processed:",options.firstRun)
 print("is for HLT? ","yes" if options.forHLT else "no!")
 print("outputing on record: ",MyRecord)
 
@@ -70,7 +76,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(400000))
 # Empty source 
 ####################################################################
 process.source = cms.Source("EmptySource",
-                            firstRun = cms.untracked.uint32(1),
+                            firstRun = cms.untracked.uint32(options.firstRun),
                             numberEventsInRun = cms.untracked.uint32(1),           # a number of events in single run 
                             )
 
