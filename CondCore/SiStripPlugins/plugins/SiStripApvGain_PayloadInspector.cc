@@ -929,7 +929,7 @@ namespace {
                                                                      "average Strip APV gain value") {}
     ~SiStripApvGainByRunMeans() override = default;
 
-    float getFromPayload(SiStripApvGain& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripApvGain& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -944,7 +944,7 @@ namespace {
         }  // loop over APVs
       }    // loop over detIds
 
-      return sumOfGains / nAPVs;
+      return std::make_pair(true, sumOfGains / nAPVs);
     }  // payload
   };
 
@@ -960,7 +960,7 @@ namespace {
                                                                      estimatorType(est) + " Strip APV gain value") {}
     ~SiStripApvGainProperties() override = default;
 
-    float getFromPayload(SiStripApvGain& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripApvGain& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -988,19 +988,19 @@ namespace {
 
       switch (est) {
         case SiStripPI::min:
-          return min;
+          return std::pair(true, min);
           break;
         case SiStripPI::max:
-          return max;
+          return std::pair(true, max);
           break;
         case SiStripPI::mean:
-          return meanOfGains;
+          return std::pair(true, meanOfGains);
           break;
         case SiStripPI::rms:
           if ((rmsOfGains / nAPVs - meanOfGains * meanOfGains) > 0.) {
-            return sqrt(rmsOfGains / nAPVs - meanOfGains * meanOfGains);
+            return std::pair(true, sqrt(rmsOfGains / nAPVs - meanOfGains * meanOfGains));
           } else {
-            return 0.;
+            return std::pair(true, 0.);
           }
           break;
         default:
@@ -1027,7 +1027,7 @@ namespace {
                                                                      "average Tracker Inner Barrel APV gain value") {}
     ~SiStripApvTIBGainByRunMeans() override = default;
 
-    float getFromPayload(SiStripApvGain& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripApvGain& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1046,7 +1046,7 @@ namespace {
         }  // loop over APVs
       }    // loop over detIds
 
-      return sumOfGains / nAPVs;
+      return std::pair(true, sumOfGains / nAPVs);
 
     }  // payload
   };
@@ -1062,7 +1062,7 @@ namespace {
                                                                      "average Tracker Outer Barrel gain value") {}
     ~SiStripApvTOBGainByRunMeans() override = default;
 
-    float getFromPayload(SiStripApvGain& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripApvGain& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1081,7 +1081,7 @@ namespace {
         }  // loop over APVs
       }    // loop over detIds
 
-      return sumOfGains / nAPVs;
+      return std::make_pair(true, sumOfGains / nAPVs);
 
     }  // payload
   };
@@ -1097,7 +1097,7 @@ namespace {
                                                                      "average Tracker Inner Disks APV gain value") {}
     ~SiStripApvTIDGainByRunMeans() override = default;
 
-    float getFromPayload(SiStripApvGain& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripApvGain& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1115,7 +1115,7 @@ namespace {
         }  // loop over APVs
       }    // loop over detIds
 
-      return sumOfGains / nAPVs;
+      return std::make_pair(true, sumOfGains / nAPVs);
 
     }  // payload
   };
@@ -1131,7 +1131,7 @@ namespace {
                                                                      "average Tracker Endcaps APV gain value") {}
     ~SiStripApvTECGainByRunMeans() override = default;
 
-    float getFromPayload(SiStripApvGain& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripApvGain& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1150,7 +1150,7 @@ namespace {
         }  // loop over APVs
       }    // loop over detIds
 
-      return sumOfGains / nAPVs;
+      return std::make_pair(true, sumOfGains / nAPVs);
 
     }  // payload
   };

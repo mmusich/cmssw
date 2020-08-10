@@ -117,14 +117,14 @@ namespace {
   *************************************************/
 
   class SiPixelQualityBadRocsTimeHistory
-      : public cond::payloadInspector::TimeHistoryPlot<SiPixelQuality, std::pair<double, double> > {
+      : public cond::payloadInspector::TimeHistoryPlot<SiPixelQuality, std::pair<double, double>> {
   public:
     SiPixelQualityBadRocsTimeHistory()
-        : cond::payloadInspector::TimeHistoryPlot<SiPixelQuality, std::pair<double, double> >("bad ROCs count vs time",
-                                                                                              "bad ROCs count") {}
+        : cond::payloadInspector::TimeHistoryPlot<SiPixelQuality, std::pair<double, double>>("bad ROCs count vs time",
+                                                                                             "bad ROCs count") {}
 
-    std::pair<double, double> getFromPayload(SiPixelQuality& payload) override {
-      return std::make_pair(extractBadRocCount(payload), 0.);
+    std::pair<bool, std::pair<double, double>> getFromPayload(SiPixelQuality& payload) override {
+      return std::make_pair(true, std::make_pair(extractBadRocCount(payload), 0.));
     }
 
     unsigned int extractBadRocCount(SiPixelQuality& payload) {

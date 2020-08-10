@@ -506,7 +506,7 @@ namespace {
               AlignmentPI::getStringFromCoordinate(coord) + " position [cm]") {}
     ~BPixBarycenterHistory() override = default;
 
-    float getFromPayload(Alignments &payload) override {
+    std::pair<bool, float> getFromPayload(Alignments &payload) override {
       std::vector<AlignTransform> alignments = payload.m_align;
 
       float barycenter = 0.;
@@ -516,7 +516,7 @@ namespace {
           edm::LogWarning("TrackerAlignment_PayloadInspector")
               << "Encountered invalid Tracker DetId:" << ali.rawId() << " " << DetId(ali.rawId()).det()
               << " is different from " << DetId::Tracker << "  - terminating ";
-          return false;
+          return std::make_pair(false, 0.);
         }
 
         int subid = DetId(ali.rawId()).subdetId();
@@ -549,7 +549,7 @@ namespace {
       // applied GPR correction to move barycenter to global CMS coordinates
       barycenter += hardcodeGPR.at(coord);
 
-      return barycenter;
+      return std::make_pair(true, barycenter);
 
     }  // payload
   };

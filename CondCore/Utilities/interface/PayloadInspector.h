@@ -98,7 +98,7 @@ namespace cond {
       ss << "\"version\": \"" << JSON_FORMAT_VERSION << "\",";
       ss << "\"annotations\": {";
       bool first = true;
-      for (auto a : annotations.m) {
+      for (const auto& a : annotations.m) {
         if (!first)
           ss << ",";
         ss << "\"" << a.first << "\":\"" << a.second << "\"";
@@ -510,14 +510,16 @@ namespace cond {
         for (auto iov : tag.iovs) {
           std::shared_ptr<PayloadType> payload = Base::fetchPayload(std::get<1>(iov));
           if (payload.get()) {
-            Y value = getFromPayload(*payload);
-            Base::m_plotData.push_back(std::make_tuple(std::get<0>(iov), value));
+            std::pair<bool, Y> value = getFromPayload(*payload);
+            if (value.first) {
+              Base::m_plotData.push_back(std::make_tuple(std::get<0>(iov), value.second));
+            }
           }
         }
         return true;
       }
 
-      virtual Y getFromPayload(PayloadType& payload) = 0;
+      virtual std::pair<bool, Y> getFromPayload(PayloadType& payload) = 0;
     };
 
     template <typename PayloadType, typename Y>
@@ -584,14 +586,16 @@ namespace cond {
           }
           std::shared_ptr<PayloadType> payload = Base::fetchPayload(std::get<1>(iov));
           if (payload.get()) {
-            Y value = getFromPayload(*payload);
-            Base::m_plotData.push_back(std::make_tuple(std::make_tuple(ind, label), value));
+            std::pair<bool, Y> value = getFromPayload(*payload);
+            if (value.first) {
+              Base::m_plotData.push_back(std::make_tuple(std::make_tuple(ind, label), value.second));
+            }
           }
         }
         return true;
       }
 
-      virtual Y getFromPayload(PayloadType& payload) = 0;
+      virtual std::pair<bool, Y> getFromPayload(PayloadType& payload) = 0;
     };
 
     template <typename PayloadType, typename Y>
@@ -643,14 +647,17 @@ namespace cond {
           }
           std::shared_ptr<PayloadType> payload = Base::fetchPayload(std::get<1>(iov));
           if (payload.get()) {
-            Y value = getFromPayload(*payload);
-            Base::m_plotData.push_back(std::make_tuple(std::make_tuple(cond::time::from_boost(time), label), value));
+            std::pair<bool, Y> value = getFromPayload(*payload);
+            if (value.first) {
+              Base::m_plotData.push_back(
+                  std::make_tuple(std::make_tuple(cond::time::from_boost(time), label), value.second));
+            }
           }
         }
         return true;
       }
 
-      virtual Y getFromPayload(PayloadType& payload) = 0;
+      virtual std::pair<bool, Y> getFromPayload(PayloadType& payload) = 0;
     };
 
     template <typename PayloadType, typename X, typename Y>

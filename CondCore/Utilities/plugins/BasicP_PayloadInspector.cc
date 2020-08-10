@@ -17,7 +17,9 @@ namespace {
   public:
     BasicPayload_data0() : cond::payloadInspector::HistoryPlot<cond::BasicPayload, float>("Example Trend", "data0") {}
     ~BasicPayload_data0() override = default;
-    float getFromPayload(cond::BasicPayload& payload) override { return payload.m_data0; }
+    std::pair<bool, float> getFromPayload(cond::BasicPayload& payload) override {
+      return std::make_pair(true, payload.m_data0);
+    }
   };
 
   class BasicPayload_data0_withInput : public cond::payloadInspector::HistoryPlot<cond::BasicPayload, float> {
@@ -29,7 +31,7 @@ namespace {
       cond::payloadInspector::PlotBase::addInputParam("Scale");
     }
     ~BasicPayload_data0_withInput() override = default;
-    float getFromPayload(cond::BasicPayload& payload) override {
+    std::pair<bool, float> getFromPayload(cond::BasicPayload& payload) override {
       float v = payload.m_data0;
       auto paramValues = cond::payloadInspector::PlotBase::inputParamValues();
       auto ip = paramValues.find("Factor");
@@ -44,7 +46,7 @@ namespace {
       if (ip != paramValues.end()) {
         v = v * boost::lexical_cast<float>(ip->second);
       }
-      return v;
+      return std::make_pair(true, v);
     }
   };
 
@@ -53,7 +55,9 @@ namespace {
     BasicPayload_data1()
         : cond::payloadInspector::RunHistoryPlot<cond::BasicPayload, float>("Example Run-based Trend", "data0") {}
     ~BasicPayload_data1() override = default;
-    float getFromPayload(cond::BasicPayload& payload) override { return payload.m_data0; }
+    std::pair<bool, float> getFromPayload(cond::BasicPayload& payload) override {
+      return std::make_pair(true, payload.m_data0);
+    }
   };
 
   class BasicPayload_data2 : public cond::payloadInspector::TimeHistoryPlot<cond::BasicPayload, float> {
@@ -62,7 +66,9 @@ namespace {
         : cond::payloadInspector::TimeHistoryPlot<cond::BasicPayload, float>("Example Time-based Trend", "data0") {}
     ~BasicPayload_data2() override = default;
 
-    float getFromPayload(cond::BasicPayload& payload) override { return payload.m_data0; }
+    std::pair<bool, float> getFromPayload(cond::BasicPayload& payload) override {
+      return std::make_pair(true, payload.m_data0);
+    }
   };
 
   class BasicPayload_data3 : public cond::payloadInspector::ScatterPlot<cond::BasicPayload, float, float> {

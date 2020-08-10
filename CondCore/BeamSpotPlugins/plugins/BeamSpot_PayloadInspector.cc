@@ -9,42 +9,42 @@ namespace {
 
   using namespace BeamSpotPI;
 
-  class BeamSpot_hx : public cond::payloadInspector::HistoryPlot<BeamSpotObjects, std::pair<double, double> > {
+  class BeamSpot_hx : public cond::payloadInspector::HistoryPlot<BeamSpotObjects, std::pair<double, double>> {
   public:
     BeamSpot_hx()
-        : cond::payloadInspector::HistoryPlot<BeamSpotObjects, std::pair<double, double> >("x vs run number", "x") {}
+        : cond::payloadInspector::HistoryPlot<BeamSpotObjects, std::pair<double, double>>("x vs run number", "x") {}
 
-    std::pair<double, double> getFromPayload(BeamSpotObjects& payload) override {
-      return std::make_pair(payload.GetX(), payload.GetXError());
+    std::pair<bool, std::pair<double, double>> getFromPayload(BeamSpotObjects& payload) override {
+      return std::make_pair(true, std::make_pair(payload.GetX(), payload.GetXError()));
     }
   };
 
-  class BeamSpot_rhx : public cond::payloadInspector::RunHistoryPlot<BeamSpotObjects, std::pair<double, double> > {
+  class BeamSpot_rhx : public cond::payloadInspector::RunHistoryPlot<BeamSpotObjects, std::pair<double, double>> {
   public:
     BeamSpot_rhx()
-        : cond::payloadInspector::RunHistoryPlot<BeamSpotObjects, std::pair<double, double> >("x vs run number", "x") {}
+        : cond::payloadInspector::RunHistoryPlot<BeamSpotObjects, std::pair<double, double>>("x vs run number", "x") {}
 
-    std::pair<double, double> getFromPayload(BeamSpotObjects& payload) override {
-      return std::make_pair(payload.GetX(), payload.GetXError());
+    std::pair<bool, std::pair<double, double>> getFromPayload(BeamSpotObjects& payload) override {
+      return std::make_pair(true, std::make_pair(payload.GetX(), payload.GetXError()));
     }
   };
-  class BeamSpot_x : public cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double> > {
+  class BeamSpot_x : public cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double>> {
   public:
     BeamSpot_x()
-        : cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double> >("x vs time", "x") {}
+        : cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double>>("x vs time", "x") {}
 
-    std::pair<double, double> getFromPayload(BeamSpotObjects& payload) override {
-      return std::make_pair(payload.GetX(), payload.GetXError());
+    std::pair<bool, std::pair<double, double>> getFromPayload(BeamSpotObjects& payload) override {
+      return std::pair(true, std::make_pair(payload.GetX(), payload.GetXError()));
     }
   };
 
-  class BeamSpot_y : public cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double> > {
+  class BeamSpot_y : public cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double>> {
   public:
     BeamSpot_y()
-        : cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double> >("y vs time", "y") {}
+        : cond::payloadInspector::TimeHistoryPlot<BeamSpotObjects, std::pair<double, double>>("y vs time", "y") {}
 
-    std::pair<double, double> getFromPayload(BeamSpotObjects& payload) override {
-      return std::make_pair(payload.GetY(), payload.GetYError());
+    std::pair<bool, std::pair<double, double>> getFromPayload(BeamSpotObjects& payload) override {
+      return std::make_pair(true, std::make_pair(payload.GetY(), payload.GetYError()));
     }
   };
 

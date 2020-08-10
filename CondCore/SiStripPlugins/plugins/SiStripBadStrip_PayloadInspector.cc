@@ -195,7 +195,7 @@ namespace {
                                                                       "Bad Strip fraction [%]") {}
     ~SiStripBadStripFractionByRun() override = default;
 
-    float getFromPayload(SiStripBadStrip& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripBadStrip& payload) override {
       edm::FileInPath fp_ = edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat");
       SiStripDetInfoFileReader* reader = new SiStripDetInfoFileReader(fp_.fullPath());
 
@@ -222,7 +222,7 @@ namespace {
       }
 
       delete reader;
-      return (numerator / denominator) * 100.;
+      return std::make_pair(true, (numerator / denominator) * 100.);
 
     }  // payload
   };
@@ -238,7 +238,7 @@ namespace {
                                                                       "TIB Bad Strip fraction [%]") {}
     ~SiStripBadStripTIBFractionByRun() override = default;
 
-    float getFromPayload(SiStripBadStrip& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripBadStrip& payload) override {
       edm::FileInPath fp_ = edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat");
       SiStripDetInfoFileReader* reader = new SiStripDetInfoFileReader(fp_.fullPath());
 
@@ -268,7 +268,7 @@ namespace {
       }
 
       delete reader;
-      return (numerator / denominator) * 100.;
+      return std::make_pair(true, (numerator / denominator) * 100.);
 
     }  // payload
   };
@@ -284,7 +284,7 @@ namespace {
                                                                       "TOB Bad Strip fraction [%]") {}
     ~SiStripBadStripTOBFractionByRun() override = default;
 
-    float getFromPayload(SiStripBadStrip& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripBadStrip& payload) override {
       edm::FileInPath fp_ = edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat");
       SiStripDetInfoFileReader* reader = new SiStripDetInfoFileReader(fp_.fullPath());
 
@@ -314,7 +314,7 @@ namespace {
       }
 
       delete reader;
-      return (numerator / denominator) * 100.;
+      return std::make_pair(true, (numerator / denominator) * 100.);
 
     }  // payload
   };
@@ -330,7 +330,7 @@ namespace {
                                                                       "TID Bad Strip fraction [%]") {}
     ~SiStripBadStripTIDFractionByRun() override = default;
 
-    float getFromPayload(SiStripBadStrip& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripBadStrip& payload) override {
       edm::FileInPath fp_ = edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat");
       SiStripDetInfoFileReader* reader = new SiStripDetInfoFileReader(fp_.fullPath());
 
@@ -360,7 +360,7 @@ namespace {
       }
 
       delete reader;
-      return (numerator / denominator) * 100.;
+      return std::make_pair(true, (numerator / denominator) * 100.);
 
     }  // payload
   };
@@ -376,7 +376,7 @@ namespace {
                                                                       "TEC Bad Strip fraction [%]") {}
     ~SiStripBadStripTECFractionByRun() override = default;
 
-    float getFromPayload(SiStripBadStrip& payload) override {
+    std::pair<bool, float> getFromPayload(SiStripBadStrip& payload) override {
       edm::FileInPath fp_ = edm::FileInPath("CalibTracker/SiStripCommon/data/SiStripDetInfo.dat");
       SiStripDetInfoFileReader* reader = new SiStripDetInfoFileReader(fp_.fullPath());
 
@@ -406,7 +406,7 @@ namespace {
       }
 
       delete reader;
-      return (numerator / denominator) * 100.;
+      return std::make_pair(true, (numerator / denominator) * 100.);
 
     }  // payload
   };

@@ -105,9 +105,9 @@ namespace {
     SiStripLatencyModeHistory()
         : cond::payloadInspector::HistoryPlot<SiStripLatency, uint16_t>("Mode vs run number", "Mode vs run number") {}
 
-    uint16_t getFromPayload(SiStripLatency& payload) override {
+    std::pair<bool, uint16_t> getFromPayload(SiStripLatency& payload) override {
       uint16_t singlemode = payload.singleMode();
-      return singlemode;
+      return std::make_pair(true, singlemode);
     }
   };
 
@@ -120,11 +120,11 @@ namespace {
         : cond::payloadInspector::HistoryPlot<SiStripLatency, int>("Number of modes vs run ",
                                                                    "Number of modes vs run") {}
 
-    int getFromPayload(SiStripLatency& payload) override {
+    std::pair<bool, int> getFromPayload(SiStripLatency& payload) override {
       std::vector<uint16_t> modes;
       payload.allModes(modes);
 
-      return modes.size();
+      return std::make_pair(true, modes.size());
     }
   };
 

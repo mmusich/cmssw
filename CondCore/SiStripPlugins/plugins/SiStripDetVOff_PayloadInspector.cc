@@ -30,7 +30,9 @@ namespace {
     SiStripDetVOff_LV()
         : cond::payloadInspector::TimeHistoryPlot<SiStripDetVOff, int>("Nr of mod with LV OFF vs time", "nLVOff") {}
 
-    int getFromPayload(SiStripDetVOff& payload) override { return payload.getLVoffCounts(); }
+    std::pair<bool, int> getFromPayload(SiStripDetVOff& payload) override {
+      return std::make_pair(true, payload.getLVoffCounts());
+    }
   };
 
   class SiStripDetVOff_HV : public cond::payloadInspector::TimeHistoryPlot<SiStripDetVOff, int> {
@@ -38,7 +40,9 @@ namespace {
     SiStripDetVOff_HV()
         : cond::payloadInspector::TimeHistoryPlot<SiStripDetVOff, int>("Nr of mod with HV OFF vs time", "nHVOff") {}
 
-    int getFromPayload(SiStripDetVOff& payload) override { return payload.getHVoffCounts(); }
+    std::pair<bool, int> getFromPayload(SiStripDetVOff& payload) override {
+      return std::make_pair(true, payload.getHVoffCounts());
+    }
   };
 
   /************************************************

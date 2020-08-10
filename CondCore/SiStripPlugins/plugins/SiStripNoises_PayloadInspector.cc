@@ -1531,7 +1531,7 @@ namespace {
               "Average " + SiStripPI::getStringFromSubdet(sub) + " noise vs run number",
               "average " + SiStripPI::getStringFromSubdet(sub) + " Noise") {}
 
-    std::pair<double, double> getFromPayload(SiStripNoises& payload) override {
+    std::pair<bool, std::pair<double, double>> getFromPayload(SiStripNoises& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1554,7 +1554,7 @@ namespace {
       float mean = sum / nStrips;
       float rms = (sum2 / nStrips - mean * mean) > 0. ? sqrt(sum2 / nStrips - mean * mean) : 0.;
 
-      return std::make_pair(mean, rms);
+      return std::make_pair(true, std::make_pair(mean, rms));
 
     }  // close getFromPayload
   };
@@ -1576,7 +1576,7 @@ namespace {
               "Average " + SiStripPI::getStringFromSubdet(sub) + " noise vs run number",
               "average " + SiStripPI::getStringFromSubdet(sub) + " Noise") {}
 
-    std::pair<double, double> getFromPayload(SiStripNoises& payload) override {
+    std::pair<bool, std::pair<double, double>> getFromPayload(SiStripNoises& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1599,7 +1599,7 @@ namespace {
       float mean = sum / nStrips;
       float rms = (sum2 / nStrips - mean * mean) > 0. ? sqrt(sum2 / nStrips - mean * mean) : 0.;
 
-      return std::make_pair(mean, rms);
+      return std::make_pair(true, std::make_pair(mean, rms));
 
     }  // close getFromPayload
   };
@@ -1621,7 +1621,7 @@ namespace {
               "Average " + SiStripPI::getStringFromSubdet(sub) + " noise vs run number",
               "average " + SiStripPI::getStringFromSubdet(sub) + " Noise") {}
 
-    std::pair<double, double> getFromPayload(SiStripNoises& payload) override {
+    std::pair<bool, std::pair<double, double>> getFromPayload(SiStripNoises& payload) override {
       std::vector<uint32_t> detid;
       payload.getDetIds(detid);
 
@@ -1644,7 +1644,7 @@ namespace {
       float mean = sum / nStrips;
       float rms = (sum2 / nStrips - mean * mean) > 0. ? sqrt(sum2 / nStrips - mean * mean) : 0.;
 
-      return std::make_pair(mean, rms);
+      return std::make_pair(true, std::make_pair(mean, rms));
 
     }  // close getFromPayload
   };

@@ -68,6 +68,8 @@ namespace BeamSpotPI {
     }
   }
 
+  using meas = std::pair<double, double>;
+
   /************************************************
     template classes (history)
   *************************************************/
@@ -79,26 +81,26 @@ namespace BeamSpotPI {
         : cond::payloadInspector::HistoryPlot<PayloadType, std::pair<double, double> >(
               getStringFromParamEnum(my_param) + " vs run number", getStringFromParamEnum(my_param)) {}
 
-    std::pair<double, double> getFromPayload(PayloadType& payload) override {
-      auto ret = std::make_pair<double, double>(-9999., -9999.);
+    std::pair<bool, BeamSpotPI::meas> getFromPayload(PayloadType& payload) override {
+      auto ret = std::make_pair(true, std::make_pair(-9999., -9999.));
 
       switch (my_param) {
         case X:
-          return std::make_pair<double, double>(payload.GetX(), payload.GetXError());
+          return std::make_pair(true, std::make_pair(payload.GetX(), payload.GetXError()));
         case Y:
-          return std::make_pair<double, double>(payload.GetY(), payload.GetYError());
+          return std::make_pair(true, std::make_pair(payload.GetY(), payload.GetYError()));
         case Z:
-          return std::make_pair<double, double>(payload.GetZ(), payload.GetZError());
+          return std::make_pair(true, std::make_pair(payload.GetZ(), payload.GetZError()));
         case sigmaX:
-          return std::make_pair<double, double>(payload.GetBeamWidthX(), payload.GetBeamWidthXError());
+          return std::make_pair(true, std::make_pair(payload.GetBeamWidthX(), payload.GetBeamWidthXError()));
         case sigmaY:
-          return std::make_pair<double, double>(payload.GetBeamWidthY(), payload.GetBeamWidthYError());
+          return std::make_pair(true, std::make_pair(payload.GetBeamWidthY(), payload.GetBeamWidthYError()));
         case sigmaZ:
-          return std::make_pair<double, double>(payload.GetSigmaZ(), payload.GetSigmaZError());
+          return std::make_pair(true, std::make_pair(payload.GetSigmaZ(), payload.GetSigmaZError()));
         case dxdz:
-          return std::make_pair<double, double>(payload.Getdxdz(), payload.GetdxdzError());
+          return std::make_pair(true, std::make_pair(payload.Getdxdz(), payload.GetdxdzError()));
         case dydz:
-          return std::make_pair<double, double>(payload.Getdydz(), payload.GetdydzError());
+          return std::make_pair(true, std::make_pair(payload.Getdydz(), payload.GetdydzError()));
         case END_OF_TYPES:
           return ret;
         default:
@@ -118,26 +120,26 @@ namespace BeamSpotPI {
         : cond::payloadInspector::RunHistoryPlot<PayloadType, std::pair<double, double> >(
               getStringFromParamEnum(my_param) + " vs run number", getStringFromParamEnum(my_param)) {}
 
-    std::pair<double, double> getFromPayload(PayloadType& payload) override {
-      auto ret = std::make_pair<double, double>(-9999., -9999.);
+    std::pair<bool, BeamSpotPI::meas> getFromPayload(PayloadType& payload) override {
+      auto ret = std::make_pair(true, std::make_pair(-9999., -9999.));
 
       switch (my_param) {
         case X:
-          return std::make_pair<double, double>(payload.GetX(), payload.GetXError());
+          return std::make_pair(true, std::make_pair(payload.GetX(), payload.GetXError()));
         case Y:
-          return std::make_pair<double, double>(payload.GetY(), payload.GetYError());
+          return std::make_pair(true, std::make_pair(payload.GetY(), payload.GetYError()));
         case Z:
-          return std::make_pair<double, double>(payload.GetZ(), payload.GetZError());
+          return std::make_pair(true, std::make_pair(payload.GetZ(), payload.GetZError()));
         case sigmaX:
-          return std::make_pair<double, double>(payload.GetBeamWidthX(), payload.GetBeamWidthXError());
+          return std::make_pair(true, std::make_pair(payload.GetBeamWidthX(), payload.GetBeamWidthXError()));
         case sigmaY:
-          return std::make_pair<double, double>(payload.GetBeamWidthY(), payload.GetBeamWidthYError());
+          return std::make_pair(true, std::make_pair(payload.GetBeamWidthY(), payload.GetBeamWidthYError()));
         case sigmaZ:
-          return std::make_pair<double, double>(payload.GetSigmaZ(), payload.GetSigmaZError());
+          return std::make_pair(true, std::make_pair(payload.GetSigmaZ(), payload.GetSigmaZError()));
         case dxdz:
-          return std::make_pair<double, double>(payload.Getdxdz(), payload.GetdxdzError());
+          return std::make_pair(true, std::make_pair(payload.Getdxdz(), payload.GetdxdzError()));
         case dydz:
-          return std::make_pair<double, double>(payload.Getdydz(), payload.GetdydzError());
+          return std::make_pair(true, std::make_pair(payload.Getdydz(), payload.GetdydzError()));
         case END_OF_TYPES:
           return ret;
         default:
@@ -157,26 +159,26 @@ namespace BeamSpotPI {
         : cond::payloadInspector::TimeHistoryPlot<PayloadType, std::pair<double, double> >(
               getStringFromParamEnum(my_param) + " vs time", getStringFromParamEnum(my_param)) {}
 
-    std::pair<double, double> getFromPayload(PayloadType& payload) override {
-      auto ret = std::make_pair<double, double>(-9999., -9999.);
+    std::pair<bool, BeamSpotPI::meas> getFromPayload(PayloadType& payload) override {
+      auto ret = std::make_pair(true, std::make_pair(-9999., -9999.));
 
       switch (my_param) {
         case X:
-          return std::make_pair<double, double>(payload.GetX(), payload.GetXError());
+          return std::make_pair(true, std::make_pair(payload.GetX(), payload.GetXError()));
         case Y:
-          return std::make_pair<double, double>(payload.GetY(), payload.GetYError());
+          return std::make_pair(true, std::make_pair(payload.GetY(), payload.GetYError()));
         case Z:
-          return std::make_pair<double, double>(payload.GetZ(), payload.GetZError());
+          return std::make_pair(true, std::make_pair(payload.GetZ(), payload.GetZError()));
         case sigmaX:
-          return std::make_pair<double, double>(payload.GetBeamWidthX(), payload.GetBeamWidthXError());
+          return std::make_pair(true, std::make_pair(payload.GetBeamWidthX(), payload.GetBeamWidthXError()));
         case sigmaY:
-          return std::make_pair<double, double>(payload.GetBeamWidthY(), payload.GetBeamWidthYError());
+          return std::make_pair(true, std::make_pair(payload.GetBeamWidthY(), payload.GetBeamWidthYError()));
         case sigmaZ:
-          return std::make_pair<double, double>(payload.GetSigmaZ(), payload.GetSigmaZError());
+          return std::make_pair(true, std::make_pair(payload.GetSigmaZ(), payload.GetSigmaZError()));
         case dxdz:
-          return std::make_pair<double, double>(payload.Getdxdz(), payload.GetdxdzError());
+          return std::make_pair(true, std::make_pair(payload.Getdxdz(), payload.GetdxdzError()));
         case dydz:
-          return std::make_pair<double, double>(payload.Getdydz(), payload.GetdydzError());
+          return std::make_pair(true, std::make_pair(payload.Getdydz(), payload.GetdydzError()));
         case END_OF_TYPES:
           return ret;
         default:
@@ -234,7 +236,7 @@ namespace BeamSpotPI {
       canvas.cd(1)->Modified();
       canvas.cd(1)->SetGrid();
 
-      auto h2_BSParameters = std::unique_ptr<TH2F>(new TH2F("Parameters", "", 2, 0.0, 2.0, 8, 0, 8.));
+      auto h2_BSParameters = std::make_unique<TH2F>("Parameters", "", 2, 0.0, 2.0, 8, 0, 8.);
       h2_BSParameters->SetStats(false);
 
       std::function<double(parameters, bool)> cutFunctor = [this](parameters my_param, bool isError) {
