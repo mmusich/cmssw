@@ -6,7 +6,8 @@ def setup(process, input_files, collection,
           json_file = "",
           cosmics_zero_tesla = False,
           cosmics_deco_mode = True,
-          TTRHBuilder = None):
+          TTRHBuilder = None,
+          g4Refitting = False):
     """Mille-specific setup.
 
     Arguments:
@@ -39,7 +40,8 @@ def setup(process, input_files, collection,
     # --------------------------------------------------------------------------
     import Alignment.CommonAlignment.tools.trackselectionRefitting as trackRefitter
     kwargs = {"cosmicsDecoMode": cosmics_deco_mode,
-              "cosmicsZeroTesla": cosmics_zero_tesla}
+              "cosmicsZeroTesla": cosmics_zero_tesla,
+              "g4Refitting": g4Refitting}
     if TTRHBuilder is not None: kwargs["TTRHBuilder"] = TTRHBuilder
     process.TrackRefittingSequence \
         = trackRefitter.getSequence(process, collection, **kwargs)

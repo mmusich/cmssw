@@ -105,7 +105,10 @@ for job_id, mps_index in submitted_jobs.items(): # IMPORTANT to copy here (no it
     if len(condor_h.strip()) > 0:
         job_id, status, cpu_time = condor_h.split()
         status = htcondor_jobstatus[status]
-        lib.JOBSTATUS[mps_index] = disabled + status
+        print(" job in condor_history, status=",status," , change to DONE")
+        # lib.JOBSTATUS[mps_index] = disabled + status
+        lib.JOBSTATUS[mps_index] = disabled + "DONE"
+        lib.JOBREMARK[mps_index] = "history"
         fill_time_info(mps_index, status, float(cpu_time))
         submitted_jobs.pop(job_id)
         continue

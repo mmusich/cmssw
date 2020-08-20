@@ -248,6 +248,13 @@ fire_htcondor = False
 
 # fire the 'normal' parallel Jobs (Mille Jobs)
 if not args.fireMerge:
+    # check whether t0 is set
+    thePool = os.getenv('_myschedd_POOL')
+    print(" thePool="+thePool+"\n")
+    if  thePool != 'tzero':
+        print('\nWARNING:\n Run module load lxbatch/tzero first.')
+        sys.exit(111)
+
     #set the resources string coming from mps.db
     resources = lib.get_class('mille')
 
@@ -313,6 +320,13 @@ if not args.fireMerge:
 # fire the merge job
 else:
     print('fire merge')
+    # check whether shared is set
+    thePool = os.getenv('_myschedd_POOL')
+    print(" thePool="+thePool+"\n")
+    if  thePool != 'share':
+        print('\nWARNING:\n Run module load lxbatch/share first.')
+        sys.exit(111)
+
     # set the resources string coming from mps.db
     resources = lib.get_class('pede')
     if 'cmscafspec' in resources:

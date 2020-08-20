@@ -69,8 +69,10 @@ if ($killAll == 1) {
     if (@JOBSTATUS[$i] =~ /PEND/
 	or @JOBSTATUS[$i] =~ /RUN/
 	or @JOBSTATUS[$i] =~ /SUSP/) {
-      system "bkill @JOBID[$i]";
-      print "bkill @JOBID[$i]\n";
+      # system "bkill @JOBID[$i]";
+      # print "bkill @JOBID[$i]\n";
+      system "condor_rm @JOBID[$i]";
+      print "condor_rm @JOBID[$i]\n";
       my $disabled = "";
       $disabled = "DISABLED" if( $JOBSTATUS[$i] =~ /DISABLED/gi);
       @JOBSTATUS[$i] = $disabled."FAIL";
@@ -91,8 +93,8 @@ else {
       $theNum = $i + 1;
       $jobText = "^$theNum\$";
       if ( ( (grep /$stateText/,@MODSTATES) > 0) || (grep /$jobText/,@MODJOBS) > 0) {
-	print "bkill @JOBID[$i]\n";
-	system "bkill @JOBID[$i]";
+	print "condor_rm @JOBID[$i]\n";
+	system "condor_rm @JOBID[$i]";
 	@JOBSTATUS[$i] = $disabled."FAIL";
 	@JOBHOST[$i] = "user kill";
       }
@@ -109,8 +111,8 @@ if ($killMerge eq 1) {
 	    $jobText = "^$theNum\$";
 	    if ( ( (grep /$stateText/,@MODSTATES) > 0) || (grep /$jobText/,@MODJOBS) > 0) {
 
-		print "bkill @JOBID[$i]\n";
-		system "bkill @JOBID[$i]";
+		print "condor_rm @JOBID[$i]\n";
+		system "condor_rm @JOBID[$i]";
 		@JOBSTATUS[$i] = "FAIL";
 		@JOBHOST[$i] = "user kill";
 	    }

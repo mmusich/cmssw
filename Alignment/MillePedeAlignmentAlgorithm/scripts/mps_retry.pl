@@ -135,6 +135,17 @@ sub reSchedule() {
     print "mps_script.pl $batchScript  jobData/$theJobDir/theScript.sh $theJobData/$theJobDir the.py jobData/$theJobDir/theSplit $theIsn\n";
     system "mps_script.pl $batchScript  jobData/$theJobDir/theScript.sh $theJobData/$theJobDir the.py jobData/$theJobDir/theSplit $theIsn";
   }
+  # remove any old output file
+  chomp $thePwd;
+  $theJobData = "$thePwd/jobData";
+  $theJobDir = sprintf "job%03d",$_[0]+1;
+  print "rm -f jobData/$theJobDir/STDOUT etc.\n";
+  system "rm -f jobData/$theJobDir/STDOUT";
+  system "rm -f jobData/$theJobDir/STDOUT.gz";
+  system "rm -f jobData/$theJobDir/alignment.log";
+  system "rm -f jobData/$theJobDir/alignment.log.gz";
+  system "rm -f jobData/$theJobDir/HTCJOB";
+  system "rm -f jobData/$theJobDir/*.root";
   print "ReSchedule @JOBDIR[$_[0]]\n";
 }
 

@@ -58,7 +58,7 @@ for i in range(len(lib.JOBID)):
     insuffPriv = 0
     quotaspace = 0
     copyerr=0
-    ispede=0
+    missingStdOut = 0
 
     kill_reason = None
     pedeLogErrStr = ""
@@ -107,8 +107,6 @@ for i in range(len(lib.JOBID)):
                         insuffPriv = 1
                     if re.search(re.compile('Give up doing',re.M), line):
                         copyerr = 1
-                    if re.search(re.compile('Directory content before',re.M),line):
-                        ispede = 1
                     # AP 05.11.2015 Extract cpu-time.
                     # STDOUT doesn't contain NCU anymore. Now KSI2K and HS06 seconds are displayed.
                     # The ncuFactor is calculated from few samples by comparing KSI2K seconds with
@@ -124,6 +122,7 @@ for i in range(len(lib.JOBID)):
         except IOError as e:
             if e.args == (2, "No such file or directory"):
                 print("mps_check.py cannot find", stdOut, "to test")
+                missingStdOut = 1
             else:
                 raise
 
@@ -449,12 +448,14 @@ for i in range(len(lib.JOBID)):
             print(lib.JOBDIR[i],lib.JOBID[i],'Job not ended')
             remark = 'job not ended'
             okStatus = 'FAIL'
-        if copyerr == 1 and ispede!=1:
-            #Copy errors in pede job can occur when a nonexistent file is commented in alignment_merge.py but not in theScript.sh, and in that case is *not* a failure
+        if copyerr == 1:
             print(lib.JOBDIR[i],lib.JOBID[i],'Copy to eos failed')
             remark = 'copy to eos failed'
             okStatus = 'FAIL'
-
+        if missingStdOut == 1:
+            print(lib.JOBDIR[i],lib.JOBID[i],'Missing STDOUT')
+            remark = 'Missing STDOUT'
+            okStatus = 'FAIL'
 
         # print warning line to stdout
         if okStatus != "OK":
