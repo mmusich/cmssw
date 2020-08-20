@@ -64,7 +64,7 @@ GeometryProducer::GeometryProducer(edm::ParameterSet const &p)
       m_pUseSensitiveDetectors(p.getParameter<bool>("UseSensitiveDetectors")),
       m_attach(nullptr),
       m_p(p),
-      m_firstRun(true) {
+      m_nextIOV_(false){
   // Look for an outside SimActivityRegistry
   // this is used by the visualization code
   edm::Service<SimActivityRegistry> otherRegistry;
@@ -106,9 +106,18 @@ void GeometryProducer::beginRun(const edm::Run &, const edm::EventSetup &) {}
 void GeometryProducer::endRun(const edm::Run &, const edm::EventSetup &) {}
 
 void GeometryProducer::produce(edm::Event &e, const edm::EventSetup &es) {
-  if (!m_firstRun)
+  bool changed{false};
+
+  if (watchIdealGeometryRcd_.check(es)) {
+    changed = true;
+  }
+
+  if(!changed) return;
+
+  if(m_nextIOV_) {
+    updateMagneticField(es);
     return;
-  m_firstRun = false;
+  }
 
   edm::LogInfo("GeometryProducer") << "Producing G4 Geom";
 
@@ -148,6 +157,9 @@ void GeometryProducer::produce(edm::Event &e, const edm::EventSetup &es) {
   for (Producers::iterator itProd = m_producers.begin(); itProd != m_producers.end(); ++itProd) {
     (*itProd)->produce(e, es);
   }
+
+  m_nextIOV_ = true;
+
 }
 
 DEFINE_FWK_MODULE(GeometryProducer);

@@ -3,6 +3,7 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/ESWatcher.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/Run.h"
@@ -15,6 +16,7 @@
 #include "SimG4Core/SensitiveDetector/interface/SensitiveDetector.h"
 #include "SimG4Core/SensitiveDetector/interface/SensitiveTkDetector.h"
 
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include <memory>
 
 namespace sim {
@@ -58,7 +60,8 @@ private:
   std::vector<SensitiveTkDetector *> m_sensTkDets;
   std::vector<SensitiveCaloDetector *> m_sensCaloDets;
   edm::ParameterSet m_p;
-  bool m_firstRun;
+  edm::ESWatcher<IdealGeometryRecord> watchIdealGeometryRcd_;
+  bool m_nextIOV_;
 };
 
 #endif
