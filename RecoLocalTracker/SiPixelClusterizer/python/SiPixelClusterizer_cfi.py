@@ -27,6 +27,11 @@ run3_common.toModify(siPixelClusters,
   VCaltoElectronOffset_L1 = 0  
 )
 
+##
+## Import the Phase-2 pixel digitizer configuration to be used for sharing
+## the information on the read-out mode, thresholds and gains
+##
+from SimTracker.SiPhase2Digitizer.phase2TrackerDigitizer_cfi import PixelDigitizerAlgorithmCommon as PixelDigitizerAlgorithmCommon_
 
 # Need these until phase2 pixel templates are used
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
@@ -34,10 +39,10 @@ phase2_tracker.toModify(siPixelClusters, # FIXME
   src = 'simSiPixelDigis:Pixel',
   MissCalibrate = False,
   Phase2Calibration = True,
-  Phase2ReadoutMode = 3, # Flag to decide Readout Mode : linear TDR (-1), dual slope with slope parameters (+1,+2,+3,+4 ...) with threshold subtraction
-  Phase2DigiBaseline = 1000.,
+  Phase2ReadoutMode = PixelDigitizerAlgorithmCommon_.Phase2ReadoutMode.value(), # Flag to decide Readout Mode : linear TDR (-1), dual slope with slope parameters (+1,+2,+3,+4 ...) with threshold subtraction
+  Phase2DigiBaseline = PixelDigitizerAlgorithmCommon_.ThresholdInElectrons_Barrel.value(),
   Phase2KinkADC = 8,
-  ElectronPerADCGain = 1500. # it can be changed to something else (e.g. 135e) if needed
+  ElectronPerADCGain = PixelDigitizerAlgorithmCommon_.ElectronPerAdc.value() # it can be changed to something else (e.g. 135e) if needed
 )
 from Configuration.ProcessModifiers.premix_stage2_cff import premix_stage2
 (premix_stage2 & phase2_tracker).toModify(siPixelClusters,
