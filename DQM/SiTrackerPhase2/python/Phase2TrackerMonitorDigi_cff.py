@@ -4,6 +4,7 @@ from DQM.SiTrackerPhase2.Phase2TrackerMonitorDigi_cfi import *
 
 pixDigiMon = digiMon.clone()
 pixDigiMon.PixelPlotFillingFlag = cms.bool(True)
+pixDigiMon.OfflineClusteriserFlag = cms.bool(False)
 pixDigiMon.TopFolderName = cms.string("TrackerPhase2ITDigi")
 pixDigiMon.NumberOfDigisPerDetH = cms.PSet(
     Nbins = cms.int32(200),
@@ -38,7 +39,7 @@ pixDigiMon.XYPositionMapH = cms.PSet(
     Nybins = cms.int32(340),
     ymin   = cms.double(-170.),
     ymax   = cms.double(170.),
-    switch = cms.bool(True))
+    switch = cms.bool(False))
 pixDigiMon.RZPositionMapH = cms.PSet(
     Nxbins = cms.int32(3000),
     xmin   = cms.double(-3000.0),
@@ -46,7 +47,7 @@ pixDigiMon.RZPositionMapH = cms.PSet(
     Nybins = cms.int32(280),
     ymin   = cms.double(0.),
     ymax   = cms.double(280.),
-    switch = cms.bool(True))
+    switch = cms.bool(False))
 pixDigiMon.ClusterPositionPH = cms.PSet(
     Nxbins = cms.int32(960),
     xmin   = cms.double(0.5),
@@ -59,4 +60,5 @@ pixDigiMon.ClusterPositionPH = cms.PSet(
 
 otDigiMon = digiMon.clone()
 otDigiMon.PixelPlotFillingFlag = cms.bool(False)
+otDigiMon.OfflineClusteriserFlag = cms.bool(False)
 otDigiMon.TopFolderName = cms.string("TrackerPhase2OTDigi")
