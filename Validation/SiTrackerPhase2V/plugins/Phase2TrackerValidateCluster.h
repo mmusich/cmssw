@@ -27,16 +27,18 @@
 
 class Phase2TrackerValidateCluster : public DQMEDAnalyzer {
 public:
-  typedef std::map<unsigned int, std::vector<PSimHit> > SimHitsMap;
+  typedef std::map<unsigned int, std::vector<PSimHit>> SimHitsMap;
   typedef std::map<unsigned int, SimTrack> SimTracksMap;
 
   explicit Phase2TrackerValidateCluster(const edm::ParameterSet&);
   ~Phase2TrackerValidateCluster() override;
   void bookHistograms(DQMStore::IBooker& ibooker, edm::Run const& iRun, edm::EventSetup const& iSetup) override;
   void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) override;
-  //uint32_t getHistoId(uint32_t det_id, const TrackerTopology* tTopo, bool flag); 
-  std::string getHistoId(uint32_t det_id, const TrackerTopology* tTopo, bool flag); 
-  std::vector<unsigned int> getSimTrackId(const edm::Handle<edm::DetSetVector<PixelDigiSimLink> >& pixelSimLinks, const DetId& detId, unsigned int channel);
+  //uint32_t getHistoId(uint32_t det_id, const TrackerTopology* tTopo, bool flag);
+  std::string getHistoId(uint32_t det_id, const TrackerTopology* tTopo, bool flag);
+  std::vector<unsigned int> getSimTrackId(const edm::Handle<edm::DetSetVector<PixelDigiSimLink>>& pixelSimLinks,
+                                          const DetId& detId,
+                                          unsigned int channel);
 
   struct ClusterMEs {
     //uint32_t nCluster;
@@ -62,15 +64,13 @@ public:
     MonitorElement* XYLocalPositionMapStrip;
   };
 
-  enum HISTOID {
-    Layer1, Layer2, Layer3, Layer4, DISCplusR12, DISCplusR345, DISCminusR12, DISCminusR345
-  };
+  enum HISTOID { Layer1, Layer2, Layer3, Layer4, DISCplusR12, DISCplusR345, DISCminusR12, DISCminusR345 };
+
 private:
   MonitorElement* SimulatedZRPositionMap;
   MonitorElement* SimulatedXYPositionMap;
   MonitorElement* SimulatedXYBarrelPositionMap;
   MonitorElement* SimulatedXYEndCapPositionMap;
-
 
   void bookLayerHistos(DQMStore::IBooker& ibooker, uint32_t det_it, const TrackerTopology* tTopo, bool flag);
 
@@ -89,6 +89,5 @@ private:
   edm::ESHandle<TrackerTopology> tTopoHandle_;
   edm::EDGetTokenT<edm::PSimHitContainer> simHitsBToken_;
   edm::EDGetTokenT<edm::PSimHitContainer> simHitsEToken_;
-
 };
 #endif

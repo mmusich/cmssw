@@ -33,7 +33,6 @@
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 
-
 // DQM Histograming
 class PixelDigiSimLink;
 class SimTrack;
@@ -59,23 +58,23 @@ public:
   void bookHistograms(DQMStore::IBooker& ibooker, edm::Run const& iRun, edm::EventSetup const& iSetup) override;
   void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) override;
 
+private:
+  void fillITHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec,
+                    const TrackerTopology* tTopo,
+                    const TrackerGeometry* tkGeom,
+                    const GeomDetUnit* geomDetunit,
+                    const DetId& detId);
 
-  
- private:
-  void fillITHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec, 
-                                               const TrackerTopology* tTopo, 
-                                               const TrackerGeometry* tkGeom, 
-                                               const GeomDetUnit* geomDetunit,
-                                               const DetId& detId);
-
-  void fillOTHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec, 
-                                               const TrackerTopology* tTopo, 
-                                               const TrackerGeometry* tkGeom, 
-                                               const GeomDetUnit* geomDetunit,
-                                               const DetId& detId);
+  void fillOTHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec,
+                    const TrackerTopology* tTopo,
+                    const TrackerGeometry* tkGeom,
+                    const GeomDetUnit* geomDetunit,
+                    const DetId& detId);
 
   void bookLayerHistos(DQMStore::IBooker& ibooker, unsigned int det_id, const TrackerTopology* tTopo, bool flag);
-  std::vector<unsigned int> getSimTrackId(const edm::Handle<edm::DetSetVector<PixelDigiSimLink> >& pixelSimLinks, const DetId& detId, unsigned int channel);
+  std::vector<unsigned int> getSimTrackId(const edm::Handle<edm::DetSetVector<PixelDigiSimLink> >& pixelSimLinks,
+                                          const DetId& detId,
+                                          unsigned int channel);
 
   edm::ParameterSet config_;
   bool pixelFlag_;
@@ -88,7 +87,6 @@ public:
   const edm::EDGetTokenT<edm::SimVertexContainer> simVertexToken_;
   std::vector<edm::EDGetTokenT<edm::PSimHitContainer> > simHitTokensbarrel_;
   std::vector<edm::EDGetTokenT<edm::PSimHitContainer> > simHitTokensecap_;
-
 
   MonitorElement* numberRecHits_;
   MonitorElement* globalXY_Pixel_;

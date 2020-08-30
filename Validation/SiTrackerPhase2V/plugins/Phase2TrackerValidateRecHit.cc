@@ -47,16 +47,17 @@ Phase2TrackerValidateRecHit::Phase2TrackerValidateRecHit(const edm::ParameterSet
     : config_(iConfig),
       tokenRecHits_(consumes<Phase2TrackerRecHit1DCollectionNew>(config_.getParameter<edm::InputTag>("rechits"))),
       tokenClusters_(consumes<Phase2TrackerCluster1DCollectionNew>(config_.getParameter<edm::InputTag>("clusters"))),
-      otDigiSimLinkToken_(consumes<edm::DetSetVector<PixelDigiSimLink> >(config_.getParameter<edm::InputTag>("OuterTrackerDigiSimLinkSource"))),
-      itPixelDigiSimLinkToken_(consumes<edm::DetSetVector<PixelDigiSimLink> >(config_.getParameter<edm::InputTag>("InnerPixelDigiSimLinkSource"))),
+      otDigiSimLinkToken_(consumes<edm::DetSetVector<PixelDigiSimLink> >(
+          config_.getParameter<edm::InputTag>("OuterTrackerDigiSimLinkSource"))),
+      itPixelDigiSimLinkToken_(consumes<edm::DetSetVector<PixelDigiSimLink> >(
+          config_.getParameter<edm::InputTag>("InnerPixelDigiSimLinkSource"))),
       simTrackToken_(consumes<edm::SimTrackContainer>(config_.getParameter<edm::InputTag>("SimTrackSource"))),
-      simVertexToken_(consumes<edm::SimVertexContainer>(config_.getParameter<edm::InputTag>("SimVertexSource")))
-{      
+      simVertexToken_(consumes<edm::SimVertexContainer>(config_.getParameter<edm::InputTag>("SimVertexSource"))) {
   edm::LogInfo("Phase2TrackerValidateRecHit") << ">>> Construct Phase2TrackerValidateRecHit ";
   for (const auto& itag : config_.getParameter<std::vector<edm::InputTag> >("PSimHitSourceBarrel"))
-    simHitTokensbarrel_.push_back(consumes<edm::PSimHitContainer>(itag));  
+    simHitTokensbarrel_.push_back(consumes<edm::PSimHitContainer>(itag));
   for (const auto& itag : config_.getParameter<std::vector<edm::InputTag> >("PSimHitSourceEndcap"))
-    simHitTokensecap_.push_back(consumes<edm::PSimHitContainer>(itag));  
+    simHitTokensecap_.push_back(consumes<edm::PSimHitContainer>(itag));
 }
 
 //
@@ -86,8 +87,8 @@ void Phase2TrackerValidateRecHit::analyze(const edm::Event& iEvent, const edm::E
   edm::ESHandle<TrackerTopology> tTopoHandle;
   iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
   const TrackerTopology* tTopo = tTopoHandle.product();
- 
-    // Loop over modules
+
+  // Loop over modules
   for (Phase2TrackerRecHit1DCollectionNew::const_iterator DSViter = rechits->begin(); DSViter != rechits->end();
        ++DSViter) {
     // Get the detector unit's id
@@ -98,41 +99,38 @@ void Phase2TrackerValidateRecHit::analyze(const edm::Event& iEvent, const edm::E
     if (!geomDunit)
       continue;
     if (geomDunit->type().isInnerTracker()) {
-      fillITHistos(*DSViter, tTopo, tkGeom, geomDunit, detId);  
-    } else  if (geomDunit->type().isOuterTracker()) {
-      fillOTHistos(*DSViter, tTopo, tkGeom, geomDunit, detId);  
-    } 
+      fillITHistos(*DSViter, tTopo, tkGeom, geomDunit, detId);
+    } else if (geomDunit->type().isOuterTracker()) {
+      fillOTHistos(*DSViter, tTopo, tkGeom, geomDunit, detId);
+    }
   }
-
 }
 
-void Phase2TrackerValidateRecHit::fillITHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec, 
-                                               const TrackerTopology* tTopo, 
-                                               const TrackerGeometry* tkGeom, 
+void Phase2TrackerValidateRecHit::fillITHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec,
+                                               const TrackerTopology* tTopo,
+                                               const TrackerGeometry* tkGeom,
                                                const GeomDetUnit* geomDetunit,
                                                const DetId& detId) {
   //loop over rechits for a single detId
-  for(edmNew::DetSet<Phase2TrackerRecHit1D>::const_iterator rechitIt = rechitvec.begin(); 
-                                                                       rechitIt != rechitvec.end(); ++rechitIt) {
+  for (edmNew::DetSet<Phase2TrackerRecHit1D>::const_iterator rechitIt = rechitvec.begin(); rechitIt != rechitvec.end();
+       ++rechitIt) {
     LocalPoint localPos = rechitIt->localPosition();
     Global3DPoint globalPos = geomDetunit->surface().toGlobal(localPos);
     globalXY_Pixel_->Fill(globalPos.x(), globalPos.y());
     globalRZ_Pixel_->Fill(globalPos.z(), globalPos.perp());
   }
-
-
 }
-void Phase2TrackerValidateRecHit::fillOTHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec, 
-                                               const TrackerTopology* tTopo, 
-                                               const TrackerGeometry* tkGeom, 
+void Phase2TrackerValidateRecHit::fillOTHistos(const edmNew::DetSet<Phase2TrackerRecHit1D>& rechitvec,
+                                               const TrackerTopology* tTopo,
+                                               const TrackerGeometry* tkGeom,
                                                const GeomDetUnit* geomDetunit,
                                                const DetId& detId) {
   // determine the detector we are in
   TrackerGeometry::ModuleType mType = tkGeom->getDetectorType(detId);
-  
+
   //loop over rechits for a single detId
-  for(edmNew::DetSet<Phase2TrackerRecHit1D>::const_iterator rechitIt = rechitvec.begin(); 
-                                                                       rechitIt != rechitvec.end(); ++rechitIt) {
+  for (edmNew::DetSet<Phase2TrackerRecHit1D>::const_iterator rechitIt = rechitvec.begin(); rechitIt != rechitvec.end();
+       ++rechitIt) {
     LocalPoint localPos = rechitIt->localPosition();
     Global3DPoint globalPos = geomDetunit->surface().toGlobal(localPos);
     if (mType == TrackerGeometry::ModuleType::Ph2PSP) {
@@ -144,29 +142,26 @@ void Phase2TrackerValidateRecHit::fillOTHistos(const edmNew::DetSet<Phase2Tracke
     } else if (mType == TrackerGeometry::ModuleType::Ph2SS) {
       globalXY_SS_->Fill(globalPos.x(), globalPos.y());
       globalRZ_SS_->Fill(globalPos.z(), globalPos.perp());
-    }   
+    }
   }
-
-} 
-
+}
 
 //
 // -- Book Histograms
 //
 void Phase2TrackerValidateRecHit::bookHistograms(DQMStore::IBooker& ibooker,
-						 edm::Run const& iRun,
-						 edm::EventSetup const& iSetup) {
-  
+                                                 edm::Run const& iRun,
+                                                 edm::EventSetup const& iSetup) {
   std::string top_folder = config_.getParameter<std::string>("TopFolderName");
   std::stringstream folder_name;
-  
+
   ibooker.cd();
   folder_name << top_folder;
   ibooker.setCurrentFolder(folder_name.str());
-  
+
   edm::LogInfo("Phase2TrackerValidateRecHit") << " Booking Histograms in : " << folder_name.str();
   std::stringstream HistoName;
-  
+
   HistoName.str("");
   HistoName << "NumberRecHits";
   numberRecHits_ = ibooker.book1D(HistoName.str(), HistoName.str(), 50, 0, 2500);
@@ -176,46 +171,42 @@ void Phase2TrackerValidateRecHit::bookHistograms(DQMStore::IBooker& ibooker,
   ibooker.setCurrentFolder(subdir);
   HistoName.str("");
   HistoName << "Global_Position_XY_Pixel";
-  globalXY_Pixel_   = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
+  globalXY_Pixel_ = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
   HistoName.str("");
   HistoName << "Global_Position_RZ_Pixel";
-  globalRZ_Pixel_   = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
+  globalRZ_Pixel_ = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
 
   //Global histos for OT
   subdir = folder_name.str() + "/Phase2OT";
   ibooker.setCurrentFolder(subdir);
   HistoName.str("");
   HistoName << "Global_Position_XY_PSP";
-  globalXY_PSP_   = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
+  globalXY_PSP_ = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
   HistoName.str("");
   HistoName << "Global_Position_RZ_PSP";
-  globalRZ_PSP_   = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
+  globalRZ_PSP_ = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
   HistoName.str("");
   HistoName << "Global_Position_XY_PSS";
-  globalXY_PSS_   = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
+  globalXY_PSS_ = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
   HistoName.str("");
   HistoName << "Global_Position_RZ_PSS";
-  globalRZ_PSS_   = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
+  globalRZ_PSS_ = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
   HistoName.str("");
   HistoName << "Global_Position_XY_SS";
-  globalXY_SS_   = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
+  globalXY_SS_ = ibooker.book2D(HistoName.str(), HistoName.str(), 500, -120., 120., 500, -120., 120.);
   HistoName.str("");
   HistoName << "Global_Position_RZ_SS";
-  globalRZ_SS_   = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
-   
+  globalRZ_SS_ = ibooker.book2D(HistoName.str(), HistoName.str(), 3000, -3000., 3000., 1250., 0., 1250);
 }
 
 //
 // -- Book Layer Histograms
 //
 void Phase2TrackerValidateRecHit::bookLayerHistos(DQMStore::IBooker& ibooker,
-						  unsigned int det_id,
-						  const TrackerTopology* tTopo,
-						  bool flag) {
-}
+                                                  unsigned int det_id,
+                                                  const TrackerTopology* tTopo,
+                                                  bool flag) {}
 
-  
- 
 std::vector<unsigned int> Phase2TrackerValidateRecHit::getSimTrackId(
     const edm::Handle<edm::DetSetVector<PixelDigiSimLink> >& pixelSimLinks, const DetId& detId, unsigned int channel) {
   std::vector<unsigned int> retvec;
@@ -229,6 +220,5 @@ std::vector<unsigned int> Phase2TrackerValidateRecHit::getSimTrackId(
   }
   return retvec;
 }
-  //define this as a plug-in
+//define this as a plug-in
 DEFINE_FWK_MODULE(Phase2TrackerValidateRecHit);
- 
