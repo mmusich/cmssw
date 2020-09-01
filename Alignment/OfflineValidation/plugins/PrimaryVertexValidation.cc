@@ -978,12 +978,12 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
               h_probeHits_->Fill(theTrack.numberOfValidHits());
               h_probeHits1D_->Fill(nRecHit1D);
               h_probeHits2D_->Fill(nRecHit2D);
-              h_probeHitsInTIB_->Fill(nhitinBPIX);
-              h_probeHitsInTOB_->Fill(nhitinFPIX);
-              h_probeHitsInTID_->Fill(nhitinTIB);
-              h_probeHitsInTEC_->Fill(nhitinTID);
-              h_probeHitsInBPIX_->Fill(nhitinTOB);
-              h_probeHitsInFPIX_->Fill(nhitinTEC);
+              h_probeHitsInTIB_->Fill(nhitinTIB);
+              h_probeHitsInTOB_->Fill(nhitinTOB);
+              h_probeHitsInTID_->Fill(nhitinTID);
+              h_probeHitsInTEC_->Fill(nhitinTEC);
+              h_probeHitsInBPIX_->Fill(nhitinBPIX);
+              h_probeHitsInFPIX_->Fill(nhitinFPIX);
 
               float dxyRecoV = theTrack.dz(theRecoVertex);
               float dzRecoV = theTrack.dxy(theRecoVertex);
@@ -1332,7 +1332,7 @@ void PrimaryVertexValidation::beginJob() {
   }
 
   h_runFromEvent =
-      EventFeatures.make<TH1I>("h_runFromEvent", "run number from config;;run number (from event)", 1, -0.5, 0.5);
+      EventFeatures.make<TH1I>("h_runFromEvent", "run number from event;;run number (from event)", 1, -0.5, 0.5);
   h_nTracks =
       EventFeatures.make<TH1F>("h_nTracks", "number of tracks per event;n_{tracks}/event;n_{events}", 300, -0.5, 299.5);
   h_nClus =
@@ -1469,13 +1469,20 @@ void PrimaryVertexValidation::beginJob() {
   h_probeHitsInFPIX_ =
       ProbeFeatures.make<TH1F>("h_probeNRechitsFPIX", "N_{hits} FPIX;N_{hits} FPIX;tracks", 40, -0.5, 39.5);
 
-  h_probeL1Ladder_ =
-      ProbeFeatures.make<TH1F>("h_probeL1Ladder", "Ladder number (L1 hit); ladder number", 22, -1.5, 20.5);
-  h_probeL1Module_ =
-      ProbeFeatures.make<TH1F>("h_probeL1Module", "Module number (L1 hit); module number", 10, -1.5, 8.5);
+  h_probeL1Ladder_ = ProbeFeatures.make<TH1F>(
+      "h_probeL1Ladder", "Ladder number (L1 hit); ladder number", nLadders_ + 2, -1.5, nLadders_ + 0.5);
+  h_probeL1Module_ = ProbeFeatures.make<TH1F>(
+      "h_probeL1Module", "Module number (L1 hit); module number", nModZ_ + 2, -1.5, nModZ_ + 0.5);
 
-  h2_probeLayer1Map_ = ProbeFeatures.make<TH2F>(
-      "h2_probeLayer1Map", "Position in Layer 1 of first hit;module number;ladder number", 8, 0.5, 8.5, 12, 0.5, 12.5);
+  h2_probeLayer1Map_ = ProbeFeatures.make<TH2F>("h2_probeLayer1Map",
+                                                "Position in Layer 1 of first hit;module number;ladder number",
+                                                nModZ_,
+                                                0.5,
+                                                nModZ_ + 0.5,
+                                                nLadders_,
+                                                0.5,
+                                                nLadders_ + 0.5);
+
   h2_probePassingLayer1Map_ = ProbeFeatures.make<TH2F>("h2_probePassingLayer1Map",
                                                        "Position in Layer 1 of first hit;module number;ladder number",
                                                        nModZ_,
@@ -2651,6 +2658,15 @@ void PrimaryVertexValidation::beginJob() {
 }
 // ------------ method called once each job just after ending the event loop  ------------
 void PrimaryVertexValidation::endJob() {
+
+  // shring the histograms to fit
+  h_probeL1Ladder_->GetXaxis()->SetRangeUser(-1.5, nLadders_ + 0.5);
+  h_probeL1Module_->GetXaxis()->SetRangeUser(-1.5, nModZ_ + 0.5);
+  h2_probeLayer1Map_->GetXaxis()->SetRangeUser(0.5, nModZ_ + 0.5);
+  h2_probeLayer1Map_->GetYaxis()->SetRangeUser(0.5, nLadders_ + 0.5);
+  h2_probePassingLayer1Map_->GetXaxis()->SetRangeUser(0.5, nModZ_ + 0.5);
+  h2_probePassingLayer1Map_->GetYaxis()->SetRangeUser(0.5, nLadders_ + 0.5);
+
   TFileDirectory RunFeatures = fs->mkdir("RunFeatures");
   h_runStartTimes = RunFeatures.make<TH1I>(
       "runStartTimes", "run start times", runNumbersTimesLog_.size(), 0, runNumbersTimesLog_.size());
