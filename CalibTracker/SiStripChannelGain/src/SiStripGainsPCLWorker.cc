@@ -542,6 +542,9 @@ void SiStripGainsPCLWorker::checkBookAPVColls(const TrackerGeometry* bareTkGeomP
 }
 
 //********************************************************************************//
+void SiStripGainsPCLWorker::endJob() {}
+
+//********************************************************************************//
 void SiStripGainsPCLWorker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();

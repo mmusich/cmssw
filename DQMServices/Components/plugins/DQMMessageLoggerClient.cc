@@ -169,3 +169,7 @@ void DQMMessageLoggerClient::fillHistograms() {
 }
 
 void DQMMessageLoggerClient::endRun(const Run& r, const EventSetup& es) { fillHistograms(); }
+
+void DQMMessageLoggerClient::endJob() {
+  //LogTrace(metname)<<"[DQMMessageLoggerClient] EndJob";
+}

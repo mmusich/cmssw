@@ -5,9 +5,6 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
-#include "FWCore/Framework/interface/GetterOfProducts.h"
-#include "FWCore/Framework/interface/ProcessMatch.h"
-#include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Version/interface/GetReleaseVersion.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -28,7 +25,7 @@ namespace saverDetails {
 // - This includes ALCAHARVEST. TODO: check if the data written there is needed for the PCL.
 // This module is not used in online. This module is (hopefully?) not used at HLT.
 // Online and HLT use modules in DQMServices/FileIO.
-class DQMFileSaver : public edm::one::EDAnalyzer<edm::one::WatchRuns, edm::WatchProcessBlock> {
+class DQMFileSaver : public edm::one::EDAnalyzer<edm::one::WatchRuns> {
 public:
   typedef dqm::legacy::DQMStore DQMStore;
   typedef dqm::legacy::MonitorElement MonitorElement;
@@ -38,7 +35,7 @@ protected:
   void beginRun(edm::Run const &, edm::EventSetup const &) override{};
   void analyze(const edm::Event &e, const edm::EventSetup &) override;
   void endRun(const edm::Run &, const edm::EventSetup &) override;
-  void endProcessBlock(const edm::ProcessBlock &) override;
+  void endJob() override;
 
 private:
   void saveForOffline(const std::string &workflow, int run, int lumi);
@@ -63,11 +60,6 @@ private:
 
   // needed only for the harvesting step when saving in the endJob
   int irun_;
-
-  // We want to consume all DQMTokens for runs and jobs. But consumesMany is
-  // confused by the labels, so we sue these getters.
-  edm::GetterOfProducts<DQMToken> jobmegetter_;
-  edm::GetterOfProducts<DQMToken> runmegetter_;
 };
 
 //--------------------------------------------------------
@@ -154,15 +146,11 @@ DQMFileSaver::DQMFileSaver(const edm::ParameterSet &ps)
       fileBaseName_(""),
       dbe_(&*edm::Service<DQMStore>()),
       nrun_(0),
-      irun_(0),
-      // Abuse ProcessMatch as a "match all".
-      jobmegetter_(edm::GetterOfProducts<DQMToken>(edm::ProcessMatch("*"), this, edm::InProcess)),
-      runmegetter_(edm::GetterOfProducts<DQMToken>(edm::ProcessMatch("*"), this, edm::InRun)) {
-  callWhenNewProductsRegistered([this](edm::BranchDescription const &bd) {
-    this->jobmegetter_(bd);
-    this->runmegetter_(bd);
-  });
-
+      irun_(0) {
+  // Note: this is insufficient, we also need to enforce running *after* all
+  // DQMEDAnalyzers (a.k.a. EDProducers) in endJob.
+  // This is not supported in edm currently.
+  consumesMany<DQMToken, edm::InRun>();
   workflow_ = ps.getUntrackedParameter<std::string>("workflow", workflow_);
   if (workflow_.empty() || workflow_[0] != '/' || *workflow_.rbegin() == '/' ||
       std::count(workflow_.begin(), workflow_.end(), '/') != 3 ||
@@ -220,7 +208,7 @@ void DQMFileSaver::endRun(const edm::Run &iRun, const edm::EventSetup &) {
   }
 }
 
-void DQMFileSaver::endProcessBlock(const edm::ProcessBlock &) {
+void DQMFileSaver::endJob() {
   if (saveAtJobEnd_) {
     if (forceRunNumber_ > 0)
       saveForOffline(workflow_, forceRunNumber_, 0);
