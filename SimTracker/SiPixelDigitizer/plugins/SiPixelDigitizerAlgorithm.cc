@@ -176,7 +176,7 @@ void SiPixelDigitizerAlgorithm::init(const edm::EventSetup& es) {
   }
 
   TheNewSiPixelChargeReweightingAlgorithmClass->init(es);
-/*
+  /*
   //Caro
   //std::cout << " in SiPixelDigitizerAlgorithm::init UseReweighting = " << UseReweighting << std::endl;
   
@@ -218,7 +218,7 @@ SiPixelDigitizerAlgorithm::SiPixelDigitizerAlgorithm(const edm::ParameterSet& co
       DeadModules(use_deadmodule_DB_ ? Parameters()
                                      : conf.getParameter<Parameters>("DeadModules")),  // get dead module from cfg file
 
-/*
+      /*
       // Caro
       templ2D(templateStores_),
       xdouble(TXSIZE),
@@ -344,7 +344,7 @@ SiPixelDigitizerAlgorithm::SiPixelDigitizerAlgorithm(const edm::ParameterSet& co
       // Add pixel radiation damage for upgrade studies
       AddPixelAging(conf.getParameter<bool>("DoPixelAging")),
       UseReweighting(conf.getParameter<bool>("UseReweighting")),
-/*
+      /*
       //Caro
       PrintClusters(conf.getParameter<bool>("PrintClusters")),
       PrintTemplates(conf.getParameter<bool>("PrintTemplates")),
@@ -362,8 +362,6 @@ SiPixelDigitizerAlgorithm::SiPixelDigitizerAlgorithm(const edm::ParameterSet& co
                                                            : nullptr),
       pixelEfficiencies_(conf, AddPixelInefficiency, NumberOfBarrelLayers, NumberOfEndcapDisks),
       pixelAging_(conf, AddPixelAging, NumberOfBarrelLayers, NumberOfEndcapDisks) {
-
-
   LogInfo("PixelDigitizer ") << "SiPixelDigitizerAlgorithm constructed"
                              << "Configuration parameters:"
                              << "Threshold/Gain = "
@@ -1554,14 +1552,15 @@ void SiPixelDigitizerAlgorithm::induce_signal(std::vector<PSimHit>::const_iterat
   bool reweighted = false;
   if (UseReweighting) {
     if (hit.processType() == 0) {
-// Caro
-      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight(hit, hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(),makeDigiSimLinks_);
-//      reweighted = hitSignalReweight(hit, hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType());
+      // Caro
+      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight(
+          hit, hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(), makeDigiSimLinks_);
+      //      reweighted = hitSignalReweight(hit, hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType());
     } else {
       // If it's not the primary particle, use the first hit in the collection as SimHit, which should be the corresponding primary.
-      reweighted =
-          TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight((*inputBegin), hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(),makeDigiSimLinks_);
-//          hitSignalReweight((*inputBegin), hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType());
+      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight(
+          (*inputBegin), hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(), makeDigiSimLinks_);
+      //          hitSignalReweight((*inputBegin), hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType());
     }
   }
   if (!reweighted) {
