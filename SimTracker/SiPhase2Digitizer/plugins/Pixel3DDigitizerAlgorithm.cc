@@ -370,7 +370,8 @@ std::vector<DigitizerUtility::SignalPoint> Pixel3DDigitizerAlgorithm::drift(
 // Signal is already "induced" (actually electrons transported to the
 // n-column) at the electrode. Just collecting and adding-up all pixel
 // signal and linking it to the simulated energy deposit (hit)
-void Pixel3DDigitizerAlgorithm::induce_signal(const PSimHit& hit,
+void Pixel3DDigitizerAlgorithm::induce_signal(std::vector<PSimHit>::const_iterator inputBegin,
+                                              const PSimHit& hit,
                                               const size_t hitIndex,
                                               const uint32_t tofBin,
                                               const Phase2TrackerGeomDetUnit* pixdet,
@@ -394,9 +395,9 @@ void Pixel3DDigitizerAlgorithm::induce_signal(const PSimHit& hit,
     float corr_time = hit.tof() - pixdet->surface().toGlobal(hit.localPosition()).mag() * c_inv;
     if (makeDigiSimLinks_) {
       the_signal[channel] +=
-          DigitizerUtility::Amplitude(pt.amplitude(), &hit, pt.amplitude(), corr_time, hitIndex, tofBin);
+          DigitizerUtility::Ph2Amplitude(pt.amplitude(), &hit, pt.amplitude(), corr_time, hitIndex, tofBin);
     } else {
-      the_signal[channel] += DigitizerUtility::Amplitude(pt.amplitude(), nullptr, pt.amplitude());
+      the_signal[channel] += DigitizerUtility::Ph2Amplitude(pt.amplitude(), nullptr, pt.amplitude());
     }
 
     LogDebug("Pixel3DDigitizerAlgorithm::induce_signal")

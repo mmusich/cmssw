@@ -13,7 +13,7 @@
 #include "DataFormats/SiPixelDigi/interface/PixelDigi.h"
 #include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerDigi.h"
 
-#include "SimTracker/SiPhase2Digitizer/plugins/DigitizerUtility.h"
+#include "SimTracker/Common/interface/DigitizerUtility.h"
 #include "SimTracker/SiPhase2Digitizer/plugins/Phase2TrackerDigitizerFwd.h"
 
 // Units and Constants
@@ -44,6 +44,7 @@ class SiPixelQuality;
 class SiPhase2OuterTrackerLorentzAngle;
 class TrackerGeometry;
 class TrackerTopology;
+class SiPixelChargeReweightingAlgorithm;
 
 // REMEMBER CMS conventions:
 // -- Energy: GeV
@@ -103,7 +104,7 @@ protected:
   };
 
   // Internal type aliases
-  using signal_map_type = std::map<int, DigitizerUtility::Amplitude, std::less<int> >;
+  using signal_map_type = std::map<int, DigitizerUtility::Ph2Amplitude, std::less<int> >;
   using signalMaps = std::map<uint32_t, signal_map_type>;
   using Frame = GloballyPositioned<double>;
   using Parameters = std::vector<edm::ParameterSet>;
@@ -171,6 +172,10 @@ protected:
   const double pseudoRadDamage_;        // Decrease the amount off freed charge that reaches the collector
   const double pseudoRadDamageRadius_;  // Only apply pseudoRadDamage to pixels with radius<=pseudoRadDamageRadius
 
+  // charge reweighting
+  const bool useChargeReweighting_;
+  const std::unique_ptr<SiPixelChargeReweightingAlgorithm> theSiPixelChargeReweightingAlgorithm_;
+
   // The PDTable
   // HepPDTable *particleTable;
   // ParticleDataTable *particleTable;
@@ -193,7 +198,8 @@ protected:
       const Phase2TrackerGeomDetUnit* pixdet,
       const GlobalVector& bfield,
       const std::vector<DigitizerUtility::EnergyDepositUnit>& ionization_points) const;
-  virtual void induce_signal(const PSimHit& hit,
+  virtual void induce_signal(std::vector<PSimHit>::const_iterator inputBegin,
+                             const PSimHit& hit,
                              const size_t hitIndex,
                              const uint32_t tofBin,
                              const Phase2TrackerGeomDetUnit* pixdet,

@@ -50,7 +50,7 @@
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "SimTracker/Common/interface/SiG4UniversalFluctuation.h"
 #include "SimTracker/SiPixelDigitizer/plugins/SiPixelDigitizerAlgorithm.h"
-#include "SimTracker/SiPixelDigitizer/plugins/SiPixelChargeReweightingAlgorithm.h"
+#include "SimTracker/Common/interface/SiPixelChargeReweightingAlgorithm.h"
 
 #include <gsl/gsl_sf_erf.h>
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
@@ -1513,19 +1513,20 @@ void SiPixelDigitizerAlgorithm::induce_signal(std::vector<PSimHit>::const_iterat
   bool reweighted = false;
   if (UseReweighting) {
     if (hit.processType() == 0) {
-      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight(
+      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight<DigitizerUtility::Amplitude>(
           hit, hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(), makeDigiSimLinks_);
     } else {
       // If it's not the primary particle, use the first hit in the collection as SimHit, which should be the corresponding primary.
-      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight(
+      reweighted = TheNewSiPixelChargeReweightingAlgorithmClass->hitSignalReweight<DigitizerUtility::Amplitude>(
           (*inputBegin), hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(), makeDigiSimLinks_);
     }
   }
   if (!reweighted) {
     for (hit_map_type::const_iterator im = hit_signal.begin(); im != hit_signal.end(); ++im) {
       int chan = (*im).first;
-      theSignal[chan] += (makeDigiSimLinks_ ? Amplitude((*im).second, &hit, hitIndex, tofBin, (*im).second)
-                                            : Amplitude((*im).second, (*im).second));
+      theSignal[chan] +=
+          (makeDigiSimLinks_ ? DigitizerUtility::Amplitude((*im).second, &hit, hitIndex, tofBin, (*im).second)
+                             : DigitizerUtility::Amplitude((*im).second, (*im).second));
 
 #ifdef TP_DEBUG
       std::pair<int, int> ip = PixelDigi::channelToPixel(chan);
@@ -1663,10 +1664,10 @@ void SiPixelDigitizerAlgorithm::add_noise(const PixelGeomDetUnit* pixdet,
       // Noise from full readout:
       float noise = CLHEP::RandGaussQ::shoot(engine, 0., theReadoutNoise);
 
-      if (((*i).second + Amplitude(noise + noise_ChargeVCALSmearing, -1.)) < 0.) {
+      if (((*i).second + DigitizerUtility::Amplitude(noise + noise_ChargeVCALSmearing, -1.)) < 0.) {
         (*i).second.set(0);
       } else {
-        (*i).second += Amplitude(noise + noise_ChargeVCALSmearing, -1.);
+        (*i).second += DigitizerUtility::Amplitude(noise + noise_ChargeVCALSmearing, -1.);
       }
 
     }  // End if addChargeVCalSmearing
@@ -1675,10 +1676,10 @@ void SiPixelDigitizerAlgorithm::add_noise(const PixelGeomDetUnit* pixdet,
       // Use here the FULL readout noise, including TBM,ALT,AOH,OPT-REC.
       float noise = CLHEP::RandGaussQ::shoot(engine, 0., theReadoutNoise);
 
-      if (((*i).second + Amplitude(noise, -1.)) < 0.) {
+      if (((*i).second + DigitizerUtility::Amplitude(noise, -1.)) < 0.) {
         (*i).second.set(0);
       } else {
-        (*i).second += Amplitude(noise, -1.);
+        (*i).second += DigitizerUtility::Amplitude(noise, -1.);
       }
     }  // end if only Noise from full readout
   }
@@ -1729,7 +1730,7 @@ void SiPixelDigitizerAlgorithm::add_noise(const PixelGeomDetUnit* pixdet,
     if (theSignal[chan] == 0) {
       //      float noise = float( (*mapI).second );
       int noise = int((*mapI).second);
-      theSignal[chan] = Amplitude(noise, -1.);
+      theSignal[chan] = DigitizerUtility::Amplitude(noise, -1.);
     }
   }
 }

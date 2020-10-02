@@ -28,6 +28,7 @@
 #include "CondFormats/SiPixelObjects/interface/LocalPixel.h"
 #include "CondFormats/SiPixelObjects/interface/CablingPathToDetUnit.h"
 #include "CondFormats/SiPhase2TrackerObjects/interface/SiPhase2OuterTrackerLorentzAngle.h"
+#include "SimTracker/Common/interface/SiPixelChargeReweightingAlgorithm.h"
 
 // Geometry
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
@@ -155,6 +156,11 @@ Phase2TrackerDigitizerAlgorithm::Phase2TrackerDigitizerAlgorithm(const edm::Para
                                  ? conf_specific.getParameter<double>("PseudoRadDamageRadius")
                                  : double(0.0)),
 
+      // Add pixel radiation damage
+      useChargeReweighting_(conf_specific.getParameter<bool>("useChargeReweighting")),
+      theSiPixelChargeReweightingAlgorithm_(
+          useChargeReweighting_ ? std::make_unique<SiPixelChargeReweightingAlgorithm>(conf_specific) : nullptr),
+
       // delta cutoff in MeV, has to be same as in OSCAR(0.030/cmsim=1.0 MeV
       // tMax(0.030), // In MeV.
       // tMax(conf.getUntrackedParameter<double>("DeltaProductionCut",0.030)),
@@ -216,7 +222,7 @@ void Phase2TrackerDigitizerAlgorithm::accumulateSimHits(std::vector<PSimHit>::co
 
       // compute induced signal on readout elements and add to _signal
       // hit needed only for SimHit<-->Digi link
-      induce_signal(hit, simHitGlobalIndex, tofBin, pixdet, collection_points);
+      induce_signal(inputBegin, hit, simHitGlobalIndex, tofBin, pixdet, collection_points);
     }
     ++simHitGlobalIndex;
   }
@@ -432,6 +438,7 @@ std::vector<DigitizerUtility::SignalPoint> Phase2TrackerDigitizerAlgorithm::drif
 //
 // Induce the signal on the collection plane of the active sensor area.
 void Phase2TrackerDigitizerAlgorithm::induce_signal(
+    std::vector<PSimHit>::const_iterator inputBegin,
     const PSimHit& hit,
     const size_t hitIndex,
     const uint32_t tofBin,
@@ -577,12 +584,27 @@ void Phase2TrackerDigitizerAlgorithm::induce_signal(
     }
   }
   // Fill the global map with all hit pixels from this event
+  bool reweighted = false;
+  
+  if (useChargeReweighting_) {
+    if (hit.processType() == 0) {
+      reweighted = theSiPixelChargeReweightingAlgorithm_->hitSignalReweight<DigitizerUtility::Ph2Amplitude>(
+          hit, hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(), makeDigiSimLinks_);
+    } else {
+      // If it's not the primary particle, use the first hit in the collection as SimHit, which should be the corresponding primary.
+      reweighted = theSiPixelChargeReweightingAlgorithm_->hitSignalReweight<DigitizerUtility::Ph2Amplitude>(
+          (*inputBegin), hit_signal, hitIndex, tofBin, topol, detID, theSignal, hit.processType(), makeDigiSimLinks_);
+    }
+  }
+ 
   float corr_time = hit.tof() - pixdet->surface().toGlobal(hit.localPosition()).mag() * c_inv;
-  for (auto const& hit_s : hit_signal) {
-    int chan = hit_s.first;
-    theSignal[chan] +=
-        (makeDigiSimLinks_ ? DigitizerUtility::Amplitude(hit_s.second, &hit, hit_s.second, corr_time, hitIndex, tofBin)
-                           : DigitizerUtility::Amplitude(hit_s.second, nullptr, hit_s.second));
+  if (!reweighted) {
+    for (auto const& hit_s : hit_signal) {
+      int chan = hit_s.first;
+      theSignal[chan] += (makeDigiSimLinks_ ? DigitizerUtility::Ph2Amplitude(
+                                                  hit_s.second, &hit, hit_s.second, corr_time, hitIndex, tofBin)
+                                            : DigitizerUtility::Ph2Amplitude(hit_s.second, nullptr, hit_s.second));
+    }
   }
 }
 // ======================================================================
@@ -630,13 +652,13 @@ void Phase2TrackerDigitizerAlgorithm::add_cross_talk(const Phase2TrackerGeomDetU
       auto XtalkPrev = std::make_pair(hitChan.first - 1, hitChan.second);
       int chanXtalkPrev = pixelFlag_ ? PixelDigi::pixelToChannel(XtalkPrev.first, XtalkPrev.second)
                                      : Phase2TrackerDigi::pixelToChannel(XtalkPrev.first, XtalkPrev.second);
-      signalNew.emplace(chanXtalkPrev, DigitizerUtility::Amplitude(signalInElectrons_Xtalk, nullptr, -1.0));
+      signalNew.emplace(chanXtalkPrev, DigitizerUtility::Ph2Amplitude(signalInElectrons_Xtalk, nullptr, -1.0));
     }
     if (hitChan.first < numRows - 1) {
       auto XtalkNext = std::make_pair(hitChan.first + 1, hitChan.second);
       int chanXtalkNext = pixelFlag_ ? PixelDigi::pixelToChannel(XtalkNext.first, XtalkNext.second)
                                      : Phase2TrackerDigi::pixelToChannel(XtalkNext.first, XtalkNext.second);
-      signalNew.emplace(chanXtalkNext, DigitizerUtility::Amplitude(signalInElectrons_Xtalk, nullptr, -1.0));
+      signalNew.emplace(chanXtalkNext, DigitizerUtility::Ph2Amplitude(signalInElectrons_Xtalk, nullptr, -1.0));
     }
   }
   for (auto const& l : signalNew) {
@@ -645,7 +667,7 @@ void Phase2TrackerDigitizerAlgorithm::add_cross_talk(const Phase2TrackerGeomDetU
     if (iter != theSignal.end()) {
       theSignal[chan] += l.second.ampl();
     } else {
-      theSignal.emplace(chan, DigitizerUtility::Amplitude(l.second.ampl(), nullptr, -1.0));
+      theSignal.emplace(chan, DigitizerUtility::Ph2Amplitude(l.second.ampl(), nullptr, -1.0));
     }
   }
 }
@@ -693,7 +715,7 @@ void Phase2TrackerDigitizerAlgorithm::add_noisy_cells(const Phase2TrackerGeomDet
         << " Storing noise = " << el.first << " " << el.second << " " << ix << " " << iy << " " << chan;
 
     if (theSignal[chan] == 0)
-      theSignal[chan] = DigitizerUtility::Amplitude(el.second, nullptr, -1.);
+      theSignal[chan] = DigitizerUtility::Ph2Amplitude(el.second, nullptr, -1.);
   }
 }
 // ============================================================================
@@ -931,7 +953,7 @@ void Phase2TrackerDigitizerAlgorithm::loadAccumulator(uint32_t detId, const std:
   // the input channel is always with PixelDigi definition
   // if needed, that has to be converted to Phase2TrackerDigi convention
   for (const auto& elem : accumulator) {
-    auto inserted = theSignal.emplace(elem.first, DigitizerUtility::Amplitude(elem.second, nullptr));
+    auto inserted = theSignal.emplace(elem.first, DigitizerUtility::Ph2Amplitude(elem.second, nullptr));
     if (!inserted.second) {
       throw cms::Exception("LogicError") << "Signal was already set for DetId " << detId;
     }
@@ -987,7 +1009,7 @@ void Phase2TrackerDigitizerAlgorithm::digitize(const Phase2TrackerGeomDetUnit* p
 
   // Digitize if the signal is greater than threshold
   for (auto const& s : theSignal) {
-    const DigitizerUtility::Amplitude& sig_data = s.second;
+    const DigitizerUtility::Ph2Amplitude& sig_data = s.second;
     float signalInElectrons = sig_data.ampl();
 
     const auto& info_list = sig_data.simInfoList();

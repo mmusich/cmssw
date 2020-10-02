@@ -1,79 +1,99 @@
-//class SiPixelChargeReweightingAlgorithm SimTracker/SiPixelDigitizer/src/SiPixelChargeReweightingAlgorithm.cc
+#ifndef SimTracker_Common_SiPixelChargeReweightingAlgorithm_h
+#define SimTracker_Common_SiPixelChargeReweightingAlgorithm_h
+
+//class SiPixelChargeReweightingAlgorithm SimTracker/Common/src/SiPixelChargeReweightingAlgorithm.cc
 
 // Original Author Caroline Collard
 // September 2020 : Extraction of the code for cluster charge reweighting from SiPixelDigitizerAlgorithm to a new class
 //
+
+// forward declarations
+#include <map>
+#include <memory>
+#include <vector>
 #include <iostream>
 #include <iomanip>
-
-#include "SimGeneral/NoiseGenerators/interface/GaussianTailNoiseGenerator.h"
-
-#include "DataFormats/SiPixelDigi/interface/PixelDigi.h"
-#include "SimDataFormats/TrackerDigiSimLink/interface/PixelDigiSimLink.h"
-#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
-#include "SimTracker/Common/interface/SiG4UniversalFluctuation.h"
-#include "SimTracker/SiPixelDigitizer/plugins/SiPixelChargeReweightingAlgorithm.h"
-
+#include <type_traits>
 #include <gsl/gsl_sf_erf.h>
-#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
-#include "CLHEP/Random/RandGaussQ.h"
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGeneral.h"
 
-//#include "PixelIndices.h"
+#include "boost/multi_array.hpp"
+
+#include "CondFormats/DataRecord/interface/SiPixel2DTemplateDBObjectRcd.h"
+#include "CondFormats/SiPixelObjects/interface/GlobalPixel.h"
+#include "CondFormats/SiPixelObjects/interface/LocalPixel.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixel2DTemplateDBObject.h"
+#include "CondFormats/SiPixelTransient/interface/SiPixelTemplate2D.h"
+#include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
+#include "DataFormats/SiPixelDigi/interface/PixelDigi.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
-#include "Geometry/Records/interface/IdealGeometryRecord.h"
-
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/Exception.h"
-#include "CalibTracker/SiPixelESProducers/interface/SiPixelGainCalibrationOfflineSimService.h"
-
-// Accessing dead pixel modules from the DB:
-#include "DataFormats/DetId/interface/DetId.h"
-
-#include "CondFormats/SiPixelObjects/interface/GlobalPixel.h"
-
-#include "CondFormats/DataRecord/interface/SiPixelQualityRcd.h"
-#include "CondFormats/DataRecord/interface/SiPixelFedCablingMapRcd.h"
-#include "CondFormats/DataRecord/interface/SiPixelLorentzAngleSimRcd.h"
-#include "CondFormats/DataRecord/interface/SiPixelDynamicInefficiencyRcd.h"
-#include "CondFormats/DataRecord/interface/SiPixelStatusScenarioProbabilityRcd.h"
-#include "CondFormats/DataRecord/interface/SiPixelStatusScenariosRcd.h"
-#include "CondFormats/DataRecord/interface/SiPixel2DTemplateDBObjectRcd.h"
-
-#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingTree.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelFedCabling.h"
-#include "CondFormats/SiPixelObjects/interface/PixelIndices.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelLorentzAngle.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
-#include "CondFormats/SiPixelObjects/interface/PixelROC.h"
-#include "CondFormats/SiPixelObjects/interface/LocalPixel.h"
-#include "CondFormats/SiPixelObjects/interface/CablingPathToDetUnit.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelDynamicInefficiency.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelFEDChannelContainer.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelQualityProbabilities.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixel2DTemplateDBObject.h"
-
-#include "CondFormats/SiPixelObjects/interface/SiPixelFrameReverter.h"
-#include "CondFormats/SiPixelObjects/interface/PixelFEDCabling.h"
-#include "CondFormats/SiPixelObjects/interface/PixelFEDLink.h"
-#include "DataFormats/FEDRawData/interface/FEDNumbering.h"
-#include "SimDataFormats/PileupSummaryInfo/interface/PileupMixingContent.h"
-#include "SimDataFormats/Track/interface/SimTrack.h"
-
-// Geometry
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "Geometry/CommonDetUnit/interface/PixelGeomDetUnit.h"
-
-#include "CondFormats/SiPixelObjects/interface/PixelROC.h"
+#include "Geometry/CommonTopologies/interface/PixelTopology.h"
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "SimDataFormats/Track/interface/SimTrack.h"
+#include "SimDataFormats/TrackerDigiSimLink/interface/PixelDigiSimLink.h"
+#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+#include "SimTracker/Common/interface/DigitizerUtility.h"
 
 using namespace edm;
 using namespace sipixelobjects;
+
+namespace edm {
+  class EventSetup;
+  class ParameterSet;
+}  // namespace edm
+
+class SiPixelChargeReweightingAlgorithm {
+public:
+  SiPixelChargeReweightingAlgorithm(const edm::ParameterSet& conf);
+  ~SiPixelChargeReweightingAlgorithm();
+
+  // initialization that cannot be done in the constructor
+  void init(const edm::EventSetup& es);
+
+  template <class AmplitudeType, typename SignalType>
+  bool hitSignalReweight(const PSimHit& hit,
+                         std::map<int, float, std::less<int> >& hit_signal,
+                         const size_t hitIndex,
+                         const unsigned int tofBin,
+                         const PixelTopology* topol,
+                         uint32_t detID,
+                         SignalType& theSignal,
+                         unsigned short int processType,
+                         const bool& boolmakeDigiSimLinks);
+
+private:
+  // Internal typedef
+  typedef boost::multi_array<float, 2> array_2d;
+
+  // Variables and objects for the charge reweighting using 2D templates
+  SiPixelTemplate2D templ2D;
+  std::vector<bool> xdouble;
+  std::vector<bool> ydouble;
+  std::vector<float> track;
+  int IDnum, IDden;
+
+  const bool UseReweighting;
+  const bool PrintClusters;
+  const bool PrintTemplates;
+
+  std::vector<SiPixelTemplateStore2D> templateStores_;
+
+  const SiPixel2DTemplateDBObject* dbobject_den;
+  const SiPixel2DTemplateDBObject* dbobject_num;
+
+  // methods for charge reweighting in irradiated sensors
+  int PixelTempRewgt2D(int id_gen, int id_rewgt, array_2d& cluster);
+  void printCluster(array_2d& cluster);
+  void printCluster(float arr[BXM2][BYM2]);
+  void printCluster(float arr[TXSIZE][TYSIZE]);
+};
 
 void SiPixelChargeReweightingAlgorithm::init(const edm::EventSetup& es) {
   // Read template files for charge reweighting
@@ -98,9 +118,7 @@ void SiPixelChargeReweightingAlgorithm::init(const edm::EventSetup& es) {
 //=========================================================================
 
 SiPixelChargeReweightingAlgorithm::SiPixelChargeReweightingAlgorithm(const edm::ParameterSet& conf)
-    :
-
-      templ2D(templateStores_),
+    : templ2D(templateStores_),
       xdouble(TXSIZE),
       ydouble(TYSIZE),
       IDnum(conf.exists("TemplateIDnumerator") ? conf.getParameter<int>("TemplateIDnumerator") : 0),
@@ -119,14 +137,14 @@ SiPixelChargeReweightingAlgorithm::~SiPixelChargeReweightingAlgorithm() {
 }
 
 //============================================================================
-
+template <class AmplitudeType, typename SignalType>
 bool SiPixelChargeReweightingAlgorithm::hitSignalReweight(const PSimHit& hit,
                                                           std::map<int, float, std::less<int> >& hit_signal,
                                                           const size_t hitIndex,
                                                           const unsigned int tofBin,
                                                           const PixelTopology* topol,
                                                           uint32_t detID,
-                                                          signal_map_type& theSignal,
+                                                          SignalType& theSignal,
                                                           unsigned short int processType,
                                                           const bool& boolmakeDigiSimLinks) {
   int irow_min = topol->nrows();
@@ -136,16 +154,20 @@ bool SiPixelChargeReweightingAlgorithm::hitSignalReweight(const PSimHit& hit,
 
   float chargeBefore = 0;
   float chargeAfter = 0;
-  signal_map_type hitSignal;
+  SignalType hitSignal;
   LocalVector direction = hit.exitPoint() - hit.entryPoint();
 
   for (std::map<int, float, std::less<int> >::const_iterator im = hit_signal.begin(); im != hit_signal.end(); ++im) {
     int chan = (*im).first;
     std::pair<int, int> pixelWithCharge = PixelDigi::channelToPixel(chan);
 
-    hitSignal[chan] +=
-        (boolmakeDigiSimLinks ? SiPixelDigitizerAlgorithm::Amplitude((*im).second, &hit, hitIndex, tofBin, (*im).second)
-                              : SiPixelDigitizerAlgorithm::Amplitude((*im).second, (*im).second));
+    if constexpr (std::is_same_v<AmplitudeType, DigitizerUtility::Ph2Amplitude>) {
+      hitSignal[chan] += AmplitudeType((*im).second, &hit, (*im).second, 0., hitIndex, tofBin);
+    } else {
+      hitSignal[chan] += (boolmakeDigiSimLinks ? AmplitudeType((*im).second, &hit, hitIndex, tofBin, (*im).second)
+                                               : AmplitudeType((*im).second, (*im).second));
+    }
+
     chargeBefore += (*im).second;
 
     if (pixelWithCharge.first < irow_min)
@@ -312,9 +334,15 @@ bool SiPixelChargeReweightingAlgorithm::hitSignalReweight(const PSimHit& hit,
       if ((hitPixel.first + row - THX) >= 0 && (hitPixel.first + row - THX) < topol->nrows() &&
           (hitPixel.second + col - THY) >= 0 && (hitPixel.second + col - THY) < topol->ncolumns() && charge > 0) {
         chargeAfter += charge;
-        theSignal[PixelDigi::pixelToChannel(hitPixel.first + row - THX, hitPixel.second + col - THY)] +=
-            (boolmakeDigiSimLinks ? SiPixelDigitizerAlgorithm::Amplitude(charge, &hit, hitIndex, tofBin, charge)
-                                  : SiPixelDigitizerAlgorithm::Amplitude(charge, charge));
+
+        if constexpr (std::is_same_v<AmplitudeType, DigitizerUtility::Ph2Amplitude>) {
+          theSignal[PixelDigi::pixelToChannel(hitPixel.first + row - THX, hitPixel.second + col - THY)] +=
+              AmplitudeType(charge, &hit, charge, 0., hitIndex, tofBin);
+        } else {
+          theSignal[PixelDigi::pixelToChannel(hitPixel.first + row - THX, hitPixel.second + col - THY)] +=
+              (boolmakeDigiSimLinks ? AmplitudeType(charge, &hit, hitIndex, tofBin, charge)
+                                    : AmplitudeType(charge, charge));
+        }
       }
     }
   }
@@ -596,3 +624,5 @@ void SiPixelChargeReweightingAlgorithm::printCluster(float arr[TXSIZE][TYSIZE]) 
   }
   std::cout.copyfmt(std::ios(nullptr));
 }
+
+#endif
