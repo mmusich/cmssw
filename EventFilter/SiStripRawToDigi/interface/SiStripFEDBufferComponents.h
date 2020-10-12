@@ -10,6 +10,7 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include <cstdint>
+#include <iostream>
 
 namespace sistrip {
 
@@ -1484,7 +1485,12 @@ namespace sistrip {
   inline uint8_t FEDBufferBase::apveAddress() const { return specialHeader_.apveAddress(); }
 
   inline bool FEDBufferBase::majorityAddressErrorForFEUnit(const uint8_t internalFEUnitNum) const {
-    return (specialHeader_.majorityAddressErrorForFEUnit(internalFEUnitNum) && (specialHeader_.apveAddress() != 0x00));
+    bool toReturn = (specialHeader_.majorityAddressErrorForFEUnit(internalFEUnitNum)); // && (specialHeader_.apveAddress() != 0x00));
+    if(toReturn){
+      std:: cout <<" internalFEUnit: " << specialHeader_.majorityAddressErrorForFEUnit(internalFEUnitNum) << std::endl;
+      std:: cout <<" APVAddress: " <<  std::hex << (0xFF & specialHeader_.apveAddress()) << std::endl; 
+    }
+    return toReturn;
   }
 
   inline bool FEDBufferBase::feEnabled(const uint8_t internalFEUnitNum) const {

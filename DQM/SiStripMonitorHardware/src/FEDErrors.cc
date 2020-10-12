@@ -10,6 +10,7 @@
 #include "DQM/SiStripMonitorHardware/interface/HistogramBase.hh"
 #include "DQM/SiStripMonitorHardware/interface/FEDErrors.hh"
 #include "DQM/SiStripCommon/interface/TkHistoMap.h"
+#include <iostream>
 
 FEDErrors::FEDErrors() {
   //initialiseLumiBlock();
@@ -420,6 +421,7 @@ bool FEDErrors::fillFEErrors(const sistrip::FEDBuffer& aBuffer,
     //!aBuffer.checkFEUnitAPVAddresses(): for all FE's....
     //want to do it only for this FE... do it directly with the time difference.
     if (aBuffer.majorityAddressErrorForFEUnit(iFE)) {
+      std::cout<< "FOUND BAD MAJORITY ADDRESS!!!!" << std::endl;
       lFeErr.BadMajorityAddress = true;
       foundBadMajority = true;
       //no continue to fill the timeDifference.

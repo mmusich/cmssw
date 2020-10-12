@@ -5,14 +5,9 @@ import sys
 from Configuration.Eras.Era_Run3_cff import Run3
 process = cms.Process("SiStrpDQMLive", Run3)
 
-process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('siStripDigis',
-                                         'siStripClusters',
-                                         'siStripZeroSuppression',
-                                        'SiStripClusterizer'),
-    cout = cms.untracked.PSet(threshold = cms.untracked.string('ERROR')),
-    destinations = cms.untracked.vstring('cout')
-)
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.destinations = ['cout', 'cerr']
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 live=True
 unitTest=False
@@ -207,7 +202,7 @@ process.hltHighLevel.throw =  cms.bool(False)
 #--------------------------
 # Scheduling
 #--------------------------
-process.SiStripSources_LocalReco = cms.Sequence(process.siStripFEDMonitor*process.SiStripMonitorDigi*process.SiStripMonitorClusterReal)
+process.SiStripSources_LocalReco = cms.Sequence(process.siStripFEDMonitor) #*process.SiStripMonitorDigi*process.SiStripMonitorClusterReal)
 process.DQMCommon                = cms.Sequence(process.stripQTester*process.trackingQTester*process.dqmEnv*process.dqmEnvTr*process.dqmSaver)
 if (process.runType.getRunType() == process.runType.hi_run):
     process.RecoForDQM_LocalReco     = cms.Sequence(process.siPixelDigis*process.siStripDigis*process.trackerlocalreco)
@@ -287,16 +282,16 @@ if (process.runType.getRunType() == process.runType.cosmic_run or process.runTyp
 ### pp COLLISION SETTING
 if (process.runType.getRunType() == process.runType.pp_run or process.runType.getRunType() == process.runType.pp_run_stage1):
     #event selection for pp collisions
-    if ((process.runType.getRunType() == process.runType.pp_run) and live):
-        process.source.SelectEvents = cms.untracked.vstring(
-            'HLT_L1*',
-            'HLT_Jet*',
-            'HLT_Physics*',
-            'HLT_ZeroBias*',
-            'HLT_PAL1*',
-            'HLT_PAZeroBias*',
-            'HLT_PAAK*'
-            )
+    # if ((process.runType.getRunType() == process.runType.pp_run) and live):
+    #     process.source.SelectEvents = cms.untracked.vstring(
+    #         'HLT_L1*',
+    #         'HLT_Jet*',
+    #         'HLT_Physics*',
+    #         'HLT_ZeroBias*',
+    #         'HLT_PAL1*',
+    #         'HLT_PAZeroBias*',
+    #         'HLT_PAAK*'
+    #         )
 
     # Source and Client config for pp collisions
 
@@ -370,23 +365,23 @@ if (process.runType.getRunType() == process.runType.pp_run or process.runType.ge
     process.RecoForDQM_TrkReco = cms.Sequence(process.offlineBeamSpot*process.MeasurementTrackerEventPreSplitting*process.siPixelClusterShapeCachePreSplitting*process.recopixelvertexing*process.InitialStepPreSplitting)
 
     process.p = cms.Path(
-        process.scalersRawToDigi*
-        process.tcdsDigis*
-        process.onlineMetaDataDigis*
-        process.APVPhases*
-        process.consecutiveHEs*
-        process.hltTriggerTypeFilter*
+        #process.scalersRawToDigi*
+        #process.tcdsDigis*
+        #process.onlineMetaDataDigis*
+        #process.APVPhases*
+        #process.consecutiveHEs*
+        #process.hltTriggerTypeFilter*
         process.siStripFEDCheck *
-        process.RecoForDQM_LocalReco*
-        process.siPixelClusters*
-        process.DQMCommon*
-        process.SiStripClients*
-        process.SiStripSources_LocalReco*
+        #process.RecoForDQM_LocalReco*
+        #process.siPixelClusters*
+        #process.DQMCommon*
+        #process.SiStripClients*
+        process.SiStripSources_LocalReco
         ##### TRIGGER SELECTION #####
-        process.hltHighLevel*
-        process.RecoForDQM_TrkReco*
-        process.SiStripSources_TrkReco*
-        process.TrackingClient
+        #process.hltHighLevel*
+        #process.RecoForDQM_TrkReco*
+        #process.SiStripSources_TrkReco*
+        #process.TrackingClient
         )
 
 #--------------------------------------------------
