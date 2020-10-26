@@ -126,6 +126,13 @@ SiStripSimBlock = cms.PSet(
     fracOfEventsToSimAPV       = cms.double( 0.0 ), # fraction of events to simulate APV saturation
 )
 
+
+from Configuration.ProcessModifiers.cosmics_in_pp_cff import *
+cosmics_in_pp.toModify(
+    SiStripSimBlock,
+    CosmicDelayShift = 31  # same value as in digitizersCosmics
+    )
+
 #################################################
 # activate APV simulation for 2016 Strip detector (UL 2016)
 # According to this document https://indico.cern.ch/event/560226/contributions/2277448/attachments/1324704/1988050/wgm_vfp_change_ebutz.pdf
