@@ -105,6 +105,14 @@ SiPixelSimBlock = cms.PSet(
 ###    DeadModules = cms.VPSet()
 )
 
+## this changes the digitization window in case one needs to run the pp reconstruction over cosmics
+from Configuration.ProcessModifiers.cosmics_in_pp_cff import *
+cosmics_in_pp.toModify(
+    SiPixelSimBlock,
+    TofLowerCut=18.5,  # same value as in digitizersCosmics
+    TofUpperCut=43.5
+)
+
 # activate charge reweighing for 2016 pixel detector (UL 2016)
 from Configuration.Eras.Modifier_pixel_2016_cff import pixel_2016
 pixel_2016.toModify(SiPixelSimBlock,UseReweighting=True)

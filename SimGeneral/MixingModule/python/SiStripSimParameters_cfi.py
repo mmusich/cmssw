@@ -126,7 +126,7 @@ SiStripSimBlock = cms.PSet(
     fracOfEventsToSimAPV       = cms.double( 0.0 ), # fraction of events to simulate APV saturation
 )
 
-
+## this changes the digitization window in case one needs to run the pp reconstruction over cosmics
 from Configuration.ProcessModifiers.cosmics_in_pp_cff import *
 cosmics_in_pp.toModify(
     SiStripSimBlock,
