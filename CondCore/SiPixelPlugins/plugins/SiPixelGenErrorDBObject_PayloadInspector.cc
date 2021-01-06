@@ -12,7 +12,7 @@
 #include "CondCore/Utilities/interface/PayloadInspector.h"
 #include "CondCore/CondDB/interface/Time.h"
 #include "CondCore/SiPixelPlugins/interface/SiPixelPayloadInspectorHelper.h"
-#include "CondCore/SiPixelPlugins/interface/Phase1PixelMaps.h"
+#include "DQM/TrackerRemapper/interface/Phase1PixelMaps.h"
 
 #include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
 
