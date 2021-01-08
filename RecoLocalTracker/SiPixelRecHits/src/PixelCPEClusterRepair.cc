@@ -158,8 +158,6 @@ void PixelCPEClusterRepair::fill2DTemplIDs() {
 PixelCPEClusterRepair::~PixelCPEClusterRepair() {
   for (auto x : thePixelTemp_)
     x.destroy();
-  for (auto x : thePixelTemp2D_)
-    x.destroy();
 }
 
 std::unique_ptr<PixelCPEBase::ClusterParam> PixelCPEClusterRepair::createClusterParam(const SiPixelCluster& cl) const {
