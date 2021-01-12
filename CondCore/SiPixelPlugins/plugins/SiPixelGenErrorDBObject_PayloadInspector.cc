@@ -207,9 +207,9 @@ namespace {
 
         TCanvas canvas("Canv", "Canv", (myType == SiPixelPI::t_barrel) ? 1200 : 1500, 1000);
         if (myType == SiPixelPI::t_barrel) {
-          theMaps.DrawBarrelMaps("generrorIDsBarrel", canvas);
+          theMaps.drawBarrelMaps("generrorIDsBarrel", canvas);
         } else if (myType == SiPixelPI::t_forward) {
-          theMaps.DrawForwardMaps("generrorIDsForward", canvas);
+          theMaps.drawForwardMaps("generrorIDsForward", canvas);
         }
 
         canvas.cd();
