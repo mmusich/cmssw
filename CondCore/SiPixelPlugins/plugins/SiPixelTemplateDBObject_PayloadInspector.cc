@@ -338,9 +338,9 @@ namespace {
 
         TCanvas canvas("Canv", "Canv", (myType == SiPixelPI::t_barrel) ? 1200 : 1600, 1000);
         if (myType == SiPixelPI::t_barrel) {
-          theMaps.DrawBarrelMaps("templateLABarrel", canvas);
+          theMaps.drawBarrelMaps("templateLABarrel", canvas);
         } else if (myType == SiPixelPI::t_forward) {
-          theMaps.DrawForwardMaps("templateLAForward", canvas);
+          theMaps.drawForwardMaps("templateLAForward", canvas);
         } else if (myType == SiPixelPI::t_all) {
           theMaps.drawSummaryMaps("templateLA", canvas);
         }
@@ -448,9 +448,9 @@ namespace {
 
         TCanvas canvas("Canv", "Canv", (myType == SiPixelPI::t_barrel) ? 1200 : 1500, 1000);
         if (myType == SiPixelPI::t_barrel) {
-          theMaps.DrawBarrelMaps("templateIDsBarrel", canvas);
+          theMaps.drawBarrelMaps("templateIDsBarrel", canvas);
         } else if (myType == SiPixelPI::t_forward) {
-          theMaps.DrawForwardMaps("templateIDsForward", canvas);
+          theMaps.drawForwardMaps("templateIDsForward", canvas);
         } else if (myType == SiPixelPI::t_all) {
           theMaps.drawSummaryMaps("templateIDs", canvas);
         }
