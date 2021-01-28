@@ -20,11 +20,3 @@ phase2_tracker.toModify(PixelCPEGenericESProducer,
   DoCosmics = False,
   Upgrade = True                     # use 'upgrade' version of hardcoded CPE errors
 )
-
-
-# customize the Pixel CPE generic producer in order not to use any  template information
-from Configuration.ProcessModifiers.phase2_PixelCPEGeneric_cff import phase2_PixelCPEGeneric
-phase2_PixelCPEGeneric.toModify(PixelCPEGenericESProducer,
-  UseErrorsFromTemplates = False,    # no GenErrors
-  LoadTemplatesFromDB = False,       # do not load templates
-)
