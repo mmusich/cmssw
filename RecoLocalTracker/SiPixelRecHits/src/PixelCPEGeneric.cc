@@ -121,18 +121,10 @@ PixelCPEGeneric::PixelCPEGeneric(edm::ParameterSet const& conf,
     xerr_endcap_def_ = 0.00060;
     yerr_endcap_ = {0.00289, 0.00025};
     yerr_endcap_def_ = 0.00180;
-
-    if (conf.getParameter<bool>("SmallPitch")) {
-      xerr_barrel_l1_ = {0.00104, 0.000691, 0.00122};
-      xerr_barrel_l1_def_ = 0.00321;
-      yerr_barrel_l1_ = {0.00199, 0.00136, 0.0015, 0.00153, 0.00152, 0.00171, 0.00154, 0.00157, 0.00154};
-      yerr_barrel_l1_def_ = 0.00164;
-    } else {
-      xerr_barrel_l1_ = {0.00025, 0.00030, 0.00035, 0.00035};
-      xerr_barrel_l1_def_ = 0.00035;
-      yerr_barrel_l1_ = {0.00210, 0.00115, 0.00125};
-      yerr_barrel_l1_def_ = 0.00125;
-    }
+    xerr_barrel_l1_ = {0.00025, 0.00030, 0.00035, 0.00035};
+    xerr_barrel_l1_def_ = 0.00035;
+    yerr_barrel_l1_ = {0.00210, 0.00115, 0.00125};
+    yerr_barrel_l1_def_ = 0.00125;
   }  // if isUpgrade
 
   if (MYDEBUG) {
@@ -645,5 +637,4 @@ void PixelCPEGeneric::fillPSetDescription(edm::ParameterSetDescription& desc) {
   desc.add<bool>("IrradiationBiasCorrection", false);
   desc.add<bool>("DoCosmics", false);
   desc.add<bool>("Upgrade", false);
-  desc.add<bool>("SmallPitch", false);
 }

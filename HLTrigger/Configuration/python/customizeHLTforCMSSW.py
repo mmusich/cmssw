@@ -223,6 +223,9 @@ def customiseForXXXXX(process) :
         if hasattr(producer, "directoryWithTemplates"): del producer.directoryWithTemplates
         if hasattr(producer, "barrelTemplateID"): del producer.barrelTemplateID
         if hasattr(producer, "forwardTemplateID"): del producer.forwardTemplateID
+        
+    for producer in esproducers_by_type(process, "PixelCPEGenericESProducer"):
+        if hasattr(producer, "SmallPitch"): del producer.SmallPitch
 
     return process
 
