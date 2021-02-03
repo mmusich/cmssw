@@ -1,7 +1,7 @@
 '''Customization functions for cmsDriver to change the phase-2 tracker local reconstruction for configuration different from regular planar rectangular pixels'''
 import FWCore.ParameterSet.Config as cms
 
-def esproducers_by_type(process, *types):
+def _esproducers_by_type(process, *types):
     "Find all ESProducers in the Process that are instances of the given C++ type."
     return (module for module in process._Process__esproducers.values() if module._TypedParameterizable__type in types)
 
@@ -10,7 +10,7 @@ def customizeFor3DPixels(process):
     ''' Will remove any usage of template / genError payloads from the reconstruction
     '''
     
-    for producer in esproducers_by_type(process, "PixelCPEGenericESProducer"):
+    for producer in _esproducers_by_type(process, "PixelCPEGenericESProducer"):
         producer.UseErrorsFromTemplates = False  # no GenErrors
         producer.LoadTemplatesFromDB = False     # do not load templates
             
@@ -23,7 +23,7 @@ def customizeForSquarePixels(process):
         have been optimized for rectangular 25x100 pixels, and in the current generic reco setup we use hardcoded errors for the first tracking pass
     '''
     
-    for producer in esproducers_by_type(process, "PixelCPEGenericESProducer"):
+    for producer in _esproducers_by_type(process, "PixelCPEGenericESProducer"):
         producer.NoTemplateErrorsWhenNoTrkAngles = cms.bool(False) # use genErrors in the seeding step (when no track angles are available)
 
     return process
