@@ -8,11 +8,13 @@
 #include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelTemplateDBObject.h"
 #include "CondFormats/SiPixelTransient/interface/SiPixelTemplate.h"
+#include "DQM/TrackerRemapper/interface/Phase1PixelMaps.h"
 
 #include <type_traits>
 #include <memory>
 #include <sstream>
 #include <fmt/printf.h>
+#include <boost/range/adaptor/indexed.hpp>
 
 // include ROOT
 #include "TH2F.h"
@@ -378,9 +380,9 @@ namespace templateHelper {
 
         TCanvas canvas("Canv", "Canv", (myType == SiPixelPI::t_barrel) ? 1200 : 1500, 1000);
         if (myType == SiPixelPI::t_barrel) {
-          theMaps.DrawBarrelMaps(barrelName_, canvas);
+          theMaps.drawBarrelMaps(barrelName_, canvas);
         } else if (myType == SiPixelPI::t_forward) {
-          theMaps.DrawForwardMaps(endcapName_, canvas);
+          theMaps.drawForwardMaps(endcapName_, canvas);
         }
 
         canvas.cd();
