@@ -23,6 +23,8 @@
 #include "CondFormats/DataRecord/interface/AlCaRecoTriggerBitsRcd.h"
 #include "HLTrigger/HLTcore/interface/TriggerExpressionData.h"
 
+class AlCaRecoTriggerBits;
+
 // forward declaration
 namespace edm {
   class ConfigurationDescriptions;
@@ -30,6 +32,7 @@ namespace edm {
 namespace triggerExpression {
   class Evaluator;
 }
+
 
 //
 // class declaration
@@ -49,6 +52,9 @@ private:
   /// parse the logical expression into functionals
   void parse(const std::string &expression);
   void parse(const std::vector<std::string> &expressions);
+
+  /// ES token
+  edm::ESGetToken<AlCaRecoTriggerBits, AlCaRecoTriggerBitsRcd> const m_BitsToken;
 
   /// read the triggerConditions from the database
   std::string m_eventSetupPathsKey;
