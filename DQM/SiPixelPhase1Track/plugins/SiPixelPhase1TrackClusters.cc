@@ -226,6 +226,12 @@ namespace {
         auto geomdetunit = dynamic_cast<const PixelGeomDetUnit*>(pixhit->detUnit());
         auto const& topol = geomdetunit->specificTopology();
 
+	//some initialization
+	for(int j=0; j<TXSIZE; ++j) {for(int i=0; i<TYSIZE; ++i) {clusbuf[j][i] = 0.;} } 
+	for(int j=0; j<TXSIZE; ++j) {xdouble[j] = false;}  
+	for(int i=0; i<TYSIZE; ++i) {ydouble[i] = false;}
+
+
         // get the cluster
         auto clustp = pixhit->cluster();
         if (clustp.isNull())
