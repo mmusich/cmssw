@@ -37,7 +37,6 @@
 #include "CalibTracker/Records/interface/SiPixelTemplateDBObjectESProducerRcd.h"
 //#include "CalibTracker/Records/interface/SiPixel2DTemplateDBObjectESProducerRcd.h"
 
-
 namespace {
 
   class SiPixelPhase1TrackClusters final : public SiPixelPhase1Base {
@@ -154,23 +153,21 @@ namespace {
     edm::ESHandle<SiPixelTemplateDBObject> templateDBobject;
     iSetup.get<SiPixelTemplateDBObjectESProducerRcd>().get(templateDBobject);
     templateDBobject_ = templateDBobject.product();
-    std::vector< SiPixelTemplateStore > thePixelTemp_;
+    std::vector<SiPixelTemplateStore> thePixelTemp_;
     SiPixelTemplate templ(thePixelTemp_);
 
     //stuff needed for template
     float clusbuf[TXSIZE][TYSIZE];
-    int mrow=TXSIZE,mcol=TYSIZE;
-    static float xrec, yrec, sigmax, sigmay, probx, proby,probQ;
-    static int ix,iy, speed;
-    bool xdouble[TXSIZE],ydouble[TYSIZE];
-    int qbin,ierr;
-    int minPixelRow = 161;
-    int minPixelCol = 417;
-    speed=-2;
+    int mrow = TXSIZE, mcol = TYSIZE;
+    static float xrec, yrec, sigmax, sigmay, probx, proby, probQ;
+    static int ix, iy, speed;
+    bool xdouble[TXSIZE], ydouble[TYSIZE];
+    int qbin, ierr;
+    speed = -2;
 
     if (!SiPixelTemplate::pushfile(*templateDBobject_, thePixelTemp_))
       cout << "\nERROR: Templates not filled correctly. Check the sqlite file. Using SiPixelTemplateDBObject version "
-	   << (*templateDBobject_).version() << "\n\n";
+           << (*templateDBobject_).version() << "\n\n";
 
     edm::Handle<SiPixelClusterShapeCache> pixelClusterShapeCacheH;
     iEvent.getByToken(pixelClusterShapeCacheToken_, pixelClusterShapeCacheH);
@@ -226,11 +223,21 @@ namespace {
         auto geomdetunit = dynamic_cast<const PixelGeomDetUnit*>(pixhit->detUnit());
         auto const& topol = geomdetunit->specificTopology();
 
-	//some initialization
-	for(int j=0; j<TXSIZE; ++j) {for(int i=0; i<TYSIZE; ++i) {clusbuf[j][i] = 0.;} } 
-	for(int j=0; j<TXSIZE; ++j) {xdouble[j] = false;}  
-	for(int i=0; i<TYSIZE; ++i) {ydouble[i] = false;}
+        //some initialization
+        for (int j = 0; j < TXSIZE; ++j) {
+          for (int i = 0; i < TYSIZE; ++i) {
+            clusbuf[j][i] = 0.;
+          }
+        }
+        for (int j = 0; j < TXSIZE; ++j) {
+          xdouble[j] = false;
+        }
+        for (int i = 0; i < TYSIZE; ++i) {
+          ydouble[i] = false;
+        }
 
+        int minPixelRow = 161;
+        int minPixelCol = 417;
 
         // get the cluster
         auto clustp = pixhit->cluster();
@@ -251,24 +258,43 @@ namespace {
           } else {
             histo[ON_TRACK_NOTBIGPIXELCHARGE].fill(pixel_charge, id, &iEvent);
           }
-	  // Now fill the cluster buffer with charges
-	  ix = (int)pixx - minPixelRow;
-	  if(ix >= TXSIZE) continue;
-	  iy = (int)pixy - minPixelCol;
-	  if(iy >= TYSIZE) continue;
-	  
-	  clusbuf[ix][iy] = pixel_charge;
 
-	  if ((int)pixx == 79 || (int)pixx == 80){
-	    xdouble[ix] = true;
-	  }
-	  if ((int)pixy % 52 == 0 || (int)pixy % 52 == 51 ){
-	    ydouble[iy] = true;
-	  }
-
-
-
+          //  Find lower left corner pixel and its coordinates
+          if ((int)pixx < minPixelRow) {
+            minPixelRow = pixx;
+          }
+          if ((int)pixy < minPixelCol) {
+            minPixelCol = pixy;
+          }
         }  // End loop over pixels
+
+        for (unsigned int i = 0; i < pixelsVec.size(); ++i) {
+          float pixel_charge = pixelsVec[i].adc;
+          float pixx = pixelsVec[i].x;  // index as float=iteger, row index
+          float pixy = pixelsVec[i].y;  // same, col index
+
+          // Now fill the cluster buffer with charges
+          ix = (int)pixx - minPixelRow;
+          //std::cout << "ix: " << ix << " pixx: "<< pixx << " minPixelRow: " <<minPixelRow << std::endl;
+          if (ix >= TXSIZE)
+            continue;
+          iy = (int)pixy - minPixelCol;
+          //std::cout << "iy: " << iy << " pixy: "<< pixy << " minPixelCol: " <<minPixelCol << std::endl;
+          if (iy >= TYSIZE)
+            continue;
+
+          clusbuf[ix][iy] = pixel_charge;
+
+          //std::cout<<"pixel: "<< ix << ";" << iy << " charge: " <<  clusbuf[ix][iy] << std::endl;
+
+          if ((int)pixx == 79 || (int)pixx == 80) {
+            xdouble[ix] = true;
+          }
+          if ((int)pixy % 52 == 0 || (int)pixy % 52 == 51) {
+            ydouble[iy] = true;
+          }
+        }
+
         auto const& ltp = trajParams[h];
 
         auto localDir = ltp.momentum() / ltp.momentum().mag();
@@ -276,41 +302,72 @@ namespace {
         // correct charge for track impact angle
         auto charge = cluster.charge() * ltp.absdz();
 
-	//Correct charge with Template1D
-	float cotAlpha=ltp.dxdz();
-	float cotBeta=ltp.dydz();
-	float locBx = 1.;
-	if(cotBeta < 0.)
-	  locBx = -1.;
-	float locBz = locBx;
-	if(cotAlpha < 0.)
-	  locBz = -locBx;
-	//	templ.interpolate(templateDBobject_->getTemplateID(id), cotAlpha, cotBeta, locBz, locBx);
-	int TemplID1=-9999;
-	TemplID1=templateDBobject_->getTemplateID(id);
-	templ.interpolate(TemplID1, 0.f, 0.f, 0.f, 0.f);
-	SiPixelTemplateReco::ClusMatrix clusterPayload{&clusbuf[0][0], xdouble, ydouble, mrow,mcol};
-	ierr=PixelTempReco1D(TemplID1,
-			     cotAlpha, 
-			     cotBeta, 
-			     locBz, 
-			     locBx, 
-			     clusterPayload, 
-			     templ, 
-			     yrec, 
-			     sigmay, 
-			     proby, 
-			     xrec, 
-			     sigmax, 
-			     probx, 
-			     qbin, 
-			     speed, 
-			     probQ);
+        //Correct charge with Template1D
+        float cotAlpha = ltp.dxdz();
+        float cotBeta = ltp.dydz();
+        float locBx = 1.;
+        if (cotBeta < 0.)
+          locBx = -1.;
+        float locBz = locBx;
+        if (cotAlpha < 0.)
+          locBz = -locBx;
+        //	templ.interpolate(templateDBobject_->getTemplateID(id), cotAlpha, cotBeta, locBz, locBx);
+        int TemplID1 = -9999;
+        TemplID1 = templateDBobject_->getTemplateID(id);
 
-	float charge_cor=0.f;
-	if(ierr == 0) {
-	  charge_cor = (charge*templ.qscale())/templ.r_qMeas_qTrue();
-	}
+        std::cout << "template ID: " << TemplID1 << "\n"
+                  << "cotAlpha: " << cotAlpha << "\n"
+                  << "cotBeta: " << cotBeta << "\n"
+                  << "locBz: " << locBx << "\n"
+                  << "yrec: " << yrec << "\n"
+                  << "sigmay: " << sigmay << "\n"
+                  << "proby: " << proby << "\n"
+                  << "xrec: " << xrec << "\n"
+                  << "sigmax: " << sigmax << "\n"
+                  << "probx: " << probx << "\n"
+                  << "qbin: " << qbin << "\n"
+                  << "speed: " << speed << "\n"
+                  << "probQ: " << probQ << "\n"
+                  << std::endl;
+
+        //std::cout << "Double pixel bits x"<< std::endl;
+        //for(int j=0; j<TXSIZE; ++j) {std::cout << xdouble[j] << " ";}
+        //std::cout << std::endl;
+        //std::cout << "Double pixel bits y"<< std::endl;
+        //for(int i=0; i<TYSIZE; ++i) {std::cout << ydouble[i] << " ";}
+        //std::cout << std::endl;
+
+        std::cout << "Cluster shape" << std::endl;
+        for (int j = 0; j < TXSIZE; ++j) {
+          for (int i = 0; i < TYSIZE; ++i) {
+            std::cout << std::setw(5) << std::left << clusbuf[j][i] << " ";
+          }
+          std::cout << std::endl;
+        }
+
+        templ.interpolate(TemplID1, 0.f, 0.f, 0.f, 0.f);
+        SiPixelTemplateReco::ClusMatrix clusterPayload{&clusbuf[0][0], xdouble, ydouble, mrow, mcol};
+        ierr = PixelTempReco1D(TemplID1,
+                               cotAlpha,
+                               cotBeta,
+                               locBz,
+                               locBx,
+                               clusterPayload,
+                               templ,
+                               yrec,
+                               sigmay,
+                               proby,
+                               xrec,
+                               sigmax,
+                               probx,
+                               qbin,
+                               speed,
+                               probQ);
+
+        float charge_cor = 0.f;
+        if (ierr == 0) {
+          charge_cor = (charge * templ.qscale()) / templ.r_qMeas_qTrue();
+        }
 
         auto clustgp = pixhit->globalPosition();  // from rechit
 
