@@ -6,6 +6,7 @@
 <use name="CondFormats/GeometryObjects"/>
 <use name="CondFormats/SiPixelObjects"/>
 <use name="CommonTools/TriggerUtils"/>
+<use name="RecoLocalTracker/SiPixelRecHits"/>
 <export>
   <lib name="1"/>
 </export>

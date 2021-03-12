@@ -31,8 +31,8 @@
 #include "RecoTracker/Record/interface/CkfComponentsRecord.h"
 #include "RecoPixelVertexing/PixelLowPtUtilities/interface/ClusterShapeHitFilter.h"
 
-#include "CondFormats/SiPixelTransient/src/SiPixelTemplate.cc"
-//#include "RecoLocalTracker/SiPixelRecHits/src/SiPixelTemplateReco.cc"
+//#include "CondFormats/SiPixelTransient/src/SiPixelTemplate.cc"
+#include "RecoLocalTracker/SiPixelRecHits/src/SiPixelTemplateReco.cc"
 //#include "RecoLocalTracker/SiPixelRecHits/src/SiPixelTemplateReco2D.cc"
 #include "CalibTracker/Records/interface/SiPixelTemplateDBObjectESProducerRcd.h"
 //#include "CalibTracker/Records/interface/SiPixel2DTemplateDBObjectESProducerRcd.h"
@@ -156,7 +156,18 @@ namespace {
     templateDBobject_ = templateDBobject.product();
     std::vector< SiPixelTemplateStore > thePixelTemp_;
     SiPixelTemplate templ(thePixelTemp_);
-  
+
+    //stuff needed for template
+    float clusbuf[TXSIZE][TYSIZE];
+    int mrow=TXSIZE,mcol=TYSIZE;
+    static float xrec, yrec, sigmax, sigmay, probx, proby,probQ;
+    static int ix,iy, speed;
+    bool xdouble[TXSIZE],ydouble[TYSIZE];
+    int qbin,ierr;
+    int minPixelRow = 161;
+    int minPixelCol = 417;
+    speed=-2;
+
     if (!SiPixelTemplate::pushfile(*templateDBobject_, thePixelTemp_))
       cout << "\nERROR: Templates not filled correctly. Check the sqlite file. Using SiPixelTemplateDBObject version "
 	   << (*templateDBobject_).version() << "\n\n";
@@ -234,6 +245,23 @@ namespace {
           } else {
             histo[ON_TRACK_NOTBIGPIXELCHARGE].fill(pixel_charge, id, &iEvent);
           }
+	  // Now fill the cluster buffer with charges
+	  ix = (int)pixx - minPixelRow;
+	  if(ix >= TXSIZE) continue;
+	  iy = (int)pixy - minPixelCol;
+	  if(iy >= TYSIZE) continue;
+	  
+	  clusbuf[ix][iy] = pixel_charge;
+
+	  if ((int)pixx == 79 || (int)pixx == 80){
+	    xdouble[ix] = true;
+	  }
+	  if ((int)pixy % 52 == 0 || (int)pixy % 52 == 51 ){
+	    ydouble[iy] = true;
+	  }
+
+
+
         }  // End loop over pixels
         auto const& ltp = trajParams[h];
 
@@ -251,8 +279,32 @@ namespace {
 	float locBz = locBx;
 	if(cotAlpha < 0.)
 	  locBz = -locBx;
-	templ.interpolate(templateDBobject_->getTemplateID(id), cotAlpha, cotBeta, locBz, locBx);
-	auto charge_cor = (charge*templ.qscale())/templ.r_qMeas_qTrue();
+	//	templ.interpolate(templateDBobject_->getTemplateID(id), cotAlpha, cotBeta, locBz, locBx);
+	int TemplID1=-9999;
+	TemplID1=templateDBobject_->getTemplateID(id);
+	templ.interpolate(TemplID1, 0.f, 0.f, 0.f, 0.f);
+	SiPixelTemplateReco::ClusMatrix clusterPayload{&clusbuf[0][0], xdouble, ydouble, mrow,mcol};
+	ierr=PixelTempReco1D(TemplID1,
+			     cotAlpha, 
+			     cotBeta, 
+			     locBz, 
+			     locBx, 
+			     clusterPayload, 
+			     templ, 
+			     yrec, 
+			     sigmay, 
+			     proby, 
+			     xrec, 
+			     sigmax, 
+			     probx, 
+			     qbin, 
+			     speed, 
+			     probQ);
+
+	float charge_cor=0.f;
+	if(ierr == 0) {
+	  charge_cor = (charge*templ.qscale())/templ.r_qMeas_qTrue();
+	}
 
         auto clustgp = pixhit->globalPosition();  // from rechit
 
