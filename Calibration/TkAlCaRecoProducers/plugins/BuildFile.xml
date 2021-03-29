@@ -35,3 +35,11 @@
   <use name="TrackingTools/TrajectoryState"/>
   <flags EDM_PLUGIN="1"/>
 </library>
+
+<library file="NearbyPixelClusterProducer.cc" name="NearbyPixelClusterProducer">
+  <use name="TrackingTools/PatternTools"/>
+  <use name="RecoLocalTracker/Records"/>
+  <use name="RecoTracker/MeasurementDet"/>
+  <use name="TrackingTools/TrackFitters"/>
+  <flags EDM_PLUGIN="1"/>
+</library>
