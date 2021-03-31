@@ -1,0 +1,9 @@
+<use name="DataFormats/TrackReco"/>
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/PluginManager"/>
+<use name="Geometry/TrackerGeometryBuilder"/>
+<use name="Geometry/CommonDetUnit"/>
+<use name="DataFormats/TrackerCommon"/>
+<use name="Geometry/Records"/>
+<flags EDM_PLUGIN="1"/>
