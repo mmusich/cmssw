@@ -123,6 +123,10 @@ void NearbyPixelClusterProducer::produce(edm::Event& iEvent, const edm::EventSet
   if (!trajTrackCollectionHandle.isValid())
     return;
 
+  //std::cout << (*trajTrackCollectionHandle).size() << std::endl;
+
+  std::vector<uint32_t> treatedIDs;
+
   for (const auto& pair : *trajTrackCollectionHandle) {
     const edm::Ref<std::vector<Trajectory>> traj = pair.key;
     const reco::TrackRef track = pair.val;
@@ -139,6 +143,12 @@ void NearbyPixelClusterProducer::produce(edm::Event& iEvent, const edm::EventSet
 
       if (!this->detidIsOnPixel(r_rawId))
         continue;
+
+      if (std::find(treatedIDs.begin(), treatedIDs.end(), r_rawId.rawId()) != treatedIDs.end()) {
+        continue;
+      } else {
+        treatedIDs.push_back(r_rawId.rawId());
+      }
 
       // Skipping hits with undeterminable positions
       TrajectoryStateOnSurface trajStateOnSurface = this->getTrajectoryStateOnSurface(measurement);
