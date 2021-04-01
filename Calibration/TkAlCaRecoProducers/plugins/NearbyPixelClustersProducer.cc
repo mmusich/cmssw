@@ -59,6 +59,8 @@
 #include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelQuality.h"
+#include "CondFormats/DataRecord/interface/SiPixelQualityFromDbRcd.h"
 
 using trajCrossings_t = std::map<uint32_t, std::vector<LocalPoint>>;
 
@@ -80,8 +82,6 @@ private:
 
   const std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> findAllNearbyClusters(
       const edmNew::DetSetVector<SiPixelCluster>::const_iterator& clusterSet,
-      const TrackerGeometry* geom,
-      const PixelClusterParameterEstimator* pixelCPE,
       const uint32_t rawId,
       const std::vector<LocalPoint>& vLocalPos);
 
@@ -90,21 +90,29 @@ private:
 
   // ----------member data ---------------------------
 
+  const bool dumpWholeDetId_;
+
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomEsToken_;
   const edm::ESGetToken<PixelClusterParameterEstimator, TkPixelCPERecord> pixelCPEEsToken_;
+  const edm::ESGetToken<SiPixelQuality, SiPixelQualityFromDbRcd> badModuleToken_;
 
   edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> clustersToken_;
   edm::EDGetTokenT<TrajTrackAssociationCollection> trajTrackCollectionToken_;
 
   edm::EDPutTokenT<SiPixelClusterCollectionNew> clusterPutToken_;
+
+  const TrackerGeometry* trackerGeometry_;
+  const PixelClusterParameterEstimator* pixelCPE_;
 };
 
 //
 // constructors and destructor
 //
 NearbyPixelClustersProducer::NearbyPixelClustersProducer(const edm::ParameterSet& iConfig)
-    : geomEsToken_(esConsumes()),
+    : dumpWholeDetId_(iConfig.getParameter<bool>("dumpWholeDetIds")),
+      geomEsToken_(esConsumes()),
       pixelCPEEsToken_(esConsumes(edm::ESInputTag("", "PixelCPEGeneric"))),
+      badModuleToken_(esConsumes()),
       clustersToken_(
           consumes<edmNew::DetSetVector<SiPixelCluster>>(iConfig.getParameter<edm::InputTag>("clusterCollection"))),
       trajTrackCollectionToken_(
@@ -122,10 +130,12 @@ void NearbyPixelClustersProducer::produce(edm::Event& iEvent, const edm::EventSe
   auto outputClusters = std::make_unique<SiPixelClusterCollectionNew>();
 
   // get the Tracker geometry from event setup
-  const TrackerGeometry* trackerGeometry_ = &iSetup.getData(geomEsToken_);
+  trackerGeometry_ = &iSetup.getData(geomEsToken_);
 
   // get the Pixel CPE from event setup
-  const PixelClusterParameterEstimator* pixelCPE_ = &iSetup.getData(pixelCPEEsToken_);
+  pixelCPE_ = &iSetup.getData(pixelCPEEsToken_);
+
+  const auto& SiPixelBadModule_ = &iSetup.getData(badModuleToken_);
 
   // get cluster collection
   edm::Handle<edmNew::DetSetVector<SiPixelCluster>> clusterCollectionHandle;
@@ -141,16 +151,26 @@ void NearbyPixelClustersProducer::produce(edm::Event& iEvent, const edm::EventSe
   // find all trajectory crossings in the event
   const auto& allCrossings = this->findAllTrajectoriesCrossings(trajTrackCollectionHandle);
 
+  LogDebug("NearbyPixelClustersProducer") << allCrossings.size() << std::endl;
+
   // now find all nearby clusters
   for (const auto& [id, vLocalPos] : allCrossings) {
+    // if the module is bad continue
+    if (SiPixelBadModule_->IsModuleBad(id))
+      continue;
+
     // prepare the filler
     edmNew::DetSetVector<SiPixelCluster>::FastFiller spc(*outputClusters, id);
 
     // retrieve the clusters of the right detId
     const auto& clustersOnDet = clusterCollection.find(id);
 
+    // if the cluster DetSet is not valid, move on
+    if (!(*clustersOnDet).isValid())
+      continue;
+
     // find all the clusters to put into the event
-    const auto& clustersToPut = this->findAllNearbyClusters(clustersOnDet, trackerGeometry_, pixelCPE_, id, vLocalPos);
+    const auto& clustersToPut = this->findAllNearbyClusters(clustersOnDet, id, vLocalPos);
 
     for (const auto& cluster : clustersToPut) {
       spc.push_back(*cluster);
@@ -201,13 +221,13 @@ const trajCrossings_t NearbyPixelClustersProducer::findAllTrajectoriesCrossings(
       LocalPoint localPosition = trajStateOnSurface.localPosition();
 
       if (std::find(treatedIds.begin(), treatedIds.end(), rawId) != treatedIds.end()) {
-	crossings.at(rawId).push_back(localPosition);
+        crossings.at(rawId).push_back(localPosition);
       } else {
-	crossings.insert(std::pair<uint32_t,std::vector<LocalPoint>>(rawId,{localPosition}));
-	treatedIds.push_back(rawId);
+        crossings.insert(std::pair<uint32_t, std::vector<LocalPoint>>(rawId, {localPosition}));
+        treatedIds.push_back(rawId);
       }
-    } // loop on measurements in trajectory
-  } // loop on trajectories
+    }  // loop on measurements in trajectory
+  }    // loop on trajectories
 
   return crossings;
 }
@@ -215,18 +235,36 @@ const trajCrossings_t NearbyPixelClustersProducer::findAllTrajectoriesCrossings(
 /*--------------------------------------------------------------------*/
 const std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> NearbyPixelClustersProducer::findAllNearbyClusters(
     const edmNew::DetSetVector<SiPixelCluster>::const_iterator& clusterSet,
-    const TrackerGeometry* geom,
-    const PixelClusterParameterEstimator* pixelCPE,
     const uint32_t rawId,
     const std::vector<LocalPoint>& vLocalPos)
 /*--------------------------------------------------------------------*/
 {
   std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> outputClusters;
 
-  const PixelGeomDetUnit* pixdet = (const PixelGeomDetUnit*)geom->idToDetUnit(rawId);
+  static constexpr unsigned int k_maxClustersInDet = 1024;
+
+  // something funny is going on here ...
+  if ((*clusterSet).size() > k_maxClustersInDet) {
+    edm::LogWarning("NearbyPixelClustersProducer")
+        << __func__ << "() number of clusters in det " << rawId /*(*clusterSet).id()*/ << " is " << (*clusterSet).size()
+        << ", which is larger than maximum (1024).\n Something funny with the data is going on!" << std::endl;
+    return outputClusters;
+  }
+
+  const PixelGeomDetUnit* pixdet = (const PixelGeomDetUnit*)trackerGeometry_->idToDetUnit(rawId);
   edmNew::DetSet<SiPixelCluster>::const_iterator itCluster = clusterSet->begin();
 
+  // just copy straight the whole set of clusters in the detid
+  if (dumpWholeDetId_) {
+    for (; itCluster != clusterSet->end(); ++itCluster) {
+      outputClusters.push_back(itCluster);
+    }
+    return outputClusters;
+  }
+
+  int count = 0;
   for (const auto& localPos : vLocalPos) {
+    count++;
     //trajectory crossing local coordinates
     const auto& traj_lx = localPos.x();
     const auto& traj_ly = localPos.y();
@@ -234,9 +272,13 @@ const std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> NearbyPixelClu
     float minD = 10000.;
     edmNew::DetSet<SiPixelCluster>::const_iterator closest = nullptr;
 
+    //std::cout<< rawId << " count: " << count << " n. clusters: " << (*clusterSet).size() << std::endl;
+    LogDebug("NearbyPixelClustersProducer")
+        << __func__ << rawId << " count: " << count << " n. clusters: " << (*clusterSet).size() << std::endl;
+
     for (; itCluster != clusterSet->end(); ++itCluster) {
       LocalPoint lp(itCluster->x(), itCluster->y(), 0.);
-      const auto& params = pixelCPE->getParameters(*itCluster, *pixdet);
+      const auto& params = pixelCPE_->getParameters(*itCluster, *pixdet);
       lp = std::get<0>(params);
 
       float D = sqrt((lp.x() - traj_lx) * (lp.x() - traj_lx) + (lp.y() - traj_ly) * (lp.y() - traj_ly));
@@ -245,7 +287,10 @@ const std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> NearbyPixelClu
         minD = D;
       }
     }  // loop on cluster sets
-    outputClusters.push_back(closest);
+
+    if (closest) {
+      outputClusters.push_back(closest);
+    }
   }  // loop on the trajectory crossings
 
   return outputClusters;
@@ -295,6 +340,7 @@ void NearbyPixelClustersProducer::fillDescriptions(edm::ConfigurationDescription
   desc.setComment(
       "Produces the collection of SiPixelClusters closest, hit by hit, to the trajectory measurements of a given "
       "track");
+  desc.add<bool>("dumpWholeDetIds", false);
   desc.add<edm::InputTag>("clusterCollection", edm::InputTag("siPixelClusters"));
   desc.add<edm::InputTag>("trajectoryInput", edm::InputTag("myRefitter"));
   descriptions.addWithDefaultLabel(desc);

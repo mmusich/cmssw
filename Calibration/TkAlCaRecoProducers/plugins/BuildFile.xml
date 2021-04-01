@@ -49,5 +49,6 @@
   <use name="RecoLocalTracker/Records"/>
   <use name="RecoTracker/MeasurementDet"/>
   <use name="TrackingTools/TrackFitters"/>
+  <use name="CondFormats/SiPixelObjects"/>
   <flags EDM_PLUGIN="1"/>
 </library>
