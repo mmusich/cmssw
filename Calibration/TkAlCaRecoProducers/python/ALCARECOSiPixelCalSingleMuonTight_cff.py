@@ -55,7 +55,7 @@ ALCARECOSiPixelCalSingleMuonTightTracksRefit = TrackRefitter.clone(src = cms.Inp
                                                                    NavigationSchool = cms.string("")
                                                                    )
 
-closebyPixelClusters = cms.EDProducer('NearbyPixelClusterProducer',
+closebyPixelClusters = cms.EDProducer('NearbyPixelClustersProducer',
                                       clusterCollection = cms.InputTag('siPixelClusters'),
                                       trajectoryInput = cms.InputTag('ALCARECOSiPixelCalSingleMuonTightTracksRefit')
                                       )

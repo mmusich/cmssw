@@ -1,13 +1,14 @@
 // -*- C++ -*-
 //
 // Package:    Calibration/TkAlCaRecoProducers
-// Class:      NearbyPixelClusterProducer
+// Class:      NearbyPixelClustersProducer
 //
-/**\class NearbyPixelClusterProducer NearbyPixelClusterProducer.cc Calibration/TkAlCaRecoProducers/plugins/NearbyPixelClusterProducer.cc
+/**\class NearbyPixelClustersProducer NearbyPixelClustersProducer.cc Calibration/TkAlCaRecoProducers/plugins/NearbyPixelClustersProducer.cc
 
  Description: Class to produce the collection of SiPixelClusters closest, hit by hit, to the trajectory measurements of a given track
 
- Implementation: Implementation is heavily endebted to https://github.com/jkarancs/PhaseIPixelNtuplizer/blob/master/plugins/PhaseIPixelNtuplizer.h
+ Implementation: 
+     Implementation of this class is heavily endebted to https://github.com/jkarancs/PhaseIPixelNtuplizer/blob/master/plugins/PhaseIPixelNtuplizer.h
 
 */
 //
@@ -18,6 +19,7 @@
 
 // system include files
 #include <memory>
+#include <map>
 
 // user include files
 #include "DataFormats/Common/interface/DetSetVector.h"
@@ -58,19 +60,31 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h"
 
+using trajCrossings_t = std::map<uint32_t, std::vector<LocalPoint>>;
+
 //
 // class declaration
 //
 
-class NearbyPixelClusterProducer : public edm::stream::EDProducer<> {
+class NearbyPixelClustersProducer : public edm::stream::EDProducer<> {
 public:
-  explicit NearbyPixelClusterProducer(const edm::ParameterSet&);
-  ~NearbyPixelClusterProducer() override = default;
+  explicit NearbyPixelClustersProducer(const edm::ParameterSet&);
+  ~NearbyPixelClustersProducer() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
   void produce(edm::Event&, const edm::EventSetup&) override;
+  const trajCrossings_t findAllTrajectoriesCrossings(
+      const edm::Handle<TrajTrackAssociationCollection>& trajTrackCollectionHandle);
+
+  const std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> findAllNearbyClusters(
+      const edmNew::DetSetVector<SiPixelCluster>::const_iterator& clusterSet,
+      const TrackerGeometry* geom,
+      const PixelClusterParameterEstimator* pixelCPE,
+      const uint32_t rawId,
+      const std::vector<LocalPoint>& vLocalPos);
+
   TrajectoryStateOnSurface getTrajectoryStateOnSurface(const TrajectoryMeasurement& measurement);
   bool detidIsOnPixel(const DetId& detid);
 
@@ -88,7 +102,7 @@ private:
 //
 // constructors and destructor
 //
-NearbyPixelClusterProducer::NearbyPixelClusterProducer(const edm::ParameterSet& iConfig)
+NearbyPixelClustersProducer::NearbyPixelClustersProducer(const edm::ParameterSet& iConfig)
     : geomEsToken_(esConsumes()),
       pixelCPEEsToken_(esConsumes(edm::ESInputTag("", "PixelCPEGeneric"))),
       clustersToken_(
@@ -102,7 +116,7 @@ NearbyPixelClusterProducer::NearbyPixelClusterProducer(const edm::ParameterSet& 
 //
 
 // ------------ method called to produce the data  ------------
-void NearbyPixelClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void NearbyPixelClustersProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
 
   auto outputClusters = std::make_unique<SiPixelClusterCollectionNew>();
@@ -111,44 +125,70 @@ void NearbyPixelClusterProducer::produce(edm::Event& iEvent, const edm::EventSet
   const TrackerGeometry* trackerGeometry_ = &iSetup.getData(geomEsToken_);
 
   // get the Pixel CPE from event setup
-  const PixelClusterParameterEstimator* pixelClusterParameterEstimator_ = &iSetup.getData(pixelCPEEsToken_);
+  const PixelClusterParameterEstimator* pixelCPE_ = &iSetup.getData(pixelCPEEsToken_);
 
-  // Get cluster collection
+  // get cluster collection
   edm::Handle<edmNew::DetSetVector<SiPixelCluster>> clusterCollectionHandle;
   iEvent.getByToken(clustersToken_, clusterCollectionHandle);
+  const edmNew::DetSetVector<SiPixelCluster>& clusterCollection = *clusterCollectionHandle;
 
-  // Get Traj-Track Collection
+  // get Traj-Track Collection
   edm::Handle<TrajTrackAssociationCollection> trajTrackCollectionHandle;
   iEvent.getByToken(trajTrackCollectionToken_, trajTrackCollectionHandle);
   if (!trajTrackCollectionHandle.isValid())
     return;
 
-  //std::cout << (*trajTrackCollectionHandle).size() << std::endl;
+  // find all trajectory crossings in the event
+  const auto& allCrossings = this->findAllTrajectoriesCrossings(trajTrackCollectionHandle);
 
-  std::vector<uint32_t> treatedIDs;
+  // now find all nearby clusters
+  for (const auto& [id, vLocalPos] : allCrossings) {
+    // prepare the filler
+    edmNew::DetSetVector<SiPixelCluster>::FastFiller spc(*outputClusters, id);
+
+    // retrieve the clusters of the right detId
+    const auto& clustersOnDet = clusterCollection.find(id);
+
+    // find all the clusters to put into the event
+    const auto& clustersToPut = this->findAllNearbyClusters(clustersOnDet, trackerGeometry_, pixelCPE_, id, vLocalPos);
+
+    for (const auto& cluster : clustersToPut) {
+      spc.push_back(*cluster);
+    }
+
+    if (spc.empty())
+      spc.abort();
+
+  }  // loop on trajectory crossings
+
+  iEvent.put(clusterPutToken_, std::move(outputClusters));
+}
+
+/*--------------------------------------------------------------------*/
+const trajCrossings_t NearbyPixelClustersProducer::findAllTrajectoriesCrossings(
+    const edm::Handle<TrajTrackAssociationCollection>& trajTrackCollectionHandle)
+/*--------------------------------------------------------------------*/
+{
+  trajCrossings_t crossings;  // = {0xFFFFF,{}};
+
+  std::vector<uint32_t> treatedIds;
 
   for (const auto& pair : *trajTrackCollectionHandle) {
     const edm::Ref<std::vector<Trajectory>> traj = pair.key;
-    const reco::TrackRef track = pair.val;
 
     for (const TrajectoryMeasurement& measurement : traj->measurements()) {
       //Check if the measurement infos can be read
       if (!measurement.updatedState().isValid())
-        return;
+        continue;
 
       const TransientTrackingRecHit::ConstRecHitPointer& recHit = measurement.recHit();
 
       // Only looking for pixel hits
-      DetId r_rawId = recHit->geographicalId();
+      DetId recHitDetid = recHit->geographicalId();
+      const auto& rawId = recHitDetid.rawId();
 
-      if (!this->detidIsOnPixel(r_rawId))
+      if (!this->detidIsOnPixel(recHitDetid))
         continue;
-
-      if (std::find(treatedIDs.begin(), treatedIDs.end(), r_rawId.rawId()) != treatedIDs.end()) {
-        continue;
-      } else {
-        treatedIDs.push_back(r_rawId.rawId());
-      }
 
       // Skipping hits with undeterminable positions
       TrajectoryStateOnSurface trajStateOnSurface = this->getTrajectoryStateOnSurface(measurement);
@@ -160,63 +200,59 @@ void NearbyPixelClusterProducer::produce(edm::Event& iEvent, const edm::EventSet
       // Looking for valid and missing hits
       LocalPoint localPosition = trajStateOnSurface.localPosition();
 
-      const auto& traj_lx = localPosition.x();
-      const auto& traj_ly = localPosition.y();
+      if (std::find(treatedIds.begin(), treatedIds.end(), rawId) != treatedIds.end()) {
+	crossings.at(rawId).push_back(localPosition);
+      } else {
+	crossings.insert(std::pair<uint32_t,std::vector<LocalPoint>>(rawId,{localPosition}));
+	treatedIds.push_back(rawId);
+      }
+    } // loop on measurements in trajectory
+  } // loop on trajectories
 
-      const edmNew::DetSetVector<SiPixelCluster>& clusterCollection = *clusterCollectionHandle;
-      edmNew::DetSetVector<SiPixelCluster>::const_iterator itClusterSet = clusterCollection.begin();
-
-      float minD = 10000.;
-
-      for (; itClusterSet != clusterCollection.end(); itClusterSet++) {
-        DetId detId(itClusterSet->id());
-        if (detId.rawId() != r_rawId)
-          continue;
-
-        unsigned int subDetId = detId.subdetId();
-        if (subDetId != PixelSubdetector::PixelBarrel && subDetId != PixelSubdetector::PixelEndcap) {
-          edm::LogError("NearByPixelClusterProducer")
-              << "ERROR: not a pixel cluster!!!" << std::endl;  // should not happen
-          continue;
-        }
-
-        const PixelGeomDetUnit* pixdet = (const PixelGeomDetUnit*)trackerGeometry_->idToDetUnit(detId);
-        edmNew::DetSet<SiPixelCluster>::const_iterator itCluster = itClusterSet->begin();
-
-        edmNew::DetSetVector<SiPixelCluster>::FastFiller spc(*outputClusters, detId.rawId());
-
-        edmNew::DetSet<SiPixelCluster>::const_iterator closest = nullptr;
-
-        for (; itCluster != itClusterSet->end(); ++itCluster) {
-          LocalPoint lp(itCluster->x(), itCluster->y(), 0.);
-          PixelClusterParameterEstimator::ReturnType params =
-              pixelClusterParameterEstimator_->getParameters(*itCluster, *pixdet);
-          lp = std::get<0>(params);
-
-          float D = sqrt((lp.x() - traj_lx) * (lp.x() - traj_lx) + (lp.y() - traj_ly) * (lp.y() - traj_ly));
-          if (D < minD) {
-            closest = itCluster;
-            minD = D;
-            //std::cout << "rawID: " << detId.rawId() <<"( " << traj_lx << "," << traj_ly  << " ) minD: "<< minD << std::endl;
-          }
-        }  // loop on cluster sets
-
-        if (closest) {
-          spc.push_back(*closest);
-        }
-
-        if (spc.empty())
-          spc.abort();
-
-      }  // loop on all clusters
-    }    // loop on trajectory measurements
-  }      // loop on trajectories
-
-  iEvent.put(clusterPutToken_, std::move(outputClusters));
+  return crossings;
 }
 
 /*--------------------------------------------------------------------*/
-bool NearbyPixelClusterProducer::detidIsOnPixel(const DetId& detid)
+const std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> NearbyPixelClustersProducer::findAllNearbyClusters(
+    const edmNew::DetSetVector<SiPixelCluster>::const_iterator& clusterSet,
+    const TrackerGeometry* geom,
+    const PixelClusterParameterEstimator* pixelCPE,
+    const uint32_t rawId,
+    const std::vector<LocalPoint>& vLocalPos)
+/*--------------------------------------------------------------------*/
+{
+  std::vector<edmNew::DetSet<SiPixelCluster>::const_iterator> outputClusters;
+
+  const PixelGeomDetUnit* pixdet = (const PixelGeomDetUnit*)geom->idToDetUnit(rawId);
+  edmNew::DetSet<SiPixelCluster>::const_iterator itCluster = clusterSet->begin();
+
+  for (const auto& localPos : vLocalPos) {
+    //trajectory crossing local coordinates
+    const auto& traj_lx = localPos.x();
+    const auto& traj_ly = localPos.y();
+
+    float minD = 10000.;
+    edmNew::DetSet<SiPixelCluster>::const_iterator closest = nullptr;
+
+    for (; itCluster != clusterSet->end(); ++itCluster) {
+      LocalPoint lp(itCluster->x(), itCluster->y(), 0.);
+      const auto& params = pixelCPE->getParameters(*itCluster, *pixdet);
+      lp = std::get<0>(params);
+
+      float D = sqrt((lp.x() - traj_lx) * (lp.x() - traj_lx) + (lp.y() - traj_ly) * (lp.y() - traj_ly));
+      if (D < minD) {
+        closest = itCluster;
+        minD = D;
+      }
+    }  // loop on cluster sets
+    outputClusters.push_back(closest);
+  }  // loop on the trajectory crossings
+
+  return outputClusters;
+}
+
+/*--------------------------------------------------------------------*/
+bool NearbyPixelClustersProducer::detidIsOnPixel(const DetId& detid)
 /*--------------------------------------------------------------------*/
 {
   if (detid.det() != DetId::Tracker)
@@ -229,7 +265,7 @@ bool NearbyPixelClusterProducer::detidIsOnPixel(const DetId& detid)
 }
 
 /*--------------------------------------------------------------------*/
-TrajectoryStateOnSurface NearbyPixelClusterProducer::getTrajectoryStateOnSurface(
+TrajectoryStateOnSurface NearbyPixelClustersProducer::getTrajectoryStateOnSurface(
     const TrajectoryMeasurement& measurement)
 /*--------------------------------------------------------------------*/
 {
@@ -247,14 +283,14 @@ TrajectoryStateOnSurface NearbyPixelClusterProducer::getTrajectoryStateOnSurface
   else if (forwardPredictedState.isValid())
     return forwardPredictedState;
 
-  edm::LogError("NearbyPixelClusterProducer") << "Error saving traj. measurement data."
-                                              << " Trajectory state on surface cannot be determined." << std::endl;
+  edm::LogError("NearbyPixelClustersProducer") << "Error saving traj. measurement data."
+                                               << " Trajectory state on surface cannot be determined." << std::endl;
 
   return TrajectoryStateOnSurface();
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void NearbyPixelClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void NearbyPixelClustersProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setComment(
       "Produces the collection of SiPixelClusters closest, hit by hit, to the trajectory measurements of a given "
@@ -265,4 +301,4 @@ void NearbyPixelClusterProducer::fillDescriptions(edm::ConfigurationDescriptions
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(NearbyPixelClusterProducer);
+DEFINE_FWK_MODULE(NearbyPixelClustersProducer);

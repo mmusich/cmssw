@@ -36,7 +36,7 @@
   <flags EDM_PLUGIN="1"/>
 </library>
 
-<library file="NearbyPixelClusterProducer.cc" name="NearbyPixelClusterProducer">
+<library file="NearbyPixelClustersProducer.cc" name="NearbyPixelClustersProducer">
   <use name="TrackingTools/PatternTools"/>
   <use name="RecoLocalTracker/Records"/>
   <use name="RecoTracker/MeasurementDet"/>
