@@ -1,7 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 
-process = cms.Process("OccupancyPlotsTest")
+from Configuration.Eras.Era_Run2_2018_cff import Run2_2018
+process = cms.Process("OccupancyPlotsTest",Run2_2018)
 
 #prepare options
 
@@ -35,8 +36,8 @@ process.options = cms.untracked.PSet(
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.MessageLogger.cout.enable = True
-process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
-#process.MessageLogger.cout.threshold = cms.untracked.string("WARNING")
+#process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
+process.MessageLogger.cout.threshold = cms.untracked.string("WARNING")
 process.MessageLogger.debugModules = cms.untracked.vstring("*")
 process.MessageLogger.cout.default = cms.untracked.PSet(
     limit = cms.untracked.int32(0)
@@ -161,12 +162,12 @@ process.spclusoccuprodxy.wantedSubDets = OccupancyPlotsFPIXmDetailedWantedSubDet
 process.spclusoccuprodxy.wantedSubDets.extend(OccupancyPlotsFPIXpDetailedWantedSubDets)
 process.spclusoccuprodxyontrack=process.spclusoccuprodxy.clone(clusterdigiCollection = cms.InputTag("AlignmentTrackSelector"))
 
-process.seqMultProd = cms.Sequence(process.ssclusmultprod + process.ssclusoccuprod +
-                                   process.spclusmultprod + process.spclusoccuprod +
-                                   process.ssclusmultprodontrack + process.ssclusoccuprodontrack +
-                                   process.spclusmultprodontrack + process.spclusoccuprodontrack +
-                                   process.spclusmultprodxy + process.spclusoccuprodxy +
-                                   process.spclusmultprodxyontrack + process.spclusoccuprodxyontrack 
+process.seqMultProd = cms.Sequence(process.ssclusmultprod + process.ssclusoccuprod
+                                   #+ process.spclusmultprod + process.spclusoccuprod 
+                                   #process.ssclusmultprodontrack + process.ssclusoccuprodontrack +
+                                   #process.spclusmultprodontrack + process.spclusoccuprodontrack +
+                                   #process.spclusmultprodxy + process.spclusoccuprodxy +
+                                   #process.spclusmultprodxyontrack + process.spclusoccuprodxyontrack 
                                    )
 
 process.load("DPGAnalysis.SiStripTools.occupancyplots_cfi")
@@ -229,17 +230,19 @@ process.goodVertices = cms.EDFilter("VertexSelector",
 
 process.seqAnalyzers = cms.Sequence(
     #process.bxlumianalyzer +
-#    process.goodVertices + process.primaryvertexanalyzer +
-    process.occupancyplots +     process.occupancyplotsontrack + 
-    process.pixeloccupancyplots + process.pixeloccupancyplotsontrack + 
-    process.alloccupancyplots +    process.alloccupancyplotsontrack +
-    process.pixeloccupancyxyplots + process.pixeloccupancyxyplotsontrack)
+    #process.goodVertices + process.primaryvertexanalyzer +
+    process.occupancyplots  #+     process.occupancyplotsontrack  
+    #process.pixeloccupancyplots + process.pixeloccupancyplotsontrack + 
+    #process.alloccupancyplots +    process.alloccupancyplotsontrack +
+    #process.pixeloccupancyxyplots + process.pixeloccupancyxyplotsontrack
+)
 
 #-------------------------------------------------------------------------------------------
 
 process.load("Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi")
 
-process.seqProducers = cms.Sequence(process.AlignmentTrackSelector + process.seqMultProd)
+process.seqProducers = cms.Sequence(#process.AlignmentTrackSelector + 
+process.seqMultProd)
 
 process.load("DPGAnalysis.SiStripTools.trackcount_cfi")
 process.trackcount.trackCollection = cms.InputTag("generalTracks")
@@ -248,18 +251,16 @@ process.load("DPGAnalysis.SiStripTools.duplicaterechits_cfi")
 
 #----GlobalTag ------------------------
 
-#process.load("Configuration.StandardSequences.GeometryDB_cff")
-process.load("Configuration.Geometry.GeometryExtended2017Reco_cff")
+process.load("Configuration.StandardSequences.GeometryDB_cff")
+#process.load("Configuration.Geometry.GeometryExtended2017Reco_cff")
 #process.load("Configuration.Geometry.GeometryExtendedPhaseIPixel_cff")
 process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load("Configuration.StandardSequences.RawToDigi_Data_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, '')
-
-from SLHCUpgradeSimulations.Configuration.phase1TkCustoms import *
-
 
 process.siStripQualityESProducer.ListOfRecordToMerge=cms.VPSet(
 #    cms.PSet( record = cms.string("SiStripDetVOffRcd"),    tag    = cms.string("") ),
@@ -276,20 +277,26 @@ process.TFileService = cms.Service('TFileService',
                                    fileName = cms.string('OccupancyPlotsTest_pixelphase1_'+options.tag+'.root')
                                    )
 
-process = customise_Reco(process,0)
-process = customise_condOverRides(process)
+#process = customise_Reco(process,0)
+#process = customise_condOverRides(process)
 
-process.myrereco = cms.Sequence(
-    process.siPixelRecHits + process.siStripMatchedRecHits +
-    process.trackingGlobalReco)
+process.RecoForDQM_TrkReco = cms.Sequence(process.offlineBeamSpot*process.MeasurementTrackerEventPreSplitting*process.siPixelClusterShapeCachePreSplitting*process.trackingGlobalReco)
+
+process.myrereco = cms.Sequence(process.siPixelDigis + 
+                                process.siStripDigis + 
+                                process.trackerlocalreco) 
+                                #+process.RecoForDQM_TrkReco)
+                                #process.siPixelRecHits + 
+                                #process.siStripMatchedRecHits + 
+                                #process.trackingGlobalReco)
 
 process.p0 = cms.Path(
-#    process.myrereco +
-    process.seqHLTSelection +
-    process.seqProducers +
-    process.seqAnalyzers +
-    process.trackcount +
-    process.duplicaterechits 
+    process.myrereco +
+    process.seqHLTSelection 
+    + process.seqProducers 
+    + process.seqAnalyzers 
+    # + process.trackcount 
+    # + process.duplicaterechits 
     )
 
 
