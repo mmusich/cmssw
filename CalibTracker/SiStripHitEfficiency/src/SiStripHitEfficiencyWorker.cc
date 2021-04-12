@@ -1,74 +1,55 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Package:          CalibTracker/SiStripHitEfficiency
-// Class:            HitEff (CalibTree production
-// Original Author:  Keith Ulmer--University of Colorado
-//                   keith.ulmer@colorado.edu
-// Class:            SiStripHitEffFromCalibTree
-// Original Author:  Christopher Edelmaier
-//
+// Class:            SiStripHitEfficiencyWorker
+// Original Author:  Pieter David
 ///////////////////////////////////////////////////////////////////////////////
-//
+
+#include "CalibFormats/SiStripObjects/interface/SiStripQuality.h"
+#include "CalibTracker/Records/interface/SiStripQualityRcd.h"
+#include "CalibTracker/SiStripHitEfficiency/interface/TrajectoryAtInvalidHit.h"
+#include "DQM/SiStripCommon/interface/TkHistoMap.h"
+#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
+#include "DataFormats/Common/interface/DetSetVector.h"
+#include "DataFormats/Common/interface/DetSetVectorNew.h"
+#include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/DetId/interface/DetIdCollection.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementError.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementVector.h"
+#include "DataFormats/GeometrySurface/interface/TrapezoidalPlaneBounds.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "DataFormats/GeometryVector/interface/GlobalVector.h"
+#include "DataFormats/GeometryVector/interface/LocalVector.h"
+#include "DataFormats/Scalers/interface/LumiScalers.h"
+#include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
+#include "DataFormats/SiStripDigi/interface/SiStripRawDigi.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackBase.h"
+#include "DataFormats/TrackReco/interface/TrackExtra.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
-#include "DataFormats/Common/interface/Handle.h"
-#include "DataFormats/Common/interface/DetSetVector.h"
-#include "DataFormats/Common/interface/DetSetVectorNew.h"
-
-#include "DataFormats/DetId/interface/DetIdCollection.h"
-
-#include "DataFormats/Scalers/interface/LumiScalers.h"
-
-#include "Geometry/Records/interface/TrackerTopologyRcd.h"
-#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
-#include "DataFormats/SiStripDigi/interface/SiStripRawDigi.h"
-#include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
-
-#include "RecoLocalTracker/ClusterParameterEstimator/interface/StripClusterParameterEstimator.h"
-
-#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
-#include "DataFormats/GeometryVector/interface/GlobalVector.h"
-#include "DataFormats/GeometryVector/interface/LocalVector.h"
-#include "DataFormats/GeometrySurface/interface/TrapezoidalPlaneBounds.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementError.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementVector.h"
-
-#include "Geometry/CommonDetUnit/interface/GeomDetType.h"
 #include "Geometry/CommonDetUnit/interface/GeomDet.h"
+#include "Geometry/CommonDetUnit/interface/GeomDetType.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-
-#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
-#include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/TrackReco/interface/TrackExtra.h"
-#include "DataFormats/TrackReco/interface/TrackBase.h"
-
-#include "RecoTracker/Record/interface/CkfComponentsRecord.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "RecoLocalTracker/ClusterParameterEstimator/interface/StripClusterParameterEstimator.h"
 #include "RecoTracker/MeasurementDet/interface/MeasurementTracker.h"
 #include "RecoTracker/MeasurementDet/interface/MeasurementTrackerEvent.h"
-
-#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
-#include "MagneticField/Engine/interface/MagneticField.h"
-
+#include "RecoTracker/Record/interface/CkfComponentsRecord.h"
 #include "TrackingTools/DetLayers/interface/DetLayer.h"
 #include "TrackingTools/GeomPropagators/interface/AnalyticalPropagator.h"
 #include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h"
-#include "TrackingTools/MeasurementDet/interface/LayerMeasurements.h"
 #include "TrackingTools/MaterialEffects/interface/PropagatorWithMaterial.h"
-#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "TrackingTools/MeasurementDet/interface/LayerMeasurements.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
-
-#include "CalibTracker/Records/interface/SiStripQualityRcd.h"
-#include "CalibFormats/SiStripObjects/interface/SiStripQuality.h"
-
-#include "DQM/SiStripCommon/interface/TkHistoMap.h"
-
-#include "CalibTracker/SiStripHitEfficiency/interface/TrajectoryAtInvalidHit.h"
-
-#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 
 class SiStripHitEfficiencyWorker : public DQMEDAnalyzer {
 public:
@@ -96,6 +77,15 @@ private:
   TString layerName(unsigned int k) const;
 
   // ----------member data ---------------------------
+  const edm::ESGetToken<TkDetMap, TrackerTopologyRcd> detMapTokenBR_;
+  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoToken_;
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomToken_;
+  const edm::ESGetToken<StripClusterParameterEstimator, TkStripCPERecord> stripCPEToken_;
+  const edm::ESGetToken<SiStripQuality, SiStripQualityRcd> qualityToken_;
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> mfToken_;
+  const edm::ESGetToken<MeasurementTracker, CkfComponentsRecord> mtToken_;
+  const edm::ESGetToken<Chi2MeasurementEstimatorBase, TrackingComponentsRecord> chi2Token_;
+  const edm::ESGetToken<Propagator, TrackingComponentsRecord> propToken_;
 
   const edm::EDGetTokenT<LumiScalersCollection> scalerToken_;
   const edm::EDGetTokenT<edm::DetSetVector<SiStripRawDigi>> commonModeToken_;
@@ -178,7 +168,16 @@ private:
 //
 
 SiStripHitEfficiencyWorker::SiStripHitEfficiencyWorker(const edm::ParameterSet& conf)
-    : scalerToken_(consumes<LumiScalersCollection>(conf.getParameter<edm::InputTag>("lumiScalers"))),
+    : detMapTokenBR_(esConsumes<edm::Transition::BeginRun>()),
+      topoToken_(esConsumes()),
+      geomToken_(esConsumes()),
+      stripCPEToken_(esConsumes(edm::ESInputTag("", "StripCPEfromTrackAngle"))),
+      qualityToken_(esConsumes()),
+      mfToken_(esConsumes()),
+      mtToken_(esConsumes()),
+      chi2Token_(esConsumes(edm::ESInputTag("", "Chi2"))),
+      propToken_(esConsumes(edm::ESInputTag("", "PropagatorWithMaterial"))),
+      scalerToken_(consumes<LumiScalersCollection>(conf.getParameter<edm::InputTag>("lumiScalers"))),
       commonModeToken_(mayConsume<edm::DetSetVector<SiStripRawDigi>>(conf.getParameter<edm::InputTag>("commonMode"))),
       combinatorialTracks_token_(
           consumes<reco::TrackCollection>(conf.getParameter<edm::InputTag>("combinatorialTracks"))),
@@ -452,23 +451,15 @@ void SiStripHitEfficiencyWorker::bookHistograms(DQMStore::IBooker& booker,
     }
   }
 
-  edm::ESHandle<TrackerTopology> tTopoHandle;
-  setup.get<TrackerTopologyRcd>().get(tTopoHandle);
-  edm::ESHandle<TkDetMap> tkDetMapHandle;
-  setup.get<TrackerTopologyRcd>().get(tkDetMapHandle);
-  h_module =
-      EffTkMap(std::make_unique<TkHistoMap>(tkDetMapHandle.product(), booker, path, "perModule_total", 0, false, true),
-               std::make_unique<TkHistoMap>(tkDetMapHandle.product(), booker, path, "perModule_found", 0, false, true));
+  // get the tkDetMap from the ES
+  const auto& tkDetMap = &setup.getData(detMapTokenBR_);
+
+  h_module = EffTkMap(std::make_unique<TkHistoMap>(tkDetMap, booker, path, "perModule_total", 0, false, true),
+                      std::make_unique<TkHistoMap>(tkDetMap, booker, path, "perModule_found", 0, false, true));
 }
 
 void SiStripHitEfficiencyWorker::analyze(const edm::Event& e, const edm::EventSetup& es) {
-  //Retrieve tracker topology from geometry
-  edm::ESHandle<TrackerTopology> tTopoHandle;
-  es.get<TrackerTopologyRcd>().get(tTopoHandle);
-  const TrackerTopology* const tTopo = tTopoHandle.product();
-
   //  bool DEBUG = false;
-
   LogDebug("SiStripHitEfficiency:HitEff") << "beginning analyze from HitEff" << std::endl;
 
   // Step A: Get Inputs
@@ -504,33 +495,23 @@ void SiStripHitEfficiencyWorker::analyze(const edm::Event& e, const edm::EventSe
   edm::Handle<edmNew::DetSetVector<SiStripCluster>> theClusters;
   e.getByToken(clusters_token_, theClusters);
 
-  edm::ESHandle<TrackerGeometry> tracker;
-  es.get<TrackerDigiGeometryRecord>().get(tracker);
-  const TrackerGeometry* tkgeom = tracker.product();
-
-  edm::ESHandle<StripClusterParameterEstimator> stripcpe;
-  es.get<TkStripCPERecord>().get("StripCPEfromTrackAngle", stripcpe);
-
-  edm::ESHandle<SiStripQuality> SiStripQuality_;
-  es.get<SiStripQualityRcd>().get(SiStripQuality_);
-
-  edm::ESHandle<MagneticField> magField;
-  es.get<IdealMagneticFieldRecord>().get(magField);
-
   edm::Handle<DetIdCollection> fedErrorIds;
   e.getByToken(digis_token_, fedErrorIds);
-
-  edm::ESHandle<MeasurementTracker> measTracker;
-  es.get<CkfComponentsRecord>().get(measTracker);
 
   edm::Handle<MeasurementTrackerEvent> measurementTrackerEvent;
   e.getByToken(trackerEvent_token_, measurementTrackerEvent);
 
-  edm::ESHandle<Chi2MeasurementEstimatorBase> estimator;
-  es.get<TrackingComponentsRecord>().get("Chi2", estimator);
+  // get from ES
 
-  edm::ESHandle<Propagator> prop;
-  es.get<TrackingComponentsRecord>().get("PropagatorWithMaterial", prop);
+  //Retrieve tracker topology from geometry
+  const TrackerTopology* const tTopo = &es.getData(topoToken_);
+  const TrackerGeometry* tkgeom = &es.getData(geomToken_);
+  const StripClusterParameterEstimator* stripcpe = &es.getData(stripCPEToken_);
+  const SiStripQuality* SiStripQuality_ = &es.getData(qualityToken_);
+  const MagneticField* magField = &es.getData(mfToken_);
+  const MeasurementTracker* measTracker = &es.getData(mtToken_);
+  const Chi2MeasurementEstimatorBase* estimator = &es.getData(chi2Token_);
+  const Propagator* prop = &es.getData(propToken_);
 
   ++events;
 
@@ -588,7 +569,7 @@ void SiStripHitEfficiencyWorker::analyze(const edm::Event& e, const edm::EventSe
         std::vector<TrajectoryAtInvalidHit> TMs;
 
         // Make AnalyticalPropagat // TODO where to save these?or to use in TAVH constructor
-        AnalyticalPropagator propagator(magField.product(), anyDirection);
+        AnalyticalPropagator propagator(magField, anyDirection);
 
         // for double sided layers check both sensors--if no hit was found on either sensor surface,
         // the trajectory measurements only have one invalid hit entry on the matched surface
@@ -691,8 +672,8 @@ void SiStripHitEfficiencyWorker::analyze(const edm::Event& e, const edm::EventSe
           fillForTraj(tm,
                       tTopo,
                       tkgeom,
-                      stripcpe.product(),
-                      SiStripQuality_.product(),
+                      stripcpe,
+                      SiStripQuality_,
                       *fedErrorIds,
                       commonModeDigis,
                       *theClusters,
