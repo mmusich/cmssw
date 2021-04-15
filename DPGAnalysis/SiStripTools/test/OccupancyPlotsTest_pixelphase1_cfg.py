@@ -34,65 +34,7 @@ process.options = cms.untracked.PSet(
     )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-
-process.MessageLogger.cout.enable = True
-#process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
-process.MessageLogger.cout.threshold = cms.untracked.string("WARNING")
-process.MessageLogger.debugModules = cms.untracked.vstring("*")
-process.MessageLogger.cout.default = cms.untracked.PSet(
-    limit = cms.untracked.int32(0)
-    )
-process.MessageLogger.files = dict(detids = cms.untracked.PSet(
-    default = cms.untracked.PSet(
-        limit = cms.untracked.int32(0)
-        ),
-    BuildingTrackerDetId = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    GeometricDetBuilding = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    SubDetectorGeometricDetType = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    BuildingGeomDetUnits = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    LookingForFirstStrip = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    BuildingSubDetTypeMap = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    SubDetTypeMapContent = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    NumberOfLayers = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    IsThereTest = cms.untracked.PSet(
-        limit = cms.untracked.int32(100000000)
-        ),
-    threshold = cms.untracked.string("DEBUG")
-    )    
-)
-process.MessageLogger.cout.DuplicateHitFinder = cms.untracked.PSet(
-    limit = cms.untracked.int32(100000000)
-    )
-process.MessageLogger.cout.FwkSummary = cms.untracked.PSet(
-    limit = cms.untracked.int32(100000000)
-    )
-process.MessageLogger.cout.FwkReport = cms.untracked.PSet(
-    reportEvery = cms.untracked.int32(10000)
-    )
-
-process.MessageLogger.cerr.threshold = cms.untracked.string("WARNING")
-process.MessageLogger.cerr.default = cms.untracked.PSet(
-    limit = cms.untracked.int32(10000000)
-    )
-process.MessageLogger.cerr.FwkReport = cms.untracked.PSet(
-    reportEvery = cms.untracked.int32(100000)
-    )
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 #------------------------------------------------------------------
 
