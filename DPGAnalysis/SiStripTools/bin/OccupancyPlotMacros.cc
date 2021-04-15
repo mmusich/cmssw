@@ -636,6 +636,14 @@ TCanvas* drawMap(const char* cname,
     Double_t blue[NRGBs] = {1.00, 1.00, 1.00, 0.30, 0.00, 0.00, 0.00};
     TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
     gStyle->SetNumberContours(NCont);
+  } else if (color == 4){
+    const int NRGBs = 5;
+    const int NCont = 255;
+    double stops[NRGBs] = {0.00, 0.34, 0.61, 0.84, 1.00};
+    double red[NRGBs] = {0.00, 0.00, 0.87, 1.00, 0.51};
+    double green[NRGBs] = {0.00, 0.81, 1.00, 0.20, 0.00};
+    double blue[NRGBs] = {0.51, 1.00, 0.12, 0.00, 0.00};
+    TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
   }
 
   int ncol = gStyle->GetNumberOfColors();
