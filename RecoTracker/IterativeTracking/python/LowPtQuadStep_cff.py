@@ -66,7 +66,7 @@ lowPtQuadStepHitQuadruplets = _caHitQuadrupletEDProducer.clone(
         pt1    = 0.7, pt2    = 2,
         value1 = 1000, value2 = 150,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     fitFastCircle        = True,
     fitFastCircleChi2Cut = True,
     CAThetaCut           = 0.0017,

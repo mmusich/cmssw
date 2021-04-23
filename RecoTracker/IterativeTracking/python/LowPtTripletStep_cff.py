@@ -109,7 +109,7 @@ trackingPhase1.toReplaceWith(lowPtTripletStepHitTriplets, _caHitTripletEDProduce
         pt1    = 0.8, pt2    = 2,
         value1 = 70 , value2 = 8,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     CAThetaCut           = 0.002,
     CAPhiCut             = 0.05 )
 )
@@ -123,7 +123,7 @@ trackingPhase2PU140.toReplaceWith(lowPtTripletStepHitTriplets, _caHitTripletEDPr
         pt1    = 0.8, pt2    = 2,
         value1 = 70 , value2 = 8,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     CAThetaCut           = 0.002,
     CAPhiCut             = 0.05 )
 )

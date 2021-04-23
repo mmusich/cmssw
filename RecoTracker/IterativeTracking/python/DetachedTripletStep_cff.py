@@ -101,7 +101,7 @@ trackingPhase1.toReplaceWith(detachedTripletStepHitTriplets, _caHitTripletEDProd
         pt1    = 0.8, pt2    = 2,
         value1 = 300, value2 = 10,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     CAThetaCut           = 0.001,
     CAPhiCut             = 0,
     CAHardPtCut          = 0.2,

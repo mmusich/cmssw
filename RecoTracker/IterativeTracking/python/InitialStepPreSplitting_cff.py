@@ -62,7 +62,7 @@ initialStepHitQuadrupletsPreSplitting = _caHitQuadrupletEDProducer.clone(
         pt1    = 0.7, pt2    = 2,
         value1 = 200, value2 = 50,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     fitFastCircle        = True,
     fitFastCircleChi2Cut = True,
     CAThetaCut           = 0.0012,

@@ -106,7 +106,7 @@ highPtTripletStepHitTriplets = _caHitTripletEDProducer.clone(
         pt1    = 0.8, pt2    = 8,
         value1 = 100, value2 = 6,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     CAThetaCut           = 0.004,
     CAPhiCut             = 0.07,
     CAHardPtCut          = 0.3,

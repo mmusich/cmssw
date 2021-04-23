@@ -71,7 +71,7 @@ detachedQuadStepHitQuadruplets = _caHitQuadrupletEDProducer.clone(
         pt1    = 0.8, pt2    = 2,
         value1 = 500, value2 = 100,
     ),
-    useBendingCorrection = True,
+    useBendingCorrection = False,
     fitFastCircle        = True,
     fitFastCircleChi2Cut = True,
     CAThetaCut           = 0.0011,
