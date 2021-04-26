@@ -259,8 +259,10 @@ class UpgradeWorkflow_trackingLowPU(UpgradeWorkflowTracking):
     def setup_(self, step, stepName, stepDict, k, properties):
         if 'Reco' in step and stepDict[step][k]['--era']=='Run2_2017':
             stepDict[stepName][k] = merge([{'--era': 'Run2_2017_trackingLowPU'}, stepDict[step][k]])
+        elif 'Reco' in step and stepDict[step][k]['--era']=='Run3':
+            stepDict[stepName][k] = merge([{'--era': 'Run3_trackingLowPU'}, stepDict[step][k]])
     def condition_(self, fragment, stepList, key, hasHarvest):
-        return '2017' in key
+        return '2017' in key or '2021' in key
 upgradeWFs['trackingLowPU'] = UpgradeWorkflow_trackingLowPU(
     steps = [
         'Reco',
