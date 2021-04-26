@@ -1,0 +1,9 @@
+universe              = vanilla
+arguments             = $(ProcId) $(par1) $(par2)
+executable            = DiMuonVertexValidator.sh
+output                = $(par2)/outfiles/DiMuonVertexValidator_seed_$(ProcId).out
+error                 = $(par2)/outfiles/DiMuonVertexValidator_seed_$(ProcId).err
+log                   = $(par2)/outfiles/DiMuonVertexValidator_seed_$(ProcId).log
+transfer_output_files = ""
++JobFlavour = "workday" 
+queue 675
