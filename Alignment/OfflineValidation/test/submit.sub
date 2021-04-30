@@ -1,9 +1,9 @@
 universe              = vanilla
-arguments             = $(ProcId) $(par1) $(par2)
+arguments             = $(ProcId) $(par1) $(par2) $(par3) $(par4)
 executable            = DiMuonVertexValidator.sh
-output                = $(par2)/outfiles/DiMuonVertexValidator_seed_$(ProcId).out
-error                 = $(par2)/outfiles/DiMuonVertexValidator_seed_$(ProcId).err
-log                   = $(par2)/outfiles/DiMuonVertexValidator_seed_$(ProcId).log
+output                = $(par4)/outfiles/DiMuonVertexValidation_$(par3)_$(ProcId).out
+error                 = $(par4)/outfiles/DiMuonVertexValidation_$(par3)_$(ProcId).err
+log                   = $(par4)/outfiles/DiMuonVertexValidation_$(par3)_$(ProcId).log
 transfer_output_files = ""
 +JobFlavour = "workday" 
 queue 675

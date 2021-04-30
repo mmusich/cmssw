@@ -2,11 +2,14 @@
 
 mySeed=$1
 globalTag=$2
-JobName=DiMuonVertexValidator_seed_${mySeed}
+records=$3
+objName=$4
+CMSSW_DIR=$5
+
+JobName=DiMuonVertexValidation_${objName}_${mySeed}
 
 echo "Job started at " `date`
 
-CMSSW_DIR=$3
 LXBATCH_DIR=$PWD
 
 cd ${CMSSW_DIR}
@@ -20,19 +23,17 @@ cp ${CMSSW_DIR}/files.txt .
 myFile=`sed "${mySeed}q;d" files.txt`
 
 cp ${CMSSW_DIR}/DiMuonVertexValidator_cfg.py .
-echo "cmsRun DiMuonVertexValidator_cfg.py  myfile=${myFile} GlobalTag=${globalTag} >& ${JobName}.out"
+echo "cmsRun DiMuonVertexValidator_cfg.py myseed=${mySeed} myfile=${myFile} GlobalTag=${globalTag} records=${records} outputName=${objName} >& ${JobName}.out"
 
-cmsRun DiMuonVertexValidator_cfg.py myseed=${mySeed} myfile=${myFile} GlobalTag=${globalTag} >& ${JobName}.out
+cmsRun DiMuonVertexValidator_cfg.py myseed=${mySeed} myfile=${myFile} GlobalTag=${globalTag} records=${records} outputName=${objName} >& ${JobName}_cmsRun.out
 
 echo "Content of working directory is: " `ls -lrt`
 
-eos mkdir -p /eos/cms/store/group/alca_trackeralign/$USER/test_out/DiMuonVertexValid/
+eos mkdir -p /eos/cms/store/group/alca_trackeralign/$USER/test_out/DiMuonVertexValid2/
 
-for payloadOutput in $(ls *root ); do xrdcp -f $payloadOutput root://eoscms.cern.ch//eos/cms/store/group/alca_trackeralign/$USER/test_out/DiMuonVertexValid/DiMuonVertexValidationIdeal_${mySeed}.root ; done
+for payloadOutput in $(ls *root ); do xrdcp -f $payloadOutput root://eoscms.cern.ch//eos/cms/store/group/alca_trackeralign/$USER/test_out/DiMuonVertexValid2/${JobName}.root ; done
 
-mv ${JobName}.out ${CMSSW_DIR}/outfiles
-mv ${JobName}.err ${CMSSW_DIR}/outfiles
-mv ${JobName}.log ${CMSSW_DIR}/outfiles
+mv ${JobName}_cmsRun.out ${CMSSW_DIR}/outfiles
 
 echo  "Job ended at " `date`
 

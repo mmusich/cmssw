@@ -56,8 +56,6 @@
 // class declaration
 //
 
-using reco::TrackCollection;
-
 class DiMuonVertexValidator : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
   explicit DiMuonVertexValidator(const edm::ParameterSet&);
@@ -79,13 +77,17 @@ private:
   TH1F* hCosPhi3D_;
   TH2F* hCosPhi3DVsZEta_;
   TH2F* hCosPhi3DVsZPhi_;
+  TH2F* hCosPhi3DVsMuPlusEta_;
+  TH2F* hCosPhi3DVsMuPlusPhi_;
+  TH2F* hCosPhi3DVsMuMinusEta_;
+  TH2F* hCosPhi3DVsMuMinusPhi_;
   TH1F* hCosPhiInv_;
   TH1F* hCosPhiInv3D_;
   TH1F* hInvMass_;
 
   const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbESToken_;
 
-  edm::EDGetTokenT<TrackCollection> tracksToken_;         //used to select what tracks to read from configuration file
+  edm::EDGetTokenT<reco::TrackCollection> tracksToken_;   //used to select what tracks to read from configuration file
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;     //used to select what tracks to read from configuration file
   edm::EDGetTokenT<reco::VertexCollection> vertexToken_;  //used to select what vertices to read from configuration file
 };
@@ -105,7 +107,7 @@ static constexpr float cmToum = 10e4;
 //
 DiMuonVertexValidator::DiMuonVertexValidator(const edm::ParameterSet& iConfig)
     : ttbESToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
-      tracksToken_(consumes<TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
+      tracksToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
       muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
       vertexToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))) {}
 
@@ -197,6 +199,9 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
   const auto& t0 = myTracks[0]->momentum();
   const auto& ditrack = t1 + t0;
 
+  const auto& tplus = myTracks[0]->charge() > 0 ? myTracks[0] : myTracks[1];
+  const auto& tminus = myTracks[0]->charge() < 0 ? myTracks[0] : myTracks[1];
+
   math::XYZPoint ZpT(ditrack.x(), ditrack.y(), 0);
   math::XYZPoint Zp(ditrack.x(), ditrack.y(), ditrack.z());
 
@@ -249,12 +254,18 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
       double cosphi = (ZpT.x() * deltaVtx.x() + ZpT.y() * deltaVtx.y()) /
                       (sqrt(ZpT.x() * ZpT.x() + ZpT.y() * ZpT.y()) *
                        sqrt(deltaVtx.x() * deltaVtx.x() + deltaVtx.y() * deltaVtx.y()));
+
       double cosphi3D = (Zp.x() * deltaVtx.x() + Zp.y() * deltaVtx.y() + Zp.z() * deltaVtx.z()) /
                         (sqrt(Zp.x() * Zp.x() + Zp.y() * Zp.y() + Zp.z() * Zp.z()) *
                          sqrt(deltaVtx.x() * deltaVtx.x() + deltaVtx.y() * deltaVtx.y() + deltaVtx.z() * deltaVtx.z()));
 
       hCosPhi3DVsZEta_->Fill(mother.eta(), cosphi3D);
       hCosPhi3DVsZPhi_->Fill(mother.phi(), cosphi3D);
+
+      hCosPhi3DVsMuPlusEta_->Fill(tplus->eta(), cosphi3D);
+      hCosPhi3DVsMuPlusPhi_->Fill(tplus->phi(), cosphi3D);
+      hCosPhi3DVsMuMinusEta_->Fill(tminus->eta(), cosphi3D);
+      hCosPhi3DVsMuMinusPhi_->Fill(tminus->phi(), cosphi3D);
 
       LogDebug("DiMuonVertexValidator") << "cos(phi) = " << cosphi << std::endl;
       hCosPhi_->Fill(cosphi);
@@ -267,19 +278,23 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
 void DiMuonVertexValidator::beginJob() {
   edm::Service<TFileService> fs;
 
+  // clang-format off
   TH1F::SetDefaultSumw2(kTRUE);
   hSVProb_ = fs->make<TH1F>("VtxProb", ";ZV vertex probability;N(#mu#mu pairs)", 100, 0., 1.);
   hSVDist_ = fs->make<TH1F>("VtxDist", ";PV-ZV X-Y distance [#mum];N(#mu#mu pairs)", 100, 0., 300.);
   hSVDistSig_ = fs->make<TH1F>("VtxDistSig", ";PV-ZV X-Y distance signficance;N(#mu#mu pairs)", 100, 0., 5.);
   hCosPhi_ = fs->make<TH1F>("CosPhi", ";cos(#phi_{xy});N(#mu#mu pairs)", 50, -1., 1.);
   hCosPhi3D_ = fs->make<TH1F>("CosPhi3D", ";cos(#phi_{3D});N(#mu#mu pairs)", 50, -1., 1.);
-  hCosPhi3DVsZEta_ = fs->make<TH2F>(
-      "CosPhi3DvsZEta", "cos(#phi_{3D}) vs #mu#mu #eta;#mu#mu pair #eta;cos(#phi_{3D})", 50, -3.5, 3.5, 50, -1., 1.);
-  hCosPhi3DVsZPhi_ = fs->make<TH2F>(
-      "CosPhi3DvsZPhi", "cos(#phi_{3D}) vs #mu#mu #phi;#mu#mu pair #phi;cos(#phi_{3D})", 50, -M_PI, M_PI, 50, -1., 1.);
+  hCosPhi3DVsZEta_ = fs->make<TH2F>("CosPhi3DvsZEta", "cos(#phi_{3D}) vs #mu#mu #eta;#mu#mu pair #eta;cos(#phi_{3D})", 50, -3.5, 3.5, 50, -1., 1.);
+  hCosPhi3DVsZPhi_ = fs->make<TH2F>("CosPhi3DvsZPhi", "cos(#phi_{3D}) vs #mu#mu #phi;#mu#mu pair #phi;cos(#phi_{3D})", 50, -M_PI, M_PI, 50, -1., 1.);
+  hCosPhi3DVsMuPlusEta_  = fs->make<TH2F>("CosPhi3DvsMuPlusEta", "cos(#phi_{3D}) vs #mu^{+} #eta;#mu^{+} #eta;cos(#phi_{3D})", 50, -3.0, 3.0, 50, -1., 1.);
+  hCosPhi3DVsMuPlusPhi_  = fs->make<TH2F>("CosPhi3DvsMuPlusPhi", "cos(#phi_{3D}) vs #mu^{+} #phi;#mu^{+} #phi;cos(#phi_{3D})", 50, -M_PI, M_PI, 50, -1., 1.);
+  hCosPhi3DVsMuMinusEta_ = fs->make<TH2F>("CosPhi3DvsMuMinusEta","cos(#phi_{3D}) vs #mu^{-} #eta;#mu^{-} #eta;cos(#phi_{3D})", 50, -3.0, 3.0, 50, -1., 1.);
+  hCosPhi3DVsMuMinusPhi_ = fs->make<TH2F>("CosPhi3DvMuMinusPhi", "cos(#phi_{3D}) vs #mu^{-} #phi;#mu^{-} #phi;cos(#phi_{3D})", 50, -M_PI, M_PI, 50, -1., 1.);
   hCosPhiInv_ = fs->make<TH1F>("CosPhiInv", ";inverted cos(#phi_{xy});N(#mu#mu pairs)", 50, -1., 1.);
   hCosPhiInv3D_ = fs->make<TH1F>("CosPhiInv3D", ";inverted cos(#phi_{3D});N(#mu#mu pairs)", 50, -1., 1.);
   hInvMass_ = fs->make<TH1F>("InvMass", ";M(#mu#mu) [GeV];N(#mu#mu pairs)", 70., 50., 120.);
+  // clang-format on
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

@@ -1,9 +1,23 @@
+from __future__ import print_function
+from fnmatch import fnmatch
 import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
 import FWCore.ParameterSet.VarParsing as VarParsing
 import sys
 
 from Configuration.StandardSequences.Eras import eras
+
+###################################################################
+def best_match(rcd):
+###################################################################
+    '''
+    find out where to best match the input conditions
+    '''
+    print(rcd)
+    for pattern, string in connection_map:
+        print(pattern, fnmatch(rcd, pattern))
+        if fnmatch(rcd, pattern):
+            return string
 
 options = VarParsing.VarParsing ()
 options.register ('era',
@@ -17,6 +31,18 @@ options.register ('GlobalTag',
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string,
                   "seed number")
+
+options.register ('records',
+                  [],
+                  VarParsing.VarParsing.multiplicity.list, # singleton or list
+                  VarParsing.VarParsing.varType.string,          # string, int, or float
+                  "record:tag names to be used/changed from GT")
+
+options.register ('external',
+                  [],
+                  VarParsing.VarParsing.multiplicity.list, # singleton or list
+                  VarParsing.VarParsing.varType.string,          # string, int, or float
+                  "record:fle.db picks the following record from this external file")
 
 options.register ('myseed',
                   '1', # default value
@@ -36,25 +62,29 @@ options.register ('FileList',
                   VarParsing.VarParsing.varType.string,
                   "FileList in DAS format")
 
-options.register ('outputFile',
-                  'DiMuonVertexValidation.root', # default value
+options.register ('outputName',
+                  '', # default value
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.string,         # string, int, or float
                   "output file")
 
 options.parseArguments()
-print "inputFile: ", options.myfile
-print "outputFile: ", options.outputFile
-print "era: ", options.era
+
+print("inputFile:          ", options.myfile)
+print("outputFile:         ", options.outputName)
+print("era:                ", options.era)
+print("conditionGT:        ", options.GlobalTag)
+print("conditionOverwrite: ", options.records)
+print("external conditions:", options.external)
 
 if options.era=='2016':
-    print "running era 2016"
+    print("running era 2016")
     process = cms.Process('Analysis',eras.Run2_2016)
 elif options.era=='2017':
-    print "running era 2017"
+    print("running era 2017")
     process = cms.Process('Analysis',eras.Run2_2017)
 elif options.era=='2018':
-    print "running era 2018"
+    print("running era 2018")
     process = cms.Process('Analysis',eras.Run2_2018)
 
 # import of standard configurations
@@ -63,22 +93,60 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
+###################################################################
+# Tell the program where to find the conditons
+connection_map = [
+    ('Tracker*', 'frontier://PromptProd/CMS_CONDITIONS'),
+    ('SiPixel*', 'frontier://PromptProd/CMS_CONDITIONS'),
+    ('SiStrip*', 'frontier://PromptProd/CMS_CONDITIONS'),
+    ('Beam*', 'frontier://PromptProd/CMS_CONDITIONS'),
+    ]
+
+if options.external:
+    connection_map.extend(
+        (i.split(':')[0], 'sqlite_file:%s' % i.split(':')[1]) for i in options.external
+        )
+
+connection_map.sort(key=lambda x: -1*len(x[0]))
+
+###################################################################
+# creat the map for the GT toGet
+records = []
+if options.records:
+    for record in options.records:
+        rcd, tag = tuple(record.split(':'))
+        print("control point:",rcd,tag)
+        if len(rcd)==0:
+            print("no overriding will occur")
+            continue
+        records.append(
+            cms.PSet(
+                record = cms.string(rcd),
+                tag    = cms.string(tag),
+                connect = cms.string(best_match(rcd))
+                )
+            )
+
+###################################################################
+# configure the Global Tag
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.GlobalTag, '')
+process.GlobalTag.toGet = cms.VPSet(*records)
 
+'''
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("TrackerAlignmentRcd"),
              tag = cms.string("TrackerAlignment_Upgrade2017_design_v4"),
              #tag = cms.string("TrackerAlignment_2017_ultralegacymc_v1"),
              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
          ),
-    cms.PSet(record = cms.string("TrackerAlignmentErrorRcd"),
+    cms.PSet(record = cms.string("TrackerAlignmentErrorExtendedRcd"),
              tag = cms.string("TrackerAlignmentErrorsExtended_Upgrade2017_design_v0"),
              #tag = cms.string("TrackerAlignmentExtendedErrors_2017_ultralegacymc_v1"),
              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
          )
 )
-
+'''
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -135,7 +203,7 @@ process.offlinePrimaryVerticesFromRefittedTrks.TrackLabel = cms.InputTag("TrackR
 ####################################################################
 # Output file
 ####################################################################
-process.TFileService = cms.Service("TFileService",fileName=cms.string("DiMuonVertexValidationIdeal_"+options.myseed+".root"))
+process.TFileService = cms.Service("TFileService",fileName=cms.string("DiMuonVertexValidation_"+options.outputName+"_"+options.myseed+".root"))
 
 # Additional output definition
 process.analysis = cms.EDAnalyzer("DiMuonVertexValidator",
