@@ -57,21 +57,22 @@ options.register ('myfile',
                   "file name")
 
 options.register ('FileList',
-                  'files.txt', # default value
+                  '', # default value
                   VarParsing.VarParsing.multiplicity.singleton, 
                   VarParsing.VarParsing.varType.string,
                   "FileList in DAS format")
 
 options.register ('outputName',
-                  '', # default value
+                  'default', # default value
                   VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.VarParsing.varType.string,         # string, int, or float
                   "output file")
 
 options.parseArguments()
 
+print("FileList:           ", options.FileList)
 print("inputFile:          ", options.myfile)
-print("outputFile:         ", options.outputName)
+print("outputFile:         ", "DiMuonVertexValidation_{fname}_{fseed}.root".format(fname = options.outputName,fseed=options.myseed))
 print("era:                ", options.era)
 print("conditionGT:        ", options.GlobalTag)
 print("conditionOverwrite: ", options.records)
@@ -153,12 +154,14 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-#filelist = FileUtils.loadListFromFile (options.FileList)
-#readFiles = cms.untracked.vstring( *filelist)
-readFiles = cms.untracked.vstring([options.myfile])
+if(options.FileList):
+    print('Loading file list from ASCII file')
+    filelist = FileUtils.loadListFromFile (options.FileList)
+    readFiles = cms.untracked.vstring( *filelist)
+else:
+    readFiles = cms.untracked.vstring([options.myfile])
 
 process.source = cms.Source("PoolSource",
-                            #fileNames = cms.untracked.vstring('/store/relval/CMSSW_10_6_1/RelValZMM_13/GEN-SIM-RECO/PU25ns_106X_mc2017_realistic_v6_HS-v1/10000/7A8BCA04-DEEF-A048-90FF-BFA2BD1A891F.root',
                             fileNames = readFiles,
                             #skipEvents = cms.untracked.uint32(45000)
 )
