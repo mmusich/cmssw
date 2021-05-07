@@ -70,8 +70,10 @@ options.register ('outputName',
 
 options.parseArguments()
 
-print("FileList:           ", options.FileList)
-print("inputFile:          ", options.myfile)
+if(options.FileList):
+    print("FileList:           ", options.FileList)
+else:
+    print("inputFile:          ", options.myfile)
 print("outputFile:         ", "DiMuonVertexValidation_{fname}_{fseed}.root".format(fname = options.outputName,fseed=options.myseed))
 print("era:                ", options.era)
 print("conditionGT:        ", options.GlobalTag)

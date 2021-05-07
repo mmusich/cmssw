@@ -5,10 +5,8 @@
 //
 /**\class DiMuonVertexValidator DiMuonVertexValidator.cc Alignment/DiMuonVertexValidator/plugins/DiMuonVertexValidator.cc
 
- Description: [one line class summary]
+ Description: Class to perform validation Tracker Alignment Validations by means of a PV and the SV constructed with a di-muon pair
 
- Implementation:
-     [Notes on implementation]
 */
 //
 // Original Author:  Marco Musich
@@ -63,77 +61,162 @@
 //
 class PlotsVsDiMuKinematics {
 public:
+  PlotsVsDiMuKinematics() : m_name(""), m_title(""), m_ytitle(""), m_isBooked(false) {}
+
+  //________________________________________________________________________________//
+  // overloaded constructor
   PlotsVsDiMuKinematics(const std::string& name, const std::string& tt, const std::string& ytt)
       : m_name(name), m_title(tt), m_ytitle(ytt), m_isBooked(false) {}
 
-  ~PlotsVsDiMuKinematics() {}
+  ~PlotsVsDiMuKinematics() = default;
 
+  //________________________________________________________________________________//
+  void bookFromPSet(const TFileDirectory& fs, const edm::ParameterSet& hpar) {
+    std::string namePostfix;
+    std::string titlePostfix;
+    float xmin, xmax;
+
+    for (const auto& xAx : axisChoices) {
+      switch (xAx) {
+        case xAxis::Z_PHI:
+          xmin = -M_PI;
+          xmax = M_PI;
+          namePostfix = "MuMuPhi";
+          titlePostfix = "#mu#mu pair #phi;#mu^{+}#mu^{-} #phi";
+          break;
+        case xAxis::Z_ETA:
+          xmin = -3.5;
+          xmax = 3.5;
+          namePostfix = "MuMuEta";
+          titlePostfix = "#mu#mu pair #eta;#mu^{+}#mu^{-} #eta";
+          break;
+        case xAxis::MP_PHI:
+          xmin = -M_PI;
+          xmax = M_PI;
+          namePostfix = "MuPlusPhi";
+          titlePostfix = "#mu^{+} #phi;#mu^{+} #phi [rad]";
+          break;
+        case xAxis::MP_ETA:
+          xmin = -2.4;
+          xmax = 2.4;
+          namePostfix = "MuPlusEta";
+          titlePostfix = "#mu^{+} #eta;#mu^{+} #eta";
+          break;
+        case xAxis::MM_PHI:
+          xmin = -M_PI;
+          xmax = M_PI;
+          namePostfix = "MuMinusPhi";
+          titlePostfix = "#mu^{-} #phi;#mu^{-} #phi [rad]";
+          break;
+        case xAxis::MM_ETA:
+          xmin = -2.4;
+          xmax = 2.4;
+          namePostfix = "MuMinusEta";
+          titlePostfix = "#mu^{-} #eta;#mu^{+} #eta";
+          break;
+        default:
+          throw cms::Exception("LogicalError") << " there is not such Axis choice as " << xAx;
+      }
+
+      const char* h2name = fmt::sprintf("%sVs%s", hpar.getParameter<std::string>("name"), namePostfix).c_str();
+      const char* h2title = fmt::sprintf("%s vs %s;%s% s",
+                                         hpar.getParameter<std::string>("title"),
+                                         titlePostfix,
+                                         hpar.getParameter<std::string>("title"),
+                                         hpar.getParameter<std::string>("yUnits"))
+                                .c_str();
+
+      m_h2_map[xAx] = fs.make<TH2F>(h2name,
+                                    h2title,
+                                    hpar.getParameter<int32_t>("NxBins"),
+                                    xmin,
+                                    xmax,
+                                    hpar.getParameter<int32_t>("NyBins"),
+                                    hpar.getParameter<double>("ymin"),
+                                    hpar.getParameter<double>("ymax"));
+    }
+
+    // flip the is booked bit
+    m_isBooked = true;
+  }
+
+  //________________________________________________________________________________//
   void bookPlots(TFileDirectory& fs, const float valmin, const float valmax, const int nxbins, const int nybins) {
+    if (m_name.empty() && m_title.empty() && m_ytitle.empty()) {
+      edm::LogError("PlotsVsDiMuKinematics")
+          << "In" << __FUNCTION__ << "," << __LINE__
+          << "trying to book plots without the right constructor being called!" << std::endl;
+      return;
+    }
+
     static constexpr float maxMuEta = 2.4;
     static constexpr float maxMuMuEta = 3.5;
     TH1F::SetDefaultSumw2(kTRUE);
 
     // clang-format off
-    h2_vs_Z_eta = fs.make<TH2F>(fmt::sprintf("%sVsMuMuPhi", m_name).c_str(),
-                                fmt::sprintf("%s vs #mu#mu pair #eta;#mu^{+}#mu^{-} #eta;%s", m_title, m_ytitle).c_str(),
-                                nxbins, -maxMuMuEta, maxMuMuEta,
-                                nybins, valmin, valmax);
+    m_h2_map[xAxis::Z_ETA] = fs.make<TH2F>(fmt::sprintf("%sVsMuMuEta", m_name).c_str(),
+					   fmt::sprintf("%s vs #mu#mu pair #eta;#mu^{+}#mu^{-} #eta;%s", m_title, m_ytitle).c_str(),
+					   nxbins, -M_PI, M_PI,
+					   nybins, valmin, valmax);
 
-    h2_vs_Z_phi = fs.make<TH2F>(fmt::sprintf("%sVsMuMuEta", m_name).c_str(),
-				fmt::sprintf("%s vs #mu#mu pair #phi;#mu^{+}#mu^{-} #phi [rad];%s", m_title, m_ytitle).c_str(),
-				nxbins, -M_PI, M_PI,
-				nybins, valmin, valmax);
+    m_h2_map[xAxis::Z_PHI] = fs.make<TH2F>(fmt::sprintf("%sVsMuMuPhi", m_name).c_str(),
+					   fmt::sprintf("%s vs #mu#mu pair #phi;#mu^{+}#mu^{-} #phi [rad];%s", m_title, m_ytitle).c_str(),
+					   nxbins, -maxMuMuEta, maxMuMuEta,
+					   nybins, valmin, valmax);
 
-    h2_vs_muplus_eta = fs.make<TH2F>(fmt::sprintf("%sVsMuPlusEta", m_name).c_str(),
-                                     fmt::sprintf("%s vs #mu^{+} #eta;#mu^{+} #eta;%s", m_title, m_ytitle).c_str(),
-                                     nxbins, -maxMuEta, maxMuEta,
-                                     nybins, valmin, valmax);
+    m_h2_map[xAxis::MP_ETA] = fs.make<TH2F>(fmt::sprintf("%sVsMuPlusEta", m_name).c_str(),
+					    fmt::sprintf("%s vs #mu^{+} #eta;#mu^{+} #eta;%s", m_title, m_ytitle).c_str(),
+					    nxbins, -maxMuEta, maxMuEta,
+					    nybins, valmin, valmax);
 
-    h2_vs_muplus_phi = fs.make<TH2F>(fmt::sprintf("%sVsMuPlusPhi", m_name).c_str(),
-                                     fmt::sprintf("%s vs #mu^{+} #phi;#mu^{+} #phi [rad];%s", m_title, m_ytitle).c_str(),
-                                     nxbins, -M_PI, M_PI,
-                                     nybins, valmin, valmax);
+    m_h2_map[xAxis::MP_PHI] = fs.make<TH2F>(fmt::sprintf("%sVsMuPlusPhi", m_name).c_str(),
+					    fmt::sprintf("%s vs #mu^{+} #phi;#mu^{+} #phi [rad];%s", m_title, m_ytitle).c_str(),
+					    nxbins, -M_PI, M_PI,
+					    nybins, valmin, valmax);
 
-    h2_vs_muminus_eta = fs.make<TH2F>(fmt::sprintf("%sVsMuMinusEta", m_name).c_str(),
-                                      fmt::sprintf("%s vs #mu^{-} #eta;#mu^{-} #eta;%s", m_title, m_ytitle).c_str(),
-                                      nxbins, -maxMuEta, maxMuEta,
-                                      nybins, valmin, valmax);
+    m_h2_map[xAxis::MM_ETA] = fs.make<TH2F>(fmt::sprintf("%sVsMuMinusEta", m_name).c_str(),
+					    fmt::sprintf("%s vs #mu^{-} #eta;#mu^{-} #eta;%s", m_title, m_ytitle).c_str(),
+					    nxbins, -maxMuEta, maxMuEta,
+					    nybins, valmin, valmax);
 
-    h2_vs_muminus_phi = fs.make<TH2F>(fmt::sprintf("%sVsMuMinusPhi", m_name).c_str(),
-                                      fmt::sprintf("%s vs #mu^{-} #phi;#mu^{-} #phi [rad];%s", m_title, m_ytitle).c_str(),
-                                      nxbins, -M_PI, M_PI,
-                                      nybins, valmin, valmax);
+    m_h2_map[xAxis::MM_PHI] = fs.make<TH2F>(fmt::sprintf("%sVsMuMinusPhi", m_name).c_str(),
+					    fmt::sprintf("%s vs #mu^{-} #phi;#mu^{-} #phi [rad];%s", m_title, m_ytitle).c_str(),
+					    nxbins, -M_PI, M_PI,
+					    nybins, valmin, valmax);
     // clang-format on
 
     // flip the is booked bit
     m_isBooked = true;
   }
 
+  //________________________________________________________________________________//
   void fillPlots(const float val, const std::pair<TLorentzVector, TLorentzVector>& momenta) {
-    if (!m_isBooked)
+    if (!m_isBooked) {
+      edm::LogError("PlotsVsDiMuKinematics")
+          << "In" << __FUNCTION__ << "," << __LINE__ << "trying to fill a plot not booked!" << std::endl;
       return;
+    }
 
-    h2_vs_Z_eta->Fill((momenta.first + momenta.second).Eta(), val);
-    h2_vs_Z_phi->Fill((momenta.first + momenta.second).Phi(), val);
-    h2_vs_muplus_eta->Fill((momenta.first).Eta(), val);
-    h2_vs_muplus_phi->Fill((momenta.first).Phi(), val);
-    h2_vs_muminus_eta->Fill((momenta.second).Eta(), val);
-    h2_vs_muminus_phi->Fill((momenta.second).Phi(), val);
+    m_h2_map[xAxis::Z_ETA]->Fill((momenta.first + momenta.second).Eta(), val);
+    m_h2_map[xAxis::Z_PHI]->Fill((momenta.first + momenta.second).Phi(), val);
+    m_h2_map[xAxis::MP_ETA]->Fill((momenta.first).Eta(), val);
+    m_h2_map[xAxis::MP_PHI]->Fill((momenta.first).Phi(), val);
+    m_h2_map[xAxis::MM_ETA]->Fill((momenta.second).Eta(), val);
+    m_h2_map[xAxis::MM_PHI]->Fill((momenta.second).Phi(), val);
   }
 
 private:
+  enum xAxis { Z_PHI, Z_ETA, MP_PHI, MP_ETA, MM_PHI, MM_ETA };
+  const std::vector<xAxis> axisChoices = {
+      xAxis::Z_PHI, xAxis::Z_ETA, xAxis::MP_PHI, xAxis::MP_ETA, xAxis::MM_PHI, xAxis::MM_ETA};
+
   const std::string m_name;
   const std::string m_title;
   const std::string m_ytitle;
 
   bool m_isBooked;
 
-  TH2F* h2_vs_Z_phi;
-  TH2F* h2_vs_Z_eta;
-  TH2F* h2_vs_muplus_eta;
-  TH2F* h2_vs_muplus_phi;
-  TH2F* h2_vs_muminus_eta;
-  TH2F* h2_vs_muminus_phi;
+  std::map<xAxis, TH2F*> m_h2_map;
 };
 
 //
@@ -154,10 +237,23 @@ private:
 
   // ----------member data ---------------------------
 
+  std::vector<double> pTthresholds_;
+  float maxSVdist_;
+
+  // plot configurations
+
+  edm::ParameterSet CosPhiConfiguration_;
+  edm::ParameterSet CosPhi3DConfiguration_;
+  edm::ParameterSet VtxProbConfiguration_;
+  edm::ParameterSet VtxDistConfiguration_;
+  edm::ParameterSet VtxDist3DConfiguration_;
+  edm::ParameterSet VtxDistSigConfiguration_;
+  edm::ParameterSet VtxDist3DSigConfiguration_;
+  edm::ParameterSet DiMuMassConfiguration_;
+
   // control plots
 
   TH1F* hSVProb_;
-
   TH1F* hSVDist_;
   TH1F* hSVDistSig_;
   TH1F* hSVDist3D_;
@@ -173,19 +269,14 @@ private:
 
   // 2D maps
 
-  PlotsVsDiMuKinematics CosPhiPlots = PlotsVsDiMuKinematics("CosPhi", "cos(#phi_{xy})", "cos(#phi_{xy})");
-  PlotsVsDiMuKinematics CosPhi3DPlots = PlotsVsDiMuKinematics("CosPhi3D", "cos(#phi_{3D})", "cos(#phi_{3D})");
-  PlotsVsDiMuKinematics VtxProbPlots =
-      PlotsVsDiMuKinematics("VtxProb", "Secondary Vertex Probability", "Prob(#chi^{2}_{SV})");
-  PlotsVsDiMuKinematics VtxDistPlots =
-      PlotsVsDiMuKinematics("VtxDist", "Secondary Vertex Distance", "dist(PV,ZV) [#mum]");
-  PlotsVsDiMuKinematics VtxDist3DPlots =
-      PlotsVsDiMuKinematics("VtxDist3D", "Secondary Vertex 3D Distance", "dist_{3D}(PV,ZV) [#mum]");
-  PlotsVsDiMuKinematics VtxDistSigPlots =
-      PlotsVsDiMuKinematics("SVDistSig", "Secondary Vertex Distance Significance", "dist_{xy}/#sigma_{xy}(PV,ZV)");
-  PlotsVsDiMuKinematics VtxDist3DSigPlots = PlotsVsDiMuKinematics(
-      "SVDist3DSig", "Secondary Vertex 3D Distance Significance vs", "dist_{3D}/#sigma_{3D}(PV,ZV)");
-  PlotsVsDiMuKinematics ZMassPlots = PlotsVsDiMuKinematics("DiMuMass", "Di-muon invariant mass", "M(#mu#mu) [GeV]");
+  PlotsVsDiMuKinematics CosPhiPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics CosPhi3DPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics VtxProbPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics VtxDistPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics VtxDist3DPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics VtxDistSigPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics VtxDist3DSigPlots = PlotsVsDiMuKinematics();
+  PlotsVsDiMuKinematics ZMassPlots = PlotsVsDiMuKinematics();
 
   const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbESToken_;
 
@@ -208,11 +299,30 @@ static constexpr float cmToum = 10e4;
 // constructors and destructor
 //
 DiMuonVertexValidator::DiMuonVertexValidator(const edm::ParameterSet& iConfig)
-    : ttbESToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+    : pTthresholds_(iConfig.getParameter<std::vector<double>>("pTThresholds")),
+      maxSVdist_(iConfig.getParameter<double>("maxSVdist")),
+      CosPhiConfiguration_(iConfig.getParameter<edm::ParameterSet>("CosPhiConfig")),
+      CosPhi3DConfiguration_(iConfig.getParameter<edm::ParameterSet>("CosPhi3DConfig")),
+      VtxProbConfiguration_(iConfig.getParameter<edm::ParameterSet>("VtxProbConfig")),
+      VtxDistConfiguration_(iConfig.getParameter<edm::ParameterSet>("VtxDistConfig")),
+      VtxDist3DConfiguration_(iConfig.getParameter<edm::ParameterSet>("VtxDist3DConfig")),
+      VtxDistSigConfiguration_(iConfig.getParameter<edm::ParameterSet>("VtxDistSigConfig")),
+      VtxDist3DSigConfiguration_(iConfig.getParameter<edm::ParameterSet>("VtxDist3DSigConfig")),
+      DiMuMassConfiguration_(iConfig.getParameter<edm::ParameterSet>("DiMuMassConfig")),
+      ttbESToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
       tracksToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
       muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
       vertexToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))) {
   usesResource(TFileService::kSharedResource);
+
+  // sort the vector of thresholds
+  std::sort(pTthresholds_.begin(), pTthresholds_.end(), [](const double& lhs, const double& rhs) { return lhs > rhs; });
+
+  edm::LogInfo("DiMuonVertexValidator") << __FUNCTION__;
+  for (const auto& thr : pTthresholds_) {
+    edm::LogInfo("DiMuonVertexValidator") << " Threshold: " << thr << " ";
+  }
+  edm::LogInfo("DiMuonVertexValidator") << "\n Max SV distance: " << maxSVdist_ << " ";
 }
 
 DiMuonVertexValidator::~DiMuonVertexValidator() = default;
@@ -252,7 +362,7 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
   // reject if there's no Z
   if (myGoodMuonVector.size() < 2)
     return;
-  if ((myGoodMuonVector[0]->pt()) < 30 || (myGoodMuonVector[1]->pt() < 10))
+  if ((myGoodMuonVector[0]->pt()) < pTthresholds_[0] || (myGoodMuonVector[1]->pt() < pTthresholds_[1]))
     return;
   if (myGoodMuonVector[0]->charge() * myGoodMuonVector[1]->charge() > 0)
     return;
@@ -315,8 +425,11 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
   float track_invMass = Zp4.M();
   hTrackInvMass_->Fill(track_invMass);
 
+  // creat the pair of TLorentVectors used to make the plos
+  std::pair<TLorentzVector, TLorentzVector> tktk_p4 = std::make_pair(p4_tplus, p4_tminus);
+
   // fill the z->mm mass plots
-  ZMassPlots.fillPlots(track_invMass, std::make_pair(p4_tplus, p4_tminus));
+  ZMassPlots.fillPlots(track_invMass, tktk_p4);
 
   math::XYZPoint ZpT(ditrack.x(), ditrack.y(), 0);
   math::XYZPoint Zp(ditrack.x(), ditrack.y(), ditrack.z());
@@ -339,7 +452,7 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
     return;
 
   // fill the VtxProb plots
-  VtxProbPlots.fillPlots(SVProb, std::make_pair(p4_tplus, p4_tminus));
+  VtxProbPlots.fillPlots(SVProb, tktk_p4);
 
   // get collection of reconstructed vertices from event
   edm::Handle<reco::VertexCollection> vertexHandle = iEvent.getHandle(vertexToken_);
@@ -371,10 +484,10 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
     hSVDistSig_->Fill(distance / dist_err);
 
     // fill the VtxDist plots
-    VtxDistPlots.fillPlots(distance * cmToum, std::make_pair(p4_tplus, p4_tminus));
+    VtxDistPlots.fillPlots(distance * cmToum, tktk_p4);
 
     // fill the VtxDisSig plots
-    VtxDistSigPlots.fillPlots(distance / dist_err, std::make_pair(p4_tplus, p4_tminus));
+    VtxDistSigPlots.fillPlots(distance / dist_err, tktk_p4);
 
     // Z Vertex distance in 3D
 
@@ -386,14 +499,14 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
     hSVDist3DSig_->Fill(distance3D / dist3D_err);
 
     // fill the VtxDist3D plots
-    VtxDist3DPlots.fillPlots(distance3D * cmToum, std::make_pair(p4_tplus, p4_tminus));
+    VtxDist3DPlots.fillPlots(distance3D * cmToum, tktk_p4);
 
     // fill the VtxDisSig plots
-    VtxDist3DSigPlots.fillPlots(distance3D / dist3D_err, std::make_pair(p4_tplus, p4_tminus));
+    VtxDist3DSigPlots.fillPlots(distance3D / dist3D_err, tktk_p4);
 
     LogDebug("DiMuonVertexValidator") << "distance: " << distance << "+/-" << dist_err << std::endl;
     // cut on the PV - SV distance
-    if (distance * cmToum < 50) {
+    if (distance * cmToum < maxSVdist_) {
       double cosphi = (ZpT.x() * deltaVtx.x() + ZpT.y() * deltaVtx.y()) /
                       (sqrt(ZpT.x() * ZpT.x() + ZpT.y() * ZpT.y()) *
                        sqrt(deltaVtx.x() * deltaVtx.x() + deltaVtx.y() * deltaVtx.y()));
@@ -408,10 +521,10 @@ void DiMuonVertexValidator::analyze(const edm::Event& iEvent, const edm::EventSe
       hCosPhi3D_->Fill(cosphi3D);
 
       // fill the cosphi plots
-      CosPhiPlots.fillPlots(cosphi, std::make_pair(p4_tplus, p4_tminus));
+      CosPhiPlots.fillPlots(cosphi, tktk_p4);
 
       // fill the VtxDisSig plots
-      CosPhi3DPlots.fillPlots(cosphi3D, std::make_pair(p4_tplus, p4_tminus));
+      CosPhi3DPlots.fillPlots(cosphi3D, tktk_p4);
     }
   }
 }
@@ -442,29 +555,29 @@ void DiMuonVertexValidator::beginJob() {
 
   // 2D Maps
 
-  TFileDirectory DirCosPhi = fs->mkdir("CosPhiPlots");
-  CosPhiPlots.bookPlots(DirCosPhi, -1., 1., 50, 50);
+  TFileDirectory dirCosPhi = fs->mkdir("CosPhiPlots");
+  CosPhiPlots.bookFromPSet(dirCosPhi, CosPhiConfiguration_);
 
   TFileDirectory dirCosPhi3D = fs->mkdir("CosPhi3DPlots");
-  CosPhi3DPlots.bookPlots(dirCosPhi3D, -1., 1., 50, 50);
+  CosPhi3DPlots.bookFromPSet(dirCosPhi3D, CosPhi3DConfiguration_);
 
   TFileDirectory dirVtxProb = fs->mkdir("VtxProbPlots");
-  VtxProbPlots.bookPlots(dirVtxProb, 0., 1., 50, 50);
+  VtxProbPlots.bookFromPSet(dirVtxProb, VtxProbConfiguration_);
 
   TFileDirectory dirVtxDist = fs->mkdir("VtxDistPlots");
-  VtxDistPlots.bookPlots(dirVtxDist, 0., 300., 50, 100);
+  VtxDistPlots.bookFromPSet(dirVtxDist, VtxDistConfiguration_);
 
   TFileDirectory dirVtxDist3D = fs->mkdir("VtxDist3DPlots");
-  VtxDist3DPlots.bookPlots(dirVtxDist3D, 0., 500., 50, 250);
+  VtxDist3DPlots.bookFromPSet(dirVtxDist3D, VtxDist3DConfiguration_);
 
   TFileDirectory dirVtxDistSig = fs->mkdir("VtxDistSigPlots");
-  VtxDistSigPlots.bookPlots(dirVtxDistSig, 0., 5., 50, 100);
+  VtxDistSigPlots.bookFromPSet(dirVtxDistSig, VtxDistSigConfiguration_);
 
   TFileDirectory dirVtxDist3DSig = fs->mkdir("VtxDist3DSigPlots");
-  VtxDist3DSigPlots.bookPlots(dirVtxDist3DSig, 0., 5., 50, 100);
+  VtxDist3DSigPlots.bookFromPSet(dirVtxDist3DSig, VtxDist3DSigConfiguration_);
 
   TFileDirectory dirInvariantMass = fs->mkdir("InvariantMassPlots");
-  ZMassPlots.bookPlots(dirInvariantMass, 70., 120., 50, 50);
+  ZMassPlots.bookFromPSet(dirInvariantMass, DiMuMassConfiguration_);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -492,6 +605,98 @@ void DiMuonVertexValidator::fillDescriptions(edm::ConfigurationDescriptions& des
   desc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
   desc.add<edm::InputTag>("muons", edm::InputTag("muons"));
   desc.add<edm::InputTag>("vertices", edm::InputTag("offlinePrimaryVertices"));
+  desc.add<std::vector<double>>("pTThresholds", {30., 10.});
+  desc.add<double>("maxSVdist", 50.);
+
+  {
+    edm::ParameterSetDescription psDiMuMass;
+    psDiMuMass.add<std::string>("name", "DiMuMass");
+    psDiMuMass.add<std::string>("title", "M(#mu#mu)");
+    psDiMuMass.add<std::string>("yUnits", "[GeV]");
+    psDiMuMass.add<int>("NxBins", 24);
+    psDiMuMass.add<int>("NyBins", 50);
+    psDiMuMass.add<double>("ymin", 70.);
+    psDiMuMass.add<double>("ymax", 120.);
+    desc.add<edm::ParameterSetDescription>("DiMuMassConfig", psDiMuMass);
+  }
+  {
+    edm::ParameterSetDescription psCosPhi;
+    psCosPhi.add<std::string>("name", "CosPhi");
+    psCosPhi.add<std::string>("title", "cos(#phi_{xy})");
+    psCosPhi.add<std::string>("yUnits", "");
+    psCosPhi.add<int>("NxBins", 50);
+    psCosPhi.add<int>("NyBins", 50);
+    psCosPhi.add<double>("ymin", -1.);
+    psCosPhi.add<double>("ymax", 1.);
+    desc.add<edm::ParameterSetDescription>("CosPhiConfig", psCosPhi);
+  }
+  {
+    edm::ParameterSetDescription psCosPhi3D;
+    psCosPhi3D.add<std::string>("name", "CosPhi3D");
+    psCosPhi3D.add<std::string>("title", "cos(#phi_{3D})");
+    psCosPhi3D.add<std::string>("yUnits", "");
+    psCosPhi3D.add<int>("NxBins", 50);
+    psCosPhi3D.add<int>("NyBins", 50);
+    psCosPhi3D.add<double>("ymin", -1.);
+    psCosPhi3D.add<double>("ymax", 1.);
+    desc.add<edm::ParameterSetDescription>("CosPhi3DConfig", psCosPhi3D);
+  }
+  {
+    edm::ParameterSetDescription psVtxProb;
+    psVtxProb.add<std::string>("name", "VtxProb");
+    psVtxProb.add<std::string>("title", "Prob(#chi^{2}_{SV})");
+    psVtxProb.add<std::string>("yUnits", "");
+    psVtxProb.add<int>("NxBins", 50);
+    psVtxProb.add<int>("NyBins", 50);
+    psVtxProb.add<double>("ymin", 0);
+    psVtxProb.add<double>("ymax", 1.);
+    desc.add<edm::ParameterSetDescription>("VtxProbConfig", psVtxProb);
+  }
+  {
+    edm::ParameterSetDescription psVtxDist;
+    psVtxDist.add<std::string>("name", "VtxDist");
+    psVtxDist.add<std::string>("title", "d_{xy}(PV,SV)");
+    psVtxDist.add<std::string>("yUnits", "[#mum]");
+    psVtxDist.add<int>("NxBins", 50);
+    psVtxDist.add<int>("NyBins", 100);
+    psVtxDist.add<double>("ymin", 0);
+    psVtxDist.add<double>("ymax", 300.);
+    desc.add<edm::ParameterSetDescription>("VtxDistConfig", psVtxDist);
+  }
+  {
+    edm::ParameterSetDescription psVtxDist3D;
+    psVtxDist3D.add<std::string>("name", "VtxDist3D");
+    psVtxDist3D.add<std::string>("title", "d_{3D}(PV,SV)");
+    psVtxDist3D.add<std::string>("yUnits", "[#mum]");
+    psVtxDist3D.add<int>("NxBins", 50);
+    psVtxDist3D.add<int>("NyBins", 250);
+    psVtxDist3D.add<double>("ymin", 0);
+    psVtxDist3D.add<double>("ymax", 500.);
+    desc.add<edm::ParameterSetDescription>("VtxDist3DConfig", psVtxDist3D);
+  }
+  {
+    edm::ParameterSetDescription psVtxDistSig;
+    psVtxDistSig.add<std::string>("name", "VtxDistSig");
+    psVtxDistSig.add<std::string>("title", "d_{xy}(PV,SV)/#sigma_{dxy}(PV,SV)");
+    psVtxDistSig.add<std::string>("yUnits", "");
+    psVtxDistSig.add<int>("NxBins", 50);
+    psVtxDistSig.add<int>("NyBins", 100);
+    psVtxDistSig.add<double>("ymin", 0);
+    psVtxDistSig.add<double>("ymax", 5.);
+    desc.add<edm::ParameterSetDescription>("VtxDistSigConfig", psVtxDistSig);
+  }
+  {
+    edm::ParameterSetDescription psVtxDist3DSig;
+    psVtxDist3DSig.add<std::string>("name", "VtxDist3DSig");
+    psVtxDist3DSig.add<std::string>("title", "d_{3D}(PV,SV)/#sigma_{d3D}(PV,SV)");
+    psVtxDist3DSig.add<std::string>("yUnits", "");
+    psVtxDist3DSig.add<int>("NxBins", 50);
+    psVtxDist3DSig.add<int>("NyBins", 100);
+    psVtxDist3DSig.add<double>("ymin", 0);
+    psVtxDist3DSig.add<double>("ymax", 5.);
+    desc.add<edm::ParameterSetDescription>("VtxDist3DSigConfig", psVtxDist3DSig);
+  }
+
   descriptions.addWithDefaultLabel(desc);
 }
 
