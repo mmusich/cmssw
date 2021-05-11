@@ -34,7 +34,7 @@
 #include "TH2D.h"
 #include "TH3D.h"
 #include "TLorentzVector.h"
-#include <math.h>
+#include <cmath>
 using reco::TrackCollection;
 using namespace std;
 using namespace edm;
@@ -74,7 +74,7 @@ public:
     variables_max[7] = variable_PairPt_xmax;
   }
 
-  ~DiMuonValidation();
+  ~DiMuonValidation() override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   const double Muon_mass = 0.105658;  //The invariant mass of muon 105.658MeV
@@ -117,9 +117,9 @@ public:
 
   //==================================================
 private:
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
 
   // ----------member data ---------------------------
   edm::Service<TFileService> fs;
