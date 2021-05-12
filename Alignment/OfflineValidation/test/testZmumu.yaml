@@ -3,12 +3,12 @@ name: TestZmumu
 alignments:
     PromptReco:
         color: 600
-        globaltag: 110X_dataRun3_Prompt_v3
+        globaltag: 111X_dataRun3_Prompt_v5
         style: 2101
         title: Alignment during data taking
     ReReco:
         color: 632
-        globaltag: 110X_dataRun2_v13
+        globaltag: 113X_dataRun2_v1
         style: 2101
         title: End-of-year re-reconstruction
     ULRun2:
@@ -22,7 +22,7 @@ alignments:
                 connect: frontier://FrontierProd/CMS_CONDITIONS
                 label: 
                 tag: TrackerAlignmentExtendedErrors_v15_offline_IOVs
-        globaltag: 106X_dataRun2_UL2016test_v24
+        globaltag: 113X_dataRun2_v1
         style: 2101
         title: Legacy reprocessing
 
