@@ -40,7 +40,7 @@ public:
     edm::ParameterSetDescription desc;
     desc.setComment("Alignment Tracks Selector from Vertices");
     desc.add<edm::InputTag>("src", edm::InputTag("generalTracks"));
-    desc.add<bool>("filter",false);
+    desc.add<bool>("filter", false);
     desc.add<edm::InputTag>("vertices", edm::InputTag("offlinePrimaryVertices"));
     desc.add<unsigned int>("vertexIndex", 0);
     descriptions.addWithDefaultLabel(desc);

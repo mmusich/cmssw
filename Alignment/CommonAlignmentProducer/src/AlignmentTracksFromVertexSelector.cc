@@ -31,23 +31,33 @@ AlignmentTrackFromVertexSelector::Tracks AlignmentTrackFromVertexSelector::selec
     if ((*vertices).at(vertexIndex_).isValid()) {
       const reco::Vertex* theVtx = &(vertices->at(vertexIndex_));
       for (auto tv = theVtx->tracks_begin(); tv != theVtx->tracks_end(); tv++) {
-        const reco::TrackRef trackRef = tv->castTo<reco::TrackRef>();
-        thePVkeys.push_back(trackRef.key());
+        if (tv->isNonnull()) {
+          const reco::TrackRef trackRef = tv->castTo<reco::TrackRef>();
+          thePVkeys.push_back(trackRef.key());
+        }
       }
     }
   }
 
-  if (tc.isValid()) {
-    // put the track in the collection is it was used for the vertex
-    reco::TrackCollection tracks = *(tc.product());
-    size_t itk = 0;
-    for (; itk < tracks.size(); ++itk) {
-      const reco::TrackRef trackRef(tc, itk);
-      if (std::find(thePVkeys.begin(), thePVkeys.end(), trackRef.key()) == thePVkeys.end()) {
-        result.push_back(&tracks.at(itk));
-      }
-    }  // end loop over tracks
-  }
+  std::sort(thePVkeys.begin(), thePVkeys.end());
 
+  LogDebug("AlignmentTrackFromVertexSelector")
+      << "after collecting the PV keys: thePVkeys.size()" << thePVkeys.size() << std::endl;
+  for (const auto& key : thePVkeys) {
+    LogDebug("AlignmentTrackFromVertexSelector") << key << ", ";
+  }
+  LogDebug("AlignmentTrackFromVertexSelector") << std::endl;
+
+  if (tc.isValid()) {
+    int indx(0);
+    // put the track in the collection is it was used for the vertex
+    for (reco::TrackCollection::const_iterator tk = tc->begin(); tk != tc->end(); ++tk, ++indx) {
+      reco::TrackRef trackRef = reco::TrackRef(tc, indx);
+      if (std::find(thePVkeys.begin(), thePVkeys.end(), trackRef.key()) != thePVkeys.end()) {
+        LogDebug("AlignmentTrackFromVertexSelector") << "track index: " << indx << "filling result vector" << std::endl;
+        result.push_back(&(*tk));
+      }  // if a valid key is found
+    }    // end loop over tracks
+  }      // if the handle is valid
   return result;
 }
