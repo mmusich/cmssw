@@ -18,6 +18,7 @@ ALCARECOEventContent = cms.PSet(
 	'keep *_laserAlignmentT0Producer_*_*',
         'keep *_ALCARECOTkAlMuonIsolated_*_*',
         'keep *_ALCARECOTkAlJpsiMuMu_*_*',
+        'keep *_ALCARECOTkAlZMuMuAndVertex_*_*',
         'keep *_ALCARECOTkAlUpsilonMuMu_*_*',
         'keep *_ALCARECOTkAlMinBias_*_*',
 	'keep *_ALCARECOTkAlBeamHalo_*_*', 
