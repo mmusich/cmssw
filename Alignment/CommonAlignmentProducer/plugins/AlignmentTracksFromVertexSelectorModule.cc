@@ -22,8 +22,8 @@ struct TrackFromVertexConfigSelector {
   const_iterator end() const { return theSelectedTracks.end(); }
   size_t size() const { return theSelectedTracks.size(); }
 
-  void select(const edm::Handle<reco::TrackCollection> &c, const edm::Event &evt, const edm::EventSetup & /*dummy*/) {
-    theSelectedTracks = theBaseSelector.select(c, evt);  // might add dummy
+  void select(const edm::Handle<reco::TrackCollection> &c, const edm::Event &evt, const edm::EventSetup &setup) {
+    theSelectedTracks = theBaseSelector.select(c, evt, setup);
   }
 
 private:
@@ -42,6 +42,8 @@ public:
     desc.add<edm::InputTag>("src", edm::InputTag("generalTracks"));
     desc.add<bool>("filter", false);
     desc.add<edm::InputTag>("vertices", edm::InputTag("offlinePrimaryVertices"));
+    desc.add<edm::InputTag>("leptonTracks", edm::InputTag("ALCARECOTkAlDiMuon"));
+    desc.add<bool>("useClosestVertexToDilepton", false);
     desc.add<unsigned int>("vertexIndex", 0);
     descriptions.addWithDefaultLabel(desc);
   }
