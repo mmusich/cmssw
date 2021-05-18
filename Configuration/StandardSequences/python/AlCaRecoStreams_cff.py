@@ -12,7 +12,7 @@ from Alignment.CommonAlignmentProducer.ALCARECOTkAlZMuMu_cff import *
 # AlCaReco for track based alignment using ZMuMu events for PA data-taking
 from Alignment.CommonAlignmentProducer.ALCARECOTkAlZMuMuPA_cff import *
 # AlCaReco for track based alignment using ZMuMu and primary vertex events
-from Alignment.CommonAlignmentProducer.ALCARECOTkAlZMuMuAndVertex_cff import *
+from Alignment.CommonAlignmentProducer.ALCARECOTkAlDiMuonAndVertex_cff import *
 # AlCaReco for track based alignment using Cosmic muon events
 from Alignment.CommonAlignmentProducer.ALCARECOTkAlCosmicsInCollisions_cff import *
 from Alignment.CommonAlignmentProducer.ALCARECOTkAlCosmics_cff import *
@@ -167,7 +167,7 @@ from DQMOffline.Configuration.AlCaRecoDQM_cff import *
 # AlCaReco path definitions:
 
 pathALCARECOTkAlZMuMu = cms.Path(seqALCARECOTkAlZMuMu*ALCARECOTkAlZMuMuDQM)
-pathALCARECOTkAlZMuMuAndVertex = cms.Path(seqALCARECOTkAlZMuMuAndVertex)
+pathALCARECOTkAlDiMuonAndVertex = cms.Path(seqALCARECOTkAlDiMuonAndVertex)
 pathALCARECOTkAlZMuMuPA = cms.Path(seqALCARECOTkAlZMuMuPA*ALCARECOTkAlZMuMuPADQM)
 pathALCARECOTkAlMuonIsolated = cms.Path(seqALCARECOTkAlMuonIsolated*ALCARECOTkAlMuonIsolatedDQM)
 pathALCARECOTkAlMuonIsolatedPA = cms.Path(seqALCARECOTkAlMuonIsolatedPA*ALCARECOTkAlMuonIsolatedPADQM)
@@ -322,12 +322,12 @@ ALCARECOStreamTkAlZMuMu = cms.FilteredStream(
 	dataTier = cms.untracked.string('ALCARECO')
 	)
 
-ALCARECOStreamTkAlZMuMuAndVertex = cms.FilteredStream(
+ALCARECOStreamTkAlDiMuonAndVertex = cms.FilteredStream(
 	responsible = 'Marco Musich',
-	name = 'TkAlZMuMuAndVertex',
-	paths  = (pathALCARECOTkAlZMuMuAndVertex),
-	content = OutALCARECOTkAlZMuMuAndVertex.outputCommands,
-	selectEvents = OutALCARECOTkAlZMuMuAndVertex.SelectEvents,
+	name = 'TkAlDiMuonAndVertex',
+	paths  = (pathALCARECOTkAlDiMuonAndVertex),
+	content = OutALCARECOTkAlDiMuonAndVertex.outputCommands,
+	selectEvents = OutALCARECOTkAlDiMuonAndVertex.SelectEvents,
 	dataTier = cms.untracked.string('ALCARECO')
 	)
 
