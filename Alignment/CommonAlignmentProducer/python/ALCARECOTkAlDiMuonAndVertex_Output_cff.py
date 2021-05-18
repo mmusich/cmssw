@@ -8,12 +8,11 @@ OutALCARECOTkAlDiMuonAndVertex_noDrop = cms.PSet(
     outputCommands = cms.untracked.vstring(
         'keep *_ALCARECOTkAlDiMuon_*_*', 
         'keep *_ALCARECOTkAlDiMuonVertexTracks_*_*',
-        'keep *_muons__*', 
         'keep L1AcceptBunchCrossings_*_*_*',
         'keep L1GlobalTriggerReadoutRecord_gtDigis_*_*',
         'keep *_TriggerResults_*_*',
         'keep DcsStatuss_scalersRawToDigi_*_*',
-	'keep *_offlinePrimaryVertices_*_*')
+        'keep *_offlinePrimaryVertices_*_*')
 )
 OutALCARECOTkAlDiMuonAndVertex = OutALCARECOTkAlDiMuonAndVertex_noDrop.clone()
 OutALCARECOTkAlDiMuonAndVertex.outputCommands.insert(0, "drop *")
