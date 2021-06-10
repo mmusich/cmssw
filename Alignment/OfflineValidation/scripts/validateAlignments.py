@@ -15,6 +15,7 @@ import Alignment.OfflineValidation.TkAlAllInOneTool.DMR as DMR
 import Alignment.OfflineValidation.TkAlAllInOneTool.Zmumu as Zmumu
 import Alignment.OfflineValidation.TkAlAllInOneTool.PV as PV
 import Alignment.OfflineValidation.TkAlAllInOneTool.SplitV as SplitV
+import Alignment.OfflineValidation.TkAlAllInOneTool.JetHT as JetHT
 
 def parser():
     parser = argparse.ArgumentParser(description = "AllInOneTool for validation of the tracker alignment", formatter_class=argparse.RawTextHelpFormatter)
@@ -112,6 +113,9 @@ def main():
         elif validation == "Zmumu":
             jobs.extend(Zmumu.Zmumu(config, validationDir))
 
+        elif validation == "JetHT":
+            jobs.extend(JetHT.JetHT(config, validationDir))
+
         else:
             raise Exception("Unknown validation method: {}".format(validation)) 
             
@@ -160,6 +164,11 @@ def main():
                     "cd {}".format(job["dir"]),
                     "./{} {}validation.json".format(job["exe"], "validation_cfg.py config=" if "cms-config" in job else ""),
                 ]
+
+                # Option the give free arguments to the executable
+                if "exeArguments" in job:
+                    runContent.pop()
+                    runContent.append("./{} {}".format(job["exe"],job["exeArguments"]))
 
                 for line in runContent:
                     runFile.write(line + "\n")
