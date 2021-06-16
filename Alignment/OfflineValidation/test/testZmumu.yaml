@@ -1,18 +1,21 @@
 LFS: /eos/cms/store/group/alca_trackeralign/AlignmentValidation/AlignmentValidation/NewTool
-name: TestZmumu
+name: TestZmumu_2021_6_15_1
 alignments:
     PromptReco:
         color: 600
+        style: 1
         globaltag: 111X_dataRun3_Prompt_v5
         style: 2101
         title: Alignment during data taking
     ReReco:
         color: 632
+        style: 2
         globaltag: 113X_dataRun2_v1
         style: 2101
         title: End-of-year re-reconstruction
     ULRun2:
         color: 418
+        style: 3
         conditions:
             TrackerAlignmentRcd:
                 connect: frontier://FrontierProd/CMS_CONDITIONS
@@ -28,22 +31,6 @@ alignments:
 
 validations:
     Zmumu:
-        merge:
-            Legacy:
-                methods:
-                - mean
-                - rms
-                curves:
-                - plain
-                customrighttitle: IOV
-                legendoptions:
-                - mean
-                - rms
-                singles:
-                - Legacy
-                usefit: true
-                minimum: 15
-
         single:
             Legacy:
                 IOV:

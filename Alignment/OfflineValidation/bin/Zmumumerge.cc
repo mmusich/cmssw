@@ -61,7 +61,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/optional.hpp>
 
 using namespace RooFit;
 using namespace std;
@@ -228,8 +227,13 @@ void Fitting_GetMassmeanVSvariables(TString inputfile_name, TString output_path)
 }
 
 const static int max_file_number = 10;
-void Draw_TH1D_forMultiRootFiles(
-    int file_number, vector<TString> file_names, vector<TString> label_names, TString th1d_name, TString output_name) {
+void Draw_TH1D_forMultiRootFiles(int file_number,
+                                 vector<TString> file_names,
+                                 vector<TString> label_names,
+                                 vector<int> colors,
+                                 vector<int> styles,
+                                 TString th1d_name,
+                                 TString output_name) {
   TH1D* th1d_input[max_file_number];
   TFile* file_input[max_file_number];
   for (int idx_file = 0; idx_file < file_number; idx_file++) {
@@ -243,8 +247,9 @@ void Draw_TH1D_forMultiRootFiles(
   gStyle->SetOptStat(0);
   th1d_input[0]->SetTitle("");
   for (int idx_file = 0; idx_file < file_number; idx_file++) {
-    th1d_input[idx_file]->SetMarkerColor(colors_array[idx_file]);
-    th1d_input[idx_file]->SetLineColor(colors_array[idx_file]);
+    th1d_input[idx_file]->SetMarkerColor(colors[idx_file]);
+    th1d_input[idx_file]->SetLineColor(colors[idx_file]);
+    th1d_input[idx_file]->SetMarkerStyle(styles[idx_file]);
     th1d_input[idx_file]->Draw("same");
     lg->AddEntry(th1d_input[idx_file], label_names[idx_file]);
   }
@@ -256,9 +261,9 @@ int Zmumumerge(int argc, char* argv[]) {
   vector<TString> vec_single_file_path;
   vector<TString> vec_single_file_name;
   vector<TString> vec_global_tag;
-  vec_single_file_path.clear();
-  vec_single_file_name.clear();
-  vec_global_tag.clear();
+  vector<int> vec_color;
+  vector<int> vec_style;
+
   Options options;
   options.helper(argc, argv);
   options.parser(argc, argv);
@@ -269,7 +274,10 @@ int Zmumumerge(int argc, char* argv[]) {
   for (const std::pair<std::string, pt::ptree>& childTree : alignments) {
     vec_single_file_path.push_back(childTree.second.get<std::string>("file"));
     vec_single_file_name.push_back(childTree.second.get<std::string>("file") + "/Zmumu.root");
+    vec_color.push_back(childTree.second.get<int>("color"));
+    vec_style.push_back(childTree.second.get<int>("style"));
     vec_global_tag.push_back(childTree.second.get<std::string>("globaltag"));
+
     //Fitting_GetMassmeanVSvariables(childTree.second.get<std::string>("file") + "/Zmumu.root", childTree.second.get<std::string>("file"));
   }
   TString merge_output = main_tree.get<std::string>("output");
@@ -289,6 +297,8 @@ int Zmumumerge(int argc, char* argv[]) {
         files_number,
         vec_single_fittingoutput,
         vec_global_tag,
+        vec_color,
+        vec_style,
         th1d_name,
         merge_output + Form("/meanmass_%s_GTs.pdf", tstring_variables_name[idx_variable].Data()));
     TString th1d_name_entries = Form("th1d_entries_%s", tstring_variables_name[idx_variable].Data());
@@ -296,6 +306,8 @@ int Zmumumerge(int argc, char* argv[]) {
         files_number,
         vec_single_fittingoutput,
         vec_global_tag,
+        vec_color,
+        vec_style,
         th1d_name_entries,
         merge_output + Form("/entries_%s_GTs.pdf", tstring_variables_name[idx_variable].Data()));
   }
@@ -303,8 +315,5 @@ int Zmumumerge(int argc, char* argv[]) {
   return EXIT_SUCCESS;
 }
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-int main(int argc, char* argv[]) {
-  return Zmumumerge(argc, argv);
-  //return Zmumumerge(argc, argv);
-}
+int main(int argc, char* argv[]) { return Zmumumerge(argc, argv); }
 #endif

@@ -134,6 +134,11 @@ process.DiMuonMassValidation = cms.EDAnalyzer('DiMuonValidation',
                                               Pair_mass_min = cms.double(80.),
                                               Pair_mass_max = cms.double(120.),
                                               Pair_mass_nbins = cms.int32(80),
+                                              Pair_etaminpos = cms.double(-1),
+                                              Pair_etamaxpos = cms.double(1),
+                                              Pair_etaminneg = cms.double(-1),
+                                              Pair_etamaxneg = cms.double(1),
+
                                               # cosTheta CS
                                               Variable_CosThetaCS_xmin = cms.double(-1.),
                                               Variable_CosThetaCS_xmax = cms.double(1.),
@@ -165,7 +170,9 @@ process.DiMuonMassValidation = cms.EDAnalyzer('DiMuonValidation',
                                               # mu mu pT
                                               Variable_PairPt_xmin = cms.double(0.),
                                               Variable_PairPt_xmax = cms.double(100.),
-                                              Variable_PairPt_nbins= cms.int32(100))
+                                              Variable_PairPt_nbins= cms.int32(100)),
+                                              #
+
 
 ###################################################################
 # Define sequences depending on validation mode
