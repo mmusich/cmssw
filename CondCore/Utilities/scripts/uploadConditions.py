@@ -1,15 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''Script that uploads to the new CMS conditions uploader.
 Adapted to the new infrastructure from v6 of the upload.py script for the DropBox from Miguel Ojeda.
 '''
-from __future__ import print_function
 
 __author__ = 'Andreas Pfeiffer'
 __copyright__ = 'Copyright 2015, CERN CMS'
 __credits__ = ['Giacomo Govi', 'Salvatore Di Guida', 'Miguel Ojeda', 'Andreas Pfeiffer']
 __license__ = 'Unknown'
-__maintainer__ = 'Giacomo Govi'
-__email__ = 'giacomo.govi@cern.ch'
+__maintainer__ = 'Andreas Pfeiffer'
+__email__ = 'andreas.pfeiffer@cern.ch'
 __version__ = 1
 
 
@@ -22,10 +21,8 @@ import netrc
 import getpass
 import errno
 import sqlite3
-import cx_Oracle
 import json
 import tempfile
-from datetime import datetime
 
 defaultBackend = 'online'
 defaultHostname = 'cms-conddb-prod.cern.ch'
@@ -34,26 +31,21 @@ defaultUrlTemplate = 'https://%s/cmsDbUpload/'
 defaultTemporaryFile = 'upload.tar.bz2'
 defaultNetrcHost = 'ConditionUploader'
 defaultWorkflow = 'offline'
-prodLogDbSrv = 'cms_orcoff_prod'
-devLogDbSrv = 'cms_orcoff_prep'
-logDbSchema = 'CMS_COND_DROPBOX'
-authPathEnvVar = 'COND_AUTH_PATH'
-waitForRetry = 15
 
 # common/http.py start (plus the "# Try to extract..." section bit)
 import time
 import logging
-import cStringIO
+import io
+from io import BytesIO
 
 import pycurl
-import socket
 import copy
 
 def getInput(default, prompt = ''):
     '''Like raw_input() but with a default and automatic strip().
     '''
 
-    answer = raw_input(prompt)
+    answer = input(prompt)
     if answer:
         return answer.strip()
 
@@ -93,7 +85,7 @@ def getInputRepeat(prompt = ''):
     '''
 
     while True:
-        answer = raw_input(prompt)
+        answer = input(prompt)
         if answer:
             return answer.strip()
 
@@ -123,7 +115,7 @@ I will ask you some questions to fill the metadata file. For some of the questio
             inputTags = dataCursor.fetchall()
             if len(inputTags) == 0:
                 raise Exception()
-            inputTags = zip(*inputTags)[0]
+            inputTags = list(zip(*inputTags))[0]
 
         except Exception:
             inputTags = []
@@ -310,54 +302,35 @@ class HTTP(object):
         #-end hmmm ...
         #-review(2015-09-25): check and see - action: AP
 
+
         self.curl.setopt(pycurl.HTTPHEADER, ['Accept: application/json'])
         # self.curl.setopt( self.curl.POST, {})
         self.curl.setopt(self.curl.HTTPGET, 0)
 
-        response = cStringIO.StringIO()
+        response = io.BytesIO()
         self.curl.setopt(pycurl.WRITEFUNCTION, response.write)
         self.curl.setopt(pycurl.USERPWD, '%s:%s' % (username, password) )
+
         logging.debug('going to connect to server at: %s' % url )
 
         self.curl.perform()
         code = self.curl.getinfo(pycurl.RESPONSE_CODE)
         logging.debug('got: %s ', str(code))
-        if code in ( 502,503,504 ):
-            logging.debug('Trying again after %d seconds...', waitForRetry)
-            time.sleep( waitForRetry )
-            response = cStringIO.StringIO()
-            self.curl.setopt(pycurl.WRITEFUNCTION, response.write)
-            self.curl.setopt(pycurl.USERPWD, '%s:%s' % (username, password) )
-            self.curl.perform()
-            code = self.curl.getinfo(pycurl.RESPONSE_CODE)
-        resp = response.getvalue()
-        errorMsg = None
-        if code==500 and not resp.find("INVALID_CREDENTIALS")==-1:
-            logging.error("Invalid credentials provided.")
+        
+        try:
+            value = response.getvalue().decode('UTF-8')
+            self.token = json.loads( value )['token']
+        except Exception as e:
+            logging.error('http::getToken> got error from server: %s ', str(e) )
+            if 'No JSON object could be decoded' in str(e):
+                return None
+            logging.error("error getting token: %s", str(e))
             return None
-        if code==403 and not resp.find("Unauthorized access")==-1:
-            logging.error("Unauthorized access. Please check the membership of group 'cms-cond-dropbox'")
-            return None
-        if code==200:
-            try:
-                self.token = json.loads( resp )['token']
-            except Exception as e:
-                errorMsg = 'Error while decoding returned json string'
-                logging.debug('http::getToken> error while decoding json: %s ', str(resp) )
-                logging.debug("error getting token: %s", str(e))
-                resp = None
-        else:
-            errorMsg = 'HTTP Error code %s ' %code
-            logging.debug('got: %s ', str(code))
-            logging.debug('http::getToken> got error from server: %s ', str(resp) )
-            resp = None
-        if resp is None:
-            raise Exception(errorMsg)
-            
-        logging.debug('token: %s', self.token)
-        logging.debug('returning: %s', response.getvalue())
 
-        return resp
+        logging.debug('token: %s', self.token)
+        logging.debug('returning: %s', response.getvalue().decode('UTF-8'))
+
+        return response.getvalue()
 
     def query(self, url, data = None, files = None, keepCookies = True):
         '''Queries a URL, optionally with some data (dictionary).
@@ -381,7 +354,7 @@ class HTTP(object):
         # make sure the logs are safe ... at least somewhat :)
         data4log = copy.copy(data)
         if data4log:
-            if 'password' in data4log.keys():
+            if 'password' in list(data4log.keys()):
                 data4log['password'] = '*'
 
         retries = [0] + list(self.retries)
@@ -408,13 +381,13 @@ class HTTP(object):
                         finalData.update(data)
 
                     if files is not None:
-                        for (key, fileName) in files.items():
+                        for (key, fileName) in list(files.items()):
                             finalData[key] = (self.curl.FORM_FILE, fileName)
-                    self.curl.setopt( self.curl.HTTPPOST, finalData.items() )
+                    self.curl.setopt( self.curl.HTTPPOST, list(finalData.items()) )
 
                 self.curl.setopt(pycurl.VERBOSE, 0)
 
-                response = cStringIO.StringIO()
+                response = io.BytesIO()
                 self.curl.setopt(self.curl.WRITEFUNCTION, response.write)
                 self.curl.perform()
 
@@ -425,9 +398,8 @@ class HTTP(object):
                     continue
 
                 if code != 200:
-                    raise HTTPError(code, response.getvalue())
-
-                return response.getvalue()
+                    raise HTTPError(code, response.getvalue().decode('UTF-8'))
+                return response.getvalue().decode('UTF-8')
 
             except pycurl.error as e:
                 if len(retries) == 0:
@@ -453,47 +425,36 @@ class ConditionsUploader(object):
         self.userName = None
         self.http = None
         self.password = None
-        self.token = None
 
     def setHost( self, hostname ):
-        if not hostname==self.hostname:
-            self.token = None
-            self.hostname = hostname
+        self.hostname = hostname
 
-    def signIn(self, username, password ):
-        if self.token is None:
-            logging.debug("Initializing connection with server %s",self.hostname)
-            ''' init the server.
-            '''
-            self.http = HTTP()
-            if socket.getfqdn().strip().endswith('.cms'):
-                self.http.setProxy('https://cmsproxy.cms:3128/')
-            self.http.setBaseUrl(self.urlTemplate % self.hostname)
-            '''Signs in the server.
-            '''
+    def signIn(self, username, password):
+        ''' init the server.
+        '''
+        self.http = HTTP()
+        self.http.setBaseUrl(self.urlTemplate % self.hostname)
+        '''Signs in the server.
+        '''
 
-            logging.info('%s: Signing in user %s ...', self.hostname, username)
-            try:
-                self.token = self.http.getToken(username, password)
-            except Exception as e:
-                ret = -1
-                # optionally, we may want to have a different return for network related errors:
-                #code = self.http.curl.getinfo(pycurl.RESPONSE_CODE)
-                #if code in ( 502,503,504 ):
-                #    ret = -10
-                logging.error("Caught exception when trying to connect to %s: %s" % (self.hostname, str(e)) )
-                return ret
+        logging.info('%s: Signing in user %s ...', self.hostname, username)
+        try:
+            self.token = self.http.getToken(username, password)
+        except Exception as e:
+            logging.error("Caught exception when trying to get token for user %s from %s: %s" % (username, self.hostname, str(e)) )
+            return False
 
-            if not self.token:
-                logging.error("could not get token for user %s from %s" % (username, self.hostname) )
-                return -2
+        if not self.token:
+            logging.error("could not get token for user %s from %s" % (username, self.hostname) )
+            return False
 
-            logging.debug( "got: '%s'", str(self.token) )
-            self.userName = username
-            self.password = password
-        else:
-            logging.debug("User %s has been already authenticated." %username)
-        return 0
+        logging.debug( "got: '%s'", str(self.token) )
+        self.userName = username
+        self.password = password
+        return True
+
+    def signInAgain(self):
+        return self.signIn( self.userName, self.password )
 
     def signOut(self):
         '''Signs out the server.
@@ -553,12 +514,16 @@ class ConditionsUploader(object):
             logging.error(msg)
             raise Exception(msg)
 
-        with tempfile.NamedTemporaryFile() as metadata:
-            with open('%s.txt' % basepath, 'rb') as originalMetadata:
-                json.dump(json.load(originalMetadata), metadata, sort_keys = True, indent = 4)
+        with tempfile.NamedTemporaryFile('a+') as metadata:
+            with open('%s.txt' % basepath, 'r') as originalMetadata:
+                load = json.load(originalMetadata)
+                logging.info(type(load))
+                logging.info(type(metadata))
+                json.dump(load, metadata, sort_keys = True, indent = 4)
 
             metadata.seek(0)
-            addToTarFile(tarFile, metadata, 'metadata.txt')
+            with open(metadata.name, 'rb') as binaryMetadata:
+                addToTarFile(tarFile, binaryMetadata, 'metadata.txt')
 
         tarFile.close()
 
@@ -603,7 +568,7 @@ class ConditionsUploader(object):
         okTags      = []
         skippedTags = []
         failedTags  = []
-        for tag, info in statusInfo['itemStatus'].items():
+        for tag, info in list(statusInfo['itemStatus'].items()):
             logging.debug('checking tag %s, info %s', tag, str(json.dumps(info, indent=4,sort_keys=True)) )
             if 'ok'   in info['status'].lower() :
                 okTags.append( tag )
@@ -619,27 +584,16 @@ class ConditionsUploader(object):
         if len(skippedTags) > 0: logging.warning("tags SKIPped to upload   : %s ", str(skippedTags) )
         if len(failedTags)  > 0: logging.error  ("tags FAILed  to upload   : %s ", str(failedTags) )
 
-        fileLogURL = 'https://cms-conddb.cern.ch/cmsDbBrowser/logs/show_cond_uploader_log/%s/%s' 
-        backend = 'Prod'
-        if self.hostname=='cms-conddb-dev.cern.ch':
-            backend = 'Prep'
-        logging.info('file log at: %s', fileLogURL % (backend,fileHash))
+        fileLogURL = 'https://%s/logs/dropBox/getFileLog?fileHash=%s' 
+        logging.info('file log at: %s', fileLogURL % (self.hostname,fileHash))
 
         return len(okTags)>0
 
-def getCredentials( options ):
+def authenticateUser(dropBox, options):
 
-    username = None
-    password = None
-    netrcPath = None
-    if authPathEnvVar in os.environ:
-        authPath = os.environ[authPathEnvVar]
-        netrcPath = os.path.join(authPath,'.netrc')
-    if options.authPath is not None:
-        netrcPath = os.path.join( options.authPath,'.netrc' )
     try:
         # Try to find the netrc entry
-        (username, account, password) = netrc.netrc( netrcPath ).authenticators(options.netrcHost)
+        (username, account, password) = netrc.netrc().authenticators(options.netrcHost)
     except Exception:
         # netrc entry not found, ask for the username and password
         logging.info(
@@ -654,7 +608,8 @@ def getCredentials( options ):
         username = getInput(defaultUsername, '\nUsername [%s]: ' % defaultUsername)
         password = getpass.getpass('Password: ')
 
-    return username, password
+    # Now we have a username and password, authenticate with them
+    return dropBox.signIn(username, password)
 
 
 def uploadAllFiles(options, arguments):
@@ -680,29 +635,6 @@ def uploadAllFiles(options, arguments):
             errMsg = 'Impossible to open SQLite data file %s' %dataFilename
             logging.error( errMsg )
             ret['status'] = -3
-            ret['error'] = errMsg
-            return ret
-
-        # Check the data file
-        empty = True
-        try:
-            dbcon = sqlite3.connect( dataFilename )
-            dbcur = dbcon.cursor()
-            dbcur.execute('SELECT * FROM IOV')
-            rows = dbcur.fetchall()
-            for r in rows:
-                empty = False
-            dbcon.close()
-            if empty:
-                errMsg = 'The input SQLite data file %s contains no data.' %dataFilename
-                logging.error( errMsg )
-                ret['status'] = -4
-                ret['error'] = errMsg
-                return ret
-        except Exception as e:
-            errMsg = 'Check on input SQLite data file %s failed: %s' %(dataFilename,str(e))
-            logging.error( errMsg )
-            ret['status'] = -5
             ret['error'] = errMsg
             return ret
 
@@ -732,31 +664,33 @@ def uploadAllFiles(options, arguments):
         dropBox = ConditionsUploader(options.hostname, options.urlTemplate)
 
         # Authentication
-        username, password = getCredentials(options)
+        if not authenticateUser(dropBox, options):
+            logging.error("Error authenticating user. Aborting.")
+            return { 'status' : -2, 'error' : "Error authenticating user. Aborting." }
+
+        # At this point we must be authenticated
+        dropBox._checkForUpdates()
 
         results = {}
         for filename in arguments:
             backend = options.backend
             basepath = filename.rsplit('.db', 1)[0].rsplit('.txt', 1)[0]
             metadataFilename = '%s.txt' % basepath
-            with open(metadataFilename, 'rb') as metadataFile:
+            with open(metadataFilename, 'r') as metadataFile:
                 metadata = json.load( metadataFile )
             # When dest db = prep the hostname has to be set to dev.
             forceHost = False
             destDb = metadata['destinationDatabase']
             if destDb.startswith('oracle://cms_orcon_prod') or destDb.startswith('oracle://cms_orcoff_prep'):
-                hostName = defaultHostname
                 if destDb.startswith('oracle://cms_orcoff_prep'):
-                     hostName = defaultDevHostname
-                dropBox.setHost( hostName )
-                authRet = dropBox.signIn( username, password )
-                if not authRet==0:
-                    msg = "Error trying to connect to the server. Aborting."
-                    if authRet==-2:
-                        msg = "Error while signin in. Aborting."
-                    logging.error(msg)
-                    return { 'status' : authRet, 'error' : msg }
+                    dropBox.setHost( defaultDevHostname )
+                    dropBox.signInAgain()
+                    forceHost = True
                 results[filename] = dropBox.uploadFile(filename, options.backend, options.temporaryFile)
+                if forceHost:
+                    # set back the hostname to the original global setting
+                    dropBox.setHost( options.hostname )
+                    dropBox.signInAgain()
             else:
                 results[filename] = False
                 logging.error("DestinationDatabase %s is not valid. Skipping the upload." %destDb)
@@ -812,90 +746,6 @@ def uploadTier0Files(filenames, username, password, cookieFileName = None):
 
     dropBox.signOut()
 
-def re_upload( options ):
-    netrcPath = None
-    logDbSrv = prodLogDbSrv
-    if options.hostname == defaultDevHostname:
-        logDbSrv = devLogDbSrv
-    if options.authPath is not None:
-        netrcPath = os.path.join( options.authPath,'.netrc' )
-    try:
-        netrcKey = '%s/%s' %(logDbSrv,logDbSchema)
-        print('#netrc key=%s' %netrcKey)
-        # Try to find the netrc entry
-        (username, account, password) = netrc.netrc( netrcPath ).authenticators( netrcKey )
-    except IOError as e:
-        logging.error('Cannot access netrc file.')
-        return 1
-    except Exception as e:
-        logging.error('Netrc file is invalid: %s' %str(e))
-        return 1
-    conStr = '%s/%s@%s' %(username,password,logDbSrv)
-    con = cx_Oracle.connect( conStr )
-    cur = con.cursor()
-    fh = options.reUpload
-    cur.execute('SELECT FILECONTENT, STATE FROM FILES WHERE FILEHASH = :HASH',{'HASH':fh})
-    res = cur.fetchall()
-    found = False
-    fdata = None
-    for r in res:
-        found = True
-        logging.info("Found file %s in state '%s;" %(fh,r[1]))
-        fdata = r[0].read().decode('bz2')
-    con.close()
-    if not found:
-        logging.error("No file uploaded found with hash %s" %fh)
-        return 1
-    # writing as a tar file and open it ( is there a why to open it in memory?)
-    fname = '%s.tar' %fh
-    with open(fname, "wb" ) as f:
-        f.write(fdata)
-    rname = 'reupload_%s' %fh
-    with tarfile.open(fname) as tar:
-        tar.extractall()
-    os.remove(fname)
-    dfile = 'data.db'
-    mdfile = 'metadata.txt'
-    if os.path.exists(dfile):
-        os.utime(dfile,None)
-        os.chmod(dfile,0o755)
-        os.rename(dfile,'%s.db' %rname)
-    else:
-        logging.error('Tar file does not contain the data file')
-        return 1
-    if os.path.exists(mdfile):
-        os.utime(mdfile,None)
-        os.chmod(mdfile,0o755)
-        mdata = None
-        with open(mdfile) as md:
-            mdata = json.load(md)
-        datelabel = datetime.now().strftime("%y-%m-%d %H:%M:%S")
-        if mdata is None:
-            logging.error('Metadata file is empty.')
-            return 1
-        logging.debug('Preparing new metadata file...')
-        mdata['userText'] = 'reupload %s : %s' %(datelabel,mdata['userText'])
-        with open( '%s.txt' %rname, 'wb') as jf:
-            jf.write( json.dumps( mdata, sort_keys=True, indent = 2 ) )
-            jf.write('\n')
-        os.remove(mdfile)
-    else:
-        logging.error('Tar file does not contain the metadata file')
-        return 1
-    logging.info('Files %s prepared for the upload.' %rname)
-    arguments = [rname]
-    return upload(options, arguments)
-
-def upload(options, arguments):
-    results = uploadAllFiles(options, arguments)
-
-    if 'status' not in results:
-        print('Unexpected error.')
-        return -1
-    ret = results['status']
-    print(results)
-    print("upload ended with code: %s" %ret)
-    return ret    
 
 def main():
     '''Entry point.
@@ -942,19 +792,11 @@ def main():
         help = 'The netrc host (machine) from where the username and password will be read. Default: %default',
     )
 
-    parser.add_option('-a', '--authPath',
-        dest = 'authPath',
-        default = None,
-        help = 'The path of the .netrc file for the authentication. Default: $HOME',
-    )
-
-    parser.add_option('-r', '--reUpload',
-        dest = 'reUpload',
-        default = None,
-        help = 'The hash of the file to upload again.',
-    )
-
     (options, arguments) = parser.parse_args()
+
+    if len(arguments) < 1:
+        parser.print_help()
+        return -2
 
     logLevel = logging.INFO
     if options.debug:
@@ -964,17 +806,17 @@ def main():
         level = logLevel,
     )
 
-    if len(arguments) < 1:
-        if options.reUpload is None:
-            parser.print_help()
-            return -2
-        else:
-            return re_upload(options)
-    if options.reUpload is not None:
-        print("ERROR: options -r can't be specified on a new file upload.")
-        return -2
+    results = uploadAllFiles(options, arguments)
 
-    return upload(options, arguments)
+    if 'status' not in results:
+        print('Unexpected error.')
+        return -1
+    ret = results['status']
+    print(results)
+    print("upload ended with code: %s" %ret)
+    #for hash, res in results.items():
+    #    print "\t %s : %s " % (hash, str(res))
+    return ret
 
 def testTier0Upload():
 
