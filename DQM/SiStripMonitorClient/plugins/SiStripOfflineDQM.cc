@@ -39,6 +39,7 @@
 #include "CondFormats/DataRecord/interface/RunSummaryRcd.h"
 #include "CondFormats/RunInfo/interface/RunSummary.h"
 #include "CondFormats/RunInfo/interface/RunInfo.h"
+#include "DQMServices/Core/interface/LegacyIOHelper.h"
 
 // Cabling
 #include "CalibTracker/Records/interface/SiStripDetCablingRcd.h"
@@ -191,8 +192,10 @@ bool SiStripOfflineDQM::openInputFile(DQMStore& dqm_store) {
   if (inputFileName_.empty())
     return false;
   edm::LogInfo("OpenFile") << "SiStripOfflineDQM::openInputFile: Accessing root File" << inputFileName_;
-  dqm_store.open(inputFileName_, false);
-  return true;
+  dqm::harvesting::DQMStore* temp = dynamic_cast<dqm::harvesting::DQMStore*>(&dqm_store);
+  LegacyIOHelper leo(temp);
+  return leo.open(inputFileName_);
+  //return true;
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
