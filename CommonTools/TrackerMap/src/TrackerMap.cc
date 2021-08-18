@@ -813,7 +813,6 @@ void TrackerMap::save(bool print_total, float minval, float maxval, std::string 
   bool rangefound = true;
   if (saveGeoTrackerMap) {
     std::string filetype = s, outputfilename = s;
-    std::vector<TPolyLine *> vp;
     TGaxis *axis = nullptr;
     size_t found = filetype.find_last_of(".");
     filetype = filetype.substr(found + 1);
@@ -973,6 +972,7 @@ void TrackerMap::save(bool print_total, float minval, float maxval, std::string 
       tempfile.seekg(0, std::ios::beg);
       std::cout << "created palette with " << ncolor << " colors" << std::endl;
 
+      auto pline = std::make_unique<TPolyLine>();
       while (!tempfile.eof()) {  //create polylines
         tempfile >> red >> green >> blue >> npoints;
         for (int i = 0; i < npoints; i++) {
@@ -981,8 +981,7 @@ void TrackerMap::save(bool print_total, float minval, float maxval, std::string 
         colindex = red + green * 1000 + blue * 1000000;
         pos = colorList.find(colindex);
         if (pos != colorList.end()) {
-          TPolyLine *pline = new TPolyLine(npoints, y, x);
-          vp.push_back(pline);
+	  pline->SetPolyLine(npoints, y, x);
           pline->SetFillColor(colorList[colindex]);
           pline->SetLineWidth(0);
           pline->Draw("f");
@@ -1106,9 +1105,6 @@ void TrackerMap::save(bool print_total, float minval, float maxval, std::string 
       delete MyL;
       if (printflag)
         delete axis;
-      for (std::vector<TPolyLine *>::iterator pos1 = vp.begin(); pos1 != vp.end(); pos1++) {
-        delete (*pos1);
-      }
     }
   }
   return;
@@ -1690,7 +1686,6 @@ void TrackerMap::save_as_fectrackermap(
     bool print_total, float minval, float maxval, std::string s, int width, int height) {
   if (enableFecProcessing) {
     std::string filetype = s, outputfilename = s;
-    std::vector<TPolyLine *> vp;
     TGaxis *axis = nullptr;
     size_t found = filetype.find_last_of(".");
     filetype = filetype.substr(found + 1);
@@ -1910,6 +1905,8 @@ void TrackerMap::save_as_fectrackermap(
       tempfile.clear();
       tempfile.seekg(0, std::ios::beg);
       std::cout << "created palette with " << ncolor << " colors" << std::endl;
+
+      auto pline = std::make_unique<TPolyLine>();
       while (!tempfile.eof()) {  //create polylines
         tempfile >> red >> green >> blue >> npoints;
         for (int i = 0; i < npoints; i++) {
@@ -1918,8 +1915,7 @@ void TrackerMap::save_as_fectrackermap(
         colindex = red + green * 1000 + blue * 1000000;
         pos = colorList.find(colindex);
         if (pos != colorList.end()) {
-          TPolyLine *pline = new TPolyLine(npoints, y, x);
-          vp.push_back(pline);
+          pline->SetPolyLine(npoints, y, x);
           pline->SetFillColor(colorList[colindex]);
           pline->SetLineWidth(0);
           pline->Draw("f");
@@ -1967,10 +1963,6 @@ void TrackerMap::save_as_fectrackermap(
       delete MyC;
       if (printflag && !saveWebInterface)
         delete axis;
-      for (std::vector<TPolyLine *>::iterator pos1 = vp.begin(); pos1 != vp.end(); pos1++) {
-        delete (*pos1);
-      }
-
     }  //if(temporary_file)
   }    //if(enabledFecProcessing)
 }
@@ -1978,7 +1970,6 @@ void TrackerMap::save_as_HVtrackermap(
     bool print_total, float minval, float maxval, std::string s, int width, int height) {
   if (enableHVProcessing) {
     std::string filetype = s, outputfilename = s;
-    std::vector<TPolyLine *> vp;
     TGaxis *axis = nullptr;
     size_t found = filetype.find_last_of(".");
     filetype = filetype.substr(found + 1);
@@ -2230,6 +2221,7 @@ void TrackerMap::save_as_HVtrackermap(
       tempfile.clear();
       tempfile.seekg(0, std::ios::beg);
       std::cout << "created palette with " << ncolor << " colors" << std::endl;
+      auto pline = std::make_unique<TPolyLine>();
       while (!tempfile.eof()) {  //create polylines
         tempfile >> red >> green >> blue >> npoints;
         for (int i = 0; i < npoints; i++) {
@@ -2238,8 +2230,7 @@ void TrackerMap::save_as_HVtrackermap(
         colindex = red + green * 1000 + blue * 1000000;
         pos = colorList.find(colindex);
         if (pos != colorList.end()) {
-          TPolyLine *pline = new TPolyLine(npoints, y, x);
-          vp.push_back(pline);
+          pline->SetPolyLine(npoints, y, x);
           pline->SetFillColor(colorList[colindex]);
           pline->SetLineWidth(0);
           pline->Draw("f");
@@ -2287,10 +2278,6 @@ void TrackerMap::save_as_HVtrackermap(
       delete MyC;
       if (printflag && !saveWebInterface)
         delete axis;
-      for (std::vector<TPolyLine *>::iterator pos1 = vp.begin(); pos1 != vp.end(); pos1++) {
-        delete (*pos1);
-      }
-
     }  //if(temporary_file)
   }    //if(enabledHVProcessing)
 }
@@ -2301,7 +2288,6 @@ void TrackerMap::save_as_psutrackermap(
     printflag = true;
     bool rangefound = true;
     std::string filetype = s, outputfilename = s;
-    std::vector<TPolyLine *> vp;
     TGaxis *axis = nullptr;
 
     size_t found = filetype.find_last_of(".");
@@ -2535,6 +2521,8 @@ void TrackerMap::save_as_psutrackermap(
       }
       tempfile.clear();
       tempfile.seekg(0, std::ios::beg);
+
+      auto pline = std::make_unique<TPolyLine>();
       std::cout << "created palette with " << ncolor << " colors" << std::endl;
       while (!tempfile.eof()) {  //create polylines
         tempfile >> red >> green >> blue >> npoints;
@@ -2544,8 +2532,7 @@ void TrackerMap::save_as_psutrackermap(
         colindex = red + green * 1000 + blue * 1000000;
         pos = colorList.find(colindex);
         if (pos != colorList.end()) {
-          TPolyLine *pline = new TPolyLine(npoints, y, x);
-          vp.push_back(pline);
+	  pline->SetPolyLine(npoints, y, x);
           pline->SetFillColor(colorList[colindex]);
           pline->SetLineWidth(0);
           pline->Draw("f");
@@ -2593,10 +2580,6 @@ void TrackerMap::save_as_psutrackermap(
       delete MyC;
       if (printflag && !saveWebInterface)
         delete axis;
-      for (std::vector<TPolyLine *>::iterator pos1 = vp.begin(); pos1 != vp.end(); pos1++) {
-        delete (*pos1);
-      }
-
     }  //if(temporary_file)
   }    //if(enabledFedProcessing)
 }
@@ -2607,7 +2590,6 @@ void TrackerMap::save_as_fedtrackermap(
     printflag = true;
     bool rangefound = true;
     std::string filetype = s, outputfilename = s;
-    std::vector<TPolyLine *> vp;
     TGaxis *axis = nullptr;
 
     size_t found = filetype.find_last_of(".");
@@ -2841,6 +2823,7 @@ void TrackerMap::save_as_fedtrackermap(
       tempfile.clear();
       tempfile.seekg(0, std::ios::beg);
       std::cout << "created palette with " << ncolor << " colors" << std::endl;
+      auto pline = std::make_unique<TPolyLine>();
       while (!tempfile.eof()) {  //create polylines
         tempfile >> red >> green >> blue >> npoints;
         for (int i = 0; i < npoints; i++) {
@@ -2849,8 +2832,7 @@ void TrackerMap::save_as_fedtrackermap(
         colindex = red + green * 1000 + blue * 1000000;
         pos = colorList.find(colindex);
         if (pos != colorList.end()) {
-          TPolyLine *pline = new TPolyLine(npoints, y, x);
-          vp.push_back(pline);
+	  pline->SetPolyLine(npoints, y, x);
           pline->SetFillColor(colorList[colindex]);
           pline->SetLineWidth(0);
           pline->Draw("f");
@@ -2898,10 +2880,6 @@ void TrackerMap::save_as_fedtrackermap(
       delete MyC;
       if (printflag && !saveWebInterface)
         delete axis;
-      for (std::vector<TPolyLine *>::iterator pos1 = vp.begin(); pos1 != vp.end(); pos1++) {
-        delete (*pos1);
-      }
-
     }  //if(temporary_file)
   }    //if(enabledFedProcessing)
 }
