@@ -989,16 +989,26 @@ namespace {
         TMarker *initial = new TMarker(x0i, y0i, 21);
         TMarker *final = new TMarker(x0f, y0f, 20);
 
-        initial->SetMarkerColor(kRed);
+        initial->SetMarkerColor(kBlack);
         final->SetMarkerColor(kBlue);
         initial->SetMarkerSize(2.5);
         final->SetMarkerSize(2.5);
-        t1.SetTextColor(kRed);
+        t1.SetTextColor(kBlack);
         initial->Draw();
-        t1.DrawLatex(x0i, y0i - 0.5, Form("(%.2f,%.2f)", x0i, y0i));
+	t1.DrawLatex(x0i, y0i+(y0i>y0f ? 0.3 : -0.5), Form("(%.2f,%.2f)", x0i, y0i));
+        //t1.DrawLatex(x0i, y0i - 0.5, Form("(%.2f,%.2f)", x0i, y0i));
         final->Draw("same");
         t1.SetTextColor(kBlue);
-        t1.DrawLatex(x0f, y0f + 0.3, Form("(%.2f,%.2f)", x0f, y0f));
+	t1.DrawLatex(x0f, y0f+(y0i>y0f ? -0.5 : 0.3), Form("(%.2f,%.2f)", x0f, y0f));
+        //t1.DrawLatex(x0f, y0f + 0.3, Form("(%.2f,%.2f)", x0f, y0f));
+
+	TPad *current_pad = static_cast<TPad *>(canvas.cd(c));
+	cmsPrel(current_pad, 2);
+
+	auto* legend = new TLegend(0.17, 0.8 , 0.67, .9);
+	legend->AddEntry(initial, "Run II Geometry", "P");
+	legend->AddEntry(final, "Early alignment 2021", "P");
+	legend->Draw("same");
       }
 
       // fourth pad is a special case for the z coordinate
@@ -1026,20 +1036,30 @@ namespace {
         COUT << "initial   z " << std::left << std::setw(7) << structures[c - 1] << " " << z0i << " mm" << std::endl;
         COUT << "final     z " << std::left << std::setw(7) << structures[c - 1] << " " << z0f << " mm" << std::endl;
 
-        initial->SetMarkerColor(kRed);
+        initial->SetMarkerColor(kBlack);
         final->SetMarkerColor(kBlue);
         initial->SetMarkerSize(2.5);
         final->SetMarkerSize(2.5);
         initial->Draw();
-        t1.SetTextColor(kRed);
-        t1.DrawLatex(c - 1, z0i - 1.5, Form("(%.2f)", z0i));
+        t1.SetTextColor(kBlack);
+        t1.DrawLatex(c - 1, z0i + (z0i>z0f ? 1. : -1.5), Form("(%.2f)", z0i));
         final->Draw("same");
         t1.SetTextColor(kBlue);
-        t1.DrawLatex(c - 1, z0f + 1., Form("(%.2f)", z0f));
+        t1.DrawLatex(c - 1, z0f + (z0i>z0f ? -1.5 : 1), Form("(%.2f)", z0f));
+
+
+	TPad *current_pad = static_cast<TPad *>(canvas.cd(4));
+	cmsPrel(current_pad, 2);
+
+	auto* legend = new TLegend(0.17, 0.8 , 0.67, .9);
+	legend->AddEntry(initial, "Run II Geometry", "P");
+	legend->AddEntry(final, "Early alignment 2021", "P");
+	legend->Draw("same");
       }
 
       std::string fileName(this->m_imageFileName);
       canvas.SaveAs(fileName.c_str());
+      canvas.SaveAs("comparison.root");
 
       return true;
     }
@@ -1047,6 +1067,50 @@ namespace {
   private:
     bool isInitialPhase0;
     bool isFinalPhase0;
+
+    /*--------------------------------------------------------------------*/
+    void cmsPrel(TPad *pad, size_t ipads) {
+    /*--------------------------------------------------------------------*/
+
+      float H = pad->GetWh();
+      float W = pad->GetWw();
+      float l = pad->GetLeftMargin();
+      float t = pad->GetTopMargin();
+      float r = pad->GetRightMargin();
+      float b = pad->GetBottomMargin();
+      float relPosX = 0.009;
+      float relPosY = 0.045;
+      float lumiTextOffset = 0.8;
+      
+      TLatex *latex = new TLatex();
+      latex->SetNDC();
+      latex->SetTextSize(0.045);
+      
+      float posX_ = 1 - (r / ipads);
+      float posY_ = 1 - t + 0.05;  /// - relPosY*(1-t-b);
+      float factor = 1. / 0.82;
+      
+      latex->SetTextAlign(33);
+      latex->SetTextSize(0.045);
+      latex->SetTextFont(42);  //22
+      latex->DrawLatex(posX_, posY_, "Internal (2021)");
+      
+      UInt_t w;
+      UInt_t h;
+      latex->GetTextExtent(w, h, "Internal (2021)");
+      float size = w / (W / ipads);
+      //logInfo<<w<<" "<<" "<<W<<" "<<size<<std::endl;
+      float posXCMS_ = posX_ - size * (1 + 0.025 * ipads);
+      
+      latex->SetTextAlign(33);
+      latex->SetTextFont(61);
+      latex->SetTextSize(0.045 * factor);
+      latex->DrawLatex(posXCMS_, posY_ + 0.004, "CMS");
+      
+      //latex->DrawLatex(posX_,posY_,"CMS Preliminary (13 TeV)");
+      //latex->DrawLatex(posX_,posY_,"CMS 2017 Work in progress (13 TeV)");
+    }
+    
   };
 
   using PixelBarycentersCompare = PixelBarycentersComparatorBase<1, MULTI_IOV>;
