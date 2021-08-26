@@ -39,6 +39,8 @@
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLatency.h"
 #include "DQM/TrackerRemapper/interface/Phase1PixelMaps.h"
+#include "DQM/TrackerRemapper/interface/Phase1PixelROCMaps.h"
+#include "DQM/SiPixelPhase1Common/interface/SiPixelCoordinates.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/DetId/interface/DetId.h"
@@ -75,6 +77,8 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
+#include "CondFormats/DataRecord/interface/SiPixelFedCablingMapRcd.h"
 
 // toggle to enable debugging
 #define DEBUG 0
@@ -87,7 +91,11 @@ public:
   GeneralPurposeTrackAnalyzer(const edm::ParameterSet &pset)
       : geomToken_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>()),
         magFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord, edm::Transition::BeginRun>()),
-        latencyToken_(esConsumes<SiStripLatency, SiStripLatencyRcd, edm::Transition::BeginRun>()) {
+        latencyToken_(esConsumes<SiStripLatency, SiStripLatencyRcd, edm::Transition::BeginRun>()),
+        geomTokenBR_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()),		    
+        trackerTopologyTokenBR_(esConsumes<TrackerTopology, TrackerTopologyRcd, edm::Transition::BeginRun>()),		    
+        siPixelFedCablingMapTokenBR_(esConsumes<SiPixelFedCablingMap, SiPixelFedCablingMapRcd, edm::Transition::BeginRun>())
+ {
     usesResource(TFileService::kSharedResource);
 
     TkTag_ = pset.getParameter<edm::InputTag>("TkTag");
@@ -116,6 +124,9 @@ public:
     pixelmap = std::make_unique<Phase1PixelMaps>("COLZ0 L");
     pixelmap->bookBarrelHistograms("entriesBarrel", "# hits", "# pixel hits");
     pixelmap->bookForwardHistograms("entriesForward", "# hits", "# pixel hits");
+
+    pixelrocsmap_ = std::make_unique<Phase1PixelROCMaps>("");
+
   }
 
   ~GeneralPurposeTrackAnalyzer() override {}
@@ -140,7 +151,13 @@ private:
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
   const edm::ESGetToken<SiStripLatency, SiStripLatencyRcd> latencyToken_;
 
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomTokenBR_;
+  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> trackerTopologyTokenBR_;
+  const edm::ESGetToken<SiPixelFedCablingMap, SiPixelFedCablingMapRcd> siPixelFedCablingMapTokenBR_;
+
   edm::ESHandle<MagneticField> magneticField_;
+
+  SiPixelCoordinates coord_;
 
   edm::Service<TFileService> fs;
 
@@ -148,6 +165,7 @@ private:
   std::unique_ptr<TrackerMap> pmap;
 
   std::unique_ptr<Phase1PixelMaps> pixelmap;
+  std::unique_ptr<Phase1PixelROCMaps> pixelrocsmap_;
 
   TH1D *hchi2ndof;
   TH1D *hNtrk;
@@ -343,11 +361,13 @@ private:
 
     for (auto track = tC.cbegin(); track != tC.cend(); track++) {
       unsigned int nHit2D = 0;
+      std::bitset<16> rocsToMask;
       for (auto iHit = track->recHitsBegin(); iHit != track->recHitsEnd(); ++iHit) {
         if (this->isHit2D(**iHit)) {
           ++nHit2D;
         }
-
+	// rest the ROCs for the map
+	rocsToMask.reset();
         const DetId &detId = (*iHit)->geographicalId();
         const GeomDet *geomDet(theGeometry->idToDet(detId));
 
@@ -357,6 +377,18 @@ private:
           if (pixhit->isValid()) {
             unsigned int subid = detId.subdetId();
             int detid_db = detId.rawId();
+
+	    // get the cluster
+	    auto clustp = pixhit->cluster();
+	
+	    if (clustp.isNull())
+	      continue;
+	    auto const& cluster = *clustp;
+	    int row = cluster.x() - 0.5, col = cluster.y() - 0.5;
+	    int rocId = coord_.roc(detId,std::make_pair(row,col));
+	    
+	    rocsToMask.set(rocId);
+	    pixelrocsmap_->fillSelectedRocs(detid_db,rocsToMask,1);	
 
             if (!isPhase1_) {
               pmap->fill(detid_db, 1);
@@ -695,6 +727,14 @@ private:
 
     conditionsMap_[run.run()].first = mode;
     conditionsMap_[run.run()].second = B_;
+
+    // init the sipixel coordinates
+    const TrackerGeometry* trackerGeometry = &setup.getData(geomTokenBR_);
+    const TrackerTopology* trackerTopology = &setup.getData(trackerTopologyTokenBR_);
+    const SiPixelFedCablingMap* siPixelFedCablingMap = &setup.getData(siPixelFedCablingMapTokenBR_);
+
+    // Pixel Phase-1 helper class
+    coord_.init(trackerTopology, trackerGeometry, siPixelFedCablingMap);
   }
 
   //*************************************************************
@@ -1139,6 +1179,11 @@ private:
     TCanvas cF("CanvForward", "CanvForward", 1600, 1000);
     pixelmap->drawForwardMaps("entriesForward", cF);
     cF.SaveAs("pixelForwardEntries.png");
+
+    TCanvas cRocs = TCanvas("cRocs", "cRocs", 1200, 1600);
+    pixelrocsmap_->drawMaps(cRocs, "testing selected ROCs");
+    cRocs.SaveAs("Phase1PixelROCMaps_fullROCs.png");
+
   }
 
   //*************************************************************
