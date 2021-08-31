@@ -65,6 +65,17 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag,options.myGT, '')
 
+process.GlobalTag.toGet = cms.VPSet(
+     cms.PSet(record = cms.string("TrackerAlignmentRcd"),
+              tag = cms.string("Alignments"),
+              connect = cms.string("sqlite_file:/afs/cern.ch/cms/CAF/CMSALCA/ALCA_TRACKERALIGN/MP/MPproduction/mp3415/jobData/jobm/alignments_MP.db")
+              ),
+     cms.PSet(record = cms.string("TrackerAlignmentErrorExtendedRcd"),
+              tag = cms.string("TrackerAlignmentExtendedErrors_PIX50_TIB10_TOB15_TID20_TEC20"),
+              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
+              )
+)
+
 # process.GlobalTag.toGet = cms.VPSet(
 #     cms.PSet(record = cms.string("SiPixelTemplateDBObjectRcd"),
 #              label = cms.untracked.string("0T"),

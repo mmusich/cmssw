@@ -94,10 +94,10 @@ public:
       : geomToken_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>()),
         magFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord, edm::Transition::BeginRun>()),
         latencyToken_(esConsumes<SiStripLatency, SiStripLatencyRcd, edm::Transition::BeginRun>()),
-        geomTokenBR_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()),		    
-        trackerTopologyTokenBR_(esConsumes<TrackerTopology, TrackerTopologyRcd, edm::Transition::BeginRun>()),		    
-        siPixelFedCablingMapTokenBR_(esConsumes<SiPixelFedCablingMap, SiPixelFedCablingMapRcd, edm::Transition::BeginRun>())
- {
+        geomTokenBR_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()),
+        trackerTopologyTokenBR_(esConsumes<TrackerTopology, TrackerTopologyRcd, edm::Transition::BeginRun>()),
+        siPixelFedCablingMapTokenBR_(
+            esConsumes<SiPixelFedCablingMap, SiPixelFedCablingMapRcd, edm::Transition::BeginRun>()) {
     usesResource(TFileService::kSharedResource);
 
     TkTag_ = pset.getParameter<edm::InputTag>("TkTag");
@@ -380,17 +380,17 @@ private:
             unsigned int subid = detId.subdetId();
             int detid_db = detId.rawId();
 
-	    // get the cluster
-	    auto clustp = pixhit->cluster();
-	
-	    if (clustp.isNull())
-	      continue;
-	    auto const& cluster = *clustp;
-	    int row = cluster.x() - 0.5, col = cluster.y() - 0.5;
-	    int rocId = coord_.roc(detId,std::make_pair(row,col));
-	    
-	    rocsToMask.set(rocId);
-	    pixelrocsmap_->fillSelectedRocs(detid_db,rocsToMask,1);	
+            // get the cluster
+            auto clustp = pixhit->cluster();
+
+            if (clustp.isNull())
+              continue;
+            auto const &cluster = *clustp;
+            int row = cluster.x() - 0.5, col = cluster.y() - 0.5;
+            int rocId = coord_.roc(detId, std::make_pair(row, col));
+
+            rocsToMask.set(rocId);
+            pixelrocsmap_->fillSelectedRocs(detid_db, rocsToMask, 1);
 
             if (!isPhase1_) {
               pmap->fill(detid_db, 1);
@@ -730,9 +730,9 @@ private:
     conditionsMap_[run.run()].second = B_;
 
     // init the sipixel coordinates
-    const TrackerGeometry* trackerGeometry = &setup.getData(geomTokenBR_);
-    const TrackerTopology* trackerTopology = &setup.getData(trackerTopologyTokenBR_);
-    const SiPixelFedCablingMap* siPixelFedCablingMap = &setup.getData(siPixelFedCablingMapTokenBR_);
+    const TrackerGeometry *trackerGeometry = &setup.getData(geomTokenBR_);
+    const TrackerTopology *trackerTopology = &setup.getData(trackerTopologyTokenBR_);
+    const SiPixelFedCablingMap *siPixelFedCablingMap = &setup.getData(siPixelFedCablingMapTokenBR_);
 
     // Pixel Phase-1 helper class
     coord_.init(trackerTopology, trackerGeometry, siPixelFedCablingMap);
