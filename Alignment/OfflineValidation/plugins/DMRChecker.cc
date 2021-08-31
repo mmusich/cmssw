@@ -620,7 +620,7 @@ private:
               resDetailsTIB_[detid_db].rOrZDirection = resDetailsTIB_[detid_db].rDirection;  // barrel (split in r)
             }
 
-            hTIBResXPrime->Fill(uOrientation * resX * 10000);
+            hTIBResXPrime->Fill(uOrientation * resX * cmToUm);
             hTIBResXPull->Fill(pullX);
 
             // update residuals
@@ -630,7 +630,7 @@ private:
             uOrientation = deltaPhi(gUDirection.barePhi(), gPModule.barePhi()) >= 0. ? +1.F : -1.F;
             //vOrientation = gVDirection.z() - gPModule.z() >= 0 ? +1.F : -1.F; // not used for Strips
 
-            hTOBResXPrime->Fill(uOrientation * resX * 10000);
+            hTOBResXPrime->Fill(uOrientation * resX * cmToUm);
             hTOBResXPull->Fill(pullX);
 
             // if the detid has never occcurred yet, set the local orientations
@@ -647,7 +647,7 @@ private:
             uOrientation = deltaPhi(gUDirection.barePhi(), gPModule.barePhi()) >= 0. ? +1.F : -1.F;
             //vOrientation = gVDirection.perp() - gPModule.perp() >= 0. ? +1.F : -1.F; // not used for Strips
 
-            hTIDResXPrime->Fill(uOrientation * resX * 10000);
+            hTIDResXPrime->Fill(uOrientation * resX * cmToUm);
             hTIDResXPull->Fill(pullX);
 
             // update residuals
@@ -657,7 +657,7 @@ private:
             uOrientation = deltaPhi(gUDirection.barePhi(), gPModule.barePhi()) >= 0. ? +1.F : -1.F;
             //vOrientation = gVDirection.perp() - gPModule.perp() >= 0. ? +1.F : -1.F; // not used for Strips
 
-            hTECResXPrime->Fill(uOrientation * resX * 10000);
+            hTECResXPrime->Fill(uOrientation * resX * cmToUm);
             hTECResXPull->Fill(pullX);
 
             // update residuals

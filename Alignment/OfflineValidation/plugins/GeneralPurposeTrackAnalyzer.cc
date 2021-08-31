@@ -32,15 +32,16 @@
 #include <boost/range/adaptor/indexed.hpp>
 
 // user include files
-
 #include "CommonTools/TrackerMap/interface/TrackerMap.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CondFormats/AlignmentRecord/interface/GlobalPositionRcd.h"
+#include "CondFormats/DataRecord/interface/SiPixelFedCablingMapRcd.h"
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
+#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLatency.h"
+#include "DQM/SiPixelPhase1Common/interface/SiPixelCoordinates.h"
 #include "DQM/TrackerRemapper/interface/Phase1PixelMaps.h"
 #include "DQM/TrackerRemapper/interface/Phase1PixelROCMaps.h"
-#include "DQM/SiPixelPhase1Common/interface/SiPixelCoordinates.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/DetId/interface/DetId.h"
@@ -62,11 +63,11 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "FWCore/Common/interface/TriggerNames.h"
-#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -77,8 +78,6 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
-#include "CondFormats/DataRecord/interface/SiPixelFedCablingMapRcd.h"
 
 // toggle to enable debugging
 #define DEBUG 0
@@ -89,13 +88,12 @@ const int kFPIX = PixelSubdetector::PixelEndcap;
 class GeneralPurposeTrackAnalyzer : public edm::one::EDAnalyzer<edm::one::WatchRuns, edm::one::SharedResources> {
 public:
   GeneralPurposeTrackAnalyzer(const edm::ParameterSet &pset)
-      : geomToken_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>()),
-        magFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord, edm::Transition::BeginRun>()),
-        latencyToken_(esConsumes<SiStripLatency, SiStripLatencyRcd, edm::Transition::BeginRun>()),
-        geomTokenBR_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()),
-        trackerTopologyTokenBR_(esConsumes<TrackerTopology, TrackerTopologyRcd, edm::Transition::BeginRun>()),
-        siPixelFedCablingMapTokenBR_(
-            esConsumes<SiPixelFedCablingMap, SiPixelFedCablingMapRcd, edm::Transition::BeginRun>()) {
+      : geomToken_(esConsumes()),
+        magFieldToken_(esConsumes<edm::Transition::BeginRun>()),
+        latencyToken_(esConsumes<edm::Transition::BeginRun>()),
+        geomTokenBR_(esConsumes<edm::Transition::BeginRun>()),
+        trackerTopologyTokenBR_(esConsumes<edm::Transition::BeginRun>()),
+        siPixelFedCablingMapTokenBR_(esConsumes<edm::Transition::BeginRun>()) {
     usesResource(TFileService::kSharedResource);
 
     TkTag_ = pset.getParameter<edm::InputTag>("TkTag");
@@ -1162,8 +1160,10 @@ private:
       fieldByRun_->GetXaxis()->SetBinLabel((the_r - theRuns_.front()) + 1, std::to_string(the_r).c_str());
     }
 
-    pmap->save(true, 0, 0, "PixelHitMap.pdf", 600, 800);
-    pmap->save(true, 0, 0, "PixelHitMap.png", 500, 750);
+    if (!isPhase1_) {
+      pmap->save(true, 0, 0, "PixelHitMap.pdf", 600, 800);
+      pmap->save(true, 0, 0, "PixelHitMap.png", 500, 750);
+    }
 
     tmap->save(true, 0, 0, "StripHitMap.pdf");
     tmap->save(true, 0, 0, "StripHitMap.png");
