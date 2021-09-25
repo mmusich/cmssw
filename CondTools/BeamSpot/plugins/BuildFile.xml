@@ -7,6 +7,3 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="CondCore/CondDB"/>
 <flags EDM_PLUGIN="1"/>
-<library file="BeamSpotOnlinePopConAnalyzer.cc" name="CondToolsBeamSpotOnlinePopConAnalyzer">
-  <flags EDM_PLUGIN="1"/>
-</library>

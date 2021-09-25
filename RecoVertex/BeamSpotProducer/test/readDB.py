@@ -12,6 +12,12 @@ options.register('inputFile',
                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                  VarParsing.VarParsing.varType.string, # string, int, or float
                  "location of the input data")
+options.register('inputTag',
+                 "EarlyCollision", # default value
+                 VarParsing.VarParsing.multiplicity.singleton, # singleton or list
+                 VarParsing.VarParsing.varType.string, # string, int, or float
+                 "input tag")
+
 options.parseArguments()
 
 process = cms.Process("readDB")
@@ -29,7 +35,7 @@ process.BeamSpotDBSource = cms.ESSource("PoolDBESSource",process.CondDB,
                                         toGet = cms.VPSet(cms.PSet(
                                             record = cms.string('BeamSpotObjectsRcd'),
                                             # change the else clause in case with your favourite BeamSpot
-                                            tag = cms.string('EarlyCollision') if options.unitTest else cms.string('BeamSpotObjects_Realistic25ns_13TeV2016Collisions_v1_mc'))
+                                            tag = cms.string('EarlyCollision') if options.unitTest else cms.string(options.inputTag))
                                             )
                                         )
 
