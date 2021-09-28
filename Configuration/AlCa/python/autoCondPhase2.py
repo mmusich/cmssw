@@ -27,7 +27,7 @@ allTags={}
 
 # Cabling Maps
 allTags["DTCCabling"] = {
-    "T23" :  ( ','.join( [ 'TrackerDetToDTCELinkCablingMap_T23_ITOnly' ,TrackerDTCCablingRecord, connectionString, "", "2021-09-27 10:00:00.000"] ), ), # Inner-Tacker DTC cabling map provided for T23 geometry
+    "T23" :  ( ','.join( [ 'TrackerDetToDTCELinkCablingMap__OT616_200_IT700__T23_Full' ,TrackerDTCCablingRecord, connectionString, "", "2021-09-28 12:30:00.000"] ), ), # Inner-Tacker DTC cabling map provided for T23 geometry
 }
 
 allTags["LA"] = {
