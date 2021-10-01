@@ -3,6 +3,7 @@
 
 #include "DataFormats/TrackerRecHit2D/interface/BaseTrackerRecHit.h"
 #include "TrackingTools/DetLayers/interface/DetLayer.h"
+#include "FWCore/Utilities/interface/isFinite.h"
 
 #include <vector>
 #include <array>
@@ -33,7 +34,13 @@ public:
   };
 
   struct HitLessPhi {
-    bool operator()(const HitWithPhi& a, const HitWithPhi& b) { return a.phi() < b.phi(); }
+    bool operator()(const HitWithPhi& a, const HitWithPhi& b) {
+      if (!edm::isFinite(a.phi()))
+        return false;
+      if (!edm::isFinite(b.phi()))
+        return true;
+      return a.phi() < b.phi();
+    }
   };
   typedef std::vector<HitWithPhi>::const_iterator HitIter;
   typedef std::pair<HitIter, HitIter> Range;
