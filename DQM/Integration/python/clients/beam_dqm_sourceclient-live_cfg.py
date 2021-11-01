@@ -329,7 +329,8 @@ from RecoVertex.PrimaryVertexProducer.OfflinePixel3DPrimaryVertices_cfi import *
 process.pixelVertices = pixelVertices.clone(
   TkFilterParameters = dict( minPt = process.pixelTracksTrackingRegions.RegionPSet.ptMin)
 )
-process.pixelTracksTrackingRegions.RegionPSet.ptMin = 0.1
+# The following was usied during the 2021 LHC Beam Test (sqrt(s) = 450 GeV)
+#process.pixelTracksTrackingRegions.RegionPSet.ptMin = 0.1
 process.pixelTracksTrackingRegions.RegionPSet.originRadius = 0.4
 # The following parameters were used in 2018 HI:
 #process.pixelTracksTrackingRegions.RegionPSet.originHalfLength = 12
