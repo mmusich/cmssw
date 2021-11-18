@@ -72,6 +72,7 @@ SiPixelTrackProbQXYProducer::~SiPixelTrackProbQXYProducer(){}
 
 void SiPixelTrackProbQXYProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {  
+  cout << "Running SiPixelTrackProbQXYProducer " << endl;
   edm::Handle<reco::TrackCollection> trackCollectionHandle;
   iEvent.getByToken(trackToken_,trackCollectionHandle);
   const TrackCollection& trackCollection(*trackCollectionHandle.product());
