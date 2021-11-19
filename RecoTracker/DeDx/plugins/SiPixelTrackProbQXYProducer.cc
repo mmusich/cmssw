@@ -34,6 +34,7 @@
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
 #include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHit.h"
+#include "DataFormats/TrackReco/interface/SiPixelTrackProbQXY.h"
 //
 // class declaration
 //
@@ -57,10 +58,7 @@ using namespace std;
 using namespace edm;
 
 SiPixelTrackProbQXYProducer::SiPixelTrackProbQXYProducer(const edm::ParameterSet& iConfig) {
-   //produces<reco::DeDxHitInfoCollection >();
-   //produces<reco::DeDxHitInfoAss >();
-   produces<edm::ValueMap<int> >("prescale");
-
+   produces<reco::SiPixelTrackProbQXYCollection >();
    trackToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
 
    //if(!usePixel && !useStrip)
@@ -79,15 +77,10 @@ void SiPixelTrackProbQXYProducer::produce(edm::Event& iEvent, const edm::EventSe
   float probQonTrack = 0.0;
   float probXYonTrack = 0.0;
   // creates the output collection
-  //auto resultdedxHitColl = std::make_unique<reco::DeDxHitInfoCollection>();
-
-  std::vector<int> indices; std::vector<int> prescales;
-  //uint64_t state[2] = { iEvent.id().event(), iEvent.id().luminosityBlock() };
+  auto resultSiPixelTrackProbQXYColl = std::make_unique<reco::SiPixelTrackProbQXYCollection>();
   
   for(unsigned int j=0;j<trackCollection.size();j++){            
      const reco::Track& track = trackCollection[j];
-
-//     reco::DeDxHitInfo hitDeDxInfo;
 
      int numRecHits = 0;
      float probQonTrackWMulti = 1;
@@ -107,6 +100,7 @@ void SiPixelTrackProbQXYProducer::produce(edm::Event& iEvent, const edm::EventSe
         probQonTrackWMulti *= probQ;
         probXYonTrackWMulti *= probXY;
      } // end looping on the rechits
+
      float logprobQonTrackWMulti = log(probQonTrackWMulti);
      float logprobXYonTrackWMulti = log(probXYonTrackWMulti);
      std::cout << "numRecHits: " << numRecHits << std::endl;
@@ -121,13 +115,15 @@ void SiPixelTrackProbQXYProducer::produce(edm::Event& iEvent, const edm::EventSe
      probQonTrack = probQonTrackWMulti*probQonTrackTerm;
      probXYonTrack = probXYonTrackWMulti*probXYonTrackTerm;
      std::cout << "For this track probQonTrack is " << probQonTrack << " and probXYonTrack is  " << probXYonTrack << endl;
-     //break;
+
+     //reco::SiPixelTrackProbQXY siPixelTrackProbQXY = SiPixelTrackProbQXY(probQonTrack,probXYonTrack,probQonTrack,probXYonTrack);
      //indices.push_back(resultdedxHitColl->size());
-     //resultdedxHitColl->push_back(hitDeDxInfo);
-  }
+     //resultSiPixelTrackProbQXYColl->push_back(siPixelTrackProbQXY);
+     resultSiPixelTrackProbQXYColl->push_back(SiPixelTrackProbQXY(probQonTrack,probXYonTrack,probQonTrack,probXYonTrack));
+  } // end loop on track collection
  
 
-  //edm::OrphanHandle<reco::DeDxHitInfoCollection> dedxHitCollHandle = iEvent.put(std::move(resultdedxHitColl));
+  edm::OrphanHandle<reco::SiPixelTrackProbQXYCollection> siPixelTrackProbQXYHandle = iEvent.put(std::move(resultSiPixelTrackProbQXYColl));
 
   //create map passing the handle to the matched collection
   //auto dedxMatch = std::make_unique<reco::DeDxHitInfoAss>(dedxHitCollHandle);
