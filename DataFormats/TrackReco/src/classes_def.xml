@@ -508,10 +508,11 @@
    <class name="edm::Wrapper<reco::DeDxHitInfoAss>"/>
 
    <class name="reco::SiPixelTrackProbQXY"/>
-   <class name="edm::Wrapper<reco::SiPixelTrackProbQXY"/>
+   <class name="std::vector<reco::SiPixelTrackProbQXY>"/>
+   <class name="edm::Wrapper<reco::SiPixelTrackProbQXY>"/>
 
    <class name="reco::SiPixelTrackProbQXYCollection"/>
-   <class name="edm::Wrapper<reco::SiPixelTrackProbQXYCollection"/>
+   <class name="edm::Wrapper<reco::SiPixelTrackProbQXYCollection>"/>
 
    <class name="SeedStopInfo" persistent="false"/>
    <class name="std::vector<SeedStopInfo>" persistent="false"/>

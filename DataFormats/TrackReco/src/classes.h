@@ -29,6 +29,7 @@
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/TrackCandidate/interface/TrackCandidate.h"
 #include "DataFormats/TrackReco/interface/DeDxHitInfo.h"
+#include "DataFormats/TrackReco/interface/SiPixelTrackProbQXY.h"
 #include "DataFormats/TrackReco/interface/SeedStopInfo.h"
 
 #include <vector>
