@@ -11,7 +11,7 @@ default = cms.VPSet(
              cut               = cms.double(5.0),
              sigCut            = cms.double(2.5),
              maxMoveCut        = cms.double(200.0),
-             maxErrorCut       = cms.double(10.0)
+             maxErrorCut       = cms.double(10000.0)
              ),
         
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXminus"),
@@ -19,15 +19,15 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXminus"),
              DOF                = cms.string("Y"),
-             cut                = cms.double(10.0),
+             cut                = cms.double(10000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),                       
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXminus"),
@@ -35,7 +35,7 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXminus"),
@@ -43,15 +43,15 @@ default = cms.VPSet(
              cut                = cms.double(15.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXminus"),
              DOF                = cms.string("thetaZ"),
-             cut                = cms.double(30.0),
+             cut                = cms.double(300000.0),
              sigCut             = cms.double(2.5),
-             maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)                         
+             maxMoveCut         = cms.double(2000000.0),
+             maxErrorCut        = cms.double(10000.0)                         
              ),
     
     ### Barrel Pixel HB X+
@@ -60,7 +60,7 @@ default = cms.VPSet(
              cut                = cms.double(5.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXplus"),
@@ -68,15 +68,15 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0),
+             maxErrorCut        = cms.double(10000.0),
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXplus"),
              DOF                = cms.string("Y"),
-             cut                = cms.double(10.0),
+             cut                = cms.double(10000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),                       
                  
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXplus"),
@@ -84,7 +84,7 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXplus"),
@@ -92,15 +92,15 @@ default = cms.VPSet(
              cut                = cms.double(15.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPBHalfBarrelXplus"),
              DOF                = cms.string("thetaZ"),
-             cut                = cms.double(30.0),
+             cut                = cms.double(30000000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)                         
+             maxErrorCut        = cms.double(10000.0)                         
              ),
     
     ### Forward Pixel HC X-,Z-
@@ -109,7 +109,7 @@ default = cms.VPSet(
              cut                = cms.double(5.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZminus"),
@@ -117,15 +117,15 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZminus"),
              DOF                = cms.string("Y"),
-             cut                = cms.double(10.0),
+             cut                = cms.double(10000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),                       
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZminus"),
@@ -133,7 +133,7 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZminus"),
@@ -141,15 +141,15 @@ default = cms.VPSet(
              cut                = cms.double(15.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZminus"),
              DOF                = cms.string("thetaZ"),         
-             cut                = cms.double(30.0),
+             cut                = cms.double(3000000000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)                         
+             maxErrorCut        = cms.double(10000.0)                         
              ),
     
     ### Forward Pixel HC X+,Z-
@@ -158,7 +158,7 @@ default = cms.VPSet(
              cut                = cms.double(5.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZminus"),
@@ -166,15 +166,15 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZminus"),
              DOF                = cms.string("Y"),        
-             cut                = cms.double(10.0),
+             cut                = cms.double(10000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),                       
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZminus"),
@@ -182,7 +182,7 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZminus"),
@@ -190,15 +190,15 @@ default = cms.VPSet(
              cut                = cms.double(15.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZminus"),
              DOF                = cms.string("thetaZ"),         
-             cut                = cms.double(30.0),
+             cut                = cms.double(30000000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)                         
+             maxErrorCut        = cms.double(10000.0)                         
              ),
     
     ### Forward Pixel HC X-,Z+
@@ -207,7 +207,7 @@ default = cms.VPSet(
              cut                = cms.double(5.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut       =  cms.double(10.0)
+             maxErrorCut       =  cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZplus"),
@@ -215,15 +215,15 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZplus"),
              DOF                = cms.string("Y"),        
-             cut                = cms.double(10.0),
+             cut                = cms.double(10000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZplus"),
@@ -231,7 +231,7 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZplus"),
@@ -239,15 +239,15 @@ default = cms.VPSet(
              cut                = cms.double(15.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXminusZplus"),
              DOF                = cms.string("thetaZ"),        
-             cut                = cms.double(30.0),
+             cut                = cms.double(3000000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)                         
+             maxErrorCut        = cms.double(10000.0)                         
              ),
     
     ### Forward Pixel HC X+,Z+
@@ -256,7 +256,7 @@ default = cms.VPSet(
              cut                = cms.double(5.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),                                                               
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZplus"),
@@ -264,15 +264,15 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZplus"),
              DOF                = cms.string("Y"),       
-             cut                = cms.double(10.0),
+             cut                = cms.double(10000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZplus"),
@@ -280,7 +280,7 @@ default = cms.VPSet(
              cut                = cms.double(30.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZplus"),
@@ -288,15 +288,15 @@ default = cms.VPSet(
              cut                = cms.double(15.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)
+             maxErrorCut        = cms.double(10000.0)
              ),
     
     cms.PSet(alignableId        = cms.string("TPEHalfCylinderXplusZplus"),
              DOF                = cms.string("thetaZ"),                
-             cut                = cms.double(30.0),
+             cut                = cms.double(3000000.0),
              sigCut             = cms.double(2.5),
              maxMoveCut         = cms.double(200.0),
-             maxErrorCut        = cms.double(10.0)                         
+             maxErrorCut        = cms.double(10000.0)                         
              )
     )
 

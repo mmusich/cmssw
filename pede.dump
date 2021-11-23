@@ -1,0 +1,1283 @@
+ initC: using zlib version 1.2.8
+ ($Rev: 208 $)
+ using OpenMP (TM)
+ compiled with gcc 9.3.0
+  
+   <  Millepede II-P starting ... Tue Nov  2 12:18:48 2021
+                                  lxplus781.cern.ch       
+  
+  
+ ________________________________FILETC/X__________________________________
+  
+  
+ Command line options: 
+ --------------------- 
+  1  pedeSteerMaster.txt
+ --------------------- 
+  
+ Listing of steering file: pedeSteerMaster.txt
+ -------------------------
+  1  
+  2  Cfiles
+  3  pedeBinary0000.dat
+  4  pedeBinary0001.dat
+  5  pedeBinary0002.dat
+  6  pedeBinary0003.dat
+  7  pedeBinary0004.dat
+  8  pedeBinary0005.dat
+  9  pedeBinary0006.dat
+ 10  pedeBinary0007.dat
+ 11  pedeBinary0008.dat
+ 12  pedeBinary0009.dat
+ 13  pedeBinary0010.dat
+ 14  pedeBinary0011.dat
+ 15  pedeBinary0012.dat
+ 16  pedeBinary0013.dat
+ 17  pedeBinary0014.dat
+ 18  pedeBinary0015.dat
+ 19  pedeBinary0016.dat
+ 20  pedeBinary0017.dat
+ 21  pedeBinary0018.dat
+ 22  pedeBinary0019.dat
+ 23  pedeBinary0020.dat
+ 24  pedeBinary0021.dat
+ 25  pedeBinary0022.dat
+ 26  pedeBinary0023.dat
+ 27  pedeBinary0024.dat
+ 28  pedeBinary0025.dat
+ 29  pedeBinary0026.dat
+ 30  pedeBinary0027.dat
+ 31  pedeBinary0028.dat
+ 32  pedeBinary0029.dat
+ 33  pedeBinary0030.dat
+ 34  pedeBinary0031.dat
+ 35  pedeBinary0032.dat
+ 36  pedeBinary0033.dat
+ 37  pedeBinary0034.dat
+ 38  pedeBinary0035.dat
+ 39  pedeBinary0036.dat
+ 40  pedeBinary0037.dat
+ 41  pedeBinary0038.dat
+ 42  pedeBinary0039.dat
+ 43  pedeBinary0040.dat
+ 44  pedeBinary0041.dat
+ 45  pedeBinary0042.dat
+ 46  pedeBinary0043.dat
+ 47  pedeBinary0044.dat
+ 48  pedeBinary0045.dat
+ 49  pedeBinary0046.dat
+ 50  pedeBinary0047.dat
+      ...
+ -------------------------
+  
+        1000  binary files opened and closed
+  
+ Processing text files ...
+  
+ File pedeSteerMaster.txt
+     end-of-file after        1010  text lines
+  
+ ... end of text file processing.
+  
+  
+ Solution method and matrix-storage mode:
+      METSOL = 1:  matrix inversion
+                   with           5  iterations
+      MATSTO = 1:  full symmetric matrix, (n*n+n)/2 elements
+ Chi square cut equiv 3 st.dev applied ...
+  in  first iteration with factor   30.0000000    
+  in second iteration with factor   4.50000000    
+  (reduced by sqrt in next iterations)
+ Iterations (solutions) with line search:
+  All with Chi square cut scaling factor <= 1.
+  
+ ______________________________FILETC/X-end________________________________
+  
+
+ Number of processors available:             10
+ Maximum number of OpenMP threads:            1
+ Number of threads for processing:            1
+ Number of threads for reading:               1
+  
+ _________________________________LOOP1____________________________________
+  
+ Read all binary data files:
+ PEREAD: file            1 read the first time, found          21  records
+ PEREAD: file            2 read the first time, found          19  records
+ PEREAD: file            3 read the first time, found          21  records
+ PEREAD: file            4 read the first time, found          18  records
+ PEREAD: file            5 read the first time, found          19  records
+ PEREAD: file            6 read the first time, found          21  records
+ PEREAD: file            7 read the first time, found          31  records
+ PEREAD: file            8 read the first time, found          20  records
+ PEREAD: file            9 read the first time, found          33  records
+ PEREAD: file           10 read the first time, found          19  records
+ PEREAD: file           11 read the first time, found          19  records
+ PEREAD: file           12 read the first time, found          26  records
+ PEREAD: file           13 read the first time, found          20  records
+ PEREAD: file           14 read the first time, found          23  records
+ PEREAD: file           15 read the first time, found          15  records
+ PEREAD: file           16 read the first time, found          19  records
+ PEREAD: file           17 read the first time, found          20  records
+ PEREAD: file           18 read the first time, found          22  records
+ PEREAD: file           19 read the first time, found          22  records
+ PEREAD: file           20 read the first time, found           7  records
+ PEREAD: file           21 read the first time, found          42  records
+ PEREAD: file           22 read the first time, found          45  records
+ PEREAD: file           23 read the first time, found          55  records
+ PEREAD: file           24 read the first time, found          38  records
+ PEREAD: file           25 read the first time, found          44  records
+ PEREAD: file           26 read the first time, found          36  records
+ PEREAD: file           27 read the first time, found          45  records
+ PEREAD: file           28 read the first time, found          36  records
+ PEREAD: file           29 read the first time, found          35  records
+ PEREAD: file           30 read the first time, found          48  records
+ PEREAD: file           31 read the first time, found          51  records
+ PEREAD: file           32 read the first time, found          63  records
+ PEREAD: file           33 read the first time, found          59  records
+ PEREAD: file           34 read the first time, found          41  records
+ PEREAD: file           35 read the first time, found          36  records
+ PEREAD: file           36 read the first time, found          47  records
+ PEREAD: file           37 read the first time, found          44  records
+ PEREAD: file           38 read the first time, found          34  records
+ PEREAD: file           39 read the first time, found          38  records
+ PEREAD: file           40 read the first time, found          42  records
+ PEREAD: file           41 read the first time, found          47  records
+ PEREAD: file           42 read the first time, found          51  records
+ PEREAD: file           43 read the first time, found          41  records
+ PEREAD: file           44 read the first time, found          53  records
+ PEREAD: file           45 read the first time, found          47  records
+ PEREAD: file           46 read the first time, found          45  records
+ PEREAD: file           47 read the first time, found          32  records
+ PEREAD: file           48 read the first time, found          38  records
+ PEREAD: file           49 read the first time, found          51  records
+ PEREAD: file           50 read the first time, found          50  records
+ PEREAD: file           51 read the first time, found          58  records
+ PEREAD: file           52 read the first time, found          43  records
+ PEREAD: file           53 read the first time, found          52  records
+ PEREAD: file           54 read the first time, found          50  records
+ PEREAD: file           55 read the first time, found          45  records
+ PEREAD: file           56 read the first time, found          44  records
+ PEREAD: file           57 read the first time, found          52  records
+ PEREAD: file           58 read the first time, found          46  records
+ PEREAD: file           59 read the first time, found          28  records
+ PEREAD: file           60 read the first time, found          64  records
+ PEREAD: file           61 read the first time, found          44  records
+ PEREAD: file           62 read the first time, found          51  records
+ PEREAD: file           63 read the first time, found          52  records
+ PEREAD: file           64 read the first time, found          51  records
+ PEREAD: file           65 read the first time, found          51  records
+ PEREAD: file           66 read the first time, found          50  records
+ PEREAD: file           67 read the first time, found          38  records
+ PEREAD: file           68 read the first time, found          30  records
+ PEREAD: file           69 read the first time, found          45  records
+ PEREAD: file           70 read the first time, found          44  records
+ PEREAD: file           71 read the first time, found          39  records
+ PEREAD: file           72 read the first time, found          58  records
+ PEREAD: file           73 read the first time, found          41  records
+ PEREAD: file           74 read the first time, found          36  records
+ PEREAD: file           75 read the first time, found          35  records
+ PEREAD: file           76 read the first time, found          50  records
+ PEREAD: file           77 read the first time, found          27  records
+ PEREAD: file           78 read the first time, found          42  records
+ PEREAD: file           79 read the first time, found          45  records
+ PEREAD: file           80 read the first time, found          35  records
+ PEREAD: file           81 read the first time, found          44  records
+ PEREAD: file           82 read the first time, found          47  records
+ PEREAD: file           83 read the first time, found          40  records
+ PEREAD: file           84 read the first time, found          35  records
+ PEREAD: file           85 read the first time, found          45  records
+ PEREAD: file           86 read the first time, found          39  records
+ PEREAD: file           87 read the first time, found          59  records
+ PEREAD: file           88 read the first time, found          43  records
+ PEREAD: file           89 read the first time, found          28  records
+ PEREAD: file           90 read the first time, found          40  records
+ PEREAD: file           91 read the first time, found          51  records
+ PEREAD: file           92 read the first time, found          38  records
+ PEREAD: file           93 read the first time, found          34  records
+ PEREAD: file           94 read the first time, found          43  records
+ PEREAD: file           95 read the first time, found          31  records
+ PEREAD: file           96 read the first time, found          36  records
+ PEREAD: file           97 read the first time, found          30  records
+ PEREAD: file           98 read the first time, found          35  records
+ PEREAD: file           99 read the first time, found          36  records
+ PEREAD: file          100 read the first time, found          37  records
+ PEREAD: file          101 read the first time, found          35  records
+ PEREAD: file          102 read the first time, found          43  records
+ PEREAD: file          103 read the first time, found          32  records
+ PEREAD: file          104 read the first time, found          37  records
+ PEREAD: file          105 read the first time, found          37  records
+ PEREAD: file          106 read the first time, found          36  records
+ PEREAD: file          107 read the first time, found          46  records
+ PEREAD: file          108 read the first time, found          41  records
+ PEREAD: file          109 read the first time, found          36  records
+ PEREAD: file          110 read the first time, found          44  records
+ PEREAD: file          111 read the first time, found          42  records
+ PEREAD: file          112 read the first time, found          27  records
+ PEREAD: file          113 read the first time, found          34  records
+ PEREAD: file          114 read the first time, found          30  records
+ PEREAD: file          115 read the first time, found          48  records
+ PEREAD: file          116 read the first time, found          29  records
+ PEREAD: file          117 read the first time, found          37  records
+ PEREAD: file          118 read the first time, found          33  records
+ PEREAD: file          119 read the first time, found          36  records
+ PEREAD: file          120 read the first time, found          39  records
+ PEREAD: file          121 read the first time, found          26  records
+ PEREAD: file          122 read the first time, found          44  records
+ PEREAD: file          123 read the first time, found          33  records
+ PEREAD: file          124 read the first time, found          35  records
+ PEREAD: file          125 read the first time, found          39  records
+ PEREAD: file          126 read the first time, found          34  records
+ PEREAD: file          127 read the first time, found          27  records
+ PEREAD: file          128 read the first time, found          37  records
+ PEREAD: file          129 read the first time, found          42  records
+ PEREAD: file          130 read the first time, found          43  records
+ PEREAD: file          131 read the first time, found          34  records
+ PEREAD: file          132 read the first time, found          42  records
+ PEREAD: file          133 read the first time, found          40  records
+ PEREAD: file          134 read the first time, found          35  records
+ PEREAD: file          135 read the first time, found          35  records
+ PEREAD: file          136 read the first time, found          36  records
+ PEREAD: file          137 read the first time, found          32  records
+ PEREAD: file          138 read the first time, found          48  records
+ PEREAD: file          139 read the first time, found          32  records
+ PEREAD: file          140 read the first time, found          25  records
+ PEREAD: file          141 read the first time, found          40  records
+ PEREAD: file          142 read the first time, found          43  records
+ PEREAD: file          143 read the first time, found          53  records
+ PEREAD: file          144 read the first time, found          37  records
+ PEREAD: file          145 read the first time, found          33  records
+ PEREAD: file          146 read the first time, found          40  records
+ PEREAD: file          147 read the first time, found          51  records
+ PEREAD: file          148 read the first time, found          46  records
+ PEREAD: file          149 read the first time, found          44  records
+ PEREAD: file          150 read the first time, found          40  records
+ PEREAD: file          151 read the first time, found          53  records
+ PEREAD: file          152 read the first time, found          36  records
+ PEREAD: file          153 read the first time, found          41  records
+ PEREAD: file          154 read the first time, found          27  records
+ PEREAD: file          155 read the first time, found          36  records
+ PEREAD: file          156 read the first time, found          44  records
+ PEREAD: file          157 read the first time, found          39  records
+ PEREAD: file          158 read the first time, found          44  records
+ PEREAD: file          159 read the first time, found          35  records
+ PEREAD: file          160 read the first time, found          45  records
+ PEREAD: file          161 read the first time, found          28  records
+ PEREAD: file          162 read the first time, found          42  records
+ PEREAD: file          163 read the first time, found          44  records
+ PEREAD: file          164 read the first time, found          46  records
+ PEREAD: file          165 read the first time, found          35  records
+ PEREAD: file          166 read the first time, found          43  records
+ PEREAD: file          167 read the first time, found          41  records
+ PEREAD: file          168 read the first time, found          43  records
+ PEREAD: file          169 read the first time, found          36  records
+ PEREAD: file          170 read the first time, found          20  records
+ PEREAD: file          171 read the first time, found          41  records
+ PEREAD: file          172 read the first time, found          29  records
+ PEREAD: file          173 read the first time, found          34  records
+ PEREAD: file          174 read the first time, found          39  records
+ PEREAD: file          175 read the first time, found          33  records
+ PEREAD: file          176 read the first time, found          27  records
+ PEREAD: file          177 read the first time, found          38  records
+ PEREAD: file          178 read the first time, found          31  records
+ PEREAD: file          179 read the first time, found          13  records
+ PEREAD: file          180 read the first time, found          26  records
+ PEREAD: file          181 read the first time, found          32  records
+ PEREAD: file          182 read the first time, found          31  records
+ PEREAD: file          183 read the first time, found          28  records
+ PEREAD: file          184 read the first time, found          35  records
+ PEREAD: file          185 read the first time, found          45  records
+ PEREAD: file          186 read the first time, found          37  records
+ PEREAD: file          187 read the first time, found          35  records
+ PEREAD: file          188 read the first time, found          46  records
+ PEREAD: file          189 read the first time, found          38  records
+ PEREAD: file          190 read the first time, found          39  records
+ PEREAD: file          191 read the first time, found          37  records
+ PEREAD: file          192 read the first time, found          31  records
+ PEREAD: file          193 read the first time, found          32  records
+ PEREAD: file          194 read the first time, found          46  records
+ PEREAD: file          195 read the first time, found          42  records
+ PEREAD: file          196 read the first time, found          30  records
+ PEREAD: file          197 read the first time, found          39  records
+ PEREAD: file          198 read the first time, found          37  records
+ PEREAD: file          199 read the first time, found          40  records
+ PEREAD: file          200 read the first time, found          36  records
+ PEREAD: file          201 read the first time, found          35  records
+ PEREAD: file          202 read the first time, found          26  records
+ PEREAD: file          203 read the first time, found          39  records
+ PEREAD: file          204 read the first time, found          47  records
+ PEREAD: file          205 read the first time, found          34  records
+ PEREAD: file          206 read the first time, found          47  records
+ PEREAD: file          207 read the first time, found          40  records
+ PEREAD: file          208 read the first time, found          53  records
+ PEREAD: file          209 read the first time, found          46  records
+ PEREAD: file          210 read the first time, found          39  records
+ PEREAD: file          211 read the first time, found          38  records
+ PEREAD: file          212 read the first time, found          42  records
+ PEREAD: file          213 read the first time, found          35  records
+ PEREAD: file          214 read the first time, found          32  records
+ PEREAD: file          215 read the first time, found          28  records
+ PEREAD: file          216 read the first time, found          35  records
+ PEREAD: file          217 read the first time, found          50  records
+ PEREAD: file          218 read the first time, found          42  records
+ PEREAD: file          219 read the first time, found          31  records
+ PEREAD: file          220 read the first time, found          36  records
+ PEREAD: file          221 read the first time, found          45  records
+ PEREAD: file          222 read the first time, found          42  records
+ PEREAD: file          223 read the first time, found          47  records
+ PEREAD: file          224 read the first time, found          40  records
+ PEREAD: file          225 read the first time, found          36  records
+ PEREAD: file          226 read the first time, found          36  records
+ PEREAD: file          227 read the first time, found          46  records
+ PEREAD: file          228 read the first time, found          28  records
+ PEREAD: file          229 read the first time, found          35  records
+ PEREAD: file          230 read the first time, found          39  records
+ PEREAD: file          231 read the first time, found          44  records
+ PEREAD: file          232 read the first time, found          40  records
+ PEREAD: file          233 read the first time, found          37  records
+ PEREAD: file          234 read the first time, found          34  records
+ PEREAD: file          235 read the first time, found          40  records
+ PEREAD: file          236 read the first time, found          39  records
+ PEREAD: file          237 read the first time, found          30  records
+ PEREAD: file          238 read the first time, found          24  records
+ PEREAD: file          239 read the first time, found          32  records
+ PEREAD: file          240 read the first time, found          38  records
+ PEREAD: file          241 read the first time, found          39  records
+ PEREAD: file          242 read the first time, found          30  records
+ PEREAD: file          243 read the first time, found          26  records
+ PEREAD: file          244 read the first time, found          29  records
+ PEREAD: file          245 read the first time, found          29  records
+ PEREAD: file          246 read the first time, found          42  records
+ PEREAD: file          247 read the first time, found          47  records
+ PEREAD: file          248 read the first time, found          27  records
+ PEREAD: file          249 read the first time, found          35  records
+ PEREAD: file          250 read the first time, found          35  records
+ PEREAD: file          251 read the first time, found          29  records
+ PEREAD: file          252 read the first time, found          32  records
+ PEREAD: file          253 read the first time, found          32  records
+ PEREAD: file          254 read the first time, found          33  records
+ PEREAD: file          255 read the first time, found          23  records
+ PEREAD: file          256 read the first time, found          36  records
+ PEREAD: file          257 read the first time, found          27  records
+ PEREAD: file          258 read the first time, found          23  records
+ PEREAD: file          259 read the first time, found          39  records
+ PEREAD: file          260 read the first time, found          23  records
+ PEREAD: file          261 read the first time, found          25  records
+ PEREAD: file          262 read the first time, found          29  records
+ PEREAD: file          263 read the first time, found          27  records
+ PEREAD: file          264 read the first time, found          35  records
+ PEREAD: file          265 read the first time, found          44  records
+ PEREAD: file          266 read the first time, found          30  records
+ PEREAD: file          267 read the first time, found          37  records
+ PEREAD: file          268 read the first time, found          48  records
+ PEREAD: file          269 read the first time, found          19  records
+ PEREAD: file          270 read the first time, found          34  records
+ PEREAD: file          271 read the first time, found          28  records
+ PEREAD: file          272 read the first time, found          35  records
+ PEREAD: file          273 read the first time, found          27  records
+ PEREAD: file          274 read the first time, found          33  records
+ PEREAD: file          275 read the first time, found          47  records
+ PEREAD: file          276 read the first time, found          25  records
+ PEREAD: file          277 read the first time, found           9  records
+ PEREAD: file          278 read the first time, found          31  records
+ PEREAD: file          279 read the first time, found          30  records
+ PEREAD: file          280 read the first time, found          33  records
+ PEREAD: file          281 read the first time, found          35  records
+ PEREAD: file          282 read the first time, found          27  records
+ PEREAD: file          283 read the first time, found          38  records
+ PEREAD: file          284 read the first time, found          31  records
+ PEREAD: file          285 read the first time, found          28  records
+ PEREAD: file          286 read the first time, found          40  records
+ PEREAD: file          287 read the first time, found          39  records
+ PEREAD: file          288 read the first time, found          33  records
+ PEREAD: file          289 read the first time, found          20  records
+ PEREAD: file          290 read the first time, found          28  records
+ PEREAD: file          291 read the first time, found          33  records
+ PEREAD: file          292 read the first time, found           4  records
+ PEREAD: file          293 read the first time, found           4  records
+ PEREAD: file          294 read the first time, found           8  records
+ PEREAD: file          295 read the first time, found           4  records
+ PEREAD: file          296 read the first time, found           1  records
+ PEREAD: file          297 read the first time, found           3  records
+ PEREAD: file          298 read the first time, found           5  records
+ PEREAD: file          299 read the first time, found           4  records
+ PEREAD: file          300 read the first time, found           3  records
+ PEREAD: file          301 read the first time, found           4  records
+ PEREAD: file          302 read the first time, found           2  records
+ PEREAD: file          303 read the first time, found           5  records
+ PEREAD: file          304 read the first time, found           1  records
+ PEREAD: file          305 read the first time, found           1  records
+ PEREAD: file          306 read the first time, found           7  records
+ PEREAD: file          307 read the first time, found           8  records
+ PEREAD: file          308 read the first time, found           5  records
+ PEREAD: file          309 read the first time, found           6  records
+ PEREAD: file          310 read the first time, found           4  records
+ PEREAD: file          311 read the first time, found           3  records
+ PEREAD: file          312 read the first time, found           3  records
+ PEREAD: file          313 read the first time, found           8  records
+ PEREAD: file          314 read the first time, found           3  records
+ PEREAD: file          315 read the first time, found           3  records
+ PEREAD: file          316 read the first time, found           1  records
+ PEREAD: file          317 read the first time, found           1  records
+ PEREAD: file          318 read the first time, found           3  records
+ PEREAD: file          319 read the first time, found           3  records
+ PEREAD: file          320 read the first time, found           7  records
+ PEREAD: file          321 read the first time, found           1  records
+ PEREAD: file          322 read the first time, found           3  records
+ PEREAD: file          323 read the first time, found           4  records
+ PEREAD: file          324 read the first time, found           1  records
+ PEREAD: file          325 read the first time, found           1  records
+ PEREAD: file          326 read the first time, found           2  records
+ PEREAD: file          327 read the first time, found           1  records
+ PEREAD: file          328 read the first time, found           5  records
+ PEREAD: file          329 read the first time, found           4  records
+ PEREAD: file          330 read the first time, found           6  records
+ PEREAD: file          331 read the first time, found           1  records
+ PEREAD: file          332 read the first time, found           3  records
+ PEREAD: file          333 read the first time, found           4  records
+ PEREAD: file          334 read the first time, found           4  records
+ PEREAD: file          335 read the first time, found           1  records
+ PEREAD: file          336 read the first time, found           5  records
+ PEREAD: file          337 read the first time, found           2  records
+ PEREAD: file          338 read the first time, found           1  records
+ PEREAD: file          339 read the first time, found           1  records
+ PEREAD: file          340 read the first time, found           2  records
+ PEREAD: file          341 read the first time, found           1  records
+ PEREAD: file          342 read the first time, found           1  records
+ PEREAD: file          343 read the first time, found           3  records
+ PEREAD: file          344 read the first time, found           4  records
+ PEREAD: file          345 read the first time, found           3  records
+ PEREAD: file          346 read the first time, found           2  records
+ PEREAD: file          347 read the first time, found           2  records
+ PEREAD: file          348 read the first time, found           1  records
+ PEREAD: file          349 read the first time, found           6  records
+ PEREAD: file          350 read the first time, found           5  records
+ PEREAD: file          351 read the first time, found           6  records
+ PEREAD: file          352 read the first time, found           2  records
+ PEREAD: file          353 read the first time, found           6  records
+ PEREAD: file          354 read the first time, found           2  records
+ PEREAD: file          355 read the first time, found           3  records
+ PEREAD: file          356 read the first time, found           6  records
+ PEREAD: file          357 read the first time, found           5  records
+ PEREAD: file          358 read the first time, found           5  records
+ PEREAD: file          359 read the first time, found           7  records
+ PEREAD: file          360 read the first time, found           2  records
+ PEREAD: file          361 read the first time, found           5  records
+ PEREAD: file          362 read the first time, found           4  records
+ PEREAD: file          363 read the first time, found           8  records
+ PEREAD: file          364 read the first time, found           4  records
+ PEREAD: file          365 read the first time, found           4  records
+ PEREAD: file          366 read the first time, found           8  records
+ PEREAD: file          367 read the first time, found           1  records
+ PEREAD: file          368 read the first time, found           3  records
+ PEREAD: file          369 read the first time, found           2  records
+ PEREAD: file          370 read the first time, found           3  records
+ PEREAD: file          371 read the first time, found           3  records
+ PEREAD: file          372 read the first time, found           3  records
+ PEREAD: file          373 read the first time, found           5  records
+ PEREAD: file          374 read the first time, found           7  records
+ PEREAD: file          375 read the first time, found           1  records
+ PEREAD: file          376 read the first time, found           3  records
+ PEREAD: file          377 read the first time, found           2  records
+ PEREAD: file          378 read the first time, found           5  records
+ PEREAD: file          379 read the first time, found           2  records
+ PEREAD: file          380 read the first time, found           2  records
+ PEREAD: file          381 read the first time, found           3  records
+ PEREAD: file          382 read the first time, found           3  records
+ PEREAD: file          383 read the first time, found           3  records
+ PEREAD: file          384 read the first time, found           4  records
+ PEREAD: file          385 read the first time, found           1  records
+ PEREAD: file          386 read the first time, found           3  records
+ PEREAD: file          387 read the first time, found           1  records
+ PEREAD: file          388 read the first time, found           2  records
+ PEREAD: file          389 read the first time, found           1  records
+ PEREAD: file          390 read the first time, found           4  records
+ PEREAD: file          391 read the first time, found           7  records
+ PEREAD: file          392 read the first time, found           1  records
+ PEREAD: file          393 read the first time, found           1  records
+ PEREAD: file          394 read the first time, found           4  records
+ PEREAD: file          395 read the first time, found           5  records
+ PEREAD: file          396 read the first time, found           5  records
+ PEREAD: file          397 read the first time, found           2  records
+ PEREAD: file          398 read the first time, found           3  records
+ PEREAD: file          399 read the first time, found           1  records
+ PEREAD: file          400 read the first time, found           6  records
+ PEREAD: file          401 read the first time, found           1  records
+ PEREAD: file          402 read the first time, found           2  records
+ PEREAD: file          403 read the first time, found           3  records
+ PEREAD: file          404 read the first time, found           3  records
+ PEREAD: file          405 read the first time, found           5  records
+ PEREAD: file          406 read the first time, found           2  records
+ PEREAD: file          407 read the first time, found           3  records
+ PEREAD: file          408 read the first time, found           2  records
+ PEREAD: file          409 read the first time, found           2  records
+ PEREAD: file          410 read the first time, found           1  records
+ PEREAD: file          411 read the first time, found           4  records
+ PEREAD: file          412 read the first time, found           2  records
+ PEREAD: file          413 read the first time, found           3  records
+ PEREAD: file          414 read the first time, found           4  records
+ PEREAD: file          415 read the first time, found           9  records
+ PEREAD: file          416 read the first time, found           6  records
+ PEREAD: file          417 read the first time, found           2  records
+ PEREAD: file          418 read the first time, found           1  records
+ PEREAD: file          419 read the first time, found           3  records
+ PEREAD: file          420 read the first time, found           3  records
+ PEREAD: file          421 read the first time, found           2  records
+ PEREAD: file          422 read the first time, found           3  records
+ PEREAD: file          423 read the first time, found           4  records
+ PEREAD: file          424 read the first time, found           2  records
+ PEREAD: file          425 read the first time, found           1  records
+ PEREAD: file          426 read the first time, found           4  records
+ PEREAD: file          427 read the first time, found           2  records
+ PEREAD: file          428 read the first time, found           2  records
+ PEREAD: file          429 read the first time, found           4  records
+ PEREAD: file          430 read the first time, found           2  records
+ PEREAD: file          431 read the first time, found           5  records
+ PEREAD: file          432 read the first time, found           4  records
+ PEREAD: file          433 read the first time, found           4  records
+ PEREAD: file          434 read the first time, found           4  records
+ PEREAD: file          435 read the first time, found           5  records
+ PEREAD: file          436 read the first time, found           4  records
+ PEREAD: file          437 read the first time, found           1  records
+ PEREAD: file          438 read the first time, found           3  records
+ PEREAD: file          439 read the first time, found           3  records
+ PEREAD: file          440 read the first time, found           6  records
+ PEREAD: file          441 read the first time, found           3  records
+ PEREAD: file          442 read the first time, found           3  records
+ PEREAD: file          443 read the first time, found           2  records
+ PEREAD: file          444 read the first time, found           6  records
+ PEREAD: file          445 read the first time, found           1  records
+ PEREAD: file          446 read the first time, found           2  records
+ PEREAD: file          447 read the first time, found           6  records
+ PEREAD: file          448 read the first time, found           2  records
+ PEREAD: file          449 read the first time, found           2  records
+ PEREAD: file          450 read the first time, found           3  records
+ PEREAD: file          451 read the first time, found           6  records
+ PEREAD: file          452 read the first time, found           3  records
+ PEREAD: file          453 read the first time, found           2  records
+ PEREAD: file          454 read the first time, found           1  records
+ PEREAD: file          455 read the first time, found           4  records
+ PEREAD: file          456 read the first time, found           1  records
+ PEREAD: file          457 read the first time, found           3  records
+ PEREAD: file          458 read the first time, found           4  records
+ PEREAD: file          459 read the first time, found           3  records
+ PEREAD: file          460 read the first time, found           7  records
+ PEREAD: file          461 read the first time, found           1  records
+ PEREAD: file          462 read the first time, found           7  records
+ PEREAD: file          463 read the first time, found           1  records
+ PEREAD: file          464 read the first time, found           4  records
+ PEREAD: file          465 read the first time, found           4  records
+ PEREAD: file          466 read the first time, found           5  records
+ PEREAD: file          467 read the first time, found           4  records
+ PEREAD: file          468 read the first time, found           8  records
+ PEREAD: file          469 read the first time, found           2  records
+ PEREAD: file          470 read the first time, found           2  records
+ PEREAD: file          471 read the first time, found           3  records
+ PEREAD: file          472 read the first time, found           2  records
+ PEREAD: file          473 read the first time, found           3  records
+ PEREAD: file          474 read the first time, found           1  records
+ PEREAD: file          475 read the first time, found           4  records
+ PEREAD: file          476 read the first time, found           4  records
+ PEREAD: file          477 read the first time, found           4  records
+ PEREAD: file          478 read the first time, found           1  records
+ PEREAD: file          479 read the first time, found           1  records
+ PEREAD: file          480 read the first time, found           8  records
+ PEREAD: file          481 read the first time, found           2  records
+ PEREAD: file          482 read the first time, found           6  records
+ PEREAD: file          483 read the first time, found           2  records
+ PEREAD: file          484 read the first time, found           3  records
+ PEREAD: file          485 read the first time, found           3  records
+ PEREAD: file          486 read the first time, found           4  records
+ PEREAD: file          487 read the first time, found           1  records
+ PEREAD: file          488 read the first time, found           3  records
+ PEREAD: file          489 read the first time, found           3  records
+ PEREAD: file          490 read the first time, found           4  records
+ PEREAD: file          491 read the first time, found           2  records
+ PEREAD: file          492 read the first time, found           1  records
+ PEREAD: file          493 read the first time, found           4  records
+ PEREAD: file          494 read the first time, found           5  records
+ PEREAD: file          495 read the first time, found           4  records
+ PEREAD: file          496 read the first time, found           4  records
+ PEREAD: file          497 read the first time, found           1  records
+ PEREAD: file          498 read the first time, found           1  records
+ PEREAD: file          499 read the first time, found           2  records
+ PEREAD: file          500 read the first time, found           3  records
+ PEREAD: file          501 read the first time, found          26  records
+ PEREAD: file          502 read the first time, found          20  records
+ PEREAD: file          503 read the first time, found          30  records
+ PEREAD: file          504 read the first time, found          26  records
+ PEREAD: file          505 read the first time, found          18  records
+ PEREAD: file          506 read the first time, found          28  records
+ PEREAD: file          507 read the first time, found          21  records
+ PEREAD: file          508 read the first time, found          31  records
+ PEREAD: file          509 read the first time, found           3  records
+ PEREAD: file          510 read the first time, found          13  records
+ PEREAD: file          511 read the first time, found          20  records
+ PEREAD: file          512 read the first time, found          19  records
+ PEREAD: file          513 read the first time, found          22  records
+ PEREAD: file          514 read the first time, found          15  records
+ PEREAD: file          515 read the first time, found          14  records
+ PEREAD: file          516 read the first time, found          20  records
+ PEREAD: file          517 read the first time, found          25  records
+ PEREAD: file          518 read the first time, found          14  records
+ PEREAD: file          519 read the first time, found          14  records
+ PEREAD: file          520 read the first time, found          19  records
+ PEREAD: file          521 read the first time, found          20  records
+ PEREAD: file          522 read the first time, found          16  records
+ PEREAD: file          523 read the first time, found          16  records
+ PEREAD: file          524 read the first time, found          19  records
+ PEREAD: file          525 read the first time, found          21  records
+ PEREAD: file          526 read the first time, found          21  records
+ PEREAD: file          527 read the first time, found          20  records
+ PEREAD: file          528 read the first time, found          27  records
+ PEREAD: file          529 read the first time, found          19  records
+ PEREAD: file          530 read the first time, found          21  records
+ PEREAD: file          531 read the first time, found          25  records
+ PEREAD: file          532 read the first time, found          33  records
+ PEREAD: file          533 read the first time, found          30  records
+ PEREAD: file          534 read the first time, found          13  records
+ PEREAD: file          535 read the first time, found          20  records
+ PEREAD: file          536 read the first time, found          23  records
+ PEREAD: file          537 read the first time, found          15  records
+ PEREAD: file          538 read the first time, found          26  records
+ PEREAD: file          539 read the first time, found           9  records
+ PEREAD: file          540 read the first time, found          31  records
+ PEREAD: file          541 read the first time, found          27  records
+ PEREAD: file          542 read the first time, found          19  records
+ PEREAD: file          543 read the first time, found          19  records
+ PEREAD: file          544 read the first time, found          20  records
+ PEREAD: file          545 read the first time, found          25  records
+ PEREAD: file          546 read the first time, found          21  records
+ PEREAD: file          547 read the first time, found          17  records
+ PEREAD: file          548 read the first time, found          10  records
+ PEREAD: file          549 read the first time, found          26  records
+ PEREAD: file          550 read the first time, found          31  records
+ PEREAD: file          551 read the first time, found          19  records
+ PEREAD: file          552 read the first time, found          20  records
+ PEREAD: file          553 read the first time, found          17  records
+ PEREAD: file          554 read the first time, found          25  records
+ PEREAD: file          555 read the first time, found          19  records
+ PEREAD: file          556 read the first time, found          11  records
+ PEREAD: file          557 read the first time, found          20  records
+ PEREAD: file          558 read the first time, found          16  records
+ PEREAD: file          559 read the first time, found          16  records
+ PEREAD: file          560 read the first time, found          21  records
+ PEREAD: file          561 read the first time, found          15  records
+ PEREAD: file          562 read the first time, found          20  records
+ PEREAD: file          563 read the first time, found          13  records
+ PEREAD: file          564 read the first time, found          22  records
+ PEREAD: file          565 read the first time, found          16  records
+ PEREAD: file          566 read the first time, found          11  records
+ PEREAD: file          567 read the first time, found          18  records
+ PEREAD: file          568 read the first time, found          18  records
+ PEREAD: file          569 read the first time, found          15  records
+ PEREAD: file          570 read the first time, found          28  records
+ PEREAD: file          571 read the first time, found          21  records
+ PEREAD: file          572 read the first time, found          33  records
+ PEREAD: file          573 read the first time, found          32  records
+ PEREAD: file          574 read the first time, found          35  records
+ PEREAD: file          575 read the first time, found          18  records
+ PEREAD: file          576 read the first time, found          26  records
+ PEREAD: file          577 read the first time, found          23  records
+ PEREAD: file          578 read the first time, found          24  records
+ PEREAD: file          579 read the first time, found          21  records
+ PEREAD: file          580 read the first time, found          30  records
+ PEREAD: file          581 read the first time, found          14  records
+ PEREAD: file          582 read the first time, found          23  records
+ PEREAD: file          583 read the first time, found          23  records
+ PEREAD: file          584 read the first time, found          31  records
+ PEREAD: file          585 read the first time, found          27  records
+ PEREAD: file          586 read the first time, found          19  records
+ PEREAD: file          587 read the first time, found          22  records
+ PEREAD: file          588 read the first time, found          29  records
+ PEREAD: file          589 read the first time, found          16  records
+ PEREAD: file          590 read the first time, found          25  records
+ PEREAD: file          591 read the first time, found          24  records
+ PEREAD: file          592 read the first time, found          19  records
+ PEREAD: file          593 read the first time, found          29  records
+ PEREAD: file          594 read the first time, found          29  records
+ PEREAD: file          595 read the first time, found          20  records
+ PEREAD: file          596 read the first time, found          20  records
+ PEREAD: file          597 read the first time, found          20  records
+ PEREAD: file          598 read the first time, found          10  records
+ PEREAD: file          599 read the first time, found          25  records
+ PEREAD: file          600 read the first time, found          27  records
+ PEREAD: file          601 read the first time, found          23  records
+ PEREAD: file          602 read the first time, found          25  records
+ PEREAD: file          603 read the first time, found          14  records
+ PEREAD: file          604 read the first time, found          22  records
+ PEREAD: file          605 read the first time, found          18  records
+ PEREAD: file          606 read the first time, found          13  records
+ PEREAD: file          607 read the first time, found          26  records
+ PEREAD: file          608 read the first time, found          28  records
+ PEREAD: file          609 read the first time, found          14  records
+ PEREAD: file          610 read the first time, found          27  records
+ PEREAD: file          611 read the first time, found          24  records
+ PEREAD: file          612 read the first time, found          16  records
+ PEREAD: file          613 read the first time, found          22  records
+ PEREAD: file          614 read the first time, found          20  records
+ PEREAD: file          615 read the first time, found          27  records
+ PEREAD: file          616 read the first time, found          17  records
+ PEREAD: file          617 read the first time, found          13  records
+ PEREAD: file          618 read the first time, found          28  records
+ PEREAD: file          619 read the first time, found          14  records
+ PEREAD: file          620 read the first time, found          17  records
+ PEREAD: file          621 read the first time, found          22  records
+ PEREAD: file          622 read the first time, found          24  records
+ PEREAD: file          623 read the first time, found          15  records
+ PEREAD: file          624 read the first time, found          10  records
+ PEREAD: file          625 read the first time, found          11  records
+ PEREAD: file          626 read the first time, found          14  records
+ PEREAD: file          627 read the first time, found          31  records
+ PEREAD: file          628 read the first time, found           8  records
+ PEREAD: file          629 read the first time, found          11  records
+ PEREAD: file          630 read the first time, found          23  records
+ PEREAD: file          631 read the first time, found          18  records
+ PEREAD: file          632 read the first time, found          21  records
+ PEREAD: file          633 read the first time, found          17  records
+ PEREAD: file          634 read the first time, found          23  records
+ PEREAD: file          635 read the first time, found          18  records
+ PEREAD: file          636 read the first time, found          25  records
+ PEREAD: file          637 read the first time, found          11  records
+ PEREAD: file          638 read the first time, found          21  records
+ PEREAD: file          639 read the first time, found          24  records
+ PEREAD: file          640 read the first time, found          15  records
+ PEREAD: file          641 read the first time, found          19  records
+ PEREAD: file          642 read the first time, found          18  records
+ PEREAD: file          643 read the first time, found          17  records
+ PEREAD: file          644 read the first time, found          23  records
+ PEREAD: file          645 read the first time, found          20  records
+ PEREAD: file          646 read the first time, found          20  records
+ PEREAD: file          647 read the first time, found           8  records
+ PEREAD: file          648 read the first time, found          22  records
+ PEREAD: file          649 read the first time, found          19  records
+ PEREAD: file          650 read the first time, found          23  records
+ PEREAD: file          651 read the first time, found          25  records
+ PEREAD: file          652 read the first time, found           9  records
+ PEREAD: file          653 read the first time, found          20  records
+ PEREAD: file          654 read the first time, found          19  records
+ PEREAD: file          655 read the first time, found          25  records
+ PEREAD: file          656 read the first time, found          18  records
+ PEREAD: file          657 read the first time, found          23  records
+ PEREAD: file          658 read the first time, found          14  records
+ PEREAD: file          659 read the first time, found          20  records
+ PEREAD: file          660 read the first time, found          11  records
+ PEREAD: file          661 read the first time, found          14  records
+ PEREAD: file          662 read the first time, found          16  records
+ PEREAD: file          663 read the first time, found          15  records
+ PEREAD: file          664 read the first time, found          13  records
+ PEREAD: file          665 read the first time, found          12  records
+ PEREAD: file          666 read the first time, found          24  records
+ PEREAD: file          667 read the first time, found          22  records
+ PEREAD: file          668 read the first time, found          14  records
+ PEREAD: file          669 read the first time, found          16  records
+ PEREAD: file          670 read the first time, found          15  records
+ PEREAD: file          671 read the first time, found          15  records
+ PEREAD: file          672 read the first time, found           9  records
+ PEREAD: file          673 read the first time, found          13  records
+ PEREAD: file          674 read the first time, found          18  records
+ PEREAD: file          675 read the first time, found          19  records
+ PEREAD: file          676 read the first time, found          21  records
+ PEREAD: file          677 read the first time, found          20  records
+ PEREAD: file          678 read the first time, found          13  records
+ PEREAD: file          679 read the first time, found          15  records
+ PEREAD: file          680 read the first time, found          19  records
+ PEREAD: file          681 read the first time, found          17  records
+ PEREAD: file          682 read the first time, found          11  records
+ PEREAD: file          683 read the first time, found          19  records
+ PEREAD: file          684 read the first time, found          23  records
+ PEREAD: file          685 read the first time, found          25  records
+ PEREAD: file          686 read the first time, found          18  records
+ PEREAD: file          687 read the first time, found          17  records
+ PEREAD: file          688 read the first time, found          25  records
+ PEREAD: file          689 read the first time, found          17  records
+ PEREAD: file          690 read the first time, found          17  records
+ PEREAD: file          691 read the first time, found           9  records
+ PEREAD: file          692 read the first time, found          16  records
+ PEREAD: file          693 read the first time, found           8  records
+ PEREAD: file          694 read the first time, found          22  records
+ PEREAD: file          695 read the first time, found          16  records
+ PEREAD: file          696 read the first time, found          15  records
+ PEREAD: file          697 read the first time, found          12  records
+ PEREAD: file          698 read the first time, found          12  records
+ PEREAD: file          699 read the first time, found          18  records
+ PEREAD: file          700 read the first time, found          21  records
+ PEREAD: file          701 read the first time, found           5  records
+ PEREAD: file          702 read the first time, found          21  records
+ PEREAD: file          703 read the first time, found          35  records
+ PEREAD: file          704 read the first time, found          15  records
+ PEREAD: file          705 read the first time, found          16  records
+ PEREAD: file          706 read the first time, found          20  records
+ PEREAD: file          707 read the first time, found          15  records
+ PEREAD: file          708 read the first time, found          27  records
+ PEREAD: file          709 read the first time, found          16  records
+ PEREAD: file          710 read the first time, found          19  records
+ PEREAD: file          711 read the first time, found          12  records
+ PEREAD: file          712 read the first time, found          17  records
+ PEREAD: file          713 read the first time, found          19  records
+ PEREAD: file          714 read the first time, found          19  records
+ PEREAD: file          715 read the first time, found          24  records
+ PEREAD: file          716 read the first time, found          19  records
+ PEREAD: file          717 read the first time, found          24  records
+ PEREAD: file          718 read the first time, found          14  records
+ PEREAD: file          719 read the first time, found          24  records
+ PEREAD: file          720 read the first time, found          16  records
+ PEREAD: file          721 read the first time, found          20  records
+ PEREAD: file          722 read the first time, found          17  records
+ PEREAD: file          723 read the first time, found          21  records
+ PEREAD: file          724 read the first time, found          27  records
+ PEREAD: file          725 read the first time, found          22  records
+ PEREAD: file          726 read the first time, found          24  records
+ PEREAD: file          727 read the first time, found          17  records
+ PEREAD: file          728 read the first time, found          12  records
+ PEREAD: file          729 read the first time, found          22  records
+ PEREAD: file          730 read the first time, found          25  records
+ PEREAD: file          731 read the first time, found          13  records
+ PEREAD: file          732 read the first time, found          22  records
+ PEREAD: file          733 read the first time, found          20  records
+ PEREAD: file          734 read the first time, found          19  records
+ PEREAD: file          735 read the first time, found          12  records
+ PEREAD: file          736 read the first time, found          12  records
+ PEREAD: file          737 read the first time, found          20  records
+ PEREAD: file          738 read the first time, found          20  records
+ PEREAD: file          739 read the first time, found          27  records
+ PEREAD: file          740 read the first time, found          22  records
+ PEREAD: file          741 read the first time, found          22  records
+ PEREAD: file          742 read the first time, found          17  records
+ PEREAD: file          743 read the first time, found          17  records
+ PEREAD: file          744 read the first time, found          22  records
+ PEREAD: file          745 read the first time, found          14  records
+ PEREAD: file          746 read the first time, found          26  records
+ PEREAD: file          747 read the first time, found          16  records
+ PEREAD: file          748 read the first time, found          21  records
+ PEREAD: file          749 read the first time, found          17  records
+ PEREAD: file          750 read the first time, found          10  records
+ PEREAD: file          751 read the first time, found          16  records
+ PEREAD: file          752 read the first time, found          21  records
+ PEREAD: file          753 read the first time, found          20  records
+ PEREAD: file          754 read the first time, found          16  records
+ PEREAD: file          755 read the first time, found          20  records
+ PEREAD: file          756 read the first time, found          22  records
+ PEREAD: file          757 read the first time, found          15  records
+ PEREAD: file          758 read the first time, found          16  records
+ PEREAD: file          759 read the first time, found          17  records
+ PEREAD: file          760 read the first time, found          16  records
+ PEREAD: file          761 read the first time, found          27  records
+ PEREAD: file          762 read the first time, found          22  records
+ PEREAD: file          763 read the first time, found          24  records
+ PEREAD: file          764 read the first time, found          19  records
+ PEREAD: file          765 read the first time, found          15  records
+ PEREAD: file          766 read the first time, found          16  records
+ PEREAD: file          767 read the first time, found          20  records
+ PEREAD: file          768 read the first time, found           7  records
+ PEREAD: file          769 read the first time, found          14  records
+ PEREAD: file          770 read the first time, found          18  records
+ PEREAD: file          771 read the first time, found          23  records
+ PEREAD: file          772 read the first time, found          13  records
+ PEREAD: file          773 read the first time, found          24  records
+ PEREAD: file          774 read the first time, found          26  records
+ PEREAD: file          775 read the first time, found          26  records
+ PEREAD: file          776 read the first time, found          18  records
+ PEREAD: file          777 read the first time, found          22  records
+ PEREAD: file          778 read the first time, found          16  records
+ PEREAD: file          779 read the first time, found          21  records
+ PEREAD: file          780 read the first time, found          20  records
+ PEREAD: file          781 read the first time, found          13  records
+ PEREAD: file          782 read the first time, found          23  records
+ PEREAD: file          783 read the first time, found          14  records
+ PEREAD: file          784 read the first time, found          21  records
+ PEREAD: file          785 read the first time, found          21  records
+ PEREAD: file          786 read the first time, found          17  records
+ PEREAD: file          787 read the first time, found          10  records
+ PEREAD: file          788 read the first time, found          13  records
+ PEREAD: file          789 read the first time, found          14  records
+ PEREAD: file          790 read the first time, found          15  records
+ PEREAD: file          791 read the first time, found          25  records
+ PEREAD: file          792 read the first time, found          17  records
+ PEREAD: file          793 read the first time, found          16  records
+ PEREAD: file          794 read the first time, found          12  records
+ PEREAD: file          795 read the first time, found          17  records
+ PEREAD: file          796 read the first time, found          17  records
+ PEREAD: file          797 read the first time, found          17  records
+ PEREAD: file          798 read the first time, found          22  records
+ PEREAD: file          799 read the first time, found          12  records
+ PEREAD: file          800 read the first time, found          15  records
+ PEREAD: file          801 read the first time, found          15  records
+ PEREAD: file          802 read the first time, found          18  records
+ PEREAD: file          803 read the first time, found          22  records
+ PEREAD: file          804 read the first time, found           8  records
+ PEREAD: file          805 read the first time, found          22  records
+ PEREAD: file          806 read the first time, found          15  records
+ PEREAD: file          807 read the first time, found          29  records
+ PEREAD: file          808 read the first time, found          18  records
+ PEREAD: file          809 read the first time, found          26  records
+ PEREAD: file          810 read the first time, found          53  records
+ PEREAD: file          811 read the first time, found          39  records
+ PEREAD: file          812 read the first time, found          44  records
+ PEREAD: file          813 read the first time, found          41  records
+ PEREAD: file          814 read the first time, found          53  records
+ PEREAD: file          815 read the first time, found          36  records
+ PEREAD: file          816 read the first time, found          35  records
+ PEREAD: file          817 read the first time, found          34  records
+ PEREAD: file          818 read the first time, found          30  records
+ PEREAD: file          819 read the first time, found          44  records
+ PEREAD: file          820 read the first time, found          45  records
+ PEREAD: file          821 read the first time, found          35  records
+ PEREAD: file          822 read the first time, found          35  records
+ PEREAD: file          823 read the first time, found          45  records
+ PEREAD: file          824 read the first time, found          34  records
+ PEREAD: file          825 read the first time, found          41  records
+ PEREAD: file          826 read the first time, found          29  records
+ PEREAD: file          827 read the first time, found          58  records
+ PEREAD: file          828 read the first time, found          49  records
+ PEREAD: file          829 read the first time, found          39  records
+ PEREAD: file          830 read the first time, found          50  records
+ PEREAD: file          831 read the first time, found          54  records
+ PEREAD: file          832 read the first time, found          45  records
+ PEREAD: file          833 read the first time, found          39  records
+ PEREAD: file          834 read the first time, found          35  records
+ PEREAD: file          835 read the first time, found          59  records
+ PEREAD: file          836 read the first time, found          45  records
+ PEREAD: file          837 read the first time, found          41  records
+ PEREAD: file          838 read the first time, found          53  records
+ PEREAD: file          839 read the first time, found          51  records
+ PEREAD: file          840 read the first time, found          34  records
+ PEREAD: file          841 read the first time, found          27  records
+ PEREAD: file          842 read the first time, found          44  records
+ PEREAD: file          843 read the first time, found          32  records
+ PEREAD: file          844 read the first time, found          22  records
+ PEREAD: file          845 read the first time, found          30  records
+ PEREAD: file          846 read the first time, found          33  records
+ PEREAD: file          847 read the first time, found          24  records
+ PEREAD: file          848 read the first time, found          32  records
+ PEREAD: file          849 read the first time, found          25  records
+ PEREAD: file          850 read the first time, found          37  records
+ PEREAD: file          851 read the first time, found          31  records
+ PEREAD: file          852 read the first time, found          48  records
+ PEREAD: file          853 read the first time, found          30  records
+ PEREAD: file          854 read the first time, found          35  records
+ PEREAD: file          855 read the first time, found          37  records
+ PEREAD: file          856 read the first time, found          32  records
+ PEREAD: file          857 read the first time, found          32  records
+ PEREAD: file          858 read the first time, found          29  records
+ PEREAD: file          859 read the first time, found          28  records
+ PEREAD: file          860 read the first time, found          33  records
+ PEREAD: file          861 read the first time, found          31  records
+ PEREAD: file          862 read the first time, found          29  records
+ PEREAD: file          863 read the first time, found          32  records
+ PEREAD: file          864 read the first time, found          41  records
+ PEREAD: file          865 read the first time, found          24  records
+ PEREAD: file          866 read the first time, found          33  records
+ PEREAD: file          867 read the first time, found          22  records
+ PEREAD: file          868 read the first time, found          36  records
+ PEREAD: file          869 read the first time, found          18  records
+ PEREAD: file          870 read the first time, found          11  records
+ PEREAD: file          871 read the first time, found           2  records
+ PEREAD: file          872 read the first time, found           1  records
+ PEREAD: file          873 read the first time, found           2  records
+ PEREAD: file          874 read the first time, found          31  records
+ PEREAD: file          875 read the first time, found          31  records
+ PEREAD: file          876 read the first time, found          37  records
+ PEREAD: file          877 read the first time, found          37  records
+ PEREAD: file          878 read the first time, found          42  records
+ PEREAD: file          879 read the first time, found          37  records
+ PEREAD: file          880 read the first time, found          39  records
+ PEREAD: file          881 read the first time, found          30  records
+ PEREAD: file          882 read the first time, found          33  records
+ PEREAD: file          883 read the first time, found          38  records
+ PEREAD: file          884 read the first time, found          11  records
+ PEREAD: file          885 read the first time, found          38  records
+ PEREAD: file          886 read the first time, found          32  records
+ PEREAD: file          887 read the first time, found          26  records
+ PEREAD: file          888 read the first time, found          42  records
+ PEREAD: file          889 read the first time, found          39  records
+ PEREAD: file          890 read the first time, found          44  records
+ PEREAD: file          891 read the first time, found          38  records
+ PEREAD: file          892 read the first time, found          51  records
+ PEREAD: file          893 read the first time, found          43  records
+ PEREAD: file          894 read the first time, found          30  records
+ PEREAD: file          895 read the first time, found          37  records
+ PEREAD: file          896 read the first time, found          29  records
+ PEREAD: file          897 read the first time, found          30  records
+ PEREAD: file          898 read the first time, found          38  records
+ PEREAD: file          899 read the first time, found          21  records
+ PEREAD: file          900 read the first time, found          44  records
+ PEREAD: file          901 read the first time, found          30  records
+ PEREAD: file          902 read the first time, found          45  records
+ PEREAD: file          903 read the first time, found          34  records
+ PEREAD: file          904 read the first time, found          34  records
+ PEREAD: file          905 read the first time, found          31  records
+ PEREAD: file          906 read the first time, found          40  records
+ PEREAD: file          907 read the first time, found          37  records
+ PEREAD: file          908 read the first time, found          34  records
+ PEREAD: file          909 read the first time, found          35  records
+ PEREAD: file          910 read the first time, found          32  records
+ PEREAD: file          911 read the first time, found          41  records
+ PEREAD: file          912 read the first time, found          41  records
+ PEREAD: file          913 read the first time, found          49  records
+ PEREAD: file          914 read the first time, found          51  records
+ PEREAD: file          915 read the first time, found          42  records
+ PEREAD: file          916 read the first time, found          43  records
+ PEREAD: file          917 read the first time, found          35  records
+ PEREAD: file          918 read the first time, found          30  records
+ PEREAD: file          919 read the first time, found          36  records
+ PEREAD: file          920 read the first time, found          47  records
+ PEREAD: file          921 read the first time, found          46  records
+ PEREAD: file          922 read the first time, found          44  records
+ PEREAD: file          923 read the first time, found          37  records
+ PEREAD: file          924 read the first time, found          30  records
+ PEREAD: file          925 read the first time, found          34  records
+ PEREAD: file          926 read the first time, found          24  records
+ PEREAD: file          927 read the first time, found          47  records
+ PEREAD: file          928 read the first time, found          25  records
+ PEREAD: file          929 read the first time, found           2  records
+ PEREAD: file          930 read the first time, found          46  records
+ PEREAD: file          931 read the first time, found          39  records
+ PEREAD: file          932 read the first time, found          36  records
+ PEREAD: file          933 read the first time, found          48  records
+ PEREAD: file          934 read the first time, found          58  records
+ PEREAD: file          935 read the first time, found          42  records
+ PEREAD: file          936 read the first time, found          41  records
+ PEREAD: file          937 read the first time, found          41  records
+ PEREAD: file          938 read the first time, found          43  records
+ PEREAD: file          939 read the first time, found          47  records
+ PEREAD: file          940 read the first time, found          46  records
+ PEREAD: file          941 read the first time, found          38  records
+ PEREAD: file          942 read the first time, found          34  records
+ PEREAD: file          943 read the first time, found          28  records
+ PEREAD: file          944 read the first time, found          34  records
+ PEREAD: file          945 read the first time, found          36  records
+ PEREAD: file          946 read the first time, found          40  records
+ PEREAD: file          947 read the first time, found          38  records
+ PEREAD: file          948 read the first time, found          37  records
+ PEREAD: file          949 read the first time, found          36  records
+ PEREAD: file          950 read the first time, found          36  records
+ PEREAD: file          951 read the first time, found          39  records
+ PEREAD: file          952 read the first time, found          38  records
+ PEREAD: file          953 read the first time, found          40  records
+ PEREAD: file          954 read the first time, found          43  records
+ PEREAD: file          955 read the first time, found          33  records
+ PEREAD: file          956 read the first time, found          42  records
+ PEREAD: file          957 read the first time, found          37  records
+ PEREAD: file          958 read the first time, found          38  records
+ PEREAD: file          959 read the first time, found          29  records
+ PEREAD: file          960 read the first time, found          33  records
+ PEREAD: file          961 read the first time, found          34  records
+ PEREAD: file          962 read the first time, found          47  records
+ PEREAD: file          963 read the first time, found          39  records
+ PEREAD: file          964 read the first time, found          44  records
+ PEREAD: file          965 read the first time, found          38  records
+ PEREAD: file          966 read the first time, found          43  records
+ PEREAD: file          967 read the first time, found          32  records
+ PEREAD: file          968 read the first time, found          32  records
+ PEREAD: file          969 read the first time, found          51  records
+ PEREAD: file          970 read the first time, found          38  records
+ PEREAD: file          971 read the first time, found          41  records
+ PEREAD: file          972 read the first time, found          31  records
+ PEREAD: file          973 read the first time, found          37  records
+ PEREAD: file          974 read the first time, found          27  records
+ PEREAD: file          975 read the first time, found           3  records
+ PEREAD: file          976 read the first time, found           3  records
+ PEREAD: file          977 read the first time, found          12  records
+ PEREAD: file          978 read the first time, found          12  records
+ PEREAD: file          979 read the first time, found          28  records
+ PEREAD: file          980 read the first time, found          42  records
+ PEREAD: file          981 read the first time, found          50  records
+ PEREAD: file          982 read the first time, found          45  records
+ PEREAD: file          983 read the first time, found          24  records
+ PEREAD: file          984 read the first time, found          42  records
+ PEREAD: file          985 read the first time, found          40  records
+ PEREAD: file          986 read the first time, found          37  records
+ PEREAD: file          987 read the first time, found          51  records
+ PEREAD: file          988 read the first time, found          52  records
+ PEREAD: file          989 read the first time, found          42  records
+ PEREAD: file          990 read the first time, found          34  records
+ PEREAD: file          991 read the first time, found          26  records
+ PEREAD: file          992 read the first time, found          26  records
+ PEREAD: file          993 read the first time, found          35  records
+ PEREAD: file          994 read the first time, found          35  records
+ PEREAD: file          995 read the first time, found          36  records
+ PEREAD: file          996 read the first time, found          28  records
+ PEREAD: file          997 read the first time, found          36  records
+ PEREAD: file          998 read the first time, found          27  records
+ PEREAD: file          999 read the first time, found          31  records
+ PEREAD: file         1000 read the first time, found          23  records
+  Record            1
+  Record           10
+  Record          100
+  Record         1000
+  Record        10000
+ PEREAD: file           32 with max record size         1062
+
+ Read  cache usage (#blocks, #records, min,max records/block
+                          1     24196     24196     24196
+ SORT22 (quicksort): maxlevel used/available =           6 /64
+ LOOP1:           0  is number of pre-sigmas
+ Warning: no pre-sigmas defined
+ Default pre-sigma = 0.00E+00 (if no individual pre-sigma defined)
+ Pre-sigma factor is   1.00000000    
+ No regularization will be done
+     NTGB =        36 = total number of parameters
+     NVGB =        36 = number of variable parameters
+  
+     NREC =     24196 = number of records
+  MREQENF =       500 = required number of entries (eqns in binary files)
+  MREQENA =        10 = required number of entries (from accepted fits)
+     NTGB =        36 = total number of parameters
+     NVGB =        36 = number of variable parameters
+  
+  
+  
+ _______________________________LOOP1-end__________________________________
+   0 h  0 min  0.6 sec total                  elapsed   0 h  0 min  0.5 sec
+  
+  
+ _________________________________LOOP2____________________________________
+  
+  Record            1
+  Record           10
+  Record          100
+  Record         1000
+  Record        10000
+
+ Read  cache usage (#blocks, #records, min,max records/block
+                          1     24196     24196     24196
+  
+     NTGB =        36 = total number of parameters
+                      (all parameters, appearing in binary files)
+     NVGB =        36 = number of variable parameters
+                      (appearing in fit matrix/vectors)
+     NAGB =        36 = number of all parameters
+                      (including Lagrange multiplier or reduced)
+   NTPGRP =         6 = total number of parameter groups
+   NVPGRP =         6 = number of variable parameter groups
+     NFGB =        36 = number of fit parameters
+     NOFF =       630 = max number of off-diagonal elements
+     NCGB =         0 = number of constraints
+    NAGBN =        24 = max number of global parameters in an event
+    NALCN =        47 = max number of local parameters in an event
+    NAEQN =        77 = max number of equations in an event
+   NCACHE =  25000000 = number of words for caching
+                      cache splitting   68.9 %   2.2 %  28.9 %
+  
+  
+ Solution method and matrix-storage mode:
+      METSOL = 1:  matrix inversion
+                   with           5  iterations
+      MATSTO = 1:  full symmetric matrix, (n*n+n)/2 elements
+ Convergence assumed, if expected dF <  0.8000    
+  
+ Size of global matrix: < 1 MB
+  
+ _______________________________LOOP2-end__________________________________
+   0 h  0 min  0.9 sec total                  elapsed   0 h  0 min  0.4 sec
+  
+  
+ _______________________________Iteration__________________________________
+  
+  
+ Solution algorithm: 
+ ========================================
+                         solution method:   matrix inversion
+            convergence limit at Delta F=   0.80E+00
+            maximum number of iterations=   5
+                        using pre-sigmas:   no
+                          regularization:   no
+    Chi square cut equiv 3 st.dev applied
+       ... in first iteration with factor   0.30E+02
+      ... in second iteration with factor   0.45E+01
+     (reduced by sqrt in next iterations)
+  
+ Checking feasibility of parameters:
+    parameters are feasible  (i.e. satisfy constraints)
+  
+ Reading files and accumulating vectors/matrices ...
+  
+
+ Read  cache usage (#blocks, #records, min,max records/block
+                          2     24196      4655     19541
+ Write cache usage (#flush,#overrun,<levels>,peak(levels))
+      2      0,   9.0%  32.0%  14.5%  51.6%
+  
+ Data rejected in initial loop:
+               0  (rank deficit/NaN)            0  (Ndf=0)              1  (huge)              1  (large)
+  
+  === local fits have bordered band matrix structure ===
+    NBNDR =     22375 = number of records (upper/left border)
+    NBDRX =         1 = max border size
+    NBNDX =         4 = max band width
+  
+ it fc   fcn_value dfcn_exp  slpr costh  iit st ls  step cutf rejects hhmmss FMS
+ -- -- ----------- --------  ---- -----  --- -- -- ----- ---- ------- ------ ---
+  0  1 0.79129E+06                                       30.0       2  00001 FMS
+  1  2 0.74321E+06 0.23E+05                0  0           4.5     248  00001 F  
+                                                                       00000   S
+  2  3 0.69575E+06 0.22E+02                0  0           2.1    1250  00001 F  
+                                                                       00000   S
+  3  4 0.58295E+06 0.13E+03 1.893 0.019    0  0 -1 1.000  1.0    5514  00001 F  
+     5 0.58431E+06          2.974               -1-1.120         5520  00001 F  
+     6 0.58203E+06          0.019                1 4.712         5535  00001 F  
+                                                                       00000   S
+  4  7 0.58140E+06 0.40E+03 0.553 0.014    0  0 -1 1.000  1.0    5540  00001 F  
+     8 0.58116E+06          0.088                1 2.238         5551  00001 F  
+                                                                       00000   S
+  5  9 0.58111E+06 0.37E+02 0.328 0.007    0  0 -1 1.000  1.0    5549  00001 F  
+    10 0.58111E+06          0.028                1 1.489         5551  00001 F  
+  
+ Data rejected in last loop:   
+               0  (rank deficit/NaN)            0  (Ndf=0)              1  (huge)           5550  (large)
+  
+ Sum(Chi^2)/Sum(Ndf) =   581107.13886796974     
+                     / (      403526 -          36 )
+                     =   1.4402020839871366     
+  
+        
+        
+       WarningWarningWarningWarningWarningWarningWarningWarningWar
+       arningWarningWarningWarningWarningWarningWarningWarningWarn
+       rningWarningWarningWarningWarningWarningWarningWarningWarni
+       ningWarningWarningWarningWarningWarningWarningWarningWarnin
+       ingWarningWarningWarningWarningWarningWarningWarningWarning
+       ngWarningWarningWarningWarningWarningWarningWarningWarningW
+       gWarningWarningWarningWarningWarningWarningWarningWarningWa
+        
+         Chi^2/Ndf =    1.44  (should be close to 1)
+         => multiply all input standard deviations by factor   1.20
+        
+         Fraction of rejects =  22.94 %  (should be far below 1 %)
+         => please provide correct mille data
+        
+       WarningWarningWarningWarningWarningWarningWarningWarningWar
+       arningWarningWarningWarningWarningWarningWarningWarningWarn
+       rningWarningWarningWarningWarningWarningWarningWarningWarni
+       ningWarningWarningWarningWarningWarningWarningWarningWarnin
+       ingWarningWarningWarningWarningWarningWarningWarningWarning
+       ngWarningWarningWarningWarningWarningWarningWarningWarningW
+       gWarningWarningWarningWarningWarningWarningWarningWarningWa
+        
+  
+ _____________________________Iteration-end________________________________
+   0 h  0 min  8.1 sec total                  elapsed   0 h  0 min  7.1 sec
+  
+  
+          Result of fit for global parameters
+          ===================================
+  
+     label       parameter      presigma        differ         error
+ -----------    ----------------------------------------------------
+        61     0.25044E-04    0.0000       0.25044E-04   0.18615E-03
+        62    -0.41989E-02    0.0000      -0.41989E-02   0.18765E-03
+        63     0.45705E-02    0.0000       0.45705E-02   0.69392E-03
+        64    -0.82394E-06    0.0000      -0.82394E-06   0.36333E-05
+        65    -0.45176E-05    0.0000      -0.45176E-05   0.37809E-05
+        66     0.12523E-03    0.0000       0.12523E-03   0.79211E-05
+     13481     0.79792E-03    0.0000       0.79792E-03   0.18615E-03
+     13482    -0.64036E-02    0.0000      -0.64036E-02   0.19000E-03
+     13483     0.44549E-02    0.0000       0.44549E-02   0.69301E-03
+     13484    -0.28282E-04    0.0000      -0.28282E-04   0.36447E-05
+ ... (further printout suppressed, but see log file)
+  
+   <  Millepede II-P ending   ... Tue Nov  2 12:18:57 2021
+  
+      Peak dynamic memory allocation:    0.100349 GB
+  

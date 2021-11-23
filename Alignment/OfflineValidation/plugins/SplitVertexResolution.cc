@@ -248,8 +248,9 @@ private:
   TTree* tree_;
 
   // ----------member data ---------------------------
+  const float sumpTEndScale_;
   static const int nPtBins_ = 30;
-  std::array<float, nPtBins_ + 1> mypT_bins_ = PVValHelper::makeLogBins<float, nPtBins_>(1., 1e3);
+  std::array<float, nPtBins_ + 1> mypT_bins_;
 
   static const int nTrackBins_ = 60;
   std::array<float, nTrackBins_ + 1> myNTrack_bins_;
@@ -275,12 +276,19 @@ SplitVertexResolution::SplitVertexResolution(const edm::ParameterSet& iConfig)
       runInfoToken_(esConsumes<RunInfo, RunInfoRcd, edm::Transition::BeginRun>()),
       minVtxNdf_(iConfig.getUntrackedParameter<double>("minVertexNdf")),
       minVtxWgt_(iConfig.getUntrackedParameter<double>("minVertexMeanWeight")),
-      runControl_(iConfig.getUntrackedParameter<bool>("runControl", false)) {
+      runControl_(iConfig.getUntrackedParameter<bool>("runControl", false)),
+      // binning
+      //nPtBins_(iConfig.getUntrackedParameter<int>("nPtBins",30)),
+      //nTrackBins_(iConfig.getUntrackedParameter("nTrackBins",60)),
+      //nVtxBins_(iConfig.getUntrackedParameter("nVtxBins",40)),
+      sumpTEndScale_(iConfig.getUntrackedParameter<double>("sumpTEndScale",1e3)){
   usesResource(TFileService::kSharedResource);
 
   std::vector<unsigned int> defaultRuns;
   defaultRuns.push_back(0);
   runControlNumbers_ = iConfig.getUntrackedParameter<std::vector<unsigned int> >("runControlNumber", defaultRuns);
+
+  mypT_bins_ = PVValHelper::makeLogBins<float, nPtBins_>(1., sumpTEndScale_);
 
   std::vector<float> vect = PVValHelper::generateBins(nTrackBins_ + 1, -0.5, 120.);
   std::copy(vect.begin(), vect.begin() + nTrackBins_ + 1, myNTrack_bins_.begin());
@@ -290,7 +298,7 @@ SplitVertexResolution::SplitVertexResolution(const edm::ParameterSet& iConfig)
   std::copy(vect.begin(), vect.begin() + nVtxBins_ + 1, myNVtx_bins_.begin());
 }
 
-SplitVertexResolution::~SplitVertexResolution() {}
+SplitVertexResolution::~SplitVertexResolution() = default;
 
 // ------------ method called for each event  ------------
 void SplitVertexResolution::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -1012,11 +1020,24 @@ void SplitVertexResolution::endJob() {
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void SplitVertexResolution::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+  desc.setComment("Validates alignment payloads by evaluating the resulting Primary Vertex Resolution via vertex splitting method");
+  
+  desc.addUntracked<int>("compressionSettings", -1);
+  desc.add<bool>("storeNtuple",false);
+  desc.addUntracked<double>("intLumi", 0.);
+  desc.addUntracked<bool>("Debug", false);
+  desc.add<edm::InputTag>("vtxCollection",edm::InputTag("offlinePrimaryVertices"));
+  desc.add<edm::InputTag>("trackCollection",edm::InputTag("generalTracks"));
+  desc.addUntracked<double>("minVertexNdf",10);
+  desc.addUntracked<double>("minVertexMeanWeight",0.5);
+  desc.addUntracked<bool>("runControl", false); 
+  desc.addUntracked<std::vector<unsigned int>>("runControlNumber",{});
+  desc.addUntracked<int>("nPtBins",30);
+  desc.addUntracked<int>("nTrackBins",60);
+  desc.addUntracked<int>("nVtxBins",40);
+  desc.addUntracked<double>("sumpTEndScale",1e3);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 //*************************************************************

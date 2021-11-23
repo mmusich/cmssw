@@ -1,0 +1,1209 @@
+ ($Rev: 208 $)
+  
+ Log-file Millepede II-P                        Tue Nov  2 12:18:48 2021
+                                                lxplus781.cern.ch       
+  
+ Text and data files:
+  1  C_binary         pedeBinary0000.dat
+  2  C_binary         pedeBinary0001.dat
+  3  C_binary         pedeBinary0002.dat
+  4  C_binary         pedeBinary0003.dat
+  5  C_binary         pedeBinary0004.dat
+  6  C_binary         pedeBinary0005.dat
+  7  C_binary         pedeBinary0006.dat
+  8  C_binary         pedeBinary0007.dat
+  9  C_binary         pedeBinary0008.dat
+ 10  C_binary         pedeBinary0009.dat
+ 11  C_binary         pedeBinary0010.dat
+ 12  C_binary         pedeBinary0011.dat
+ 13  C_binary         pedeBinary0012.dat
+ 14  C_binary         pedeBinary0013.dat
+ 15  C_binary         pedeBinary0014.dat
+ 16  C_binary         pedeBinary0015.dat
+ 17  C_binary         pedeBinary0016.dat
+ 18  C_binary         pedeBinary0017.dat
+ 19  C_binary         pedeBinary0018.dat
+ 20  C_binary         pedeBinary0019.dat
+ 21  C_binary         pedeBinary0020.dat
+ 22  C_binary         pedeBinary0021.dat
+ 23  C_binary         pedeBinary0022.dat
+ 24  C_binary         pedeBinary0023.dat
+ 25  C_binary         pedeBinary0024.dat
+ 26  C_binary         pedeBinary0025.dat
+ 27  C_binary         pedeBinary0026.dat
+ 28  C_binary         pedeBinary0027.dat
+ 29  C_binary         pedeBinary0028.dat
+ 30  C_binary         pedeBinary0029.dat
+ 31  C_binary         pedeBinary0030.dat
+ 32  C_binary         pedeBinary0031.dat
+ 33  C_binary         pedeBinary0032.dat
+ 34  C_binary         pedeBinary0033.dat
+ 35  C_binary         pedeBinary0034.dat
+ 36  C_binary         pedeBinary0035.dat
+ 37  C_binary         pedeBinary0036.dat
+ 38  C_binary         pedeBinary0037.dat
+ 39  C_binary         pedeBinary0038.dat
+ 40  C_binary         pedeBinary0039.dat
+ 41  C_binary         pedeBinary0040.dat
+ 42  C_binary         pedeBinary0041.dat
+ 43  C_binary         pedeBinary0042.dat
+ 44  C_binary         pedeBinary0043.dat
+ 45  C_binary         pedeBinary0044.dat
+ 46  C_binary         pedeBinary0045.dat
+ 47  C_binary         pedeBinary0046.dat
+ 48  C_binary         pedeBinary0047.dat
+ 49  C_binary         pedeBinary0048.dat
+ 50  C_binary         pedeBinary0049.dat
+ 51  C_binary         pedeBinary0050.dat
+ 52  C_binary         pedeBinary0051.dat
+ 53  C_binary         pedeBinary0052.dat
+ 54  C_binary         pedeBinary0053.dat
+ 55  C_binary         pedeBinary0054.dat
+ 56  C_binary         pedeBinary0055.dat
+ 57  C_binary         pedeBinary0056.dat
+ 58  C_binary         pedeBinary0057.dat
+ 59  C_binary         pedeBinary0058.dat
+ 60  C_binary         pedeBinary0059.dat
+ 61  C_binary         pedeBinary0060.dat
+ 62  C_binary         pedeBinary0061.dat
+ 63  C_binary         pedeBinary0062.dat
+ 64  C_binary         pedeBinary0063.dat
+ 65  C_binary         pedeBinary0064.dat
+ 66  C_binary         pedeBinary0065.dat
+ 67  C_binary         pedeBinary0066.dat
+ 68  C_binary         pedeBinary0067.dat
+ 69  C_binary         pedeBinary0068.dat
+ 70  C_binary         pedeBinary0069.dat
+ 71  C_binary         pedeBinary0070.dat
+ 72  C_binary         pedeBinary0071.dat
+ 73  C_binary         pedeBinary0072.dat
+ 74  C_binary         pedeBinary0073.dat
+ 75  C_binary         pedeBinary0074.dat
+ 76  C_binary         pedeBinary0075.dat
+ 77  C_binary         pedeBinary0076.dat
+ 78  C_binary         pedeBinary0077.dat
+ 79  C_binary         pedeBinary0078.dat
+ 80  C_binary         pedeBinary0079.dat
+ 81  C_binary         pedeBinary0080.dat
+ 82  C_binary         pedeBinary0081.dat
+ 83  C_binary         pedeBinary0082.dat
+ 84  C_binary         pedeBinary0083.dat
+ 85  C_binary         pedeBinary0084.dat
+ 86  C_binary         pedeBinary0085.dat
+ 87  C_binary         pedeBinary0086.dat
+ 88  C_binary         pedeBinary0087.dat
+ 89  C_binary         pedeBinary0088.dat
+ 90  C_binary         pedeBinary0089.dat
+ 91  C_binary         pedeBinary0090.dat
+ 92  C_binary         pedeBinary0091.dat
+ 93  C_binary         pedeBinary0092.dat
+ 94  C_binary         pedeBinary0093.dat
+ 95  C_binary         pedeBinary0094.dat
+ 96  C_binary         pedeBinary0095.dat
+ 97  C_binary         pedeBinary0096.dat
+ 98  C_binary         pedeBinary0097.dat
+ 99  C_binary         pedeBinary0098.dat
+100  C_binary         pedeBinary0099.dat
+101  C_binary         pedeBinary0100.dat
+102  C_binary         pedeBinary0101.dat
+103  C_binary         pedeBinary0102.dat
+104  C_binary         pedeBinary0103.dat
+105  C_binary         pedeBinary0104.dat
+106  C_binary         pedeBinary0105.dat
+107  C_binary         pedeBinary0106.dat
+108  C_binary         pedeBinary0107.dat
+109  C_binary         pedeBinary0108.dat
+110  C_binary         pedeBinary0109.dat
+111  C_binary         pedeBinary0110.dat
+112  C_binary         pedeBinary0111.dat
+113  C_binary         pedeBinary0112.dat
+114  C_binary         pedeBinary0113.dat
+115  C_binary         pedeBinary0114.dat
+116  C_binary         pedeBinary0115.dat
+117  C_binary         pedeBinary0116.dat
+118  C_binary         pedeBinary0117.dat
+119  C_binary         pedeBinary0118.dat
+120  C_binary         pedeBinary0119.dat
+121  C_binary         pedeBinary0120.dat
+122  C_binary         pedeBinary0121.dat
+123  C_binary         pedeBinary0122.dat
+124  C_binary         pedeBinary0123.dat
+125  C_binary         pedeBinary0124.dat
+126  C_binary         pedeBinary0125.dat
+127  C_binary         pedeBinary0126.dat
+128  C_binary         pedeBinary0127.dat
+129  C_binary         pedeBinary0128.dat
+130  C_binary         pedeBinary0129.dat
+131  C_binary         pedeBinary0130.dat
+132  C_binary         pedeBinary0131.dat
+133  C_binary         pedeBinary0132.dat
+134  C_binary         pedeBinary0133.dat
+135  C_binary         pedeBinary0134.dat
+136  C_binary         pedeBinary0135.dat
+137  C_binary         pedeBinary0136.dat
+138  C_binary         pedeBinary0137.dat
+139  C_binary         pedeBinary0138.dat
+140  C_binary         pedeBinary0139.dat
+141  C_binary         pedeBinary0140.dat
+142  C_binary         pedeBinary0141.dat
+143  C_binary         pedeBinary0142.dat
+144  C_binary         pedeBinary0143.dat
+145  C_binary         pedeBinary0144.dat
+146  C_binary         pedeBinary0145.dat
+147  C_binary         pedeBinary0146.dat
+148  C_binary         pedeBinary0147.dat
+149  C_binary         pedeBinary0148.dat
+150  C_binary         pedeBinary0149.dat
+151  C_binary         pedeBinary0150.dat
+152  C_binary         pedeBinary0151.dat
+153  C_binary         pedeBinary0152.dat
+154  C_binary         pedeBinary0153.dat
+155  C_binary         pedeBinary0154.dat
+156  C_binary         pedeBinary0155.dat
+157  C_binary         pedeBinary0156.dat
+158  C_binary         pedeBinary0157.dat
+159  C_binary         pedeBinary0158.dat
+160  C_binary         pedeBinary0159.dat
+161  C_binary         pedeBinary0160.dat
+162  C_binary         pedeBinary0161.dat
+163  C_binary         pedeBinary0162.dat
+164  C_binary         pedeBinary0163.dat
+165  C_binary         pedeBinary0164.dat
+166  C_binary         pedeBinary0165.dat
+167  C_binary         pedeBinary0166.dat
+168  C_binary         pedeBinary0167.dat
+169  C_binary         pedeBinary0168.dat
+170  C_binary         pedeBinary0169.dat
+171  C_binary         pedeBinary0170.dat
+172  C_binary         pedeBinary0171.dat
+173  C_binary         pedeBinary0172.dat
+174  C_binary         pedeBinary0173.dat
+175  C_binary         pedeBinary0174.dat
+176  C_binary         pedeBinary0175.dat
+177  C_binary         pedeBinary0176.dat
+178  C_binary         pedeBinary0177.dat
+179  C_binary         pedeBinary0178.dat
+180  C_binary         pedeBinary0179.dat
+181  C_binary         pedeBinary0180.dat
+182  C_binary         pedeBinary0181.dat
+183  C_binary         pedeBinary0182.dat
+184  C_binary         pedeBinary0183.dat
+185  C_binary         pedeBinary0184.dat
+186  C_binary         pedeBinary0185.dat
+187  C_binary         pedeBinary0186.dat
+188  C_binary         pedeBinary0187.dat
+189  C_binary         pedeBinary0188.dat
+190  C_binary         pedeBinary0189.dat
+191  C_binary         pedeBinary0190.dat
+192  C_binary         pedeBinary0191.dat
+193  C_binary         pedeBinary0192.dat
+194  C_binary         pedeBinary0193.dat
+195  C_binary         pedeBinary0194.dat
+196  C_binary         pedeBinary0195.dat
+197  C_binary         pedeBinary0196.dat
+198  C_binary         pedeBinary0197.dat
+199  C_binary         pedeBinary0198.dat
+200  C_binary         pedeBinary0199.dat
+201  C_binary         pedeBinary0200.dat
+202  C_binary         pedeBinary0201.dat
+203  C_binary         pedeBinary0202.dat
+204  C_binary         pedeBinary0203.dat
+205  C_binary         pedeBinary0204.dat
+206  C_binary         pedeBinary0205.dat
+207  C_binary         pedeBinary0206.dat
+208  C_binary         pedeBinary0207.dat
+209  C_binary         pedeBinary0208.dat
+210  C_binary         pedeBinary0209.dat
+211  C_binary         pedeBinary0210.dat
+212  C_binary         pedeBinary0211.dat
+213  C_binary         pedeBinary0212.dat
+214  C_binary         pedeBinary0213.dat
+215  C_binary         pedeBinary0214.dat
+216  C_binary         pedeBinary0215.dat
+217  C_binary         pedeBinary0216.dat
+218  C_binary         pedeBinary0217.dat
+219  C_binary         pedeBinary0218.dat
+220  C_binary         pedeBinary0219.dat
+221  C_binary         pedeBinary0220.dat
+222  C_binary         pedeBinary0221.dat
+223  C_binary         pedeBinary0222.dat
+224  C_binary         pedeBinary0223.dat
+225  C_binary         pedeBinary0224.dat
+226  C_binary         pedeBinary0225.dat
+227  C_binary         pedeBinary0226.dat
+228  C_binary         pedeBinary0227.dat
+229  C_binary         pedeBinary0228.dat
+230  C_binary         pedeBinary0229.dat
+231  C_binary         pedeBinary0230.dat
+232  C_binary         pedeBinary0231.dat
+233  C_binary         pedeBinary0232.dat
+234  C_binary         pedeBinary0233.dat
+235  C_binary         pedeBinary0234.dat
+236  C_binary         pedeBinary0235.dat
+237  C_binary         pedeBinary0236.dat
+238  C_binary         pedeBinary0237.dat
+239  C_binary         pedeBinary0238.dat
+240  C_binary         pedeBinary0239.dat
+241  C_binary         pedeBinary0240.dat
+242  C_binary         pedeBinary0241.dat
+243  C_binary         pedeBinary0242.dat
+244  C_binary         pedeBinary0243.dat
+245  C_binary         pedeBinary0244.dat
+246  C_binary         pedeBinary0245.dat
+247  C_binary         pedeBinary0246.dat
+248  C_binary         pedeBinary0247.dat
+249  C_binary         pedeBinary0248.dat
+250  C_binary         pedeBinary0249.dat
+251  C_binary         pedeBinary0250.dat
+252  C_binary         pedeBinary0251.dat
+253  C_binary         pedeBinary0252.dat
+254  C_binary         pedeBinary0253.dat
+255  C_binary         pedeBinary0254.dat
+256  C_binary         pedeBinary0255.dat
+257  C_binary         pedeBinary0256.dat
+258  C_binary         pedeBinary0257.dat
+259  C_binary         pedeBinary0258.dat
+260  C_binary         pedeBinary0259.dat
+261  C_binary         pedeBinary0260.dat
+262  C_binary         pedeBinary0261.dat
+263  C_binary         pedeBinary0262.dat
+264  C_binary         pedeBinary0263.dat
+265  C_binary         pedeBinary0264.dat
+266  C_binary         pedeBinary0265.dat
+267  C_binary         pedeBinary0266.dat
+268  C_binary         pedeBinary0267.dat
+269  C_binary         pedeBinary0268.dat
+270  C_binary         pedeBinary0269.dat
+271  C_binary         pedeBinary0270.dat
+272  C_binary         pedeBinary0271.dat
+273  C_binary         pedeBinary0272.dat
+274  C_binary         pedeBinary0273.dat
+275  C_binary         pedeBinary0274.dat
+276  C_binary         pedeBinary0275.dat
+277  C_binary         pedeBinary0276.dat
+278  C_binary         pedeBinary0277.dat
+279  C_binary         pedeBinary0278.dat
+280  C_binary         pedeBinary0279.dat
+281  C_binary         pedeBinary0280.dat
+282  C_binary         pedeBinary0281.dat
+283  C_binary         pedeBinary0282.dat
+284  C_binary         pedeBinary0283.dat
+285  C_binary         pedeBinary0284.dat
+286  C_binary         pedeBinary0285.dat
+287  C_binary         pedeBinary0286.dat
+288  C_binary         pedeBinary0287.dat
+289  C_binary         pedeBinary0288.dat
+290  C_binary         pedeBinary0289.dat
+291  C_binary         pedeBinary0290.dat
+292  C_binary         pedeBinary0291.dat
+293  C_binary         pedeBinary0292.dat
+294  C_binary         pedeBinary0293.dat
+295  C_binary         pedeBinary0294.dat
+296  C_binary         pedeBinary0295.dat
+297  C_binary         pedeBinary0296.dat
+298  C_binary         pedeBinary0297.dat
+299  C_binary         pedeBinary0298.dat
+300  C_binary         pedeBinary0299.dat
+301  C_binary         pedeBinary0300.dat
+302  C_binary         pedeBinary0301.dat
+303  C_binary         pedeBinary0302.dat
+304  C_binary         pedeBinary0303.dat
+305  C_binary         pedeBinary0304.dat
+306  C_binary         pedeBinary0305.dat
+307  C_binary         pedeBinary0306.dat
+308  C_binary         pedeBinary0307.dat
+309  C_binary         pedeBinary0308.dat
+310  C_binary         pedeBinary0309.dat
+311  C_binary         pedeBinary0310.dat
+312  C_binary         pedeBinary0311.dat
+313  C_binary         pedeBinary0312.dat
+314  C_binary         pedeBinary0313.dat
+315  C_binary         pedeBinary0314.dat
+316  C_binary         pedeBinary0315.dat
+317  C_binary         pedeBinary0316.dat
+318  C_binary         pedeBinary0317.dat
+319  C_binary         pedeBinary0318.dat
+320  C_binary         pedeBinary0319.dat
+321  C_binary         pedeBinary0320.dat
+322  C_binary         pedeBinary0321.dat
+323  C_binary         pedeBinary0322.dat
+324  C_binary         pedeBinary0323.dat
+325  C_binary         pedeBinary0324.dat
+326  C_binary         pedeBinary0325.dat
+327  C_binary         pedeBinary0326.dat
+328  C_binary         pedeBinary0327.dat
+329  C_binary         pedeBinary0328.dat
+330  C_binary         pedeBinary0329.dat
+331  C_binary         pedeBinary0330.dat
+332  C_binary         pedeBinary0331.dat
+333  C_binary         pedeBinary0332.dat
+334  C_binary         pedeBinary0333.dat
+335  C_binary         pedeBinary0334.dat
+336  C_binary         pedeBinary0335.dat
+337  C_binary         pedeBinary0336.dat
+338  C_binary         pedeBinary0337.dat
+339  C_binary         pedeBinary0338.dat
+340  C_binary         pedeBinary0339.dat
+341  C_binary         pedeBinary0340.dat
+342  C_binary         pedeBinary0341.dat
+343  C_binary         pedeBinary0342.dat
+344  C_binary         pedeBinary0343.dat
+345  C_binary         pedeBinary0344.dat
+346  C_binary         pedeBinary0345.dat
+347  C_binary         pedeBinary0346.dat
+348  C_binary         pedeBinary0347.dat
+349  C_binary         pedeBinary0348.dat
+350  C_binary         pedeBinary0349.dat
+351  C_binary         pedeBinary0350.dat
+352  C_binary         pedeBinary0351.dat
+353  C_binary         pedeBinary0352.dat
+354  C_binary         pedeBinary0353.dat
+355  C_binary         pedeBinary0354.dat
+356  C_binary         pedeBinary0355.dat
+357  C_binary         pedeBinary0356.dat
+358  C_binary         pedeBinary0357.dat
+359  C_binary         pedeBinary0358.dat
+360  C_binary         pedeBinary0359.dat
+361  C_binary         pedeBinary0360.dat
+362  C_binary         pedeBinary0361.dat
+363  C_binary         pedeBinary0362.dat
+364  C_binary         pedeBinary0363.dat
+365  C_binary         pedeBinary0364.dat
+366  C_binary         pedeBinary0365.dat
+367  C_binary         pedeBinary0366.dat
+368  C_binary         pedeBinary0367.dat
+369  C_binary         pedeBinary0368.dat
+370  C_binary         pedeBinary0369.dat
+371  C_binary         pedeBinary0370.dat
+372  C_binary         pedeBinary0371.dat
+373  C_binary         pedeBinary0372.dat
+374  C_binary         pedeBinary0373.dat
+375  C_binary         pedeBinary0374.dat
+376  C_binary         pedeBinary0375.dat
+377  C_binary         pedeBinary0376.dat
+378  C_binary         pedeBinary0377.dat
+379  C_binary         pedeBinary0378.dat
+380  C_binary         pedeBinary0379.dat
+381  C_binary         pedeBinary0380.dat
+382  C_binary         pedeBinary0381.dat
+383  C_binary         pedeBinary0382.dat
+384  C_binary         pedeBinary0383.dat
+385  C_binary         pedeBinary0384.dat
+386  C_binary         pedeBinary0385.dat
+387  C_binary         pedeBinary0386.dat
+388  C_binary         pedeBinary0387.dat
+389  C_binary         pedeBinary0388.dat
+390  C_binary         pedeBinary0389.dat
+391  C_binary         pedeBinary0390.dat
+392  C_binary         pedeBinary0391.dat
+393  C_binary         pedeBinary0392.dat
+394  C_binary         pedeBinary0393.dat
+395  C_binary         pedeBinary0394.dat
+396  C_binary         pedeBinary0395.dat
+397  C_binary         pedeBinary0396.dat
+398  C_binary         pedeBinary0397.dat
+399  C_binary         pedeBinary0398.dat
+400  C_binary         pedeBinary0399.dat
+401  C_binary         pedeBinary0400.dat
+402  C_binary         pedeBinary0401.dat
+403  C_binary         pedeBinary0402.dat
+404  C_binary         pedeBinary0403.dat
+405  C_binary         pedeBinary0404.dat
+406  C_binary         pedeBinary0405.dat
+407  C_binary         pedeBinary0406.dat
+408  C_binary         pedeBinary0407.dat
+409  C_binary         pedeBinary0408.dat
+410  C_binary         pedeBinary0409.dat
+411  C_binary         pedeBinary0410.dat
+412  C_binary         pedeBinary0411.dat
+413  C_binary         pedeBinary0412.dat
+414  C_binary         pedeBinary0413.dat
+415  C_binary         pedeBinary0414.dat
+416  C_binary         pedeBinary0415.dat
+417  C_binary         pedeBinary0416.dat
+418  C_binary         pedeBinary0417.dat
+419  C_binary         pedeBinary0418.dat
+420  C_binary         pedeBinary0419.dat
+421  C_binary         pedeBinary0420.dat
+422  C_binary         pedeBinary0421.dat
+423  C_binary         pedeBinary0422.dat
+424  C_binary         pedeBinary0423.dat
+425  C_binary         pedeBinary0424.dat
+426  C_binary         pedeBinary0425.dat
+427  C_binary         pedeBinary0426.dat
+428  C_binary         pedeBinary0427.dat
+429  C_binary         pedeBinary0428.dat
+430  C_binary         pedeBinary0429.dat
+431  C_binary         pedeBinary0430.dat
+432  C_binary         pedeBinary0431.dat
+433  C_binary         pedeBinary0432.dat
+434  C_binary         pedeBinary0433.dat
+435  C_binary         pedeBinary0434.dat
+436  C_binary         pedeBinary0435.dat
+437  C_binary         pedeBinary0436.dat
+438  C_binary         pedeBinary0437.dat
+439  C_binary         pedeBinary0438.dat
+440  C_binary         pedeBinary0439.dat
+441  C_binary         pedeBinary0440.dat
+442  C_binary         pedeBinary0441.dat
+443  C_binary         pedeBinary0442.dat
+444  C_binary         pedeBinary0443.dat
+445  C_binary         pedeBinary0444.dat
+446  C_binary         pedeBinary0445.dat
+447  C_binary         pedeBinary0446.dat
+448  C_binary         pedeBinary0447.dat
+449  C_binary         pedeBinary0448.dat
+450  C_binary         pedeBinary0449.dat
+451  C_binary         pedeBinary0450.dat
+452  C_binary         pedeBinary0451.dat
+453  C_binary         pedeBinary0452.dat
+454  C_binary         pedeBinary0453.dat
+455  C_binary         pedeBinary0454.dat
+456  C_binary         pedeBinary0455.dat
+457  C_binary         pedeBinary0456.dat
+458  C_binary         pedeBinary0457.dat
+459  C_binary         pedeBinary0458.dat
+460  C_binary         pedeBinary0459.dat
+461  C_binary         pedeBinary0460.dat
+462  C_binary         pedeBinary0461.dat
+463  C_binary         pedeBinary0462.dat
+464  C_binary         pedeBinary0463.dat
+465  C_binary         pedeBinary0464.dat
+466  C_binary         pedeBinary0465.dat
+467  C_binary         pedeBinary0466.dat
+468  C_binary         pedeBinary0467.dat
+469  C_binary         pedeBinary0468.dat
+470  C_binary         pedeBinary0469.dat
+471  C_binary         pedeBinary0470.dat
+472  C_binary         pedeBinary0471.dat
+473  C_binary         pedeBinary0472.dat
+474  C_binary         pedeBinary0473.dat
+475  C_binary         pedeBinary0474.dat
+476  C_binary         pedeBinary0475.dat
+477  C_binary         pedeBinary0476.dat
+478  C_binary         pedeBinary0477.dat
+479  C_binary         pedeBinary0478.dat
+480  C_binary         pedeBinary0479.dat
+481  C_binary         pedeBinary0480.dat
+482  C_binary         pedeBinary0481.dat
+483  C_binary         pedeBinary0482.dat
+484  C_binary         pedeBinary0483.dat
+485  C_binary         pedeBinary0484.dat
+486  C_binary         pedeBinary0485.dat
+487  C_binary         pedeBinary0486.dat
+488  C_binary         pedeBinary0487.dat
+489  C_binary         pedeBinary0488.dat
+490  C_binary         pedeBinary0489.dat
+491  C_binary         pedeBinary0490.dat
+492  C_binary         pedeBinary0491.dat
+493  C_binary         pedeBinary0492.dat
+494  C_binary         pedeBinary0493.dat
+495  C_binary         pedeBinary0494.dat
+496  C_binary         pedeBinary0495.dat
+497  C_binary         pedeBinary0496.dat
+498  C_binary         pedeBinary0497.dat
+499  C_binary         pedeBinary0498.dat
+500  C_binary         pedeBinary0499.dat
+501  C_binary         pedeBinary0500.dat
+502  C_binary         pedeBinary0501.dat
+503  C_binary         pedeBinary0502.dat
+504  C_binary         pedeBinary0503.dat
+505  C_binary         pedeBinary0504.dat
+506  C_binary         pedeBinary0505.dat
+507  C_binary         pedeBinary0506.dat
+508  C_binary         pedeBinary0507.dat
+509  C_binary         pedeBinary0508.dat
+510  C_binary         pedeBinary0509.dat
+511  C_binary         pedeBinary0510.dat
+512  C_binary         pedeBinary0511.dat
+513  C_binary         pedeBinary0512.dat
+514  C_binary         pedeBinary0513.dat
+515  C_binary         pedeBinary0514.dat
+516  C_binary         pedeBinary0515.dat
+517  C_binary         pedeBinary0516.dat
+518  C_binary         pedeBinary0517.dat
+519  C_binary         pedeBinary0518.dat
+520  C_binary         pedeBinary0519.dat
+521  C_binary         pedeBinary0520.dat
+522  C_binary         pedeBinary0521.dat
+523  C_binary         pedeBinary0522.dat
+524  C_binary         pedeBinary0523.dat
+525  C_binary         pedeBinary0524.dat
+526  C_binary         pedeBinary0525.dat
+527  C_binary         pedeBinary0526.dat
+528  C_binary         pedeBinary0527.dat
+529  C_binary         pedeBinary0528.dat
+530  C_binary         pedeBinary0529.dat
+531  C_binary         pedeBinary0530.dat
+532  C_binary         pedeBinary0531.dat
+533  C_binary         pedeBinary0532.dat
+534  C_binary         pedeBinary0533.dat
+535  C_binary         pedeBinary0534.dat
+536  C_binary         pedeBinary0535.dat
+537  C_binary         pedeBinary0536.dat
+538  C_binary         pedeBinary0537.dat
+539  C_binary         pedeBinary0538.dat
+540  C_binary         pedeBinary0539.dat
+541  C_binary         pedeBinary0540.dat
+542  C_binary         pedeBinary0541.dat
+543  C_binary         pedeBinary0542.dat
+544  C_binary         pedeBinary0543.dat
+545  C_binary         pedeBinary0544.dat
+546  C_binary         pedeBinary0545.dat
+547  C_binary         pedeBinary0546.dat
+548  C_binary         pedeBinary0547.dat
+549  C_binary         pedeBinary0548.dat
+550  C_binary         pedeBinary0549.dat
+551  C_binary         pedeBinary0550.dat
+552  C_binary         pedeBinary0551.dat
+553  C_binary         pedeBinary0552.dat
+554  C_binary         pedeBinary0553.dat
+555  C_binary         pedeBinary0554.dat
+556  C_binary         pedeBinary0555.dat
+557  C_binary         pedeBinary0556.dat
+558  C_binary         pedeBinary0557.dat
+559  C_binary         pedeBinary0558.dat
+560  C_binary         pedeBinary0559.dat
+561  C_binary         pedeBinary0560.dat
+562  C_binary         pedeBinary0561.dat
+563  C_binary         pedeBinary0562.dat
+564  C_binary         pedeBinary0563.dat
+565  C_binary         pedeBinary0564.dat
+566  C_binary         pedeBinary0565.dat
+567  C_binary         pedeBinary0566.dat
+568  C_binary         pedeBinary0567.dat
+569  C_binary         pedeBinary0568.dat
+570  C_binary         pedeBinary0569.dat
+571  C_binary         pedeBinary0570.dat
+572  C_binary         pedeBinary0571.dat
+573  C_binary         pedeBinary0572.dat
+574  C_binary         pedeBinary0573.dat
+575  C_binary         pedeBinary0574.dat
+576  C_binary         pedeBinary0575.dat
+577  C_binary         pedeBinary0576.dat
+578  C_binary         pedeBinary0577.dat
+579  C_binary         pedeBinary0578.dat
+580  C_binary         pedeBinary0579.dat
+581  C_binary         pedeBinary0580.dat
+582  C_binary         pedeBinary0581.dat
+583  C_binary         pedeBinary0582.dat
+584  C_binary         pedeBinary0583.dat
+585  C_binary         pedeBinary0584.dat
+586  C_binary         pedeBinary0585.dat
+587  C_binary         pedeBinary0586.dat
+588  C_binary         pedeBinary0587.dat
+589  C_binary         pedeBinary0588.dat
+590  C_binary         pedeBinary0589.dat
+591  C_binary         pedeBinary0590.dat
+592  C_binary         pedeBinary0591.dat
+593  C_binary         pedeBinary0592.dat
+594  C_binary         pedeBinary0593.dat
+595  C_binary         pedeBinary0594.dat
+596  C_binary         pedeBinary0595.dat
+597  C_binary         pedeBinary0596.dat
+598  C_binary         pedeBinary0597.dat
+599  C_binary         pedeBinary0598.dat
+600  C_binary         pedeBinary0599.dat
+601  C_binary         pedeBinary0600.dat
+602  C_binary         pedeBinary0601.dat
+603  C_binary         pedeBinary0602.dat
+604  C_binary         pedeBinary0603.dat
+605  C_binary         pedeBinary0604.dat
+606  C_binary         pedeBinary0605.dat
+607  C_binary         pedeBinary0606.dat
+608  C_binary         pedeBinary0607.dat
+609  C_binary         pedeBinary0608.dat
+610  C_binary         pedeBinary0609.dat
+611  C_binary         pedeBinary0610.dat
+612  C_binary         pedeBinary0611.dat
+613  C_binary         pedeBinary0612.dat
+614  C_binary         pedeBinary0613.dat
+615  C_binary         pedeBinary0614.dat
+616  C_binary         pedeBinary0615.dat
+617  C_binary         pedeBinary0616.dat
+618  C_binary         pedeBinary0617.dat
+619  C_binary         pedeBinary0618.dat
+620  C_binary         pedeBinary0619.dat
+621  C_binary         pedeBinary0620.dat
+622  C_binary         pedeBinary0621.dat
+623  C_binary         pedeBinary0622.dat
+624  C_binary         pedeBinary0623.dat
+625  C_binary         pedeBinary0624.dat
+626  C_binary         pedeBinary0625.dat
+627  C_binary         pedeBinary0626.dat
+628  C_binary         pedeBinary0627.dat
+629  C_binary         pedeBinary0628.dat
+630  C_binary         pedeBinary0629.dat
+631  C_binary         pedeBinary0630.dat
+632  C_binary         pedeBinary0631.dat
+633  C_binary         pedeBinary0632.dat
+634  C_binary         pedeBinary0633.dat
+635  C_binary         pedeBinary0634.dat
+636  C_binary         pedeBinary0635.dat
+637  C_binary         pedeBinary0636.dat
+638  C_binary         pedeBinary0637.dat
+639  C_binary         pedeBinary0638.dat
+640  C_binary         pedeBinary0639.dat
+641  C_binary         pedeBinary0640.dat
+642  C_binary         pedeBinary0641.dat
+643  C_binary         pedeBinary0642.dat
+644  C_binary         pedeBinary0643.dat
+645  C_binary         pedeBinary0644.dat
+646  C_binary         pedeBinary0645.dat
+647  C_binary         pedeBinary0646.dat
+648  C_binary         pedeBinary0647.dat
+649  C_binary         pedeBinary0648.dat
+650  C_binary         pedeBinary0649.dat
+651  C_binary         pedeBinary0650.dat
+652  C_binary         pedeBinary0651.dat
+653  C_binary         pedeBinary0652.dat
+654  C_binary         pedeBinary0653.dat
+655  C_binary         pedeBinary0654.dat
+656  C_binary         pedeBinary0655.dat
+657  C_binary         pedeBinary0656.dat
+658  C_binary         pedeBinary0657.dat
+659  C_binary         pedeBinary0658.dat
+660  C_binary         pedeBinary0659.dat
+661  C_binary         pedeBinary0660.dat
+662  C_binary         pedeBinary0661.dat
+663  C_binary         pedeBinary0662.dat
+664  C_binary         pedeBinary0663.dat
+665  C_binary         pedeBinary0664.dat
+666  C_binary         pedeBinary0665.dat
+667  C_binary         pedeBinary0666.dat
+668  C_binary         pedeBinary0667.dat
+669  C_binary         pedeBinary0668.dat
+670  C_binary         pedeBinary0669.dat
+671  C_binary         pedeBinary0670.dat
+672  C_binary         pedeBinary0671.dat
+673  C_binary         pedeBinary0672.dat
+674  C_binary         pedeBinary0673.dat
+675  C_binary         pedeBinary0674.dat
+676  C_binary         pedeBinary0675.dat
+677  C_binary         pedeBinary0676.dat
+678  C_binary         pedeBinary0677.dat
+679  C_binary         pedeBinary0678.dat
+680  C_binary         pedeBinary0679.dat
+681  C_binary         pedeBinary0680.dat
+682  C_binary         pedeBinary0681.dat
+683  C_binary         pedeBinary0682.dat
+684  C_binary         pedeBinary0683.dat
+685  C_binary         pedeBinary0684.dat
+686  C_binary         pedeBinary0685.dat
+687  C_binary         pedeBinary0686.dat
+688  C_binary         pedeBinary0687.dat
+689  C_binary         pedeBinary0688.dat
+690  C_binary         pedeBinary0689.dat
+691  C_binary         pedeBinary0690.dat
+692  C_binary         pedeBinary0691.dat
+693  C_binary         pedeBinary0692.dat
+694  C_binary         pedeBinary0693.dat
+695  C_binary         pedeBinary0694.dat
+696  C_binary         pedeBinary0695.dat
+697  C_binary         pedeBinary0696.dat
+698  C_binary         pedeBinary0697.dat
+699  C_binary         pedeBinary0698.dat
+700  C_binary         pedeBinary0699.dat
+701  C_binary         pedeBinary0700.dat
+702  C_binary         pedeBinary0701.dat
+703  C_binary         pedeBinary0702.dat
+704  C_binary         pedeBinary0703.dat
+705  C_binary         pedeBinary0704.dat
+706  C_binary         pedeBinary0705.dat
+707  C_binary         pedeBinary0706.dat
+708  C_binary         pedeBinary0707.dat
+709  C_binary         pedeBinary0708.dat
+710  C_binary         pedeBinary0709.dat
+711  C_binary         pedeBinary0710.dat
+712  C_binary         pedeBinary0711.dat
+713  C_binary         pedeBinary0712.dat
+714  C_binary         pedeBinary0713.dat
+715  C_binary         pedeBinary0714.dat
+716  C_binary         pedeBinary0715.dat
+717  C_binary         pedeBinary0716.dat
+718  C_binary         pedeBinary0717.dat
+719  C_binary         pedeBinary0718.dat
+720  C_binary         pedeBinary0719.dat
+721  C_binary         pedeBinary0720.dat
+722  C_binary         pedeBinary0721.dat
+723  C_binary         pedeBinary0722.dat
+724  C_binary         pedeBinary0723.dat
+725  C_binary         pedeBinary0724.dat
+726  C_binary         pedeBinary0725.dat
+727  C_binary         pedeBinary0726.dat
+728  C_binary         pedeBinary0727.dat
+729  C_binary         pedeBinary0728.dat
+730  C_binary         pedeBinary0729.dat
+731  C_binary         pedeBinary0730.dat
+732  C_binary         pedeBinary0731.dat
+733  C_binary         pedeBinary0732.dat
+734  C_binary         pedeBinary0733.dat
+735  C_binary         pedeBinary0734.dat
+736  C_binary         pedeBinary0735.dat
+737  C_binary         pedeBinary0736.dat
+738  C_binary         pedeBinary0737.dat
+739  C_binary         pedeBinary0738.dat
+740  C_binary         pedeBinary0739.dat
+741  C_binary         pedeBinary0740.dat
+742  C_binary         pedeBinary0741.dat
+743  C_binary         pedeBinary0742.dat
+744  C_binary         pedeBinary0743.dat
+745  C_binary         pedeBinary0744.dat
+746  C_binary         pedeBinary0745.dat
+747  C_binary         pedeBinary0746.dat
+748  C_binary         pedeBinary0747.dat
+749  C_binary         pedeBinary0748.dat
+750  C_binary         pedeBinary0749.dat
+751  C_binary         pedeBinary0750.dat
+752  C_binary         pedeBinary0751.dat
+753  C_binary         pedeBinary0752.dat
+754  C_binary         pedeBinary0753.dat
+755  C_binary         pedeBinary0754.dat
+756  C_binary         pedeBinary0755.dat
+757  C_binary         pedeBinary0756.dat
+758  C_binary         pedeBinary0757.dat
+759  C_binary         pedeBinary0758.dat
+760  C_binary         pedeBinary0759.dat
+761  C_binary         pedeBinary0760.dat
+762  C_binary         pedeBinary0761.dat
+763  C_binary         pedeBinary0762.dat
+764  C_binary         pedeBinary0763.dat
+765  C_binary         pedeBinary0764.dat
+766  C_binary         pedeBinary0765.dat
+767  C_binary         pedeBinary0766.dat
+768  C_binary         pedeBinary0767.dat
+769  C_binary         pedeBinary0768.dat
+770  C_binary         pedeBinary0769.dat
+771  C_binary         pedeBinary0770.dat
+772  C_binary         pedeBinary0771.dat
+773  C_binary         pedeBinary0772.dat
+774  C_binary         pedeBinary0773.dat
+775  C_binary         pedeBinary0774.dat
+776  C_binary         pedeBinary0775.dat
+777  C_binary         pedeBinary0776.dat
+778  C_binary         pedeBinary0777.dat
+779  C_binary         pedeBinary0778.dat
+780  C_binary         pedeBinary0779.dat
+781  C_binary         pedeBinary0780.dat
+782  C_binary         pedeBinary0781.dat
+783  C_binary         pedeBinary0782.dat
+784  C_binary         pedeBinary0783.dat
+785  C_binary         pedeBinary0784.dat
+786  C_binary         pedeBinary0785.dat
+787  C_binary         pedeBinary0786.dat
+788  C_binary         pedeBinary0787.dat
+789  C_binary         pedeBinary0788.dat
+790  C_binary         pedeBinary0789.dat
+791  C_binary         pedeBinary0790.dat
+792  C_binary         pedeBinary0791.dat
+793  C_binary         pedeBinary0792.dat
+794  C_binary         pedeBinary0793.dat
+795  C_binary         pedeBinary0794.dat
+796  C_binary         pedeBinary0795.dat
+797  C_binary         pedeBinary0796.dat
+798  C_binary         pedeBinary0797.dat
+799  C_binary         pedeBinary0798.dat
+800  C_binary         pedeBinary0799.dat
+801  C_binary         pedeBinary0800.dat
+802  C_binary         pedeBinary0801.dat
+803  C_binary         pedeBinary0802.dat
+804  C_binary         pedeBinary0803.dat
+805  C_binary         pedeBinary0804.dat
+806  C_binary         pedeBinary0805.dat
+807  C_binary         pedeBinary0806.dat
+808  C_binary         pedeBinary0807.dat
+809  C_binary         pedeBinary0808.dat
+810  C_binary         pedeBinary0809.dat
+811  C_binary         pedeBinary0810.dat
+812  C_binary         pedeBinary0811.dat
+813  C_binary         pedeBinary0812.dat
+814  C_binary         pedeBinary0813.dat
+815  C_binary         pedeBinary0814.dat
+816  C_binary         pedeBinary0815.dat
+817  C_binary         pedeBinary0816.dat
+818  C_binary         pedeBinary0817.dat
+819  C_binary         pedeBinary0818.dat
+820  C_binary         pedeBinary0819.dat
+821  C_binary         pedeBinary0820.dat
+822  C_binary         pedeBinary0821.dat
+823  C_binary         pedeBinary0822.dat
+824  C_binary         pedeBinary0823.dat
+825  C_binary         pedeBinary0824.dat
+826  C_binary         pedeBinary0825.dat
+827  C_binary         pedeBinary0826.dat
+828  C_binary         pedeBinary0827.dat
+829  C_binary         pedeBinary0828.dat
+830  C_binary         pedeBinary0829.dat
+831  C_binary         pedeBinary0830.dat
+832  C_binary         pedeBinary0831.dat
+833  C_binary         pedeBinary0832.dat
+834  C_binary         pedeBinary0833.dat
+835  C_binary         pedeBinary0834.dat
+836  C_binary         pedeBinary0835.dat
+837  C_binary         pedeBinary0836.dat
+838  C_binary         pedeBinary0837.dat
+839  C_binary         pedeBinary0838.dat
+840  C_binary         pedeBinary0839.dat
+841  C_binary         pedeBinary0840.dat
+842  C_binary         pedeBinary0841.dat
+843  C_binary         pedeBinary0842.dat
+844  C_binary         pedeBinary0843.dat
+845  C_binary         pedeBinary0844.dat
+846  C_binary         pedeBinary0845.dat
+847  C_binary         pedeBinary0846.dat
+848  C_binary         pedeBinary0847.dat
+849  C_binary         pedeBinary0848.dat
+850  C_binary         pedeBinary0849.dat
+851  C_binary         pedeBinary0850.dat
+852  C_binary         pedeBinary0851.dat
+853  C_binary         pedeBinary0852.dat
+854  C_binary         pedeBinary0853.dat
+855  C_binary         pedeBinary0854.dat
+856  C_binary         pedeBinary0855.dat
+857  C_binary         pedeBinary0856.dat
+858  C_binary         pedeBinary0857.dat
+859  C_binary         pedeBinary0858.dat
+860  C_binary         pedeBinary0859.dat
+861  C_binary         pedeBinary0860.dat
+862  C_binary         pedeBinary0861.dat
+863  C_binary         pedeBinary0862.dat
+864  C_binary         pedeBinary0863.dat
+865  C_binary         pedeBinary0864.dat
+866  C_binary         pedeBinary0865.dat
+867  C_binary         pedeBinary0866.dat
+868  C_binary         pedeBinary0867.dat
+869  C_binary         pedeBinary0868.dat
+870  C_binary         pedeBinary0869.dat
+871  C_binary         pedeBinary0870.dat
+872  C_binary         pedeBinary0871.dat
+873  C_binary         pedeBinary0872.dat
+874  C_binary         pedeBinary0873.dat
+875  C_binary         pedeBinary0874.dat
+876  C_binary         pedeBinary0875.dat
+877  C_binary         pedeBinary0876.dat
+878  C_binary         pedeBinary0877.dat
+879  C_binary         pedeBinary0878.dat
+880  C_binary         pedeBinary0879.dat
+881  C_binary         pedeBinary0880.dat
+882  C_binary         pedeBinary0881.dat
+883  C_binary         pedeBinary0882.dat
+884  C_binary         pedeBinary0883.dat
+885  C_binary         pedeBinary0884.dat
+886  C_binary         pedeBinary0885.dat
+887  C_binary         pedeBinary0886.dat
+888  C_binary         pedeBinary0887.dat
+889  C_binary         pedeBinary0888.dat
+890  C_binary         pedeBinary0889.dat
+891  C_binary         pedeBinary0890.dat
+892  C_binary         pedeBinary0891.dat
+893  C_binary         pedeBinary0892.dat
+894  C_binary         pedeBinary0893.dat
+895  C_binary         pedeBinary0894.dat
+896  C_binary         pedeBinary0895.dat
+897  C_binary         pedeBinary0896.dat
+898  C_binary         pedeBinary0897.dat
+899  C_binary         pedeBinary0898.dat
+900  C_binary         pedeBinary0899.dat
+901  C_binary         pedeBinary0900.dat
+902  C_binary         pedeBinary0901.dat
+903  C_binary         pedeBinary0902.dat
+904  C_binary         pedeBinary0903.dat
+905  C_binary         pedeBinary0904.dat
+906  C_binary         pedeBinary0905.dat
+907  C_binary         pedeBinary0906.dat
+908  C_binary         pedeBinary0907.dat
+909  C_binary         pedeBinary0908.dat
+910  C_binary         pedeBinary0909.dat
+911  C_binary         pedeBinary0910.dat
+912  C_binary         pedeBinary0911.dat
+913  C_binary         pedeBinary0912.dat
+914  C_binary         pedeBinary0913.dat
+915  C_binary         pedeBinary0914.dat
+916  C_binary         pedeBinary0915.dat
+917  C_binary         pedeBinary0916.dat
+918  C_binary         pedeBinary0917.dat
+919  C_binary         pedeBinary0918.dat
+920  C_binary         pedeBinary0919.dat
+921  C_binary         pedeBinary0920.dat
+922  C_binary         pedeBinary0921.dat
+923  C_binary         pedeBinary0922.dat
+924  C_binary         pedeBinary0923.dat
+925  C_binary         pedeBinary0924.dat
+926  C_binary         pedeBinary0925.dat
+927  C_binary         pedeBinary0926.dat
+928  C_binary         pedeBinary0927.dat
+929  C_binary         pedeBinary0928.dat
+930  C_binary         pedeBinary0929.dat
+931  C_binary         pedeBinary0930.dat
+932  C_binary         pedeBinary0931.dat
+933  C_binary         pedeBinary0932.dat
+934  C_binary         pedeBinary0933.dat
+935  C_binary         pedeBinary0934.dat
+936  C_binary         pedeBinary0935.dat
+937  C_binary         pedeBinary0936.dat
+938  C_binary         pedeBinary0937.dat
+939  C_binary         pedeBinary0938.dat
+940  C_binary         pedeBinary0939.dat
+941  C_binary         pedeBinary0940.dat
+942  C_binary         pedeBinary0941.dat
+943  C_binary         pedeBinary0942.dat
+944  C_binary         pedeBinary0943.dat
+945  C_binary         pedeBinary0944.dat
+946  C_binary         pedeBinary0945.dat
+947  C_binary         pedeBinary0946.dat
+948  C_binary         pedeBinary0947.dat
+949  C_binary         pedeBinary0948.dat
+950  C_binary         pedeBinary0949.dat
+951  C_binary         pedeBinary0950.dat
+952  C_binary         pedeBinary0951.dat
+953  C_binary         pedeBinary0952.dat
+954  C_binary         pedeBinary0953.dat
+955  C_binary         pedeBinary0954.dat
+956  C_binary         pedeBinary0955.dat
+957  C_binary         pedeBinary0956.dat
+958  C_binary         pedeBinary0957.dat
+959  C_binary         pedeBinary0958.dat
+960  C_binary         pedeBinary0959.dat
+961  C_binary         pedeBinary0960.dat
+962  C_binary         pedeBinary0961.dat
+963  C_binary         pedeBinary0962.dat
+964  C_binary         pedeBinary0963.dat
+965  C_binary         pedeBinary0964.dat
+966  C_binary         pedeBinary0965.dat
+967  C_binary         pedeBinary0966.dat
+968  C_binary         pedeBinary0967.dat
+969  C_binary         pedeBinary0968.dat
+970  C_binary         pedeBinary0969.dat
+971  C_binary         pedeBinary0970.dat
+972  C_binary         pedeBinary0971.dat
+973  C_binary         pedeBinary0972.dat
+974  C_binary         pedeBinary0973.dat
+975  C_binary         pedeBinary0974.dat
+976  C_binary         pedeBinary0975.dat
+977  C_binary         pedeBinary0976.dat
+978  C_binary         pedeBinary0977.dat
+979  C_binary         pedeBinary0978.dat
+980  C_binary         pedeBinary0979.dat
+981  C_binary         pedeBinary0980.dat
+982  C_binary         pedeBinary0981.dat
+983  C_binary         pedeBinary0982.dat
+984  C_binary         pedeBinary0983.dat
+985  C_binary         pedeBinary0984.dat
+986  C_binary         pedeBinary0985.dat
+987  C_binary         pedeBinary0986.dat
+988  C_binary         pedeBinary0987.dat
+989  C_binary         pedeBinary0988.dat
+990  C_binary         pedeBinary0989.dat
+991  C_binary         pedeBinary0990.dat
+992  C_binary         pedeBinary0991.dat
+993  C_binary         pedeBinary0992.dat
+994  C_binary         pedeBinary0993.dat
+995  C_binary         pedeBinary0994.dat
+996  C_binary         pedeBinary0995.dat
+997  C_binary         pedeBinary0996.dat
+998  C_binary         pedeBinary0997.dat
+999  C_binary         pedeBinary0998.dat
+***  C_binary         pedeBinary0999.dat
+  
+ LOOP1: starting
+ LOOP1: reading data files
+ LOOP1:          36  is total number NTGB of labels/parameters
+ LOOP1:           0  is number of pre-sigmas
+ LOOP1:          36  is number NVGB of variable parameters
+ LOOP1:           6  is total number NTPGRP of label/parameter groups
+  
+     NREC =     24196 = number of records
+  MREQENF =       500 = required number of entries (eqns in binary files)
+  MREQENA =        10 = required number of entries (from accepted fits)
+ LOOP1: ending
+  
+  
+ LOOP2: starting
+ LOOP2: start event reading
+ LOOP2: event reading ended - end of data
+  
+     NTGB =        36 = total number of parameters
+                      (all parameters, appearing in binary files)
+     NVGB =        36 = number of variable parameters
+                      (appearing in fit matrix/vectors)
+     NAGB =        36 = number of all parameters
+                      (including Lagrange multiplier or reduced)
+   NTPGRP =         6 = total number of parameter groups
+   NVPGRP =         6 = number of variable parameter groups
+     NFGB =        36 = number of fit parameters
+     NOFF =       630 = max number of off-diagonal elements
+     NCGB =         0 = number of constraints
+    NAGBN =        24 = max number of global parameters in an event
+    NALCN =        47 = max number of local parameters in an event
+    NAEQN =        77 = max number of equations in an event
+   NCACHE =  25000000 = number of words for caching
+                      cache splitting   68.9 %   2.2 %  28.9 %
+  
+  
+ Solution method and matrix-storage mode:
+      METSOL = 1:  matrix inversion
+                   with           5  iterations
+      MATSTO = 1:  full symmetric matrix, (n*n+n)/2 elements
+ Convergence assumed, if expected dF <  0.8000    
+  
+    Cut values of Chi^2/Ndf and Chi2,
+    corresponding to 2 and 3 standard deviations
+    Ndf  Chi^2/Ndf(2)  Chi^2(2)     Chi^2/Ndf(3)  Chi^2(3)
+     1       4.000         4.0          9.000         9.0
+     2       3.090         6.2          5.915        11.8
+     3       2.675         8.0          4.718        14.2
+     4       2.429         9.7          4.063        16.3
+     5       2.263        11.3          3.641        18.2
+     6       2.141        12.8          3.344        20.1
+     7       2.048        14.3          3.121        21.8
+     8       1.974        15.8          2.947        23.6
+     9       1.912        17.2          2.806        25.3
+    10       1.861        18.6          2.690        26.9
+    12       1.779        21.3          2.508        30.1
+    14       1.716        24.0          2.371        33.2
+    16       1.666        26.7          2.263        36.2
+    18       1.625        29.2          2.176        39.2
+    20       1.590        31.8          2.104        42.1
+    25       1.523        38.1          1.967        49.2
+    30       1.474        44.2          1.868        56.0
+    35       1.428        50.0          1.757        61.5
+    40       1.399        56.0          1.702        68.1
+    45       1.375        61.9          1.658        74.6
+    50       1.355        67.7          1.621        81.1
+    55       1.338        73.6          1.589        87.4
+    60       1.323        79.4          1.562        93.7
+    65       1.310        85.1          1.538       100.0
+    70       1.298        90.9          1.517       106.2
+    75       1.287        96.6          1.498       112.3
+    80       1.278       102.2          1.481       118.5
+ LOOP2: ending
+  
+ Chi square cut equiv 3 st.dev applied ...
+  in  first iteration with factor   30.0000000    
+  in second iteration with factor   4.50000000    
+  (reduced by sqrt in next iterations)
+  
+ Solution algorithm: 
+ ========================================
+                         solution method:   matrix inversion
+            convergence limit at Delta F=   0.80E+00
+            maximum number of iterations=   5
+                        using pre-sigmas:   no
+                          regularization:   no
+    Chi square cut equiv 3 st.dev applied
+       ... in first iteration with factor   0.30E+02
+      ... in second iteration with factor   0.45E+01
+     (reduced by sqrt in next iterations)
+ Checking feasibility of parameters:
+    parameters are feasible  (i.e. satisfy constraints)
+  
+  === local fits have bordered band matrix structure ===
+    NBNDR =     22375 = number of records (upper/left border)
+    NBDRX =         1 = max border size
+    NBNDX =         4 = max band width
+ No rank defect of the symmetric matrix
+  
+ it fc   fcn_value dfcn_exp  slpr costh  iit st ls  step cutf rejects hhmmss FMS
+ -- -- ----------- --------  ---- -----  --- -- -- ----- ---- ------- ------ ---
+  0  1 0.79129E+06                                       30.0       2  00001 FMS
+  1  2 0.74321E+06 0.23E+05                0  0           4.5     248  00001 F  
+                                                                       00000   S
+  2  3 0.69575E+06 0.22E+02                0  0           2.1    1250  00001 F  
+                                                                       00000   S
+  3  4 0.58295E+06 0.13E+03 1.893 0.019    0  0 -1 1.000  1.0    5514  00001 F  
+     5 0.58431E+06          2.974               -1-1.120         5520  00001 F  
+  
+ PTLINE: line-search method based on slopes with sufficient slope-decrease
+ PTLDEF: slope ratio limit=  0.50000000000000000     
+ PTLDEF: maximum step =   10.000000000000000     
+ PTLDEF:           1  <= nr of calls <=          10
+  i      x              F(x)         F'(X)          minimum     F'(X)
+  0    0.000000 L     0.00000      -131.558        0.000000     ratio
+  1    1.000000      -56397.9      -249.071       -1.119512     1.893
+  2   -1.119512      -55716.8      -391.277        4.712295     2.974
+  3    4.712295 *R   -56860.3       2.46733        4.625544     0.019
+ PTLINE: INFO=1  convergence reached
+  
+     6 0.58203E+06          0.019                1 4.712         5535  00001 F  
+                                                                       00000   S
+  4  7 0.58140E+06 0.40E+03 0.553 0.014    0  0 -1 1.000  1.0    5540  00001 F  
+  
+ PTLINE: line-search method based on slopes with sufficient slope-decrease
+ PTLDEF: slope ratio limit=  0.50000000000000000     
+ PTLDEF: maximum step =   10.000000000000000     
+ PTLDEF:           3  <= nr of calls <=          10
+  i      x              F(x)         F'(X)          minimum     F'(X)
+  0    0.000000       0.00000      -399.870        0.000000     ratio
+  1    1.000000 L    -313.541      -221.219        2.238279     0.553
+  2    2.238279 *R   -431.564       35.0147        2.069067     0.088
+ PTLINE: INFO=1  convergence reached
+  
+     8 0.58116E+06          0.088                1 2.238         5551  00001 F  
+                                                                       00000   S
+  5  9 0.58111E+06 0.37E+02 0.328 0.007    0  0 -1 1.000  1.0    5549  00001 F  
+  
+ PTLINE: line-search method based on slopes with sufficient slope-decrease
+ PTLDEF: slope ratio limit=  0.50000000000000000     
+ PTLDEF: maximum step =   10.000000000000000     
+ PTLDEF:           3  <= nr of calls <=          10
+  i      x              F(x)         F'(X)          minimum     F'(X)
+  0    0.000000       0.00000      -37.2159        0.000000     ratio
+  1    1.000000      -24.6472      -12.2195        1.488849     0.328
+  2    1.488849 L*   -27.9026      -1.03332        1.534007     0.028
+ PTLINE: INFO=1  convergence reached
+  
+    10 0.58111E+06          0.028                1 1.489         5551  00001 F  
+  
+ Sum(Chi^2)/Sum(Ndf) =   581107.13886796974     
+                     / (      403526 -          36 )
+                     =   1.4402020839871366     
+  
+  
+ In total 2 +          10  loops through the data files
+ Times [in sec] for     text processing       0.033
+                                  LOOP1       0.512
+                                  LOOP2       0.396
+   func. value                                0.674 *  9.
+   func. value, global matrix, solution       1.040 *  1.
+                           new solution       0.000 *  4.
+
+ Total time =           8  seconds =           0  h           0  m           8  seconds
+ end                                            Tue Nov  2 12:18:57 2021
+  
+      Peak dynamic memory allocation:    0.100349 GB
+  
+ Data rejected in last iteration:   
+               0  (rank deficit/NaN)            0  (Ndf=0)              1  (huge)           5550  (large)
+  
+  
+             Explanation of iteration table
+             ==============================
+       it =  iteration number. Global parameters are improved for it > 0.
+             First function evaluation is called iteraton 0.
+       fc =  number of function evaluations.
+fcn_value =  value of 2 x Likelihood function (LF).
+             The final value is the chi^2 value of the fit and should
+             be about equal to the NDF (see below).
+ dfcn_exp =  expected reduction of the value of the Likelihood function (LF)
+     slpr =  ratio of the actual slope to inital slope.
+    costh =  cosine of angle between search direction and -gradient
+       ls =  line search info
+             < 0    recalculate function
+             = 0:   N or STP lt 0 or step not descending
+             = 1:   Linesearch convergence conditions reached
+             = 2:   interval of uncertainty at lower limit
+             = 3:   max nr of line search calls reached
+             = 4:   step at the lower bound
+             = 5:   step at the upper bound
+             = 6:   rounding error limitation
+     step =  the factor for the Newton step during the line search. Usually
+             a value of 1 gives a sufficient reduction of the LF. Oherwise
+             other step values are tried.
+     cutf =  cut factor. Local fits are rejected, if their chi^2 value
+             is larger than the 3-sigma chi^2 value times the cut factor.
+             A cut factor of 1 is used finally, but initially a larger
+             factor may be used. A value of 0.0 means no cut.
+  rejects =  total number of rejected local fits.
+   hmmsec =  the time in hours (h), minutes (mm) and seconds.
+      FMS =  calculation of Function value, Matrix, Solution.
+  

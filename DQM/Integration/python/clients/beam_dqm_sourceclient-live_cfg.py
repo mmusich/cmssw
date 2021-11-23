@@ -42,8 +42,10 @@ if 'unitTest=True' in sys.argv:
 #---------------
 # Input sources
 if unitTest:
-    process.load("DQM.Integration.config.unittestinputsource_cfi")
-    from DQM.Integration.config.unittestinputsource_cfi import options
+    #process.load("DQM.Integration.config.unittestinputsource_cfi")
+    #from DQM.Integration.config.unittestinputsource_cfi import options
+    process.load("DQM.Integration.config.fileinputsource_cfi")
+    from DQM.Integration.config.fileinputsource_cfi import options
 elif live:
     process.load("DQM.Integration.config.inputsource_cfi")
     from DQM.Integration.config.inputsource_cfi import options

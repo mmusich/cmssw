@@ -88,6 +88,9 @@ void CMS_lumi(TPad* pad, int iPeriod, int iPosX) {
   } else if (iPeriod == 4) {
     lumiText += lumi_13TeV;
     lumiText += " (#sqrt{s} = 13 TeV)";
+  } else if (iPeriod == 5) {
+    lumiText += lumi_13TeV;
+    lumiText += " (#sqrt{s} = 0.9 TeV)";
   } else if (iPeriod == 7) {
     if (outOfFrame)
       lumiText += "#scale[0.85]{";
