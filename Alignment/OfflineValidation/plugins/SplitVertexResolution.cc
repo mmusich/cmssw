@@ -297,14 +297,16 @@ SplitVertexResolution::SplitVertexResolution(const edm::ParameterSet& iConfig)
   mypT_bins_ = PVValHelper::makeLogBins<float, nPtBins_>(sumpTStartScale_, sumpTEndScale_);
 
   // IMPORTANT
-  // first argument is start, second argument is the range so it's [-0.5;nTracksBins_-0.5]
+  // The first argument is n. bins, second argument is the start, third argument is the range
+  // so there'll be nTrackBins_+1 bins generated in the range [-0.5; nTracksBins_-0.5]
   std::vector<float> vect = PVValHelper::generateBins(nTrackBins_ + 1, -0.5, nTrackBins_);
   std::copy(vect.begin(), vect.begin() + nTrackBins_ + 1, myNTrack_bins_.begin());
 
   vect.clear();
 
   // IMPORTANT
-  // first argument is start, second argument is the range so it's [-0.5;nVtxBins_-0.5]
+  // The first argument is n. bins, second argument is the start, third argument is the range
+  // so there'll be nVtxBins_+1 bins generated in the range [-0.5; nVtxBins_-0.5]
   vect = PVValHelper::generateBins(nVtxBins_ + 1, -0.5, nVtxBins_);
   std::copy(vect.begin(), vect.begin() + nVtxBins_ + 1, myNVtx_bins_.begin());
 

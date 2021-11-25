@@ -337,15 +337,15 @@ void FitPVResolution(TString namesandlabels, TString theDate = "", bool isStrict
   // max vertices
   const int max_n_vertices = std::min(60, VTXBINS);  // take the minimum to avoid overflow
   std::vector<float> myNVtx_bins_;
-  for (float i = 0; i <= max_n_vertices; i++) {
-    myNVtx_bins_.push_back(i - 0.5f);
+  for (int i = 0; i <= max_n_vertices; i++) {
+    myNVtx_bins_.push_back(i * 1.f - 0.5f);
   }
 
   // max track
   const int max_n_tracks = std::min(120, TRACKBINS);  // take the minimum to avoid overflow
   std::vector<float> myNTrack_bins_;
-  for (float i = 0; i <= max_n_tracks; i++) {
-    myNTrack_bins_.push_back(i - 0.5f);
+  for (int i = 0; i <= max_n_tracks; i++) {
+    myNTrack_bins_.push_back(i * 1.f - 0.5f);
   }
 
   // max sumPt
