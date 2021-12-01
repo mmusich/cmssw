@@ -22,6 +22,8 @@
 
 // user include files
 #include "Alignment/OfflineValidation/interface/TrackerValidationVariables.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -52,6 +54,9 @@ namespace running {
   struct Estimators {
     bool isX;
     bool isY;
+    float rDirection;
+    float zDirection;
+    float rOrZDirection;
     int hitCount;
     float runningMeanOfRes_;
     float runningVarOfRes_;
@@ -64,6 +69,7 @@ namespace running {
       this->hitCount = 0;
       this->runningMeanOfRes_ = this->runningVarOfRes_ = 0;
       this->runningNormMeanOfRes_ = this->runningNormVarOfRes_ = 0;
+      this->rDirection = this->zDirection = this->rOrZDirection = 0.;
     }
   };
 
@@ -75,7 +81,7 @@ namespace running {
 //
 
 using reco::TrackCollection;
-class DMRChecker : public edm::one::EDAnalyzer<edm::one::SharedResources> {
+class DMRChecker : public edm::one::EDAnalyzer<edm::one::SharedResources, edm::one::WatchRuns> {
 public:
   explicit DMRChecker(const edm::ParameterSet&);
   ~DMRChecker() override;
@@ -84,11 +90,18 @@ public:
 
 private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void beginRun(edm::Run const&, edm::EventSetup const&) override;
+  void endRun(edm::Run const&, edm::EventSetup const&) override;
+
   void updateOnlineMomenta(running::estimatorMap& myDetails,
                            const uint32_t& theID,
                            const float& the_data,
-                           const float& the_pull,
-                           const running::dir& theDir);
+                           const float& the_pull);
+
+  void setOrientations(running::estimatorMap& myDetails,
+                       const uint32_t& theID,
+                       const running::dir& theDir,
+                       const TrackerGeometry& tkgeo);
 
   std::pair<std::string, int32_t> findSubdetAndLayer(uint32_t ModuleID, const TrackerTopology* tTopo);
 
@@ -111,7 +124,13 @@ private:
   TrackerValidationVariables avalidator_;
   bool applyVertexCut_;
 
-  const edm::EDGetTokenT<reco::VertexCollection> offlinePrimaryVerticesToken_;
+  // event tokens
+  const edm::EDGetTokenT<reco::VertexCollection> offlinePVToken_;
+
+  // event setup tokens
+  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> trackerTopologyRunToken_;
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> trackerGeometryToken_;
+  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> trackerTopologyEventToken_;
 
   // Pixel
   running::estimatorMap resDetailsBPixX_;
@@ -134,12 +153,49 @@ private:
 //
 DMRChecker::DMRChecker(const edm::ParameterSet& iConfig)
     : avalidator_(iConfig, consumesCollector()),
-      offlinePrimaryVerticesToken_(
-          consumes<reco::VertexCollection>(iConfig.getParameter<std::string>("VertexCollection"))) {
+      offlinePVToken_(consumes<reco::VertexCollection>(iConfig.getParameter<std::string>("VertexCollection"))),
+      trackerTopologyRunToken_{esConsumes<TrackerTopology, TrackerTopologyRcd, edm::Transition::BeginRun>()},
+      trackerGeometryToken_{esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()},
+      trackerTopologyEventToken_{esConsumes<TrackerTopology, TrackerTopologyRcd>()} {
   applyVertexCut_ = iConfig.getUntrackedParameter<bool>("VertexCut", true);
 }
 
 DMRChecker::~DMRChecker() = default;
+
+void DMRChecker::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {}  //endRun
+
+void DMRChecker::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
+  const TrackerGeometry& TG = iSetup.getData(trackerGeometryToken_);
+  // Collect list of modules from Tracker Geometry
+  auto ids = TG.detIds();
+  for (DetId id : ids) {
+    auto ModuleID = id.rawId();
+
+    switch (id.subdetId()) {
+      case PixelSubdetector::PixelBarrel:
+        this->setOrientations(resDetailsBPixX_, ModuleID, running::X, TG);
+        this->setOrientations(resDetailsBPixY_, ModuleID, running::Y, TG);
+        break;
+      case PixelSubdetector::PixelEndcap:
+        this->setOrientations(resDetailsFPixX_, ModuleID, running::X, TG);
+        this->setOrientations(resDetailsFPixY_, ModuleID, running::Y, TG);
+        break;
+      case StripSubdetector::TIB:
+        this->setOrientations(resDetailsTIB_, ModuleID, running::X, TG);
+        break;
+      case StripSubdetector::TOB:
+        this->setOrientations(resDetailsTOB_, ModuleID, running::X, TG);
+        break;
+      case StripSubdetector::TID:
+        this->setOrientations(resDetailsTID_, ModuleID, running::X, TG);
+        break;
+      case StripSubdetector::TEC:
+        this->setOrientations(resDetailsTEC_, ModuleID, running::X, TG);
+      default:
+        throw cms::Exception("Inconsistent Data") << "Unknown Tracker subdetector: " << id.subdetId();
+    }
+  }
+}  //beginRun
 
 //
 // member functions
@@ -150,7 +206,7 @@ void DMRChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   edm::Handle<reco::VertexCollection> vertices;
   if (applyVertexCut_) {
-    iEvent.getByToken(offlinePrimaryVerticesToken_, vertices);
+    iEvent.getByToken(offlinePVToken_, vertices);
     if (!vertices.isValid() || vertices->empty())
       return;
   }
@@ -183,22 +239,22 @@ void DMRChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
         const auto& pullY = it.resYprime / it.resYprimeErr;
 
         if (subid == PixelSubdetector::PixelBarrel) {
-          this->updateOnlineMomenta(resDetailsBPixX_, id, resX, pullX, running::X);
-          this->updateOnlineMomenta(resDetailsBPixY_, id, resY, pullY, running::Y);
+          this->updateOnlineMomenta(resDetailsBPixX_, RawId, resX, pullX);
+          this->updateOnlineMomenta(resDetailsBPixY_, RawId, resY, pullY);
         } else if (subid == PixelSubdetector::PixelEndcap) {
-          this->updateOnlineMomenta(resDetailsFPixX_, id, resX, pullX, running::X);
-          this->updateOnlineMomenta(resDetailsFPixY_, id, resY, pullY, running::Y);
+          this->updateOnlineMomenta(resDetailsFPixX_, RawId, resX, pullX);
+          this->updateOnlineMomenta(resDetailsFPixY_, RawId, resY, pullY);
         }     // if FPix
       }       // if Pixel
       else {  // these are Strips
         if (subid == StripSubdetector::TIB) {
-          this->updateOnlineMomenta(resDetailsTIB_, id, resX, pullX, running::X);
+          this->updateOnlineMomenta(resDetailsTIB_, RawId, resX, pullX);
         } else if (subid == StripSubdetector::TOB) {
-          this->updateOnlineMomenta(resDetailsTOB_, id, resX, pullX, running::X);
+          this->updateOnlineMomenta(resDetailsTOB_, RawId, resX, pullX);
         } else if (subid == StripSubdetector::TID) {
-          this->updateOnlineMomenta(resDetailsTID_, id, resX, pullX, running::X);
+          this->updateOnlineMomenta(resDetailsTID_, RawId, resX, pullX);
         } else if (subid == StripSubdetector::TEC) {
-          this->updateOnlineMomenta(resDetailsTEC_, id, resX, pullX, running::X);
+          this->updateOnlineMomenta(resDetailsTEC_, RawId, resX, pullX);
         }
       }
     }  // loop on hits
@@ -249,6 +305,75 @@ std::pair<std::string, int32_t> DMRChecker::findSubdetAndLayer(uint32_t ModuleID
   return std::make_pair(subdet, layer);
 }
 
+void DMRChecker::setOrientations(running::estimatorMap& myDetails,
+                                 const uint32_t& theID,
+                                 const running::dir& theDir,
+                                 const TrackerGeometry& tkgeom) {
+  // if the detid has never occcurred yet, set the local orientations
+  if (myDetails.find(theID) == myDetails.end()) {
+    switch (theDir) {
+      case running::X:
+        myDetails[theID].isX = true;
+        break;
+      case running::Y:
+        myDetails[theID].isY = false;
+        break;
+      default:
+        edm::LogError("DMRChecker") << __FUNCTION;
+        __ << " : unrecognized orientation " << theDir;
+    }
+
+    const auto& id = DetId(theID);
+    uint subDetId = id.subdetId();
+
+    //variables concerning the tracker geometry
+    const Surface::PositionType& gPModule = tkgeom.idToDet(theID)->position();
+    const Surface& surface = tkgeom.idToDet(theID)->surface();
+    //global Orientation of local coordinate system of dets/detUnits
+    LocalPoint lUDirection(1., 0., 0.), lVDirection(0., 1., 0.), lWDirection(0., 0., 1.);
+    GlobalPoint gUDirection = surface.toGlobal(lUDirection), gVDirection = surface.toGlobal(lVDirection),
+                gWDirection = surface.toGlobal(lWDirection);
+    double dR(999.), dZ(999.);
+
+    // assign the rOrZDirection
+    if (subDetId == PixelSubdetector::PixelBarrel || subDetId == StripSubdetector::TIB ||
+        subDetId == StripSubdetector::TOB) {
+      dR = gWDirection.perp() - gPModule.perp();
+      dZ = gVDirection.z() - gPModule.z();
+      if (dZ >= 0.)
+        myDetails[theID].rOrZDirection = 1;
+      else
+        myDetails[theID].rOrZDirection = -1;
+    } else if (subDetId == PixelSubdetector::PixelEndcap) {
+      dR = gUDirection.perp() - gPModule.perp();
+      dZ = gWDirection.z() - gPModule.z();
+      if (dR >= 0.)
+        myDetails[theID].rOrZDirection = 1;
+      else
+        myDetails[theID].rOrZDirection = -1;
+    } else if (subDetId == StripSubdetector::TID || subDetId == StripSubdetector::TEC) {
+      dR = gVDirection.perp() - gPModule.perp();
+      dZ = gWDirection.z() - gPModule.z();
+      if (dR >= 0.)
+        myDetails[theID].rOrZDirection = 1;
+      else
+        myDetails[theID].rOrZDirection = -1;
+    }
+
+    // assingn the r-direction (barrel)
+    if (dR >= 0.)
+      myDetails[theID].rDirection = 1;
+    else
+      myDetails[theID].rDirection = -1;
+
+    // assign the z-direction (endcaps)
+    if (dZ >= 0.)
+      myDetails[theID].zDirection = 1;
+    else
+      myDetails[theID].zDirection = -1;
+  }
+}
+
 //*************************************************************
 // Implementation of the online variance algorithm
 // as in https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
@@ -256,18 +381,11 @@ std::pair<std::string, int32_t> DMRChecker::findSubdetAndLayer(uint32_t ModuleID
 void DMRChecker::updateOnlineMomenta(running::estimatorMap& myDetails,
                                      const uint32_t& theID,
                                      const float& the_data,
-                                     const float& the_pull,
-                                     const running::dir& theDir) {
-  // if the detid has never occcurred yet, set the local orientations
-  if (myDetails.find(theID) == myDetails.end()) {
-    if (theDir == running::X)
-      myDetails[theID].isX = true;
-    if (theDir == running::Y)
-      myDetails[theID].isY = false;
-  }
-
+                                     const float& the_pull) {
+  // increase the hit counter
   myDetails[theID].hitCount += 1;
 
+  // update the running mean
   float delta = 0;
   float n_delta = 0;
 
