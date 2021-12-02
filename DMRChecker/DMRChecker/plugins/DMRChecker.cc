@@ -19,6 +19,7 @@
 // system include files
 #include <memory>
 #include <vector>
+#include <fmt/printf.h>
 
 // user include files
 #include "Alignment/OfflineValidation/interface/TrackerValidationVariables.h"
@@ -38,6 +39,9 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/Utils/interface/TFileDirectory.h"
 
 // ROOT includes
 #include "TH1F.h"
@@ -89,10 +93,13 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
+  // framework methods
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void beginRun(edm::Run const&, edm::EventSetup const&) override;
   void endRun(edm::Run const&, edm::EventSetup const&) override;
+  void endJob() override;
 
+  // user defined methods
   void updateOnlineMomenta(running::estimatorMap& myDetails,
                            const uint32_t& theID,
                            const float& the_data,
@@ -102,6 +109,13 @@ private:
                        const uint32_t& theID,
                        const running::dir& theDir,
                        const TrackerGeometry& tkgeo);
+
+  std::array<TH1D*, 2> bookSplitDMRHistograms(TFileDirectory dir,
+                                              std::string subdet,
+                                              std::string vartype,
+                                              bool isBarrel);
+
+  void fillDMRs(const running::estimatorMap& myDetails, TH1D* DMR, TH1D* DRnR, std::array<TH1D*, 2> DMRSplit);
 
   std::pair<std::string, int32_t> findSubdetAndLayer(uint32_t ModuleID, const TrackerTopology* tTopo);
 
@@ -121,6 +135,7 @@ private:
   typedef std::map<std::pair<std::string, int32_t>, HistoXY> HistoSet;
 
   // ----------member data ---------------------------
+  edm::Service<TFileService> fs;
   TrackerValidationVariables avalidator_;
   bool applyVertexCut_;
 
@@ -146,6 +161,34 @@ private:
 
   // by layer residuals
   HistoSet m_SubdetLayerResiduals;
+
+  // Pixel
+  TH1D* DMRBPixX_;
+  TH1D* DMRBPixY_;
+  TH1D* DMRFPixX_;
+  TH1D* DMRFPixY_;
+  TH1D* DRnRBPixX_;
+  TH1D* DRnRBPixY_;
+  TH1D* DRnRFPixX_;
+  TH1D* DRnRFPixY_;
+
+  // Strips
+  TH1D* DMRTIB_;
+  TH1D* DMRTOB_;
+  TH1D* DMRTID_;
+  TH1D* DMRTEC_;
+  TH1D* DRnRTIB_;
+  TH1D* DRnRTOB_;
+  TH1D* DRnRTID_;
+  TH1D* DRnRTEC_;
+
+  // Split DMRs
+  std::array<TH1D*, 2> DMRBPixXSplit_;
+  std::array<TH1D*, 2> DMRBPixYSplit_;
+  std::array<TH1D*, 2> DMRFPixXSplit_;
+  std::array<TH1D*, 2> DMRFPixYSplit_;
+  std::array<TH1D*, 2> DMRTIBSplit_;
+  std::array<TH1D*, 2> DMRTOBSplit_;
 };
 
 //
@@ -158,6 +201,7 @@ DMRChecker::DMRChecker(const edm::ParameterSet& iConfig)
       trackerGeometryToken_{esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()},
       trackerTopologyEventToken_{esConsumes<TrackerTopology, TrackerTopologyRcd>()} {
   applyVertexCut_ = iConfig.getUntrackedParameter<bool>("VertexCut", true);
+  usesResource(TFileService::kSharedResource);  // for thread-efficient usage of TFileService
 }
 
 DMRChecker::~DMRChecker() = default;
@@ -191,6 +235,7 @@ void DMRChecker::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
         break;
       case StripSubdetector::TEC:
         this->setOrientations(resDetailsTEC_, ModuleID, running::X, TG);
+        break;
       default:
         throw cms::Exception("Inconsistent Data") << "Unknown Tracker subdetector: " << id.subdetId();
     }
@@ -261,6 +306,47 @@ void DMRChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   }    // loop on tracks
 }
 
+void DMRChecker::endJob() {
+  // DMRs
+  TFileDirectory DMeanR = fs->mkdir("DMRs");
+  DMRBPixX_ = DMeanR.make<TH1D>("DMRBPix-X", "DMR of BPix-X;mean of X-residuals;modules", 100., -200, 200);
+  DMRBPixY_ = DMeanR.make<TH1D>("DMRBPix-Y", "DMR of BPix-Y;mean of Y-residuals;modules", 100., -200, 200);
+
+  DMRFPixX_ = DMeanR.make<TH1D>("DMRFPix-X", "DMR of FPix-X;mean of X-residuals;modules", 100., -200, 200);
+  DMRFPixY_ = DMeanR.make<TH1D>("DMRFPix-Y", "DMR of FPix-Y;mean of Y-residuals;modules", 100., -200, 200);
+
+  DMRTIB_ = DMeanR.make<TH1D>("DMRTIB", "DMR of TIB;mean of X-residuals;modules", 100., -200, 200);
+  DMRTOB_ = DMeanR.make<TH1D>("DMRTOB", "DMR of TOB;mean of X-residuals;modules", 100., -200, 200);
+
+  DMRTID_ = DMeanR.make<TH1D>("DMRTID", "DMR of TID;mean of X-residuals;modules", 100., -200, 200);
+  DMRTEC_ = DMeanR.make<TH1D>("DMRTEC", "DMR of TEC;mean of X-residuals;modules", 100., -200, 200);
+
+  TFileDirectory DMeanRSplit = fs->mkdir("SplitDMRs");
+  DMRBPixXSplit_ = bookSplitDMRHistograms(DMeanRSplit, "BPix", "X", true);
+  DMRBPixYSplit_ = bookSplitDMRHistograms(DMeanRSplit, "BPix", "Y", true);
+
+  DMRFPixXSplit_ = bookSplitDMRHistograms(DMeanRSplit, "FPix", "X", false);
+  DMRFPixYSplit_ = bookSplitDMRHistograms(DMeanRSplit, "FPix", "Y", false);
+
+  DMRTIBSplit_ = bookSplitDMRHistograms(DMeanRSplit, "TIB", "X", true);
+  DMRTOBSplit_ = bookSplitDMRHistograms(DMeanRSplit, "TOB", "X", true);
+
+  // DRnRs
+  TFileDirectory DRnRs = fs->mkdir("DRnRs");
+
+  DRnRBPixX_ = DRnRs.make<TH1D>("DRnRBPix-X", "DRnR of BPix-X;rms of normalized X-residuals;modules", 100., 0., 3.);
+  DRnRBPixY_ = DRnRs.make<TH1D>("DRnRBPix-Y", "DRnR of BPix-Y;rms of normalized Y-residuals;modules", 100., 0., 3.);
+
+  DRnRFPixX_ = DRnRs.make<TH1D>("DRnRFPix-X", "DRnR of FPix-X;rms of normalized X-residuals;modules", 100., 0., 3.);
+  DRnRFPixY_ = DRnRs.make<TH1D>("DRnRFPix-Y", "DRnR of FPix-Y;rms of normalized Y-residuals;modules", 100., 0., 3.);
+
+  DRnRTIB_ = DRnRs.make<TH1D>("DRnRTIB", "DRnR of TIB;rms of normalized X-residuals;modules", 100., 0., 3.);
+  DRnRTOB_ = DRnRs.make<TH1D>("DRnRTOB", "DRnR of TOB;rms of normalized Y-residuals;modules", 100., 0., 3.);
+
+  DRnRTID_ = DRnRs.make<TH1D>("DRnRTID", "DRnR of TID;rms of normalized X-residuals;modules", 100., 0., 3.);
+  DRnRTEC_ = DRnRs.make<TH1D>("DRnRTEC", "DRnR of TEC;rms of normalized Y-residuals;modules", 100., 0., 3.);
+}
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void DMRChecker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
@@ -319,8 +405,7 @@ void DMRChecker::setOrientations(running::estimatorMap& myDetails,
         myDetails[theID].isY = false;
         break;
       default:
-        edm::LogError("DMRChecker") << __FUNCTION;
-        __ << " : unrecognized orientation " << theDir;
+        edm::LogError("DMRChecker") << __FUNCTION__ << " : unrecognized orientation " << theDir;
     }
 
     const auto& id = DetId(theID);
@@ -404,6 +489,76 @@ void DMRChecker::updateOnlineMomenta(running::estimatorMap& myDetails,
 
   myDetails[theID].runningVarOfRes_ += delta * delta2;
   myDetails[theID].runningNormVarOfRes_ += n_delta * n_delta2;
+}
+
+//*************************************************************
+// Generic booker of split DMRs
+//*************************************************************
+std::array<TH1D*, 2> DMRChecker::bookSplitDMRHistograms(TFileDirectory dir,
+                                                        std::string subdet,
+                                                        std::string vartype,
+                                                        bool isBarrel) {
+  TH1F::SetDefaultSumw2(kTRUE);
+
+  std::array<TH1D*, 2> out;
+  std::array<std::string, 2> sign_name = {{"plus", "minus"}};
+  std::array<std::string, 2> sign = {{">0", "<0"}};
+  for (unsigned int i = 0; i < 2; i++) {
+    const char* name_;
+    const char* title_;
+    const char* axisTitle_;
+
+    if (isBarrel) {
+      name_ = Form("DMR%s_%s_rDir%s", subdet.c_str(), vartype.c_str(), sign_name[i].c_str());
+      title_ = Form("Split DMR of %s-%s (rDir%s)", subdet.c_str(), vartype.c_str(), sign[i].c_str());
+      axisTitle_ = Form("mean of %s-residuals (rDir%s);modules", vartype.c_str(), sign[i].c_str());
+    } else {
+      name_ = Form("DMR%s_%s_zDir%s", subdet.c_str(), vartype.c_str(), sign_name[i].c_str());
+      title_ = Form("Split DMR of %s-%s (zDir%s)", subdet.c_str(), vartype.c_str(), sign[i].c_str());
+      axisTitle_ = Form("mean of %s-residuals (zDir%s);modules", vartype.c_str(), sign[i].c_str());
+    }
+
+    out[i] = dir.make<TH1D>(name_, fmt::sprintf("%s;%s", title_, axisTitle_).c_str(), 100., -200, 200);
+  }
+  return out;
+}
+
+//*************************************************************
+// Fill the histograms using the running::estimatorMap
+//**************************************************************
+void DMRChecker::fillDMRs(const running::estimatorMap& myDetails, TH1D* DMR, TH1D* DRnR, std::array<TH1D*, 2> DMRSplit) {
+  // protections
+  if (!DMR) {
+    edm::LogWarning("DMRChecker") << "DMR histogram not available! Skipping";
+    return;
+  }
+  if (!DRnR) {
+    edm::LogWarning("DMRChecker") << "DRnR histogram not available! Skipping";
+    return;
+  }
+  if (!DMRSplit[0] || !DMRSplit[1]) {
+    edm::LogWarning("DMRChecker") << "Splot DMRs histograms not available! Skipping";
+    return;
+  }
+
+  for (const auto& element : myDetails) {
+    // DMR
+    DMR->Fill(element.second.runningMeanOfRes_);
+
+    // split DMR
+    if (element.second.rOrZDirection > 0) {
+      DMRSplit[0]->Fill(element.second.runningMeanOfRes_);
+    } else {
+      DMRSplit[1]->Fill(element.second.runningMeanOfRes_);
+    }
+
+    // DRnR
+    if (element.second.hitCount < 2) {
+      DRnR->Fill(-1);
+    } else {
+      DRnR->Fill(sqrt(element.second.runningNormVarOfRes_ / (element.second.hitCount - 1)));
+    }
+  }
 }
 
 //define this as a plug-in
