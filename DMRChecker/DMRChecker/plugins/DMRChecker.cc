@@ -189,6 +189,8 @@ private:
   std::array<TH1D*, 2> DMRFPixYSplit_;
   std::array<TH1D*, 2> DMRTIBSplit_;
   std::array<TH1D*, 2> DMRTOBSplit_;
+  std::array<TH1D*, 2> DMRTIDSplit_;
+  std::array<TH1D*, 2> DMRTECSplit_;
 };
 
 //
@@ -331,6 +333,9 @@ void DMRChecker::endJob() {
   DMRTIBSplit_ = bookSplitDMRHistograms(DMeanRSplit, "TIB", "X", true);
   DMRTOBSplit_ = bookSplitDMRHistograms(DMeanRSplit, "TOB", "X", true);
 
+  DMRTIDSplit_ = bookSplitDMRHistograms(DMeanRSplit, "TID", "X", false);
+  DMRTECSplit_ = bookSplitDMRHistograms(DMeanRSplit, "TEC", "X", false);
+
   // DRnRs
   TFileDirectory DRnRs = fs->mkdir("DRnRs");
 
@@ -345,6 +350,19 @@ void DMRChecker::endJob() {
 
   DRnRTID_ = DRnRs.make<TH1D>("DRnRTID", "DRnR of TID;rms of normalized X-residuals;modules", 100., 0., 3.);
   DRnRTEC_ = DRnRs.make<TH1D>("DRnRTEC", "DRnR of TEC;rms of normalized Y-residuals;modules", 100., 0., 3.);
+
+  // fill the distributions
+  this->fillDMRs(resDetailsBPixX_, DMRBPixX_, DRnRBPixX_, DMRBPixXSplit_);
+  this->fillDMRs(resDetailsBPixY_, DMRBPixY_, DRnRBPixY_, DMRBPixYSplit_);
+
+  this->fillDMRs(resDetailsFPixX_, DMRFPixX_, DRnRFPixX_, DMRFPixXSplit_);
+  this->fillDMRs(resDetailsFPixY_, DMRFPixY_, DRnRFPixY_, DMRFPixYSplit_);
+
+  this->fillDMRs(resDetailsTIB_, DMRTIB_, DRnRTIB_, DMRTIBSplit_);
+  this->fillDMRs(resDetailsTOB_, DMRTOB_, DRnRTOB_, DMRTOBSplit_);
+
+  this->fillDMRs(resDetailsTID_, DMRTID_, DRnRTID_, DMRTIDSplit_);
+  this->fillDMRs(resDetailsTEC_, DMRTEC_, DRnRTEC_, DMRTECSplit_);
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
