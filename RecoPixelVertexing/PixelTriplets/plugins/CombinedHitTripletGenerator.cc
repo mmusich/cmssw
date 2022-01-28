@@ -16,12 +16,13 @@ CombinedHitTripletGenerator::CombinedHitTripletGenerator(const edm::ParameterSet
   theGenerator->init(std::make_unique<HitPairGeneratorFromLayerPair>(iC, 0, 1, &theLayerCache), &theLayerCache);
 }
 
-CombinedHitTripletGenerator::~CombinedHitTripletGenerator() {}
+CombinedHitTripletGenerator::~CombinedHitTripletGenerator() = default;
 
 void CombinedHitTripletGenerator::hitTriplets(const TrackingRegion& region,
                                               OrderedHitTriplets& result,
                                               const edm::Event& ev,
-                                              const edm::EventSetup& es) {
+                                              const edm::EventSetup& es,
+                                              edm::ConsumesCollector& iC) {
   edm::Handle<SeedingLayerSetsHits> hlayers;
   ev.getByToken(theSeedingLayerToken, hlayers);
   const SeedingLayerSetsHits& layers = *hlayers;
@@ -32,7 +33,7 @@ void CombinedHitTripletGenerator::hitTriplets(const TrackingRegion& region,
 
   std::vector<LayerTriplets::LayerSetAndLayers> trilayers = LayerTriplets::layers(layers);
   for (const auto& setAndLayers : trilayers) {
-    theGenerator->hitTriplets(region, result, ev, es, setAndLayers.first, setAndLayers.second);
+    theGenerator->hitTriplets(region, result, ev, es, iC, setAndLayers.first, setAndLayers.second);
   }
   theLayerCache.clear();
 }

@@ -7,8 +7,8 @@
 
 #include "RecoTracker/TkTrackingRegions/interface/OrderedHitsGenerator.h"
 #include "RecoPixelVertexing/PixelTriplets/interface/OrderedHitTriplets.h"
-
 #include "FWCore/Utilities/interface/RunningAverage.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 class TrackingRegion;
 namespace edm {
@@ -24,7 +24,10 @@ public:
 
   ~HitTripletGenerator() override {}
 
-  const OrderedHitTriplets& run(const TrackingRegion& region, const edm::Event& ev, const edm::EventSetup& es) final;
+  const OrderedHitTriplets& run(const TrackingRegion& region,
+                                const edm::Event& ev,
+                                const edm::EventSetup& es,
+                                edm::ConsumesCollector& iC) final;
 
   // temporary interface, for bckwd compatibility
   virtual void hitTriplets(const TrackingRegion& reg, OrderedHitTriplets& prs, const edm::EventSetup& es) {}
@@ -32,7 +35,8 @@ public:
   virtual void hitTriplets(const TrackingRegion& reg,
                            OrderedHitTriplets& prs,
                            const edm::Event& ev,
-                           const edm::EventSetup& es) = 0;
+                           const edm::EventSetup& es,
+                           edm::ConsumesCollector& iC) = 0;
 
   void clear() final;
 

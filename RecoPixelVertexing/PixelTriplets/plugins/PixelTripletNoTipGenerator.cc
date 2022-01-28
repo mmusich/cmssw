@@ -41,6 +41,7 @@ void PixelTripletNoTipGenerator::hitTriplets(const TrackingRegion& region,
                                              OrderedHitTriplets& result,
                                              const edm::Event& ev,
                                              const edm::EventSetup& es,
+                                             edm::ConsumesCollector& iC,
                                              const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
                                              const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) {
   //

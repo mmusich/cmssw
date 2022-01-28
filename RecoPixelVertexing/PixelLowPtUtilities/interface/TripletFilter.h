@@ -1,8 +1,11 @@
 #ifndef _TripletFilter_h_
 #define _TripletFilter_h_
 
-#include "DataFormats/GeometryVector/interface/LocalVector.h"
 #include "DataFormats/GeometryVector/interface/GlobalVector.h"
+#include "DataFormats/GeometryVector/interface/LocalVector.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "RecoPixelVertexing/PixelLowPtUtilities/interface/ClusterShapeHitFilter.h"
+#include "RecoTracker/Record/interface/CkfComponentsRecord.h"
 
 #include <vector>
 
@@ -16,7 +19,7 @@ class SiPixelClusterShapeCache;
 
 class TripletFilter {
 public:
-  TripletFilter(const edm::EventSetup& es);
+  TripletFilter(const edm::EventSetup& es, edm::ConsumesCollector& iC);
   ~TripletFilter();
   bool checkTrack(const std::vector<const TrackingRecHit*>& recHits,
                   const std::vector<LocalVector>& localDirs,
@@ -28,6 +31,7 @@ public:
                   const SiPixelClusterShapeCache& clusterShapeCache);
 
 private:
+  edm::ESGetToken<ClusterShapeHitFilter, CkfComponentsRecord> clusterShapeToken;
   const ClusterShapeHitFilter* theFilter;
 };
 

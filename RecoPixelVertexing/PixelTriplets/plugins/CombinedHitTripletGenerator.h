@@ -40,7 +40,8 @@ public:
   void hitTriplets(const TrackingRegion& reg,
                    OrderedHitTriplets& triplets,
                    const edm::Event& ev,
-                   const edm::EventSetup& es) override;
+                   const edm::EventSetup& es,
+                   edm::ConsumesCollector& iC) override;
 
 private:
   edm::EDGetTokenT<SeedingLayerSetsHits> theSeedingLayerToken;

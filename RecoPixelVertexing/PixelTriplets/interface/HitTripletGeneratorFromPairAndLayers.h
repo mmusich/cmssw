@@ -7,6 +7,7 @@
     provided Layers
  */
 
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "RecoPixelVertexing/PixelTriplets/interface/OrderedHitTriplets.h"
 #include <vector>
 #include "TrackingTools/TransientTrackingRecHit/interface/SeedingLayerSetsHits.h"
@@ -40,6 +41,7 @@ public:
                            OrderedHitTriplets& trs,
                            const edm::Event& ev,
                            const edm::EventSetup& es,
+                           edm::ConsumesCollector& iC,
                            const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
                            const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) = 0;
 

@@ -2,6 +2,7 @@
 #define TkTrackingRegions_OrderedHitsGenerator_H
 
 #include "RecoTracker/TkSeedingLayers/interface/OrderedSeedingHits.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include <vector>
 
 class TrackingRegion;
@@ -16,7 +17,10 @@ public:
   OrderedHitsGenerator() : theMaxElement(0) {}
   virtual ~OrderedHitsGenerator() {}
 
-  virtual const OrderedSeedingHits& run(const TrackingRegion& reg, const edm::Event& ev, const edm::EventSetup& es) = 0;
+  virtual const OrderedSeedingHits& run(const TrackingRegion& reg,
+                                        const edm::Event& ev,
+                                        const edm::EventSetup& es,
+                                        edm::ConsumesCollector& iC) = 0;
 
   virtual void clear() {}  //fixme: should be purely virtual!
 

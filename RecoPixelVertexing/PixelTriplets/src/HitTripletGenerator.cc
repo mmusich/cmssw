@@ -4,11 +4,12 @@ HitTripletGenerator::HitTripletGenerator(unsigned int nSize) : localRA(nSize) {}
 
 const OrderedHitTriplets& HitTripletGenerator::run(const TrackingRegion& region,
                                                    const edm::Event& ev,
-                                                   const edm::EventSetup& es) {
+                                                   const edm::EventSetup& es,
+                                                   edm::ConsumesCollector& iC) {
   assert(theTriplets.empty());
   assert(theTriplets.capacity() == 0);
   theTriplets.reserve(localRA.upper());
-  hitTriplets(region, theTriplets, ev, es);
+  hitTriplets(region, theTriplets, ev, es, iC);
   localRA.update(theTriplets.size());
   theTriplets.shrink_to_fit();
   return theTriplets;

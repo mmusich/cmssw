@@ -40,6 +40,7 @@ public:
                    OrderedHitTriplets& trs,
                    const edm::Event& ev,
                    const edm::EventSetup& es,
+                   edm::ConsumesCollector& iC,
                    const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
                    const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) override;
   void hitTriplets(const TrackingRegion& region,
@@ -57,7 +58,7 @@ private:
   edm::ESGetToken<TransientTrackingRecHitBuilder, TransientRecHitRecord> m_ttrhBuilderToken;
   edm::ESGetToken<MultipleScatteringParametrisationMaker, TrackerMultipleScatteringRecord> m_msmakerToken;
 
-  void getTracker(const edm::EventSetup& es);
+  void getTracker(const edm::EventSetup& es, edm::ConsumesCollector& iC);
   GlobalPoint getGlobalPosition(const TrackingRecHit* recHit);
 
   const TrackerGeometry* theTracker;

@@ -59,7 +59,7 @@ PixelTripletLargeTipGenerator::PixelTripletLargeTipGenerator(const edm::Paramete
   }
 }
 
-PixelTripletLargeTipGenerator::~PixelTripletLargeTipGenerator() {}
+PixelTripletLargeTipGenerator::~PixelTripletLargeTipGenerator() = default;
 
 void PixelTripletLargeTipGenerator::fillDescriptions(edm::ParameterSetDescription& desc) {
   HitTripletGeneratorFromPairAndLayers::fillDescriptions(desc);
@@ -89,6 +89,7 @@ void PixelTripletLargeTipGenerator::hitTriplets(const TrackingRegion& region,
                                                 OrderedHitTriplets& result,
                                                 const edm::Event& ev,
                                                 const edm::EventSetup& es,
+                                                edm::ConsumesCollector& iC,
                                                 const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
                                                 const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) {
   auto const& doublets = thePairGenerator->doublets(region, ev, es, pairLayers);

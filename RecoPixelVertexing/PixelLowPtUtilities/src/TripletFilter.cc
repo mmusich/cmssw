@@ -1,33 +1,25 @@
-#include "RecoPixelVertexing/PixelLowPtUtilities/interface/TripletFilter.h"
-
-#include "RecoPixelVertexing/PixelLowPtUtilities/interface/ClusterShapeHitFilter.h"
-#include "RecoPixelVertexing/PixelLowPtUtilities/interface/HitInfo.h"
-
-#include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-
-#include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
-#include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
-
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHit.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
-
-#include "RecoTracker/Record/interface/CkfComponentsRecord.h"
-#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
+#include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
+#include "RecoPixelVertexing/PixelLowPtUtilities/interface/HitInfo.h"
+#include "RecoPixelVertexing/PixelLowPtUtilities/interface/TripletFilter.h"
 
 using namespace std;
 
 /*****************************************************************************/
-TripletFilter::TripletFilter(const edm::EventSetup& es) {
+TripletFilter::TripletFilter(const edm::EventSetup& es, edm::ConsumesCollector& iC)
+    : clusterShapeToken(iC.esConsumes<edm::Transition::BeginRun>(edm::ESInputTag("", "ClusterShapeHitFilter"))) {
   // Get cluster shape hit filter
-  edm::ESHandle<ClusterShapeHitFilter> shape;
-  es.get<CkfComponentsRecord>().get("ClusterShapeHitFilter", shape);
-  theFilter = shape.product();
+  theFilter = &es.getData(clusterShapeToken);
 }
 
 /*****************************************************************************/
-TripletFilter::~TripletFilter() {}
+TripletFilter::~TripletFilter() = default;
 
 /*****************************************************************************/
 bool TripletFilter::checkTrack(const vector<const TrackingRecHit*>& recHits,
