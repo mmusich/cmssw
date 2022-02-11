@@ -1,0 +1,8 @@
+<bin name="testExpressPPSAlCaReco" file="TestDriver.cpp">
+  <flags TEST_RUNNER_ARGS="/bin/bash Calibration/PPSAlCaRecoProducer/test test_express_AlCaRecoProducer.sh"/>
+  <use name="FWCore/Utilities"/>
+</bin>
+<bin name="testPromptPPSAlCaReco" file="TestDriver.cpp">
+  <flags TEST_RUNNER_ARGS="/bin/bash Calibration/PPSAlCaRecoProducer/test test_prompt_AlCaRecoProducer.sh"/>
+  <use name="FWCore/Utilities"/>
+</bin>
