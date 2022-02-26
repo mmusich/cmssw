@@ -35,13 +35,17 @@ public:
   // ObjectSelectorBase()=default;
   explicit ObjectSelectorBase(const edm::ParameterSet& cfg)
       : Base(cfg),
-        srcToken_(
-            this->template consumes<typename Selector::collection>(cfg.template getParameter<edm::InputTag>("src"))),
+	srcTags_(cfg.template getParameter<std::vector<edm::InputTag>>("src")),
         filter_(false),
         selectorInit_(this->consumesCollector()),
         selector_(cfg, this->consumesCollector()),
         sizeSelector_(reco::modules::make<SizeSelector>(cfg)),
         postProcessor_(cfg, this->consumesCollector()) {
+    // esconsumes
+    for (auto& tag : srcTags_) {
+      srcTokens_.emplace_back(this->template consumes<typename Selector::collection>(tag));
+    }
+
     const std::string filter("filter");
     std::vector<std::string> bools = cfg.template getParameterNamesForType<bool>();
     bool found = std::find(bools.begin(), bools.end(), filter) != bools.end();
@@ -56,8 +60,19 @@ private:
   /// process one event
   bool filter(edm::Event& evt, const edm::EventSetup& es) override {
     selectorInit_.init(selector_, evt, es);
+
     edm::Handle<typename Selector::collection> source;
-    evt.getByToken(srcToken_, source);
+    bool foundProduct = false;
+    for (unsigned int i = 0; i < srcTokens_.size(); i++) {
+      if (source = evt.getHandle(srcTokens_[i])) {
+	foundProduct = true;
+	LogTrace("ObjectSelectorBase") << "Found a product with " << srcTags_[i];
+	break;
+      }
+    }
+    if (!foundProduct) {
+      throw edm::Exception(edm::errors::ProductNotFound) << "Could not find a product with any of the selected labels.";
+    }
     StoreManager manager(source);
     selector_.select(source, evt, es);
     manager.cloneAndStore(selector_.begin(), selector_.end(), evt);
@@ -67,7 +82,8 @@ private:
     return result;
   }
   /// source collection label
-  edm::EDGetTokenT<typename Selector::collection> srcToken_;
+  const std::vector<edm::InputTag> srcTags_;
+  std::vector<edm::EDGetTokenT<typename Selector::collection>> srcTokens_;
   /// filter event
   bool filter_;
   /// Object collection selector
