@@ -1,0 +1,58 @@
+import FWCore.ParameterSet.Config as cms
+
+process = cms.Process("ICALIB")
+
+process.load("Configuration.StandardSequences.Services_cff")
+process.RandomNumberGeneratorService.prod = cms.PSet(
+    initialSeed = cms.untracked.uint32(789342),
+    engineName = cms.untracked.string('TRandom3')
+)
+
+process.load("Configuration.Geometry.GeometryExtended2026D49_cff")
+process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+
+process.MessageLogger = cms.Service("MessageLogger",
+    cerr = cms.untracked.PSet(
+        enable = cms.untracked.bool(False)
+    ),
+    cout = cms.untracked.PSet(
+        enable = cms.untracked.bool(True),
+        threshold = cms.untracked.string('INFO')
+    )
+)
+
+process.source = cms.Source("EmptyIOVSource",
+    lastValue = cms.uint64(1),
+    timetype = cms.string('runnumber'),
+    firstValue = cms.uint64(1),
+    interval = cms.uint64(1)
+)
+
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(1)
+)
+
+process.PoolDBOutputService = cms.Service("PoolDBOutputService",
+    BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
+    DBParameters = cms.PSet(
+        authenticationPath = cms.untracked.string('')
+    ),
+    timetype = cms.untracked.string('runnumber'),
+    connect = cms.string('sqlite_file:SiStripBadStripPhase2_T15_v0.db'),
+    toPut = cms.VPSet(cms.PSet(
+        record = cms.string('SiStripBadStripRcd'),
+        tag = cms.string('SiStripBadStripPhase2_T15')
+    ))
+)
+
+process.prod = cms.EDAnalyzer("SiPhase2BadStripChannelBuilder",                    
+                              Record = cms.string('SiStripBadStripRcd'),
+                              SinceAppendMode = cms.bool(True),
+                              IOVMode = cms.string('Run'),
+                              printDebug = cms.untracked.bool(True),
+                              doStoreOnDB = cms.bool(True))
+
+#process.print = cms.OutputModule("AsciiOutputModule")
+
+process.p = cms.Path(process.prod)
+#process.ep = cms.EndPath(process.print)
