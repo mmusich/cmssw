@@ -4,7 +4,7 @@ process = cms.Process("ICALIB")
 
 process.load("Configuration.StandardSequences.Services_cff")
 process.RandomNumberGeneratorService.prod = cms.PSet(
-    initialSeed = cms.untracked.uint32(789342),
+    initialSeed = cms.untracked.uint32(789341),
     engineName = cms.untracked.string('TRandom3')
 )
 
@@ -49,8 +49,14 @@ process.prod = cms.EDAnalyzer("SiPhase2BadStripChannelBuilder",
                               Record = cms.string('SiStripBadStripRcd'),
                               SinceAppendMode = cms.bool(True),
                               IOVMode = cms.string('Run'),
-                              printDebug = cms.untracked.bool(True),
-                              doStoreOnDB = cms.bool(True))
+                              printDebug = cms.untracked.bool(False),
+                              doStoreOnDB = cms.bool(True),
+                              #popConAlgo = cms.uint32(1), #NAIVE
+                              popConAlgo = cms.uint32(2), #RANDOM
+                              #badComponentsFraction = cms.double(0.01)  #1% of bad strips
+                              #badComponentsFraction = cms.double(0.05)  #5% of bad strips
+                              badComponentsFraction = cms.double(0.1)   #10% of bad strips
+                              )
 
 #process.print = cms.OutputModule("AsciiOutputModule")
 
