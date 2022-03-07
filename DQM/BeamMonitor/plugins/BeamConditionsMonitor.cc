@@ -30,36 +30,31 @@ BeamConditionsMonitor::BeamConditionsMonitor(const ParameterSet& ps) : countEvt_
   bsSrc_ = parameters_.getUntrackedParameter<InputTag>("beamSpot");
   debug_ = parameters_.getUntrackedParameter<bool>("Debug");
   beamSpotToken_ = esConsumes();
-  dbe_ = Service<DQMStore>().operator->();
 
   if (!monitorName_.empty())
     monitorName_ = monitorName_ + "/";
 }
 
-BeamConditionsMonitor::~BeamConditionsMonitor() {}
+BeamConditionsMonitor::~BeamConditionsMonitor() = default;
 
 //--------------------------------------------------------
-void BeamConditionsMonitor::beginJob() {
-  // book some histograms here
-  // create and cd into new folder
-  dbe_->setCurrentFolder(monitorName_ + "Conditions");
+void BeamConditionsMonitor::bookHistograms(DQMStore::IBooker& iBooker, const edm::Run&, const edm::EventSetup&) {
+  // book histograms here
+  iBooker.setCurrentFolder(monitorName_ + "Conditions");
 
-  h_x0_lumi = dbe_->book1D("x0_lumi_cond", "x coordinate of beam spot vs lumi (Cond)", 10, 0, 10);
+  h_x0_lumi = iBooker.book1D("x0_lumi_cond", "x coordinate of beam spot vs lumi (Cond)", 10, 0, 10);
   h_x0_lumi->setAxisTitle("Lumisection", 1);
   h_x0_lumi->setAxisTitle("x_{0} (cm)", 2);
   h_x0_lumi->getTH1()->SetOption("E1");
 
-  h_y0_lumi = dbe_->book1D("y0_lumi_cond", "y coordinate of beam spot vs lumi (Cond)", 10, 0, 10);
+  h_y0_lumi = iBooker.book1D("y0_lumi_cond", "y coordinate of beam spot vs lumi (Cond)", 10, 0, 10);
   h_y0_lumi->setAxisTitle("Lumisection", 1);
   h_y0_lumi->setAxisTitle("y_{0} (cm)", 2);
   h_y0_lumi->getTH1()->SetOption("E1");
 }
 
 //--------------------------------------------------------
-void BeamConditionsMonitor::beginRun(const edm::Run& r, const EventSetup& context) {}
-
-//--------------------------------------------------------
-void BeamConditionsMonitor::beginLuminosityBlock(const LuminosityBlock& lumiSeg, const EventSetup& context) {
+void BeamConditionsMonitor::dqmBeginLuminosityBlock(const LuminosityBlock& lumiSeg, const EventSetup& context) {
   countLumi_++;
 }
 
@@ -70,14 +65,10 @@ void BeamConditionsMonitor::analyze(const Event& iEvent, const EventSetup& iSetu
 }
 
 //--------------------------------------------------------
-void BeamConditionsMonitor::endLuminosityBlock(const LuminosityBlock& lumiSeg, const EventSetup& iSetup) {
+void BeamConditionsMonitor::dqmEndLuminosityBlock(const LuminosityBlock& lumiSeg, const EventSetup& iSetup) {
   LogInfo("BeamConditions") << "[BeamConditionsMonitor]:" << condBeamSpot << endl;
   h_x0_lumi->ShiftFillLast(condBeamSpot.x(), condBeamSpot.xError(), 1);
   h_y0_lumi->ShiftFillLast(condBeamSpot.y(), condBeamSpot.yError(), 1);
 }
-//--------------------------------------------------------
-void BeamConditionsMonitor::endRun(const Run& r, const EventSetup& context) {}
-//--------------------------------------------------------
-void BeamConditionsMonitor::endJob() {}
 
 DEFINE_FWK_MODULE(BeamConditionsMonitor);

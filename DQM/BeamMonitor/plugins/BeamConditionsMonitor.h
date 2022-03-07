@@ -10,20 +10,20 @@
 // C++
 #include <string>
 // CMS
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "CondFormats/BeamSpotObjects/interface/BeamSpotObjects.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DQMServices/Core/interface/DQMOneEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "CondFormats/BeamSpotObjects/interface/BeamSpotObjects.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 //
 // class declaration
 //
 class BeamSpotObjectsRcd;
-class BeamConditionsMonitor : public edm::EDAnalyzer {
+class BeamConditionsMonitor : public DQMOneLumiEDAnalyzer<> {
 public:
   BeamConditionsMonitor(const edm::ParameterSet&);
   ~BeamConditionsMonitor() override;
@@ -32,25 +32,10 @@ public:
   typedef dqm::legacy::DQMStore DQMStore;
 
 protected:
-  // BeginJob
-  void beginJob() override;
-
-  // BeginRun
-  void beginRun(const edm::Run& r, const edm::EventSetup& c) override;
-
-  // Fake Analyze
+  void bookHistograms(DQMStore::IBooker& i, const edm::Run& r, const edm::EventSetup& c) override;
+  void dqmBeginLuminosityBlock(const edm::LuminosityBlock& lumiSeg, const edm::EventSetup& context) override;
   void analyze(const edm::Event& e, const edm::EventSetup& c) override;
-
-  void beginLuminosityBlock(const edm::LuminosityBlock& lumiSeg, const edm::EventSetup& context) override;
-
-  // DQM Client Diagnostic
-  void endLuminosityBlock(const edm::LuminosityBlock& lumiSeg, const edm::EventSetup& c) override;
-
-  // EndRun
-  void endRun(const edm::Run& r, const edm::EventSetup& c) override;
-
-  // Endjob
-  void endJob() override;
+  void dqmEndLuminosityBlock(const edm::LuminosityBlock& lumiSeg, const edm::EventSetup& c) override;
 
 private:
   edm::ParameterSet parameters_;
@@ -58,8 +43,6 @@ private:
   edm::InputTag bsSrc_;  // beam spot
   edm::ESGetToken<BeamSpotObjects, BeamSpotObjectsRcd> beamSpotToken_;
   bool debug_;
-
-  DQMStore* dbe_;
 
   int countEvt_;   //counter
   int countLumi_;  //counter
