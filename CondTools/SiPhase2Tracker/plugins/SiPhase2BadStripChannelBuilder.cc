@@ -11,8 +11,10 @@
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
@@ -25,10 +27,19 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGauss.h"
 
+/** 
+ * enum to decide which algorithm use to populate the conditions
+ */
+namespace {
+  enum badChannelAlgo { NAIVE = 1, RANDOM = 2 };
+}
+
 class SiPhase2BadStripChannelBuilder : public ConditionDBWriter<SiStripBadStrip> {
 public:
   explicit SiPhase2BadStripChannelBuilder(const edm::ParameterSet&);
   ~SiPhase2BadStripChannelBuilder() override = default;
+
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
   std::unique_ptr<SiStripBadStrip> getNewObject() override;
@@ -54,6 +65,8 @@ private:
   bool printdebug_;
   typedef std::vector<edm::ParameterSet> Parameters;
   Parameters BadComponentList_;
+  std::string algo_;
+  float badComponentsFraction_;
 
   // ----------member data ---------------------------
   const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoToken_;
@@ -66,6 +79,8 @@ SiPhase2BadStripChannelBuilder::SiPhase2BadStripChannelBuilder(const edm::Parame
       topoToken_(esConsumes<edm::Transition::BeginRun>()),
       geomToken_(esConsumes<edm::Transition::BeginRun>()) {
   printdebug_ = iConfig.getUntrackedParameter<bool>("printDebug", false);
+  algo_ = iConfig.getParameter<std::string>("algorithm");
+  badComponentsFraction_ = iConfig.getParameter<double>("badComponentsFraction");
   //BadComponentList_ = iConfig.getUntrackedParameter<Parameters>("BadComponentList");
 }
 
@@ -199,6 +214,17 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
   */
 
   return obj;
+}
+
+// ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
+void SiPhase2BadStripChannelBuilder::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.setComment("Module to build SiStripBadStrip Payloads for the Phase-2 Outer Tracker");
+  //ConditionDBWriter::fillPSetDescription(desc);  // inherited from mother class
+  desc.addUntracked<bool>("printDebug", false)->setComment("maximum amount of print-outs");
+  desc.add<std::string>("algorithm", "SIMPLE")->setComment("algorithm to populate the payload");
+  desc.add<double>("badComponentsFraction", 0.01)->setComment("fraction of bad components to populate the payload");
+  descriptions.addWithDefaultLabel(desc);
 }
 
 #include "FWCore/PluginManager/interface/ModuleDef.h"

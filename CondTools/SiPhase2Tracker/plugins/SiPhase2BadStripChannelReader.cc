@@ -34,18 +34,17 @@ SiPhase2BadStripChannelReader::SiPhase2BadStripChannelReader(const edm::Paramete
       badStripToken_(esConsumes(edm::ESInputTag{"", label_})) {}
 
 void SiPhase2BadStripChannelReader::analyze(edm::StreamID,
-                                                     edm::Event const& iEvent,
-                                                     edm::EventSetup const& iSetup) const {
+                                            edm::Event const& iEvent,
+                                            edm::EventSetup const& iSetup) const {
   const auto& badStrip = iSetup.getData(badStripToken_);
   edm::LogInfo("SiPhase2BadStripChannelReader")
-      << "[SiPhase2BadStripChannelReader::analyze] End Reading SiStriBadStrip with label "
-      << label_ << std::endl;
+      << "[SiPhase2BadStripChannelReader::analyze] End Reading SiStriBadStrip with label " << label_ << std::endl;
 
   const TrackerTopology* ttopo = nullptr;
 
   std::stringstream ss;
-  badStrip.printDebug(ss,ttopo);
-  std:: cout <<  ss.str() << std::endl;
+  badStrip.printDebug(ss, ttopo);
+  std::cout << ss.str() << std::endl;
 
   // const auto& detid_la = lorentzAngles.getLorentzAngles();
   // std::unordered_map<unsigned int, float>::const_iterator it;
