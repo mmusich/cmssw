@@ -9,6 +9,7 @@
 #include "CondFormats/SiStripObjects/interface/SiStripBadStrip.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerDigi.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
@@ -58,7 +59,8 @@ private:
     }
   }
 
-  std::map<unsigned short, unsigned short> badStripsMap(const std::vector<unsigned short>& maskedStrips);
+  std::map<unsigned short, unsigned short> clusterizeBadChannels(
+      const std::vector<Phase2TrackerDigi::PackedDigiType>& maskedChannels);
 
   // ----------member data ---------------------------
   std::unique_ptr<TrackerTopology> tTopo_;
@@ -71,9 +73,6 @@ private:
   const unsigned int popConAlgo_;
   const float badComponentsFraction_;
   badChannelAlgo theBCAlgo_;
-
-  typedef std::vector<edm::ParameterSet> Parameters;
-  Parameters BadComponentList_;
 };
 
 //__________________________________________________________________________________________________
@@ -84,21 +83,6 @@ SiPhase2BadStripChannelBuilder::SiPhase2BadStripChannelBuilder(const edm::Parame
       printdebug_(iConfig.getUntrackedParameter<bool>("printDebug", false)),
       popConAlgo_(iConfig.getParameter<unsigned int>("popConAlgo")),
       badComponentsFraction_(iConfig.getParameter<double>("badComponentsFraction")) {
-  //BadComponentList_ = iConfig.getUntrackedParameter<Parameters>("BadComponentList");
-
-  /*
-  if (popconAlgo_.find("NAIVE") != std::string::npos) {
-    theBCAlgo_ = NAIVE;
-    edm::LogInfo("SiPhase2BadStripChannelBuilder") << " using the NAIVE algorithm" << std::endl;
-  } else if (popconAlgo_.find("RANDOM") != std::string::npos) {
-    theBCAlgo_ = RANDOM;
-    edm::LogInfo("SiPhase2BadStripChannelBuilder") <<" using the RANDOM algorithm" << std::endl;
-  } else {
-    edm::LogError("SiPhase2BadStripChannelBuilder") << "Unrecognized algorightm: " << popconAlgo_ << std::endl;
-    theBCAlgo_ = NONE;
-  }
-  */
-  //theBCAlgo_ = RANDOM;
   theBCAlgo_ = static_cast<badChannelAlgo>(popConAlgo_);
 }
 
@@ -128,8 +112,8 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
           const int nrows = topol.nrows();
           const int ncols = topol.ncolumns();
 
-          std::cout << "DetId: " << rawId << " subdet: " << subid << " nrows: " << nrows << " ncols: " << ncols
-                    << std::endl;
+          LogDebug("SiPhase2BadStripChannelBuilder")
+              << "DetId: " << rawId << " subdet: " << subid << " nrows: " << nrows << " ncols: " << ncols << std::endl;
 
           std::vector<unsigned int> theSiStripVector;
 
@@ -161,37 +145,42 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
             case RANDOM: {
               LogDebug("SiPhase2BadStripChannelBuilder") << "using the RANDOM algorithm" << std::endl;
 
-              /// temporary to check if the strips were already used
-              std::vector<unsigned short> usedStrips;
+              // auxilliary vector to check if the channels were already used
+              std::vector<Phase2TrackerDigi::PackedDigiType> usedChannels;
 
-              size_t nmaxBadStrips = std::floor(nrows * badComponentsFraction_);
+              size_t nmaxBadStrips = std::floor(nrows * ncols * badComponentsFraction_);
 
               LogDebug("SiPhase2BadStripChannelBuilder")
                   << __FUNCTION__ << " " << __LINE__ << " will mask: " << nmaxBadStrips << " strips" << std::endl;
 
-              while (usedStrips.size() < nmaxBadStrips) {
-                unsigned short badStrip = std::floor(CLHEP::RandFlat::shoot(engine, 0, nrows));
+              while (usedChannels.size() < nmaxBadStrips) {
+                unsigned short badStripRow = std::floor(CLHEP::RandFlat::shoot(engine, 0, nrows));
+                unsigned short badStripCol = std::floor(CLHEP::RandFlat::shoot(engine, 0, ncols));
+                const auto& badChannel = Phase2TrackerDigi::pixelToChannel(badStripRow, badStripCol);
+
                 LogDebug("SiPhase2BadStripChannelBuilder")
-                    << __FUNCTION__ << " " << __LINE__ << ": masking " << badStrip << std::endl;
-                if (std::find(usedStrips.begin(), usedStrips.end(), badStrip) == usedStrips.end()) {
-                  usedStrips.push_back(badStrip);
+                    << __FUNCTION__ << " " << __LINE__ << ": masking channel " << badChannel << " (" << badStripRow
+                    << "," << badStripCol << ")" << std::endl;
+
+                if (std::find(usedChannels.begin(), usedChannels.end(), badChannel) == usedChannels.end()) {
+                  usedChannels.push_back(badChannel);
                 }
               }
 
-              const auto badStripsGroups = this->badStripsMap(usedStrips);
+              const auto badChannelsGroups = this->clusterizeBadChannels(usedChannels);
               // loop over the groups of bad strips
-              for (const auto& [first, consec] : badStripsGroups) {
-                unsigned int theBadStripRange;
-                theBadStripRange = obj->encode(first, consec);
+              for (const auto& [first, consec] : badChannelsGroups) {
+                unsigned int theBadChannelsRange;
+                theBadChannelsRange = obj->encode(first, consec);
 
                 if (printdebug_) {
                   edm::LogInfo("SiPhase2BadStripChannelBuilder")
                       << "detid " << rawId << " \t"
                       << " firstBadStrip " << first << "\t "
                       << " NconsecutiveBadStrips " << consec << "\t "
-                      << " packed integer " << std::hex << theBadStripRange << std::dec << std::endl;
+                      << " packed integer " << std::hex << theBadChannelsRange << std::dec << std::endl;
                 }
-                theSiStripVector.push_back(theBadStripRange);
+                theSiStripVector.push_back(theBadChannelsRange);
               }
               break;
             }
@@ -225,76 +214,18 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
   }
 
   tGeom_.release();
-
-  /*
-  for (Parameters::iterator iBadComponent = BadComponentList_.begin(); iBadComponent != BadComponentList_.end();
-       ++iBadComponent) {
-    uint32_t BadModule_ = iBadComponent->getParameter<uint32_t>("BadModule");
-    std::vector<uint32_t> BadChannelList_ = iBadComponent->getParameter<std::vector<uint32_t> >("BadChannelList");
-
-    std::vector<unsigned int> theSiStripVector;
-    unsigned int NStrips = detInfo.getNumberOfApvsAndStripLength(BadModule_).first * 128;
-
-    uint32_t lastBad = 999;
-    unsigned short firstBadStrip = 0, NconsecutiveBadStrips = 0;
-    unsigned int theBadStripRange;
-
-    for (std::vector<uint32_t>::const_iterator is = BadChannelList_.begin(); is != BadChannelList_.end(); ++is) {
-      if (*is > NStrips - 1)
-        break;
-      if (*is != lastBad + 1) {
-        //new set
-
-        if (lastBad != 999) {
-          //save previous set
-          theBadStripRange = obj->encode(firstBadStrip, NconsecutiveBadStrips);
-
-          if (printdebug_)
-            edm::LogInfo("SiPhase2BadStripChannelBuilder")
-                << "detid " << BadModule_ << " \t"
-                << " firstBadStrip " << firstBadStrip << "\t "
-                << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
-                << " packed integer " << std::hex << theBadStripRange << std::dec << std::endl;
-
-          theSiStripVector.push_back(theBadStripRange);
-        }
-
-        firstBadStrip = *is;
-        NconsecutiveBadStrips = 0;
-      }
-      NconsecutiveBadStrips++;
-      lastBad = *is;
-    }
-
-    theBadStripRange = obj->encode(firstBadStrip, NconsecutiveBadStrips);
-    if (printdebug_)
-      edm::LogInfo("SiPhase2BadStripChannelBuilder")
-          << "detid " << BadModule_ << " \t"
-          << " firstBadStrip " << firstBadStrip << "\t "
-          << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
-          << " packed integer " << std::hex << theBadStripRange << std::dec << std::endl;
-
-    theSiStripVector.push_back(theBadStripRange);
-
-    SiStripBadStrip::Range range(theSiStripVector.begin(), theSiStripVector.end());
-    if (!obj->put(BadModule_, range))
-      edm::LogError("SiPhase2BadStripChannelBuilder")
-          << "[SiPhase2BadStripChannelBuilder::analyze] detid already exists" << std::endl;
-  }
-  */
-
   return obj;
 }
 
 // poor-man clusterizing algorithm
-std::map<unsigned short, unsigned short> SiPhase2BadStripChannelBuilder::badStripsMap(
-    const std::vector<unsigned short>& maskedStrips) {
+std::map<unsigned short, unsigned short> SiPhase2BadStripChannelBuilder::clusterizeBadChannels(
+    const std::vector<Phase2TrackerDigi::PackedDigiType>& maskedChannels) {
   // Here we will store the result
   std::map<unsigned short, unsigned short> result{};
   std::map<int, std::string> printresult{};
 
   // Sort and remove duplicates.
-  std::set data(maskedStrips.begin(), maskedStrips.end());
+  std::set data(maskedChannels.begin(), maskedChannels.end());
 
   // We will start the evaluation at the beginning of our data
   auto startOfSequence = data.begin();

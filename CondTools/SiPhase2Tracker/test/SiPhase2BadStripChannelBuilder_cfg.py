@@ -49,13 +49,13 @@ process.prod = cms.EDAnalyzer("SiPhase2BadStripChannelBuilder",
                               Record = cms.string('SiStripBadStripRcd'),
                               SinceAppendMode = cms.bool(True),
                               IOVMode = cms.string('Run'),
-                              printDebug = cms.untracked.bool(False),
+                              printDebug = cms.untracked.bool(True),
                               doStoreOnDB = cms.bool(True),
                               #popConAlgo = cms.uint32(1), #NAIVE
                               popConAlgo = cms.uint32(2), #RANDOM
-                              #badComponentsFraction = cms.double(0.01)  #1% of bad strips
+                              badComponentsFraction = cms.double(0.01)  #1% of bad strips
                               #badComponentsFraction = cms.double(0.05)  #5% of bad strips
-                              badComponentsFraction = cms.double(0.1)   #10% of bad strips
+                              #badComponentsFraction = cms.double(0.1)   #10% of bad strips
                               )
 
 #process.print = cms.OutputModule("AsciiOutputModule")

@@ -17,6 +17,7 @@
 // user include files
 #include "CondFormats/DataRecord/interface/SiPhase2OuterTrackerCondDataRecords.h"
 #include "CondFormats/SiStripObjects/interface/SiStripBadStrip.h"
+#include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerDigi.h"
 #include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
@@ -35,6 +36,10 @@
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
+// neede for the random number generation
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/JamesRandom.h"
+
 class SiPhase2BadStripConfigurableFakeESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder {
 public:
   SiPhase2BadStripConfigurableFakeESSource(const edm::ParameterSet&);
@@ -48,24 +53,31 @@ public:
   ReturnType produce(const SiPhase2OuterTrackerBadStripRcd&);
 
 private:
-  using Parameters = std::vector<edm::ParameterSet>;
-  Parameters m_badComponentList;
-  bool m_printDebug;
-  edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> trackTopoToken_;
-  edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomToken_;
+  std::map<unsigned short, unsigned short> clusterizeBadChannels(
+      const std::vector<Phase2TrackerDigi::PackedDigiType>& maskedChannels);
 
-  std::vector<uint32_t> selectDetectors(const TrackerTopology* tTopo, const std::vector<uint32_t>& detIds) const;
+  // configurables
+  bool m_printDebug;
+  float m_badComponentsFraction;
+
+  // random engine
+  std::unique_ptr<CLHEP::HepRandomEngine> m_engine;
+
+  // es tokens
+  edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> m_trackTopoToken;
+  edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_geomToken;
 };
 
 SiPhase2BadStripConfigurableFakeESSource::SiPhase2BadStripConfigurableFakeESSource(const edm::ParameterSet& iConfig)
-/* : trackTopoToken_(setWhatProduced(this).consumes())*/ {
+    : m_engine(new CLHEP::HepJamesRandom(iConfig.getParameter<unsigned int>("seed"))) {
   auto cc = setWhatProduced(this);
-  trackTopoToken_ = cc.consumes();
-  geomToken_ = cc.consumes();
-  findingRecord<SiPhase2OuterTrackerBadStripRcd>();
+  m_trackTopoToken = cc.consumes();
+  m_geomToken = cc.consumes();
 
-  m_badComponentList = iConfig.getUntrackedParameter<Parameters>("BadComponentList");
   m_printDebug = iConfig.getUntrackedParameter<bool>("printDebug", false);
+  m_badComponentsFraction = iConfig.getParameter<double>("badComponentsFraction");
+
+  findingRecord<SiPhase2OuterTrackerBadStripRcd>();
 }
 
 void SiPhase2BadStripConfigurableFakeESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
@@ -78,201 +90,123 @@ void SiPhase2BadStripConfigurableFakeESSource::setIntervalFor(const edm::eventse
 SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurableFakeESSource::produce(
     const SiPhase2OuterTrackerBadStripRcd& iRecord) {
   using namespace edm::es;
+  using Phase2TrackerGeomDetUnit = PixelGeomDetUnit;
 
-  TrackerTopology const& tTopo = iRecord.get(trackTopoToken_);
-  TrackerGeometry const& tGeom = iRecord.get(geomToken_);
+  //TrackerTopology const& tTopo = iRecord.get(m_trackTopoToken);
+  TrackerGeometry const& tGeom = iRecord.get(m_geomToken);
 
   auto badStrips = std::make_unique<SiStripBadStrip>();
+  std::vector<unsigned int> theSiStripVector;
 
-  /*
-  if (!m_doByAPVs) {
-    std::vector<uint32_t> selDetIds{selectDetectors(&tTopo, m_detInfo.getAllDetIds())};
-    edm::LogInfo("SiStripQualityConfigurableFakeESSource")
-        << "[produce] number of selected dets to be removed " << selDetIds.size() << std::endl;
+  for (auto const& det_u : tGeom.detUnits()) {
+    const DetId detid = det_u->geographicalId();
+    uint32_t rawId = detid.rawId();
+    int subid = detid.subdetId();
+    if (detid.det() == DetId::Detector::Tracker) {
+      const Phase2TrackerGeomDetUnit* pixdet = dynamic_cast<const Phase2TrackerGeomDetUnit*>(det_u);
+      assert(pixdet);
+      if (subid == StripSubdetector::TOB || subid == StripSubdetector::TID) {
+        if (tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2PSS ||
+            tGeom.getDetectorType(rawId) == TrackerGeometry::ModuleType::Ph2SS) {
+          const PixelTopology& topol(pixdet->specificTopology());
 
-    std::stringstream ss;
-    for (const auto selId : selDetIds) {
-      SiStripQuality::InputVector theSiStripVector;
+          const int nrows = topol.nrows();
+          const int ncols = topol.ncolumns();
 
-      unsigned short firstBadStrip{0};
-      unsigned short NconsecutiveBadStrips = m_detInfo.getNumberOfApvsAndStripLength(selId).first * 128;
-      unsigned int theBadStripRange{quality->encode(firstBadStrip, NconsecutiveBadStrips)};
+          // auxilliary vector to check if the channels were already used
+          std::vector<Phase2TrackerDigi::PackedDigiType> usedChannels;
 
-      if (m_printDebug) {
-        ss << "detid " << selId << " \t"
-           << " firstBadStrip " << firstBadStrip << "\t "
-           << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
-           << " packed integer " << std::hex << theBadStripRange << std::dec << std::endl;
-      }
+          size_t nmaxBadStrips = std::floor(nrows * ncols * m_badComponentsFraction);
+          while (usedChannels.size() < nmaxBadStrips) {
+            unsigned short badStripRow = std::floor(CLHEP::RandFlat::shoot(m_engine.get(), 0, nrows));
+            unsigned short badStripCol = std::floor(CLHEP::RandFlat::shoot(m_engine.get(), 0, ncols));
+            const auto& badChannel = Phase2TrackerDigi::pixelToChannel(badStripRow, badStripCol);
+            if (std::find(usedChannels.begin(), usedChannels.end(), badChannel) == usedChannels.end()) {
+              usedChannels.push_back(badChannel);
+            }
+          }
 
-      theSiStripVector.push_back(theBadStripRange);
+          const auto badChannelsGroups = this->clusterizeBadChannels(usedChannels);
+          // loop over the groups of bad strips
+          for (const auto& [first, consec] : badChannelsGroups) {
+            unsigned int theBadChannelsRange;
+            theBadChannelsRange = badStrips->encode(first, consec);
 
-      if (!quality->put(selId, SiStripBadStrip::Range{theSiStripVector.begin(), theSiStripVector.end()})) {
-        edm::LogError("SiStripQualityConfigurableFakeESSource") << "[produce] detid already exists";
-      }
-    }
-    if (m_printDebug) {
-      edm::LogInfo("SiStripQualityConfigurableFakeESSource") << ss.str();
-    }
-    quality->cleanUp();
-    //quality->fillBadComponents();
-  } else {
-    std::vector<std::pair<uint32_t, std::vector<uint32_t>>> selAPVs{selectAPVs()};
-    edm::LogInfo("SiStripQualityConfigurableFakeESSource")
-        << "[produce] number of selected dets to be removed " << selAPVs.size() << std::endl;
+            if (m_printDebug) {
+              edm::LogInfo("SiPhase2BadStripChannelBuilder")
+                  << "detid " << rawId << " \t"
+                  << " firstBadStrip " << first << "\t "
+                  << " NconsecutiveBadStrips " << consec << "\t "
+                  << " packed integer " << std::hex << theBadChannelsRange << std::dec << std::endl;
+            }
+            theSiStripVector.push_back(theBadChannelsRange);
+          }
 
-    std::stringstream ss;
-    for (const auto& selId : selAPVs) {
-      SiStripQuality::InputVector theSiStripVector;
-      auto the_detid = selId.first;
-
-      for (const auto apv : selId.second) {
-        unsigned short firstBadStrip = apv * 128;
-        unsigned short NconsecutiveBadStrips = 128;
-        unsigned int theBadStripRange{quality->encode(firstBadStrip, NconsecutiveBadStrips)};
-
-        if (m_printDebug) {
-          ss << "detid " << the_detid << " \t"
-             << " firstBadStrip " << firstBadStrip << "\t "
-             << " NconsecutiveBadStrips " << NconsecutiveBadStrips << "\t "
-             << " packed integer " << std::hex << theBadStripRange << std::dec << std::endl;
+          SiStripBadStrip::Range range(theSiStripVector.begin(), theSiStripVector.end());
+          if (!badStrips->put(rawId, range))
+            edm::LogError("SiPhase2BadStripConfigurableFakeESSource")
+                << "[SiPhase2BadStripConfigurableFakeESSource::produce] detid already exists" << std::endl;
         }
-
-        theSiStripVector.push_back(theBadStripRange);
       }
-
-      if (!quality->put(the_detid, SiStripBadStrip::Range{theSiStripVector.begin(), theSiStripVector.end()})) {
-        edm::LogError("SiStripQualityConfigurableFakeESSource") << "[produce] detid already exists";
-      }
-    }  // loop on the packed list of detid/apvs
-
-    if (m_printDebug) {
-      edm::LogInfo("SiStripQualityConfigurableFakeESSource") << ss.str();
     }
-    quality->cleanUp();
-
-  }  // do it by APVs
-
-  if (m_printDebug) {
-    std::stringstream ss1;
-    for (const auto& badComp : quality->getBadComponentList()) {
-      ss1 << "bad module " << badComp.detid << " " << badComp.BadModule << "\n";
-    }
-    edm::LogInfo("SiStripQualityConfigurableFakeESSource") << ss1.str();
   }
-  */
-
   return badStrips;
 }
 
-namespace {
-  bool _isSel(uint32_t requested,
-              uint32_t i) {  // internal helper: accept all i if requested is 0, otherwise require match
-    return (requested == 0) || (requested == i);
-  }
+// poor-man clusterizing algorithm
+std::map<unsigned short, unsigned short> SiPhase2BadStripConfigurableFakeESSource::clusterizeBadChannels(
+    const std::vector<Phase2TrackerDigi::PackedDigiType>& maskedChannels) {
+  // Here we will store the result
+  std::map<unsigned short, unsigned short> result{};
+  std::map<int, std::string> printresult{};
 
-  SiStripDetId::SubDetector subDetFromString(const std::string& subDetStr) {
-    SiStripDetId::SubDetector subDet = SiStripDetId::UNKNOWN;
-    if (subDetStr == "TIB")
-      subDet = SiStripDetId::TIB;
-    else if (subDetStr == "TID")
-      subDet = SiStripDetId::TID;
-    else if (subDetStr == "TOB")
-      subDet = SiStripDetId::TOB;
-    else if (subDetStr == "TEC")
-      subDet = SiStripDetId::TEC;
-    return subDet;
-  }
-}  // namespace
+  // Sort and remove duplicates.
+  std::set data(maskedChannels.begin(), maskedChannels.end());
 
-std::vector<uint32_t> SiPhase2BadStripConfigurableFakeESSource::selectDetectors(
-    const TrackerTopology* tTopo, const std::vector<uint32_t>& detIds) const {
-  std::vector<uint32_t> selList;
-  std::stringstream ss;
-  for (const auto& badComp : m_badComponentList) {
-    const std::string subDetStr{badComp.getParameter<std::string>("SubDet")};
-    if (m_printDebug)
-      ss << "Bad SubDet " << subDetStr << " \t";
-    const SiStripDetId::SubDetector subDet = subDetFromString(subDetStr);
+  // We will start the evaluation at the beginning of our data
+  auto startOfSequence = data.begin();
 
-    const std::vector<uint32_t> genericBadDetIds{
-        badComp.getUntrackedParameter<std::vector<uint32_t>>("detidList", std::vector<uint32_t>())};
-    const bool anySubDet{!genericBadDetIds.empty()};
+  // Find all sequences
+  while (startOfSequence != data.end()) {
+    // FInd first value that is not greate than one
+    auto endOfSequence =
+        std::adjacent_find(startOfSequence, data.end(), [](const auto& v1, const auto& v2) { return v2 != v1 + 1; });
+    if (endOfSequence != data.end())
+      std::advance(endOfSequence, 1);
 
-    std::cout << "genericBadDetIds.size() = " << genericBadDetIds.size() << std::endl;
+    auto consecutiveStrips = std::distance(startOfSequence, endOfSequence);
+    result[*startOfSequence] = consecutiveStrips;
 
-    using DetIdIt = std::vector<uint32_t>::const_iterator;
-    const DetIdIt beginDetIt = std::lower_bound(
-        detIds.begin(), detIds.end(), DetId(DetId::Tracker, anySubDet ? SiStripDetId::TIB : subDet).rawId());
-    const DetIdIt endDetIt = std::lower_bound(
-        detIds.begin(), detIds.end(), DetId(DetId::Tracker, anySubDet ? SiStripDetId::TEC + 1 : subDet + 1).rawId());
-
-    if (anySubDet) {
-      std::copy_if(beginDetIt, endDetIt, std::back_inserter(selList), [&genericBadDetIds](uint32_t detId) {
-        std::cout << "AnySubDet" << detId << std::endl;
-        return std::find(genericBadDetIds.begin(), genericBadDetIds.end(), detId) != genericBadDetIds.end();
-      });
-    } else {
-      switch (subDet) {
-        case SiStripDetId::TIB:
-          std::copy_if(beginDetIt, endDetIt, std::back_inserter(selList), [tTopo, &badComp](uint32_t detectorId) {
-            const DetId detId{detectorId};
-            return ((detId.subdetId() == SiStripDetId::TIB) &&
-                    _isSel(badComp.getParameter<uint32_t>("layer"), tTopo->tibLayer(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("bkw_frw"), tTopo->tibIsZPlusSide(detId) ? 2 : 1) &&
-                    _isSel(badComp.getParameter<uint32_t>("int_ext"), tTopo->tibIsInternalString(detId) ? 1 : 2) &&
-                    _isSel(badComp.getParameter<uint32_t>("ster"),
-                           tTopo->tibIsStereo(detId) ? 1 : (tTopo->tibIsRPhi(detId) ? 2 : -1)) &&
-                    _isSel(badComp.getParameter<uint32_t>("string_"), tTopo->tibString(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("detid"), detId.rawId()));
-          });
-          break;
-        case SiStripDetId::TID:
-          std::copy_if(beginDetIt, endDetIt, std::back_inserter(selList), [tTopo, &badComp](uint32_t detectorId) {
-            const DetId detId{detectorId};
-            return ((detId.subdetId() == SiStripDetId::TID) &&
-                    _isSel(badComp.getParameter<uint32_t>("wheel"), tTopo->tidWheel(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("side"), tTopo->tidIsZPlusSide(detId) ? 2 : 1) &&
-                    _isSel(badComp.getParameter<uint32_t>("ster"),
-                           tTopo->tidIsStereo(detId) ? 1 : (tTopo->tidIsRPhi(detId) ? 2 : -1)) &&
-                    _isSel(badComp.getParameter<uint32_t>("ring"), tTopo->tidRing(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("detid"), detId.rawId()));
-          });
-          break;
-        case SiStripDetId::TOB:
-          std::copy_if(beginDetIt, endDetIt, std::back_inserter(selList), [tTopo, &badComp](uint32_t detectorId) {
-            const DetId detId{detectorId};
-            return ((detId.subdetId() == SiStripDetId::TOB) &&
-                    _isSel(badComp.getParameter<uint32_t>("layer"), tTopo->tobLayer(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("bkw_frw"), tTopo->tobIsZPlusSide(detId) ? 2 : 1) &&
-                    _isSel(badComp.getParameter<uint32_t>("ster"),
-                           tTopo->tobIsStereo(detId) ? 1 : (tTopo->tobIsRPhi(detId) ? 2 : -1)) &&
-                    _isSel(badComp.getParameter<uint32_t>("rod"), tTopo->tobRod(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("detid"), detId.rawId()));
-          });
-          break;
-        case SiStripDetId::TEC:
-          std::copy_if(beginDetIt, endDetIt, std::back_inserter(selList), [tTopo, &badComp](uint32_t detectorId) {
-            const DetId detId{detectorId};
-            return ((detId.subdetId() == SiStripDetId::TEC) &&
-                    _isSel(badComp.getParameter<uint32_t>("wheel"), tTopo->tecWheel(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("side"), tTopo->tecIsZPlusSide(detId) ? 2 : 1) &&
-                    _isSel(badComp.getParameter<uint32_t>("ster"), tTopo->tecIsStereo(detId) ? 1 : 2) &&
-                    _isSel(badComp.getParameter<uint32_t>("petal_bkw_frw"), tTopo->tecIsFrontPetal(detId) ? 2 : 2) &&
-                    _isSel(badComp.getParameter<uint32_t>("petal"), tTopo->tecPetalNumber(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("ring"), tTopo->tecRing(detId)) &&
-                    _isSel(badComp.getParameter<uint32_t>("detid"), detId.rawId()));
-          });
-          break;
-        default:
-          break;
+    if (m_printDebug) {
+      // Build resulting string
+      std::ostringstream oss{};
+      bool writeDash = false;
+      for (auto it = startOfSequence; it != endOfSequence; ++it) {
+        oss << (writeDash ? "-" : "") << std::to_string(*it);
+        writeDash = true;
       }
+
+      // Copy result to map
+      for (auto it = startOfSequence; it != endOfSequence; ++it)
+        printresult[*it] = oss.str();
     }
+
+    // Continue to search for the next sequence
+    startOfSequence = endOfSequence;
   }
+
   if (m_printDebug) {
-    edm::LogInfo("SiStripBadModuleGenerator") << ss.str();
+    // Show result on the screen. Or use the map in whichever way you want.
+    for (const auto& [value, text] : printresult)
+      std::cout << std::left << std::setw(2) << value
+                << " -> "
+                   ""
+                << text
+                << ""
+                   "\n";
   }
-  return selList;
+
+  return result;
 }
 
 //define this as a plug-in
