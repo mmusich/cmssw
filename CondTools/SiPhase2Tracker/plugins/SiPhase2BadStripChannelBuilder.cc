@@ -10,7 +10,6 @@
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "DataFormats/Phase2TrackerDigi/interface/Phase2TrackerDigi.h"
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/FileInPath.h"
@@ -83,6 +82,11 @@ SiPhase2BadStripChannelBuilder::SiPhase2BadStripChannelBuilder(const edm::Parame
       printdebug_(iConfig.getUntrackedParameter<bool>("printDebug", false)),
       popConAlgo_(iConfig.getParameter<unsigned int>("popConAlgo")),
       badComponentsFraction_(iConfig.getParameter<double>("badComponentsFraction")) {
+  if (badComponentsFraction_ > 1. || badComponentsFraction_ < 0.) {
+    throw cms::Exception("Inconsistent configuration")
+        << "[SiPhase2BadStripChannelBuilder::c'tor] the requested fraction of bad components is unphysical. \n"
+        << " Defaulting to 0. \n";
+  }
   theBCAlgo_ = static_cast<badChannelAlgo>(popConAlgo_);
 }
 
@@ -92,6 +96,13 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
   edm::LogInfo("SiPhase2BadStripChannelBuilder") << "... creating dummy SiStripBadStrip Data" << std::endl;
 
   auto obj = std::make_unique<SiStripBadStrip>();
+
+  // early return with nullptr if fraction is ==0.
+  if (badComponentsFraction_ > 0.) {
+    ;
+  } else {
+    return obj;
+  }
 
   edm::LogInfo("SiPhase2BadStripChannelBuilder")
       << " There are " << tGeom_->detUnits().size() << " modules in this geometry." << std::endl;

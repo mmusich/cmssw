@@ -21,12 +21,12 @@
 #include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
-#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
@@ -51,6 +51,8 @@ public:
 
   typedef std::unique_ptr<SiStripBadStrip> ReturnType;
   ReturnType produce(const SiPhase2OuterTrackerBadStripRcd&);
+
+  static void fillDescriptions(edm::ConfigurationDescriptions&);
 
 private:
   std::map<unsigned short, unsigned short> clusterizeBadChannels(
@@ -77,6 +79,12 @@ SiPhase2BadStripConfigurableFakeESSource::SiPhase2BadStripConfigurableFakeESSour
   m_printDebug = iConfig.getUntrackedParameter<bool>("printDebug", false);
   m_badComponentsFraction = iConfig.getParameter<double>("badComponentsFraction");
 
+  if (m_badComponentsFraction > 1. || m_badComponentsFraction < 0.) {
+    throw cms::Exception("Inconsistent configuration")
+        << "[SiPhase2BadStripChannelBuilder::c'tor] the requested fraction of bad components is unphysical. \n"
+        << " Defaulting to 0. \n";
+  }
+
   findingRecord<SiPhase2OuterTrackerBadStripRcd>();
 }
 
@@ -96,6 +104,14 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
   TrackerGeometry const& tGeom = iRecord.get(m_geomToken);
 
   auto badStrips = std::make_unique<SiStripBadStrip>();
+
+  // early return with nullptr if fraction is ==0.
+  if (m_badComponentsFraction > 0.) {
+    ;
+  } else {
+    return badStrips;
+  }
+
   std::vector<unsigned int> theSiStripVector;
 
   for (auto const& det_u : tGeom.detUnits()) {
@@ -205,8 +221,16 @@ std::map<unsigned short, unsigned short> SiPhase2BadStripConfigurableFakeESSourc
                 << ""
                    "\n";
   }
-
   return result;
+}
+
+void SiPhase2BadStripConfigurableFakeESSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.setComment("Configurable Fake Phase-2 Outer Tracker Bad Strip ESSource");
+  desc.add<unsigned int>("seed", 1)->setComment("random seed");
+  desc.addUntracked<bool>("printDebug", false)->setComment("maximum amount of print-outs");
+  desc.add<double>("badComponentsFraction", 0.01)->setComment("fraction of bad components to populate the ES");
+  descriptions.addWithDefaultLabel(desc);
 }
 
 //define this as a plug-in
