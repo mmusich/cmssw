@@ -2,7 +2,6 @@
 #define CondFormats_SiPhase2OuterTrackerCondDataRecords_h
 
 #include "FWCore/Framework/interface/EventSetupRecordImplementation.h"
-#include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"  // needed for SiPhase2OuterTrackerBadStripRcd
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "FWCore/Utilities/interface/mplVector.h"
@@ -14,7 +13,8 @@ class SiPhase2OuterTrackerLorentzAngleRcd
 class SiPhase2OuterTrackerLorentzAngleSimRcd
     : public edm::eventsetup::DependentRecordImplementation<SiPhase2OuterTrackerLorentzAngleSimRcd,
                                                             edm::mpl::Vector<TrackerTopologyRcd> > {};
-class SiPhase2OuterTrackerBadStripRcd : public edm::eventsetup::DependentRecordImplementation<
-                                            SiStripBadStripRcd,
-                                            edm::mpl::Vector<TrackerTopologyRcd, TrackerDigiGeometryRecord> > {};
+/*Record associated to SiStripBadStrip Object:*/
+class SiPhase2OuterTrackerBadStripRcd 
+    : public edm::eventsetup::DependentRecordImplementation<SiPhase2OuterTrackerBadStripRcd,
+							    edm::mpl::Vector<TrackerTopologyRcd, TrackerDigiGeometryRecord> > {};
 #endif
