@@ -81,8 +81,7 @@ SiPhase2BadStripConfigurableFakeESSource::SiPhase2BadStripConfigurableFakeESSour
 
   if (m_badComponentsFraction > 1. || m_badComponentsFraction < 0.) {
     throw cms::Exception("Inconsistent configuration")
-        << "[SiPhase2BadStripChannelBuilder::c'tor] the requested fraction of bad components is unphysical. \n"
-        << " Defaulting to 0. \n";
+        << "[SiPhase2BadStripChannelBuilder::c'tor] the requested fraction of bad components is unphysical. \n";
   }
 
   findingRecord<SiPhase2OuterTrackerBadStripRcd>();
@@ -107,13 +106,15 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
 
   // early return with nullptr if fraction is ==0.
   if (m_badComponentsFraction > 0.) {
-    ;
+    ;  // do nothing
   } else {
     return badStrips;
   }
 
-  std::vector<unsigned int> theSiStripVector;
+  LogDebug("SiPhase2BadStripConfigurableFakeESSource")
+      << " There are " << tGeom.detUnits().size() << " modules in this geometry." << std::endl;
 
+  int counter{0};
   for (auto const& det_u : tGeom.detUnits()) {
     const DetId detid = det_u->geographicalId();
     uint32_t rawId = detid.rawId();
@@ -129,10 +130,14 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
           const int nrows = topol.nrows();
           const int ncols = topol.ncolumns();
 
+          LogDebug("SiPhase2BadStripConfigurableFakeESSource")
+              << "DetId: " << rawId << " subdet: " << subid << " nrows: " << nrows << " ncols: " << ncols << std::endl;
+
           // auxilliary vector to check if the channels were already used
           std::vector<Phase2TrackerDigi::PackedDigiType> usedChannels;
 
           size_t nmaxBadStrips = std::floor(nrows * ncols * m_badComponentsFraction);
+
           while (usedChannels.size() < nmaxBadStrips) {
             unsigned short badStripRow = std::floor(CLHEP::RandFlat::shoot(m_engine.get(), 0, nrows));
             unsigned short badStripCol = std::floor(CLHEP::RandFlat::shoot(m_engine.get(), 0, ncols));
@@ -142,14 +147,24 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
             }
           }
 
+          //usedChannels.push_back(Phase2TrackerDigi::pixelToChannel(0,1));
+
           const auto badChannelsGroups = this->clusterizeBadChannels(usedChannels);
+
+          LogDebug("SiPhase2BadStripConfigurableFakeESSource")
+              << rawId << " (" << counter << ") "
+              << " masking " << nmaxBadStrips << " strips, used channels size: " << usedChannels.size()
+              << ", clusters size: " << badChannelsGroups.size() << std::endl;
+
+          std::vector<unsigned int> theSiStripVector;
+
           // loop over the groups of bad strips
           for (const auto& [first, consec] : badChannelsGroups) {
             unsigned int theBadChannelsRange;
             theBadChannelsRange = badStrips->encode(first, consec);
 
             if (m_printDebug) {
-              edm::LogInfo("SiPhase2BadStripChannelBuilder")
+              edm::LogInfo("SiPhase2BadStripConfigurableFakeESSource")
                   << "detid " << rawId << " \t"
                   << " firstBadStrip " << first << "\t "
                   << " NconsecutiveBadStrips " << consec << "\t "
@@ -162,10 +177,16 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
           if (!badStrips->put(rawId, range))
             edm::LogError("SiPhase2BadStripConfigurableFakeESSource")
                 << "[SiPhase2BadStripConfigurableFakeESSource::produce] detid already exists" << std::endl;
-        }
-      }
-    }
-  }
+
+          counter++;
+
+        }  // if it's a strip module
+      }    // if it's OT
+    }      // if it's Tracker
+  }        // loop on DetIds
+
+  LogDebug("SiPhase2BadStripConfigurableFakeESSource") << "end of the detId loops" << std::endl;
+
   return badStrips;
 }
 
@@ -214,12 +235,8 @@ std::map<unsigned short, unsigned short> SiPhase2BadStripConfigurableFakeESSourc
   if (m_printDebug) {
     // Show result on the screen. Or use the map in whichever way you want.
     for (const auto& [value, text] : printresult)
-      std::cout << std::left << std::setw(2) << value
-                << " -> "
-                   ""
-                << text
-                << ""
-                   "\n";
+      LogDebug("SiPhase2BadStripConfigurableFakeESSource")
+          << std::left << std::setw(2) << value << " -> " << text << "\n";
   }
   return result;
 }
