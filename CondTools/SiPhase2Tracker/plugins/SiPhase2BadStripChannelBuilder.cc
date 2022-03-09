@@ -140,7 +140,7 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
               }
 
               unsigned int theBadStripRange;
-              theBadStripRange = obj->encode(firstBadStrip, NconsecutiveBadStrips);
+              theBadStripRange = obj->encodePhase2(firstBadStrip, NconsecutiveBadStrips);
 
               if (printdebug_)
                 edm::LogInfo("SiPhase2BadStripChannelBuilder")
@@ -181,7 +181,7 @@ std::unique_ptr<SiStripBadStrip> SiPhase2BadStripChannelBuilder::getNewObject() 
               // loop over the groups of bad strips
               for (const auto& [first, consec] : badChannelsGroups) {
                 unsigned int theBadChannelsRange;
-                theBadChannelsRange = obj->encode(first, consec);
+                theBadChannelsRange = obj->encodePhase2(first, consec);
 
                 if (printdebug_) {
                   edm::LogInfo("SiPhase2BadStripChannelBuilder")

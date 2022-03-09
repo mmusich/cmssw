@@ -147,7 +147,7 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
             }
           }
 
-          //usedChannels.push_back(Phase2TrackerDigi::pixelToChannel(0,1));
+          //usedChannels.push_back(Phase2TrackerDigi::pixelToChannel(0,1)); // useful for testing
 
           const auto badChannelsGroups = this->clusterizeBadChannels(usedChannels);
 
@@ -161,7 +161,7 @@ SiPhase2BadStripConfigurableFakeESSource::ReturnType SiPhase2BadStripConfigurabl
           // loop over the groups of bad strips
           for (const auto& [first, consec] : badChannelsGroups) {
             unsigned int theBadChannelsRange;
-            theBadChannelsRange = badStrips->encode(first, consec);
+            theBadChannelsRange = badStrips->encodePhase2(first, consec);
 
             if (m_printDebug) {
               edm::LogInfo("SiPhase2BadStripConfigurableFakeESSource")

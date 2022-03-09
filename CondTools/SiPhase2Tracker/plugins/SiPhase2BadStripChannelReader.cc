@@ -55,17 +55,17 @@ void SiPhase2BadStripChannelReader::analyze(edm::StreamID,
   for (const auto& d : detIds) {
     SiStripBadStrip::Range range = payload->getRange(d);
     for (std::vector<unsigned int>::const_iterator badChannel = range.first; badChannel != range.second; ++badChannel) {
-      const auto& firstStrip = payload->decode(*badChannel).firstStrip;
-      const auto& range = payload->decode(*badChannel).range;
+      const auto& firstStrip = payload->decodePhase2(*badChannel).firstStrip;
+      const auto& range = payload->decodePhase2(*badChannel).range;
 
       if (printdebug_) {
-        ss << "DetId=" << d << " Channel=" << payload->decode(*badChannel).firstStrip << ":"
-           << payload->decode(*badChannel).range << std::endl;
+        ss << "DetId=" << d << " Channel=" << payload->decodePhase2(*badChannel).firstStrip << ":"
+           << payload->decodePhase2(*badChannel).range << std::endl;
       }
 
       for (unsigned int index = 0; index < range; index++) {
         std::pair<int, int> badStrip = Phase2TrackerDigi::channelToPixel(firstStrip + index);
-        ss << "DetId=" << d << " Channel= " << firstStrip + index << " -> strip (row,col)=(" << badStrip.first << " ,"
+        ss << "DetId =" << d << " Channel = " << firstStrip + index << " -> strip (row,col)=(" << badStrip.first << ","
            << badStrip.second << ")" << std::endl;
       }
     }
