@@ -10,6 +10,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.enable = False
 process.MessageLogger.SiPhase2BadStripChannelReader=dict()  
 process.MessageLogger.SiStripBadStrip=dict()
+process.MessageLogger.SiPhase2BadStripConfigurableFakeESSource=dict()
 process.MessageLogger.cout = cms.untracked.PSet(
     enable    = cms.untracked.bool(True),
     enableStatistics = cms.untracked.bool(True),
@@ -18,8 +19,9 @@ process.MessageLogger.cout = cms.untracked.PSet(
     FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
                                    reportEvery = cms.untracked.int32(1000)
                                    ),                                                      
-  SiPhase2BadStripChannelReader = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
-  SiStripBadStrip = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+    SiPhase2BadStripChannelReader = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+    SiStripBadStrip = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+    SiPhase2BadStripConfigurableFakeESSource = cms.untracked.PSet( limit = cms.untracked.int32(-1))
 )
 
 ###################################################################
@@ -36,29 +38,37 @@ process.source = cms.Source("EmptyIOVSource",
 ###################################################################
 # Input data
 ###################################################################
-tag = 'SiStripBadStripPhase2_T15'
-suffix = 'v0'
-inFile = tag+'_'+suffix+'.db'
-inDB = 'sqlite_file:'+inFile
+# tag = 'SiStripBadStripPhase2_T15'
+# suffix = 'v0'
+# inFile = tag+'_'+suffix+'.db'
+# inDB = 'sqlite_file:'+inFile
 
-process.load("CondCore.CondDB.CondDB_cfi")
-# input database (in this case the local sqlite file)
-process.CondDB.connect = inDB
+# process.load("CondCore.CondDB.CondDB_cfi")
+# # input database (in this case the local sqlite file)
+# process.CondDB.connect = inDB
 
-process.PoolDBESSource = cms.ESSource("PoolDBESSource",
-                                      process.CondDB,
-                                      DumpStat=cms.untracked.bool(True),
-                                      toGet = cms.VPSet(cms.PSet(record = cms.string("SiStripBadStripRcd"),
-                                                                 tag = cms.string(tag))
-                                                       )
-                                      )
+# process.PoolDBESSource = cms.ESSource("PoolDBESSource",
+#                                       process.CondDB,
+#                                       DumpStat=cms.untracked.bool(True),
+#                                       toGet = cms.VPSet(cms.PSet(record = cms.string("SiStripBadStripRcd"),
+#                                                                  #record = cms.string("SiPhase2OuterTrackerBadStripRcd"),
+#                                                                  tag = cms.string(tag))
+#                                                        )
+#                                       )
+
+process.load("Configuration.Geometry.GeometryExtended2026D49_cff")
+process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
+process.load("SLHCUpgradeSimulations.Geometry.fakePhase2OuterTrackerConditions_cff")
+process.SiPhase2OTFakeBadStripsESSource.printDebug = cms.untracked.bool(True)
+process.SiPhase2OTFakeBadStripsESSource.badComponentsFraction = cms.double(0.01)  # bad components fraction is 1%
 
 ###################################################################
 # check the ES data getter
 ###################################################################
 process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
     toGet = cms.VPSet(cms.PSet(
-        record = cms.string(' SiStripBadStripRcd'),
+        #record = cms.string('SiStripBadStripRcd'),
+        record = cms.string('SiPhase2OuterTrackerBadStripRcd'),
         data = cms.vstring('SiStripBadStrip')
     )),
     verbose = cms.untracked.bool(True)
@@ -68,11 +78,10 @@ process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
 # Payload reader
 ###################################################################
 import CondTools.SiPhase2Tracker.siPhase2BadStripChannelReader_cfi as _mod
-process.BadStripPayloadReader = _mod.siPhase2BadStripChannelReader.clone(printDebug = 10,
-                                                                   label = "")
+process.BadStripPayloadReader = _mod.siPhase2BadStripChannelReader.clone(printDebug = False,
+                                                                         label = "")
 
 ###################################################################
 # Path
 ###################################################################
-process.p = cms.Path(process.BadStripPayloadReader)
-
+process.p = cms.Path(process.get+process.BadStripPayloadReader)
