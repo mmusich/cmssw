@@ -8,6 +8,7 @@ process.RandomNumberGeneratorService.prod = cms.PSet(
     engineName = cms.untracked.string('TRandom3')
 )
 
+## speciffy detector D49, as the geometry is needed (will take tracker T15)
 process.load("Configuration.Geometry.GeometryExtended2026D49_cff")
 process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 
@@ -49,7 +50,7 @@ process.prod = cms.EDAnalyzer("SiPhase2BadStripChannelBuilder",
                               Record = cms.string('SiStripBadStripRcd'),
                               SinceAppendMode = cms.bool(True),
                               IOVMode = cms.string('Run'),
-                              printDebug = cms.untracked.bool(True),
+                              printDebug = cms.untracked.bool(False),
                               doStoreOnDB = cms.bool(True),
                               #popConAlgo = cms.uint32(1), #NAIVE
                               popConAlgo = cms.uint32(2), #RANDOM

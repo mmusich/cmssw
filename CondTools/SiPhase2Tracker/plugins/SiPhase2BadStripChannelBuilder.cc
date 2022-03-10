@@ -272,8 +272,7 @@ std::map<unsigned short, unsigned short> SiPhase2BadStripChannelBuilder::cluster
   if (printdebug_) {
     // Show result on the screen. Or use the map in whichever way you want.
     for (const auto& [value, text] : printresult)
-      edm::LogInfo("SiPhase2BadStripConfigurableFakeESSource")
-          << std::left << std::setw(2) << value << " -> " << text << "\n";
+      edm::LogInfo("SiPhase2BadStripChannelBuilder") << std::left << std::setw(2) << value << " -> " << text << "\n";
   }
 
   return result;
