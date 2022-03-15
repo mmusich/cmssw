@@ -274,10 +274,10 @@ namespace {
 
       unsigned long IOV = std::get<0>(iov);
       int run = 0;
-      if(IOV < 4294967296){ 
-	run = std::get<0>(iov);
+      if (IOV < 4294967296) {
+        run = std::get<0>(iov);
       } else {  // time type IOV
-	run = IOV >> 32;
+        run = IOV >> 32;
       }
 
       std::vector<uint32_t> detid;
@@ -313,8 +313,8 @@ namespace {
       h_HV->SetStats(false);
       h_LV->SetStats(false);
 
-      h_HV->SetTitle(0);
-      h_LV->SetTitle(0);
+      h_HV->SetTitle(nullptr);
+      h_LV->SetTitle(nullptr);
 
       canvas.SetBottomMargin(0.18);
       canvas.SetLeftMargin(0.10);
@@ -409,18 +409,17 @@ namespace {
       t1.SetNDC();
       t1.SetTextAlign(26);
       t1.SetTextSize(0.05);
-      if(IOV < 4294967296)
-	t1.DrawLatex(0.5, 0.96, Form("SiStrip DetVOff, IOV %i", run));
-      else {   // time type IOV
-	time_t t = run;
-	char buf[256];
-	struct tm lt;
-	localtime_r(&t, &lt);
-	strftime(buf, sizeof(buf), "%F %R:%S", &lt);
-	buf[sizeof(buf)-1] = 0;
-	t1.DrawLatex(0.5, 0.96, Form("SiStrip DetVOff, IOV %s", buf));
+      if (IOV < 4294967296)
+        t1.DrawLatex(0.5, 0.96, Form("SiStrip DetVOff, IOV %i", run));
+      else {  // time type IOV
+        time_t t = run;
+        char buf[256];
+        struct tm lt;
+        localtime_r(&t, &lt);
+        strftime(buf, sizeof(buf), "%F %R:%S", &lt);
+        buf[sizeof(buf) - 1] = 0;
+        t1.DrawLatex(0.5, 0.96, Form("SiStrip DetVOff, IOV %s", buf));
       }
-
 
       // Remove the current axis
       h_HV.get()->GetYaxis()->SetLabelOffset(999);

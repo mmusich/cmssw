@@ -1,5 +1,5 @@
 #ifndef CondCore_SiStripPlugins_SiStripCondObjectRepresent_h
-#define CondCore_SiStripPlugins_SiStripCondObjectRepresent_h 
+#define CondCore_SiStripPlugins_SiStripCondObjectRepresent_h
 
 #include "FWCore/Utilities/interface/Exception.h"
 #include <string>
@@ -26,453 +26,467 @@
 #include "CommonTools/TrackerMap/interface/TrackerMap.h"
 
 //functions for correct representation of data in summary and plot
-namespace SiStripCondObjectRepresent{
+namespace SiStripCondObjectRepresent {
 
   enum plotType { STANDARD, COMPARISON, DIFF, RATIO, MAP, END_OF_TYPES };
   enum granularity { PERSTRIP, PERAPV, PERMODULE };
 
-  template<class type>
+  template <class type>
   class SiStripCondDataItem {
   public:
-    SiStripCondDataItem() {
-      init();
-    }
+    SiStripCondDataItem() { init(); }
 
-    virtual ~SiStripCondDataItem(){};
-    
-    void fillAll(unsigned int detid,const std::vector<type>& store){
-      m_info[detid]=store;
-      m_cached=true;
+    virtual ~SiStripCondDataItem() = default;
+
+    void fillAll(unsigned int detid, const std::vector<type> &store) {
+      m_info[detid] = store;
+      m_cached = true;
       return;
     }
-    
-    void fillByPushBack(unsigned int detid,const type& value){
+
+    void fillByPushBack(unsigned int detid, const type &value) {
       m_info[detid].push_back(value);
-      m_cached=true;
+      m_cached = true;
     }
 
-    void divide(unsigned int detid,const std::vector<type>& denominator){
-      
-      if(m_info[detid].size() != denominator.size()){
-	throw cms::Exception ("Unaligned Conditions") << "data size of numerator mismatched the data size of denominator";
+    void divide(unsigned int detid, const std::vector<type> &denominator) {
+      if (m_info[detid].size() != denominator.size()) {
+        throw cms::Exception("Unaligned Conditions")
+            << "data size of numerator mismatched the data size of denominator";
       }
-  
-      unsigned int counter=0;
-      for (const auto &den : denominator){
-	m_info[detid].at(counter)/=den;
-	counter++;
-      }
-    }
 
-    void subtract(unsigned int detid,const std::vector<type>& subtractor){
-      
-      if(m_info[detid].size() != subtractor.size()){
-	throw cms::Exception ("Unaligned Conditions") << "data size of numerator mismatched the data size of denominator";
-      }
-  
-      unsigned int counter=0;
-      for (const auto &sub : subtractor){
-	m_info[detid].at(counter)-=sub;
-	counter++;
+      unsigned int counter = 0;
+      for (const auto &den : denominator) {
+        m_info[detid].at(counter) /= den;
+        counter++;
       }
     }
 
-    std::vector<type> get(unsigned int detid){
-      return m_info[detid];
+    void subtract(unsigned int detid, const std::vector<type> &subtractor) {
+      if (m_info[detid].size() != subtractor.size()) {
+        throw cms::Exception("Unaligned Conditions")
+            << "data size of numerator mismatched the data size of denominator";
+      }
+
+      unsigned int counter = 0;
+      for (const auto &sub : subtractor) {
+        m_info[detid].at(counter) -= sub;
+        counter++;
+      }
     }
 
-    std::pair<std::vector<type>, std::vector<type> > getDemux(unsigned int detid){
-      if(m_compared){
-	std::vector<type> v1(m_info[detid].begin(),m_info[detid].begin()+m_info[detid].size()/2);
-	std::vector<type> v2(m_info[detid].begin()+m_info[detid].size()/2,m_info[detid].end());
-	assert(v1.size()==v2.size());
-	return std::make_pair(v1,v2);
+    std::vector<type> get(unsigned int detid) { return m_info[detid]; }
+
+    std::pair<std::vector<type>, std::vector<type> > getDemux(unsigned int detid) {
+      if (m_compared) {
+        std::vector<type> v1(m_info[detid].begin(), m_info[detid].begin() + m_info[detid].size() / 2);
+        std::vector<type> v2(m_info[detid].begin() + m_info[detid].size() / 2, m_info[detid].end());
+        assert(v1.size() == v2.size());
+        return std::make_pair(v1, v2);
       } else {
-	throw cms::Exception ("Logic error") << "not being in compared mode, data cannot be demultiplexed";
+        throw cms::Exception("Logic error") << "not being in compared mode, data cannot be demultiplexed";
       }
     }
 
-    void fillMonitor1D(const SiStripPI::OpMode& mymode, SiStripPI::Monitor1D* &mon,SiStripPI::Entry& entry, std::vector<type>& values,const unsigned int prev_det,unsigned int& prev_apv,const unsigned int detid){
+    void fillMonitor1D(const SiStripPI::OpMode &mymode,
+                       SiStripPI::Monitor1D *&mon,
+                       SiStripPI::Entry &entry,
+                       std::vector<type> &values,
+                       const unsigned int prev_det,
+                       unsigned int &prev_apv,
+                       const unsigned int detid) {
+      unsigned int istrip = 0;
+      for (const auto &value : values) {
+        bool flush = false;
+        switch (mymode) {
+          case (SiStripPI::APV_BASED):
+            flush = (prev_det != 0 && prev_apv != istrip / 128);
+            break;
+          case (SiStripPI::MODULE_BASED):
+            flush = (prev_det != 0 && prev_det != detid);
+            break;
+          case (SiStripPI::STRIP_BASED):
+            flush = (istrip != 0);
+            break;
+        }
 
-      unsigned int istrip=0;
-      for(const auto &value : values){
-	bool flush = false;
-	switch(mymode) {
-	case (SiStripPI::APV_BASED):
-	  flush = (prev_det != 0 && prev_apv != istrip/128);
-	  break;
-	case (SiStripPI::MODULE_BASED):
-	  flush = (prev_det != 0 && prev_det != detid);
-	  break;
-	case (SiStripPI::STRIP_BASED):
-	  flush = (istrip != 0);
-	  break;
-	}
-      
-	if(flush){
-	  mon->Fill(prev_apv,prev_det,entry.mean());
-	  entry.reset();
-	}
+        if (flush) {
+          mon->Fill(prev_apv, prev_det, entry.mean());
+          entry.reset();
+        }
 
-	entry.add(value); 
+        entry.add(value);
 
-	prev_apv = istrip/128;
-	istrip++;
+        prev_apv = istrip / 128;
+        istrip++;
       }
     }
 
-    void setGranularity(bool isPerStrip,bool isPerAPV){
-      m_servedPerStrip=isPerStrip;
-      m_servedPerAPV=isPerAPV;      
+    void setGranularity(bool isPerStrip, bool isPerAPV) {
+      m_servedPerStrip = isPerStrip;
+      m_servedPerAPV = isPerAPV;
     }
 
-    bool isCached(){
-      return m_cached;
-    }
+    bool isCached() { return m_cached; }
 
-    void setComparedBit(){
-      m_compared=true;
-    }
+    void setComparedBit() { m_compared = true; }
 
-    std::vector<unsigned int> getDetIds(bool verbose){
-
+    std::vector<unsigned int> getDetIds(bool verbose) {
       std::vector<unsigned int> v;
-      for(const auto & element : m_info){
-	if(verbose){
-	  std::cout<<element.first << "\n";
-	}
-	v.push_back(element.first);
+      for (const auto &element : m_info) {
+        if (verbose) {
+          std::cout << element.first << "\n";
+        }
+        v.push_back(element.first);
       }
 
       return v;
     }
 
   private:
-    std::map<unsigned int,std::vector<type> > m_info;
+    std::map<unsigned int, std::vector<type> > m_info;
     bool m_servedPerStrip;
     bool m_servedPerAPV;
     bool m_cached;
     bool m_compared;
 
-    void init(){
-      m_servedPerStrip=false;
-      m_servedPerAPV=false;
+    void init() {
+      m_servedPerStrip = false;
+      m_servedPerAPV = false;
       m_info.clear();
-      m_cached=false;
-      m_compared=false;
+      m_cached = false;
+      m_compared = false;
     }
-
   };
 
   //used to produce all display objects for payload inspector
-  template<class Item,class type>
+  template <class Item, class type>
   class SiStripDataContainer {
-
-  public : 
-    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash) : payload_(payload), 
-											      run_(run), 
-											      hash_(hash),  
-											      m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath()))
-    {
+  public:
+    SiStripDataContainer(std::shared_ptr<Item> payload, unsigned int run, std::string hash)
+        : payload_(payload),
+          run_(run),
+          hash_(hash),
+          m_trackerTopo(StandaloneTrackerTopology::fromTrackerParametersXMLFile(
+              edm::FileInPath("Geometry/TrackerCommonData/data/trackerParameters.xml").fullPath())) {
       granularity_ = PERSTRIP;
       PlotMode_ = STANDARD;
-      additionalIOV_ = std::make_pair(-1,"");
+      additionalIOV_ = std::make_pair(-1, "");
     }
 
     virtual ~SiStripDataContainer(){};
 
     ///////////////// public Get functions  /////////////////
-    unsigned int getRun() {return run_;}   
-    std::string getHash() {return hash_;}
-    std::string getTopoMode() {return TopoMode_;}
-    plotType    getPlotType() {return PlotMode_;}
-    void        setPlotType(plotType myType) {PlotMode_ = myType;}
-    void        setPayloadType(std::string myPayloadType){payloadType_ = myPayloadType;}
-    void        setGranularity(granularity myGranularity){
-
+    unsigned int getRun() { return run_; }
+    std::string getHash() { return hash_; }
+    std::string getTopoMode() { return TopoMode_; }
+    plotType getPlotType() { return PlotMode_; }
+    void setPlotType(plotType myType) { PlotMode_ = myType; }
+    void setPayloadType(std::string myPayloadType) { payloadType_ = myPayloadType; }
+    void setGranularity(granularity myGranularity) {
       granularity_ = myGranularity;
-      
-      switch(myGranularity){
-      case PERSTRIP:
-	SiStripCondData_.setGranularity(true,false);
-	break;
-      case PERAPV:
-	SiStripCondData_.setGranularity(false,true);
-	break;
-      case PERMODULE:
-	SiStripCondData_.setGranularity(false,false);
-	break;
-      default: 
-	edm::LogError("LogicError") << "Unknown granularity type: " << myGranularity; 	
+
+      switch (myGranularity) {
+        case PERSTRIP:
+          SiStripCondData_.setGranularity(true, false);
+          break;
+        case PERAPV:
+          SiStripCondData_.setGranularity(false, true);
+          break;
+        case PERMODULE:
+          SiStripCondData_.setGranularity(false, false);
+          break;
+        default:
+          edm::LogError("LogicError") << "Unknown granularity type: " << myGranularity;
       }
     }
 
-    void setAdditionalIOV(unsigned int run, std::string hash){ 
-      additionalIOV_.first  = run;   
+    void setAdditionalIOV(unsigned int run, std::string hash) {
+      additionalIOV_.first = run;
       additionalIOV_.second = hash;
     };
 
-
     ////NOTE to be implemented in PayloadInspector classes
-    virtual void getAllValues(){throw cms::Exception ("Value definition not found") << "getValue definition not found for ";}; // << payload_->myname();};
+    virtual void getAllValues() {
+      throw cms::Exception("Value definition not found") << "getValue definition not found for ";
+    };  // << payload_->myname();};
 
-    SiStripCondDataItem<type> getSiStripCondData() {return SiStripCondData_; }
-    
+    SiStripCondDataItem<type> getSiStripCondData() { return SiStripCondData_; }
+
     /***********************************************************************/
-    const char* getPlotDescriptor()
+    const char *getPlotDescriptor()
     /***********************************************************************/
     {
-      
-      const char* thePlotType="";
-      switch(PlotMode_){
-      case STANDARD:
-	thePlotType = Form("Display - IOV: %i",run_);
-	break;
-      case COMPARISON:
-	thePlotType = "Display";
-	break;
-      case DIFF:
-	thePlotType = Form("#Delta (%i-%i)",run_,additionalIOV_.first);
-	break;
-      case RATIO:
-	thePlotType = Form("Ratio (%i/%i)",run_,additionalIOV_.first);
-	break;
-      case MAP:
-	thePlotType = Form("TrackerMap - %s",hash_.c_str());
-	break;
-      case END_OF_TYPES:
-	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
-	break;
-      default:
-	edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_; 
-	break;
+      const char *thePlotType = "";
+      switch (PlotMode_) {
+        case STANDARD:
+          thePlotType = Form("Display - IOV: %i", run_);
+          break;
+        case COMPARISON:
+          thePlotType = "Display";
+          break;
+        case DIFF:
+          thePlotType = Form("#Delta (%i-%i)", run_, additionalIOV_.first);
+          break;
+        case RATIO:
+          thePlotType = Form("Ratio (%i/%i)", run_, additionalIOV_.first);
+          break;
+        case MAP:
+          thePlotType = Form("TrackerMap - %s", hash_.c_str());
+          break;
+        case END_OF_TYPES:
+          edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_;
+          break;
+        default:
+          edm::LogError("LogicError") << "Unknown plot type: " << PlotMode_;
+          break;
       }
 
       return thePlotType;
-
     }
 
     // all methods needed for comparison of 2 IOVs
 
     /***********************************************************************/
-    void Compare(SiStripDataContainer* dataCont2) 
+    void Compare(SiStripDataContainer *dataCont2)
     /***********************************************************************/
     {
       PlotMode_ = COMPARISON;
       dataCont2->setPlotType(COMPARISON);
       SiStripCondData_.setComparedBit();
 
-      setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
+      setAdditionalIOV(dataCont2->getRun(), dataCont2->getHash());
 
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       dataCont2->getAllValues();
       auto SiStripCondData2_ = dataCont2->getSiStripCondData();
-      
+
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	auto entriesToAdd =  SiStripCondData2_.get(detId);
-	for (const auto &entry : entriesToAdd){
-	  SiStripCondData_.fillByPushBack(detId,entry);
-	}
+      for (const auto &detId : listOfDetIds) {
+        auto entriesToAdd = SiStripCondData2_.get(detId);
+        for (const auto &entry : entriesToAdd) {
+          SiStripCondData_.fillByPushBack(detId, entry);
+        }
       }
     }
 
-
     /***********************************************************************/
-    void Divide(SiStripDataContainer* dataCont2) 
+    void Divide(SiStripDataContainer *dataCont2)
     /***********************************************************************/
     {
       PlotMode_ = RATIO;
       dataCont2->setPlotType(RATIO);
 
-      setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
+      setAdditionalIOV(dataCont2->getRun(), dataCont2->getHash());
 
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       dataCont2->getAllValues();
       auto SiStripCondData2_ = dataCont2->getSiStripCondData();
 
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	SiStripCondData_.divide(detId,SiStripCondData2_.get(detId));
+      for (const auto &detId : listOfDetIds) {
+        SiStripCondData_.divide(detId, SiStripCondData2_.get(detId));
       }
-
     }
 
     /***********************************************************************/
-    void Subtract(SiStripDataContainer* dataCont2) 
+    void Subtract(SiStripDataContainer *dataCont2)
     /***********************************************************************/
     {
       PlotMode_ = DIFF;
       dataCont2->setPlotType(DIFF);
 
-      setAdditionalIOV(dataCont2->getRun(),dataCont2->getHash());
+      setAdditionalIOV(dataCont2->getRun(), dataCont2->getHash());
 
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       dataCont2->getAllValues();
       auto SiStripCondData2_ = dataCont2->getSiStripCondData();
 
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	SiStripCondData_.subtract(detId,SiStripCondData2_.get(detId));
+      for (const auto &detId : listOfDetIds) {
+        SiStripCondData_.subtract(detId, SiStripCondData2_.get(detId));
       }
-
     }
-
 
     /***********************************************************************/
     void printAll()
     /***********************************************************************/
     {
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	std::cout<< detId << ": ";
-	auto values = SiStripCondData_.get(detId);
-	for(const auto &value : values){
-	  std::cout << value << " ";
-	}
-	std::cout<<"\n";
+      for (const auto &detId : listOfDetIds) {
+        std::cout << detId << ": ";
+        auto values = SiStripCondData_.get(detId);
+        for (const auto &value : values) {
+          std::cout << value << " ";
+        }
+        std::cout << "\n";
       }
     }
 
     /***********************************************************************/
-    void fillTrackerMap(TrackerMap* &tmap, std::pair<float,float>& range, const SiStripPI::estimator& est,const int nsigmas_of_saturation)
+    void fillTrackerMap(TrackerMap *&tmap,
+                        std::pair<float, float> &range,
+                        const SiStripPI::estimator &est,
+                        const int nsigmas_of_saturation)
     /***********************************************************************/
     {
-
-      std::string titleMap; 
-      if(PlotMode_!=DIFF && PlotMode_ !=RATIO){
-	titleMap = "Tracker Map of "+payloadType_+" "+estimatorType(est)+" per module (payload : "+hash_+")";
+      std::string titleMap;
+      if (PlotMode_ != DIFF && PlotMode_ != RATIO) {
+        titleMap =
+            "Tracker Map of " + payloadType_ + " " + estimatorType(est) + " per module (payload : " + hash_ + ")";
       } else {
-	titleMap = "Tracker Map of "+payloadType_+" "+Form("%s",getPlotDescriptor())+" "+estimatorType(est)+" per module";
+        titleMap = "Tracker Map of " + payloadType_ + " " + Form("%s", getPlotDescriptor()) + " " + estimatorType(est) +
+                   " per module";
       }
 
-      tmap = new TrackerMap(payloadType_.c_str());
+      tmap = new TrackerMap(payloadType_);
       tmap->setTitle(titleMap);
       tmap->setPalette(1);
 
       // storage of info
-      std::map<unsigned int,float> info_per_detid;
+      std::map<unsigned int, float> info_per_detid;
 
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	auto values = SiStripCondData_.get(detId);
+      for (const auto &detId : listOfDetIds) {
+        auto values = SiStripCondData_.get(detId);
 
-	unsigned int nElements = values.size();
-	double mean(0.),rms(0.),min(10000.), max(0.);
-	
-	for(const auto &value : values){
-	  mean+=value;
-	  rms+=value*value;
-	  if(value<min) min=value;
-	  if(value>max) max=value;
-	}
-	
-	mean/=nElements;
-	if((rms/nElements-mean*mean)>0.){
-	  rms = sqrt(rms/nElements-mean*mean);
-	} else {
-	  rms=0.;
-	}       
+        unsigned int nElements = values.size();
+        double mean(0.), rms(0.), min(10000.), max(0.);
 
-	switch(est){
-	case SiStripPI::min:
-	  info_per_detid[detId]=min;
-	  break;
-	case SiStripPI::max:
-	  info_per_detid[detId]=max;
-	  break;
-	case SiStripPI::mean:
-	  info_per_detid[detId]=mean;
-	  break;
-	case SiStripPI::rms:
-	  info_per_detid[detId]=rms;
-	  break;
-	default:
-	  edm::LogWarning("LogicError") << "Unknown estimator: " <<  est; 
-	  break;
-	}	
+        for (const auto &value : values) {
+          mean += value;
+          rms += value * value;
+          if (value < min)
+            min = value;
+          if (value > max)
+            max = value;
+        }
+
+        mean /= nElements;
+        if ((rms / nElements - mean * mean) > 0.) {
+          rms = sqrt(rms / nElements - mean * mean);
+        } else {
+          rms = 0.;
+        }
+
+        switch (est) {
+          case SiStripPI::min:
+            info_per_detid[detId] = min;
+            break;
+          case SiStripPI::max:
+            info_per_detid[detId] = max;
+            break;
+          case SiStripPI::mean:
+            info_per_detid[detId] = mean;
+            break;
+          case SiStripPI::rms:
+            info_per_detid[detId] = rms;
+            break;
+          default:
+            edm::LogWarning("LogicError") << "Unknown estimator: " << est;
+            break;
+        }
       }
-      
+
       // loop on the map
-      for (const auto &item : info_per_detid){
-	tmap->fill(item.first,item.second);
+      for (const auto &item : info_per_detid) {
+        tmap->fill(item.first, item.second);
       }
-      
-      range = SiStripPI::getTheRange(info_per_detid,nsigmas_of_saturation);
+
+      range = SiStripPI::getTheRange(info_per_detid, nsigmas_of_saturation);
     }
 
     /***********************************************************************/
-    void fillValuePlot(TCanvas &canvas,const SiStripPI::OpMode& op_mode_,int nbins,float min,float max)
+    void fillValuePlot(TCanvas &canvas, const SiStripPI::OpMode &op_mode_, int nbins, float min, float max)
     /***********************************************************************/
     {
-
       auto myMode = op_mode_;
       // check the consistency first
 
-      if(granularity_ == PERAPV ){
-	switch(op_mode_){
-	case SiStripPI::STRIP_BASED:
-	  edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per APV";
-	  return;
-	case SiStripPI::APV_BASED:
-	  myMode = SiStripPI::STRIP_BASED;
-	  break;
-	default:
-	  break;
-	}
+      if (granularity_ == PERAPV) {
+        switch (op_mode_) {
+          case SiStripPI::STRIP_BASED:
+            edm::LogError("LogicError") << " Cannot display average per " << opType(op_mode_).c_str()
+                                        << " in a conditions served per APV";
+            return;
+          case SiStripPI::APV_BASED:
+            myMode = SiStripPI::STRIP_BASED;
+            break;
+          default:
+            break;
+        }
       } else if (granularity_ == PERMODULE) {
-	if (op_mode_==SiStripPI::STRIP_BASED || op_mode_==SiStripPI::APV_BASED) {
-	  edm::LogError("LogicError") <<" Cannot display average per "<< opType(op_mode_).c_str() << " in a conditions served per module";
-	  return;
-	}
+        if (op_mode_ == SiStripPI::STRIP_BASED || op_mode_ == SiStripPI::APV_BASED) {
+          edm::LogError("LogicError") << " Cannot display average per " << opType(op_mode_).c_str()
+                                      << " in a conditions served per module";
+          return;
+        }
       }
-      
-      SiStripPI::Monitor1D *f_mon = NULL;
-      SiStripPI::Monitor1D *l_mon = NULL;
+
+      SiStripPI::Monitor1D *f_mon = nullptr;
+      SiStripPI::Monitor1D *l_mon = nullptr;
 
       f_mon = new SiStripPI::Monitor1D(myMode,
-				       "first",
-				       Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
-					    payloadType_.c_str(),opType(op_mode_).c_str(),payloadType_.c_str(),opType(op_mode_).c_str(),(units_[payloadType_]).c_str(),opType(op_mode_).c_str())
-				       ,nbins,min,max);
-      
-      if(PlotMode_ == COMPARISON){
-	l_mon = new SiStripPI::Monitor1D(myMode,
-					 "last",
-					 Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
-					      payloadType_.c_str(),opType(op_mode_).c_str(),payloadType_.c_str(),opType(op_mode_).c_str(),(units_[payloadType_]).c_str(),opType(op_mode_).c_str())
-					 ,nbins,min,max);
-	
+                                       "first",
+                                       Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
+                                            payloadType_.c_str(),
+                                            opType(op_mode_).c_str(),
+                                            payloadType_.c_str(),
+                                            opType(op_mode_).c_str(),
+                                            (units_[payloadType_]).c_str(),
+                                            opType(op_mode_).c_str()),
+                                       nbins,
+                                       min,
+                                       max);
+
+      if (PlotMode_ == COMPARISON) {
+        l_mon = new SiStripPI::Monitor1D(myMode,
+                                         "last",
+                                         Form("#LT %s #GT per %s;#LT%s per %s#GT %s;n. %ss",
+                                              payloadType_.c_str(),
+                                              opType(op_mode_).c_str(),
+                                              payloadType_.c_str(),
+                                              opType(op_mode_).c_str(),
+                                              (units_[payloadType_]).c_str(),
+                                              opType(op_mode_).c_str()),
+                                         nbins,
+                                         min,
+                                         max);
       }
-      
+
       // retrieve the data
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
 
-      unsigned int prev_det=0;
-      unsigned int prev_apv=0;
+      unsigned int prev_det = 0;
+      unsigned int prev_apv = 0;
       SiStripPI::Entry f_entryContainer;
       SiStripPI::Entry l_entryContainer;
 
-      std::cout<<"mode:" << opType(myMode) << " granularity: "<< granularity_ 
-	       <<" listOfDetIds.size(): "<< listOfDetIds.size() << std::endl;
+      std::cout << "mode:" << opType(myMode) << " granularity: " << granularity_
+                << " listOfDetIds.size(): " << listOfDetIds.size() << std::endl;
 
-      for(const auto &detId: listOfDetIds ){
-	
-	if(PlotMode_ == COMPARISON){
-	  auto values = SiStripCondData_.getDemux(detId);
-	  SiStripCondData_.fillMonitor1D(myMode,f_mon,f_entryContainer,values.first ,prev_det,prev_apv,detId);
-	  SiStripCondData_.fillMonitor1D(myMode,l_mon,l_entryContainer,values.second,prev_det,prev_apv,detId);
-	} else {
-	  auto values = SiStripCondData_.get(detId);
-	  SiStripCondData_.fillMonitor1D(myMode,f_mon,l_entryContainer,values,prev_det,prev_apv,detId);
-	}
-	prev_det = detId;
+      for (const auto &detId : listOfDetIds) {
+        if (PlotMode_ == COMPARISON) {
+          auto values = SiStripCondData_.getDemux(detId);
+          SiStripCondData_.fillMonitor1D(myMode, f_mon, f_entryContainer, values.first, prev_det, prev_apv, detId);
+          SiStripCondData_.fillMonitor1D(myMode, l_mon, l_entryContainer, values.second, prev_det, prev_apv, detId);
+        } else {
+          auto values = SiStripCondData_.get(detId);
+          SiStripCondData_.fillMonitor1D(myMode, f_mon, l_entryContainer, values, prev_det, prev_apv, detId);
+        }
+        prev_det = detId;
       }
 
-      TH1F* h_first = (TH1F*)(f_mon->getHist()).Clone("h_first");
+      TH1F *h_first = (TH1F *)(f_mon->getHist()).Clone("h_first");
       h_first->SetStats(kFALSE);
       SiStripPI::makeNicePlotStyle(h_first);
       h_first->GetYaxis()->CenterTitle(true);
@@ -487,98 +501,105 @@ namespace SiStripCondObjectRepresent{
       canvas.SetRightMargin(0.05);
       //canvas.Modified();
 
-      TLegend* legend = new TLegend(0.52,0.82,0.95,0.9);
+      TLegend *legend = new TLegend(0.52, 0.82, 0.95, 0.9);
       legend->SetTextSize(0.025);
 
-      if(PlotMode_ != COMPARISON){
-	float theMax = h_first->GetMaximum();
-	h_first->SetMaximum(theMax*1.30);
-	h_first->Draw();
+      if (PlotMode_ != COMPARISON) {
+        float theMax = h_first->GetMaximum();
+        h_first->SetMaximum(theMax * 1.30);
+        h_first->Draw();
 
-	legend->AddEntry(h_first,Form("IOV: %i",run_),"L");
+        legend->AddEntry(h_first, Form("IOV: %i", run_), "L");
 
       } else {
+        TH1F *h_last = (TH1F *)(l_mon->getHist()).Clone("h_last");
+        h_last->SetStats(kFALSE);
+        SiStripPI::makeNicePlotStyle(h_last);
+        h_last->GetYaxis()->CenterTitle(true);
+        h_last->GetXaxis()->CenterTitle(true);
+        h_last->SetLineWidth(2);
+        h_last->SetLineColor(kBlue);
 
-	TH1F* h_last  = (TH1F*)(l_mon->getHist()).Clone("h_last");
-	h_last->SetStats(kFALSE);
-	SiStripPI::makeNicePlotStyle(h_last);
-	h_last->GetYaxis()->CenterTitle(true);
-	h_last->GetXaxis()->CenterTitle(true);
-	h_last->SetLineWidth(2);
-	h_last->SetLineColor(kBlue);
+        std::cout << h_first->GetEntries() << " ---- " << h_last->GetEntries() << std::endl;
 
-	std::cout << h_first->GetEntries() << " ---- "<< h_last->GetEntries() << std::endl;
+        float theMax = (h_first->GetMaximum() > h_last->GetMaximum()) ? h_first->GetMaximum() : h_last->GetMaximum();
 
-	float theMax = (h_first->GetMaximum() > h_last->GetMaximum()) ? h_first->GetMaximum() : h_last->GetMaximum();
+        h_first->SetMaximum(theMax * 1.30);
+        h_last->SetMaximum(theMax * 1.30);
 
-	h_first->SetMaximum(theMax*1.30);
-	h_last->SetMaximum(theMax*1.30);
+        h_first->Draw();
+        h_last->Draw("same");
 
-	h_first->Draw();
-	h_last->Draw("same");
-
-	legend->SetHeader(Form("%s comparison",payloadType_.c_str()),"C"); // option "C" allows to center the header
-	legend->AddEntry(h_first,Form("IOV: %i",run_),"F");
-	legend->AddEntry(h_last, Form("IOV: %i",(additionalIOV_.first)),"F");
+        legend->SetHeader(Form("%s comparison", payloadType_.c_str()), "C");  // option "C" allows to center the header
+        legend->AddEntry(h_first, Form("IOV: %i", run_), "F");
+        legend->AddEntry(h_last, Form("IOV: %i", (additionalIOV_.first)), "F");
       }
 
       legend->Draw("same");
-
     }
-  
+
     /***********************************************************************/
     void fillSummary(TCanvas &canvas)
     /***********************************************************************/
     {
-      
       std::map<unsigned int, SiStripDetSummary::Values> f_map;
       std::map<unsigned int, SiStripDetSummary::Values> l_map;
 
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      
-      if(PlotMode_ == COMPARISON){
 
-	for(const auto &detId: listOfDetIds ){
-	  auto values = SiStripCondData_.getDemux(detId);
-	  for(const auto &value : values.first){
-	    summary.add(detId,value);
-	  }
-	}
-	  
-	f_map = summary.getCounts();
-	summary.clear();
+      if (PlotMode_ == COMPARISON) {
+        for (const auto &detId : listOfDetIds) {
+          auto values = SiStripCondData_.getDemux(detId);
+          for (const auto &value : values.first) {
+            summary.add(detId, value);
+          }
+        }
 
-	for(const auto &detId: listOfDetIds ){
-	  auto values = SiStripCondData_.getDemux(detId);
-	  for(const auto &value : values.second){
-	    summary.add(detId,value);
-	  }
-	}
+        f_map = summary.getCounts();
+        summary.clear();
 
-	l_map = summary.getCounts();
+        for (const auto &detId : listOfDetIds) {
+          auto values = SiStripCondData_.getDemux(detId);
+          for (const auto &value : values.second) {
+            summary.add(detId, value);
+          }
+        }
+
+        l_map = summary.getCounts();
 
       } else {
-	for(const auto &detId: listOfDetIds ){
-	  auto values = SiStripCondData_.get(detId);
-	  for(const auto &value : values){
-	    summary.add(detId,value);
-	  }
-	}
-	f_map = summary.getCounts();
+        for (const auto &detId : listOfDetIds) {
+          auto values = SiStripCondData_.get(detId);
+          for (const auto &value : values) {
+            summary.add(detId, value);
+          }
+        }
+        f_map = summary.getCounts();
       }
 
-      if(PlotMode_ == COMPARISON){
-	std::cout<< "f map size: " << f_map.size() << " l map size:" << l_map.size() << std::endl;
-	assert(f_map.size()==l_map.size());
+      if (PlotMode_ == COMPARISON) {
+        std::cout << "f map size: " << f_map.size() << " l map size:" << l_map.size() << std::endl;
+        assert(f_map.size() == l_map.size());
       }
       //=========================
-      
+
       canvas.cd();
-      auto h1 = new TH1F("byRegion1",Form("SiStrip %s average by region;; average SiStrip %s",payloadType_.c_str(),payloadType_.c_str()),f_map.size(),0.,f_map.size());
+      auto h1 = new TH1F(
+          "byRegion1",
+          Form("SiStrip %s average by region;; average SiStrip %s", payloadType_.c_str(), payloadType_.c_str()),
+          f_map.size(),
+          0.,
+          f_map.size());
       h1->SetStats(false);
 
-      auto h2 = new TH1F("byRegion2",Form("SiStrip %s average by region;; average SiStrip %s",payloadType_.c_str(),payloadType_.c_str()),f_map.size(),0.,f_map.size());
+      auto h2 = new TH1F(
+          "byRegion2",
+          Form("SiStrip %s average by region;; average SiStrip %s", payloadType_.c_str(), payloadType_.c_str()),
+          f_map.size(),
+          0.,
+          f_map.size());
       h2->SetStats(false);
 
       canvas.SetBottomMargin(0.18);
@@ -587,241 +608,253 @@ namespace SiStripCondObjectRepresent{
       canvas.Modified();
 
       std::vector<int> boundaries;
-      unsigned int iBin=0;
+      unsigned int iBin = 0;
 
       std::string detector;
       std::string currentDetector;
 
-      for (const auto &element : f_map){
-	iBin++;
-	int count   = element.second.count;
-	double mean = (element.second.mean)/count;
+      for (const auto &element : f_map) {
+        iBin++;
+        int count = element.second.count;
+        double mean = (element.second.mean) / count;
 
-	if(currentDetector.empty()) currentDetector="TIB";
-	
-	switch ((element.first)/1000) 
-	  {
-	  case 1:
-	    detector = "TIB";
-	    break;
-	  case 2:
-	    detector = "TOB";
-	    break;
-	  case 3:
-	    detector = "TEC";
-	    break;
-	  case 4:
-	    detector = "TID";
-	    break;
-	  }
+        if (currentDetector.empty())
+          currentDetector = "TIB";
 
-	h1->SetBinContent(iBin,mean);
-	h1->GetXaxis()->SetBinLabel(iBin,SiStripPI::regionType(element.first).second);
-	h1->GetXaxis()->LabelsOption("v");
-	
-	if(detector!=currentDetector) {
-	  boundaries.push_back(iBin);
-	  currentDetector=detector;
-	}
+        switch ((element.first) / 1000) {
+          case 1:
+            detector = "TIB";
+            break;
+          case 2:
+            detector = "TOB";
+            break;
+          case 3:
+            detector = "TEC";
+            break;
+          case 4:
+            detector = "TID";
+            break;
+        }
+
+        h1->SetBinContent(iBin, mean);
+        h1->GetXaxis()->SetBinLabel(iBin, SiStripPI::regionType(element.first).second);
+        h1->GetXaxis()->LabelsOption("v");
+
+        if (detector != currentDetector) {
+          boundaries.push_back(iBin);
+          currentDetector = detector;
+        }
       }
 
-      iBin=0;
-      if(PlotMode_ == COMPARISON){
-	for (const auto &element : l_map){
-	  iBin++;
-	  int count   = element.second.count;
-	  double mean = (element.second.mean)/count;
+      iBin = 0;
+      if (PlotMode_ == COMPARISON) {
+        for (const auto &element : l_map) {
+          iBin++;
+          int count = element.second.count;
+          double mean = (element.second.mean) / count;
 
-	  h2->SetBinContent(iBin,mean);
-	  h2->GetXaxis()->SetBinLabel(iBin,SiStripPI::regionType(element.first).second);
-	  h2->GetXaxis()->LabelsOption("v");
-	}
+          h2->SetBinContent(iBin, mean);
+          h2->GetXaxis()->SetBinLabel(iBin, SiStripPI::regionType(element.first).second);
+          h2->GetXaxis()->LabelsOption("v");
+        }
       }
 
-      h1->GetYaxis()->SetRangeUser(0.,h1->GetMaximum()*1.30);
+      h1->GetYaxis()->SetRangeUser(0., h1->GetMaximum() * 1.30);
       h1->SetMarkerStyle(20);
       h1->SetMarkerSize(1.5);
       h1->Draw("HIST");
       h1->Draw("Psame");
-	    
-      if(PlotMode_ == COMPARISON){
-	h2->GetYaxis()->SetRangeUser(0.,h2->GetMaximum()*1.30);
-	h2->SetMarkerStyle(25);
-	h2->SetMarkerColor(kBlue);
-	h2->SetLineColor(kBlue);
-	h2->SetMarkerSize(1.5);
-	h2->Draw("HISTsame");
-	h2->Draw("Psame");
+
+      if (PlotMode_ == COMPARISON) {
+        h2->GetYaxis()->SetRangeUser(0., h2->GetMaximum() * 1.30);
+        h2->SetMarkerStyle(25);
+        h2->SetMarkerColor(kBlue);
+        h2->SetLineColor(kBlue);
+        h2->SetMarkerSize(1.5);
+        h2->Draw("HISTsame");
+        h2->Draw("Psame");
       }
-	
+
       canvas.Update();
-      
-      TLine* l[boundaries.size()];
-      unsigned int i=0;
-      for (const auto & line : boundaries){
-	l[i] = new TLine(h1->GetBinLowEdge(line),canvas.GetUymin(),h1->GetBinLowEdge(line),canvas.GetUymax());
-	l[i]->SetLineWidth(1);
-	l[i]->SetLineStyle(9);
-	l[i]->SetLineColor(2);
-	l[i]->Draw("same");
-	i++;
+
+      TLine *l[boundaries.size()];
+      unsigned int i = 0;
+      for (const auto &line : boundaries) {
+        l[i] = new TLine(h1->GetBinLowEdge(line), canvas.GetUymin(), h1->GetBinLowEdge(line), canvas.GetUymax());
+        l[i]->SetLineWidth(1);
+        l[i]->SetLineStyle(9);
+        l[i]->SetLineColor(2);
+        l[i]->Draw("same");
+        i++;
       }
-      
-      TLegend* legend = new TLegend(0.52,0.82,0.95,0.9);
-      legend->SetHeader(hash_.c_str(),"C"); // option "C" allows to center the header
-      legend->AddEntry(h1,Form("IOV: %i",run_),"PL");
-      if(PlotMode_ == COMPARISON){
-	legend->AddEntry(h2,Form("IOV: %i",additionalIOV_.first),"PL");
+
+      TLegend *legend = new TLegend(0.52, 0.82, 0.95, 0.9);
+      legend->SetHeader(hash_.c_str(), "C");  // option "C" allows to center the header
+      legend->AddEntry(h1, Form("IOV: %i", run_), "PL");
+      if (PlotMode_ == COMPARISON) {
+        legend->AddEntry(h2, Form("IOV: %i", additionalIOV_.first), "PL");
       }
       legend->SetTextSize(0.025);
       legend->Draw("same");
-
     }
-  
+
     /***********************************************************************/
-    void fillByPartition(TCanvas &canvas,int nbins,float min,float max)
+    void fillByPartition(TCanvas &canvas, int nbins, float min, float max)
     /***********************************************************************/
     {
-      std::map<std::string,TH1F* > h_parts;
-      std::map<std::string,TH1F* > h_parts2;
+      std::map<std::string, TH1F *> h_parts;
+      std::map<std::string, TH1F *> h_parts2;
 
-      std::map<std::string,int> colormap;
-      std::map<std::string,int> markermap;
-      colormap["TIB"] = kRed;       markermap["TIB"] = kFullCircle;           
-      colormap["TOB"] = kGreen;	    markermap["TOB"] = kFullTriangleUp;
-      colormap["TID"] = kBlack;	    markermap["TID"] = kFullSquare;
-      colormap["TEC"] = kBlue; 	    markermap["TEC"] = kFullTriangleDown; 
+      std::map<std::string, int> colormap;
+      std::map<std::string, int> markermap;
+      colormap["TIB"] = kRed;
+      markermap["TIB"] = kFullCircle;
+      colormap["TOB"] = kGreen;
+      markermap["TOB"] = kFullTriangleUp;
+      colormap["TID"] = kBlack;
+      markermap["TID"] = kFullSquare;
+      colormap["TEC"] = kBlue;
+      markermap["TEC"] = kFullTriangleDown;
 
-      std::vector<std::string> parts = {"TEC","TOB","TIB","TID"};
+      std::vector<std::string> parts = {"TEC", "TOB", "TIB", "TID"};
 
-      const char* device;
-      switch(granularity_){
-      case PERSTRIP:
-	device = "strips";
-	break;
-      case PERAPV:
-	device = "APVs";
-	break;
-      case PERMODULE:
-	device = "modules";
-	break;
-      default:
-	device = "unrecognized device";
-	break;
+      const char *device;
+      switch (granularity_) {
+        case PERSTRIP:
+          device = "strips";
+          break;
+        case PERAPV:
+          device = "APVs";
+          break;
+        case PERMODULE:
+          device = "modules";
+          break;
+        default:
+          device = "unrecognized device";
+          break;
       }
 
-      for ( const auto &part : parts){
+      for (const auto &part : parts) {
+        TString globalTitle = Form("%s - %s %s;%s %s;n. %s",
+                                   getPlotDescriptor(),
+                                   payloadType_.c_str(),
+                                   part.c_str(),
+                                   payloadType_.c_str(),
+                                   (units_[payloadType_]).c_str(),
+                                   device);
 
-	TString globalTitle = Form("%s - %s %s;%s %s;n. %s",getPlotDescriptor(),payloadType_.c_str(),part.c_str(),payloadType_.c_str(),(units_[payloadType_]).c_str(),device);
+        h_parts[part] = new TH1F(Form("h_%s", part.c_str()), globalTitle, nbins, min, max);
 
-	h_parts[part] = new TH1F(Form("h_%s",part.c_str()),globalTitle,nbins,min,max);
-	
-	if(PlotMode_ == COMPARISON){
-	  h_parts2[part] = new TH1F(Form("h2_%s",part.c_str()),globalTitle,nbins,min,max);
-	}
+        if (PlotMode_ == COMPARISON) {
+          h_parts2[part] = new TH1F(Form("h2_%s", part.c_str()), globalTitle, nbins, min, max);
+        }
       }
 
-      if(! SiStripCondData_.isCached()) getAllValues();
+      if (!SiStripCondData_.isCached())
+        getAllValues();
       auto listOfDetIds = SiStripCondData_.getDetIds(false);
-      for(const auto &detId: listOfDetIds ){
-	auto values = SiStripCondData_.get(detId);
-	int subid = DetId(detId).subdetId();
-	unsigned int counter=0;
-	for(const auto &value : values){
-	  counter++;
-	  switch(subid){
-	  case StripSubdetector::TIB:
-	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2)) ){
-	      h_parts2["TIB"]->Fill(value);
-	    } else {
-	      h_parts["TIB"]->Fill(value);
-	    }
-	    break;
-	  case StripSubdetector::TID:
-	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2))){
-	      h_parts2["TID"]->Fill(value);
-	    } else {
-	      h_parts["TID"]->Fill(value);
-	    }
-	    break;
-	  case StripSubdetector::TOB:
-	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2))){
-	      h_parts2["TOB"]->Fill(value);
-	    } else {
-	      h_parts["TOB"]->Fill(value);
-	    }
-	    break;
-	  case StripSubdetector::TEC:
-	    if((PlotMode_ == COMPARISON) && (counter>(values.size()/2))){
-	      h_parts2["TEC"]->Fill(value);
-	    } else {
-	      h_parts["TEC"]->Fill(value);
-	    }
-	    break;
-	  default:
-	    edm::LogError("LogicError") << "Unknown partition: " << subid; 
-	    break;
-	  }	  
-	}
+      for (const auto &detId : listOfDetIds) {
+        auto values = SiStripCondData_.get(detId);
+        int subid = DetId(detId).subdetId();
+        unsigned int counter = 0;
+        for (const auto &value : values) {
+          counter++;
+          switch (subid) {
+            case StripSubdetector::TIB:
+              if ((PlotMode_ == COMPARISON) && (counter > (values.size() / 2))) {
+                h_parts2["TIB"]->Fill(value);
+              } else {
+                h_parts["TIB"]->Fill(value);
+              }
+              break;
+            case StripSubdetector::TID:
+              if ((PlotMode_ == COMPARISON) && (counter > (values.size() / 2))) {
+                h_parts2["TID"]->Fill(value);
+              } else {
+                h_parts["TID"]->Fill(value);
+              }
+              break;
+            case StripSubdetector::TOB:
+              if ((PlotMode_ == COMPARISON) && (counter > (values.size() / 2))) {
+                h_parts2["TOB"]->Fill(value);
+              } else {
+                h_parts["TOB"]->Fill(value);
+              }
+              break;
+            case StripSubdetector::TEC:
+              if ((PlotMode_ == COMPARISON) && (counter > (values.size() / 2))) {
+                h_parts2["TEC"]->Fill(value);
+              } else {
+                h_parts["TEC"]->Fill(value);
+              }
+              break;
+            default:
+              edm::LogError("LogicError") << "Unknown partition: " << subid;
+              break;
+          }
+        }
       }
 
-      canvas.Divide(2,2);
-      
-      int index=0;
-      for (const auto &part : parts){
-	index++;
-	canvas.cd(index)->SetTopMargin(0.07);
-	canvas.cd(index)->SetLeftMargin(0.13);
-	canvas.cd(index)->SetRightMargin(0.08);
-	
-	SiStripPI::makeNicePlotStyle(h_parts[part]);
-	h_parts[part]->SetMinimum(1.);
-	h_parts[part]->SetStats(false);
-	h_parts[part]->SetLineWidth(2);
-	 
-	if(PlotMode_ != COMPARISON){
-	  h_parts[part]->SetLineColor(colormap[part]);
-	  float theMax = h_parts[part]->GetMaximum();
-	  h_parts[part]->SetMaximum(theMax*1.30);
-	} else {
-	  h_parts[part]->SetLineColor(kBlack);
+      canvas.Divide(2, 2);
 
-	  SiStripPI::makeNicePlotStyle(h_parts2[part]);
-	  h_parts2[part]->SetMinimum(1.);
-	  h_parts2[part]->SetStats(false);
-	  h_parts2[part]->SetLineWidth(2);
-	  h_parts2[part]->SetLineColor(kBlue);
+      int index = 0;
+      for (const auto &part : parts) {
+        index++;
+        canvas.cd(index)->SetTopMargin(0.07);
+        canvas.cd(index)->SetLeftMargin(0.13);
+        canvas.cd(index)->SetRightMargin(0.08);
 
-	  float theMax = (h_parts[part]->GetMaximum() > h_parts2[part]->GetMaximum()) ? h_parts[part]->GetMaximum() : h_parts2[part]->GetMaximum();
+        SiStripPI::makeNicePlotStyle(h_parts[part]);
+        h_parts[part]->SetMinimum(1.);
+        h_parts[part]->SetStats(false);
+        h_parts[part]->SetLineWidth(2);
 
-	  h_parts[part]->SetMaximum(theMax*1.30);
-	  h_parts2[part]->SetMaximum(theMax*1.30);
+        if (PlotMode_ != COMPARISON) {
+          h_parts[part]->SetLineColor(colormap[part]);
+          float theMax = h_parts[part]->GetMaximum();
+          h_parts[part]->SetMaximum(theMax * 1.30);
+        } else {
+          h_parts[part]->SetLineColor(kBlack);
 
-	}
+          SiStripPI::makeNicePlotStyle(h_parts2[part]);
+          h_parts2[part]->SetMinimum(1.);
+          h_parts2[part]->SetStats(false);
+          h_parts2[part]->SetLineWidth(2);
+          h_parts2[part]->SetLineColor(kBlue);
 
-	h_parts[part]->Draw();
-	if(PlotMode_ == COMPARISON){
-	  h_parts2[part]->Draw("same");
-	}
+          float theMax = (h_parts[part]->GetMaximum() > h_parts2[part]->GetMaximum()) ? h_parts[part]->GetMaximum()
+                                                                                      : h_parts2[part]->GetMaximum();
 
-	TLegend* leg = new TLegend(.60,0.8,0.92,0.93);
-	if(PlotMode_ != COMPARISON){
-	  leg->SetTextSize(0.035);
-	  leg->SetHeader(part.c_str(),"C"); // option "C" allows to center the header
-	  leg->AddEntry(h_parts[part],Form("#splitline{#mu = %.2f}{r.m.s. = %.2f}",h_parts[part]->GetMean(),h_parts[part]->GetRMS()),"L");
-	  leg->Draw("same");
-	} else {
-	  leg->AddEntry(h_parts[part],Form("IOV: %i",run_),"L");
-	  leg->AddEntry(h_parts2[part],Form("IOV: %i",(additionalIOV_.first)),"L");
-	  leg->Draw("same");
-	}
-      } 
+          h_parts[part]->SetMaximum(theMax * 1.30);
+          h_parts2[part]->SetMaximum(theMax * 1.30);
+        }
+
+        h_parts[part]->Draw();
+        if (PlotMode_ == COMPARISON) {
+          h_parts2[part]->Draw("same");
+        }
+
+        TLegend *leg = new TLegend(.60, 0.8, 0.92, 0.93);
+        if (PlotMode_ != COMPARISON) {
+          leg->SetTextSize(0.035);
+          leg->SetHeader(part.c_str(), "C");  // option "C" allows to center the header
+          leg->AddEntry(
+              h_parts[part],
+              Form("#splitline{#mu = %.2f}{r.m.s. = %.2f}", h_parts[part]->GetMean(), h_parts[part]->GetRMS()),
+              "L");
+          leg->Draw("same");
+        } else {
+          leg->AddEntry(h_parts[part], Form("IOV: %i", run_), "L");
+          leg->AddEntry(h_parts2[part], Form("IOV: %i", (additionalIOV_.first)), "L");
+          leg->Draw("same");
+        }
+      }
     }
 
   protected:
     std::shared_ptr<Item> payload_;
     std::string payloadType_;
-    SiStripCondDataItem<type> SiStripCondData_;     
+    SiStripCondDataItem<type> SiStripCondData_;
 
   private:
     unsigned int run_;
@@ -832,25 +865,22 @@ namespace SiStripCondObjectRepresent{
     SiStripDetSummary summary{&m_trackerTopo};
     // "Map", "Ratio", or "Diff"
     plotType PlotMode_;
-    std::pair<int,std::string> additionalIOV_;
+    std::pair<int, std::string> additionalIOV_;
 
-    std::map<std::string, std::string> units_ = {
-      { "SiStripPedestals", "[ADC counts]" },
-      { "SiStripApvGain",  ""},//dimensionless TODO: verify
-      { "SiStripNoises" , "[ADC counts]"},
-      { "SiStripLorentzAngle" , "[rad]"},
-      { "SiStripBackPlaneCorrection" , ""},
-      { "SiStripBadStrip" , ""},
-      { "SiStripDetVOff" , ""}
-    };
+    std::map<std::string, std::string> units_ = {{"SiStripPedestals", "[ADC counts]"},
+                                                 {"SiStripApvGain", ""},  //dimensionless TODO: verify
+                                                 {"SiStripNoises", "[ADC counts]"},
+                                                 {"SiStripLorentzAngle", "[T^{-}]"},
+                                                 {"SiStripBackPlaneCorrection", ""},
+                                                 {"SiStripBadStrip", ""},
+                                                 {"SiStripDetVOff", ""}};
 
     std::string opType(SiStripPI::OpMode mode) {
-      std::string types[3] = {"Strip","APV","Module"};
+      std::string types[3] = {"Strip", "APV", "Module"};
       return types[mode];
     }
-
   };
 
-}
+}  // namespace SiStripCondObjectRepresent
 
 #endif

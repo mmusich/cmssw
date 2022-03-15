@@ -61,12 +61,9 @@ public:
    */
   void print(std::stringstream& ss, const bool mean = true) const;
 
-  inline void clear(){
-    valueMap_.clear();
-  }
+  inline void clear() { valueMap_.clear(); }
 
-  struct Values
-  {
+  struct Values {
     Values() : mean(0.), rms(0.), count(0) {}
     double mean;
     double rms;

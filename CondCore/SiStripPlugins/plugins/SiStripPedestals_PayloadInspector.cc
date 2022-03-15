@@ -22,7 +22,7 @@
 
 // auxilliary functions
 #include "CondCore/SiStripPlugins/interface/SiStripPayloadInspectorHelper.h"
-#include "CondCore/SiStripPlugins/interface/SiStripCondObjectRepresent.h" 
+#include "CondCore/SiStripPlugins/interface/SiStripCondObjectRepresent.h"
 #include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
 
 #include "CalibTracker/SiStripCommon/interface/SiStripDetInfoFileReader.h"
@@ -48,107 +48,107 @@
 namespace {
   using namespace cond::payloadInspector;
 
-  class SiStripPedestalContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals,float> {
+  class SiStripPedestalContainer : public SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals, float> {
   public:
-    SiStripPedestalContainer(std::shared_ptr<SiStripPedestals> payload,unsigned int run,std::string hash) : SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals,float>(payload, run, hash) {
+    SiStripPedestalContainer(std::shared_ptr<SiStripPedestals> payload, unsigned int run, std::string hash)
+        : SiStripCondObjectRepresent::SiStripDataContainer<SiStripPedestals, float>(payload, run, hash) {
       payloadType_ = "SiStripPedestals";
       setGranularity(SiStripCondObjectRepresent::PERSTRIP);
     }
 
     void getAllValues() override {
-
       std::vector<uint32_t> detid;
       payload_->getDetIds(detid);
-	  
-      for (const auto & d : detid) {
-	SiStripPedestals::Range range=payload_->getRange(d);
-	for( int it=0; it < (range.second-range.first)*8/10; ++it ){
-	  // to be used to fill the histogram
-	  SiStripCondData_.fillByPushBack(d,payload_->getPed(it,range));
-	}
+
+      for (const auto& d : detid) {
+        SiStripPedestals::Range range = payload_->getRange(d);
+        for (int it = 0; it < (range.second - range.first) * 8 / 10; ++it) {
+          // to be used to fill the histogram
+          SiStripCondData_.fillByPushBack(d, payload_->getPed(it, range));
+        }
       }
     }
   };
 
   class SiStripPedestalCompareByPartition : public cond::payloadInspector::PlotImage<SiStripPedestals> {
-    
   public:
-    SiStripPedestalCompareByPartition() : cond::payloadInspector::PlotImage<SiStripPedestals>("SiStrip Compare Pedestals By Partition"){
-      setSingleIov( false );
+    SiStripPedestalCompareByPartition()
+        : cond::payloadInspector::PlotImage<SiStripPedestals>("SiStrip Compare Pedestals By Partition") {
+      setSingleIov(false);
     }
-    
-    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
 
-      std::vector<std::tuple<cond::Time_t,cond::Hash> > sorted_iovs = iovs;
-       
+    bool fill(const std::vector<std::tuple<cond::Time_t, cond::Hash>>& iovs) override {
+      std::vector<std::tuple<cond::Time_t, cond::Hash>> sorted_iovs = iovs;
+
       // make absolute sure the IOVs are sortd by since
-      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const &t1, auto const &t2) {
-	  return std::get<0>(t1) < std::get<0>(t2);
-	});
-      
-      auto firstiov  = sorted_iovs.front();
-      auto lastiov   = sorted_iovs.back();
-      
-      std::shared_ptr<SiStripPedestals> last_payload  = fetchPayload( std::get<1>(lastiov) );
-      std::shared_ptr<SiStripPedestals> first_payload = fetchPayload( std::get<1>(firstiov) );
-      
-      SiStripPedestalContainer* l_objContainer = new SiStripPedestalContainer(last_payload, std::get<0>(lastiov),std::get<1>(lastiov));
-      SiStripPedestalContainer* f_objContainer = new SiStripPedestalContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
-	
+      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const& t1, auto const& t2) {
+        return std::get<0>(t1) < std::get<0>(t2);
+      });
+
+      auto firstiov = sorted_iovs.front();
+      auto lastiov = sorted_iovs.back();
+
+      std::shared_ptr<SiStripPedestals> last_payload = fetchPayload(std::get<1>(lastiov));
+      std::shared_ptr<SiStripPedestals> first_payload = fetchPayload(std::get<1>(firstiov));
+
+      SiStripPedestalContainer* l_objContainer =
+          new SiStripPedestalContainer(last_payload, std::get<0>(lastiov), std::get<1>(lastiov));
+      SiStripPedestalContainer* f_objContainer =
+          new SiStripPedestalContainer(first_payload, std::get<0>(firstiov), std::get<1>(firstiov));
+
       l_objContainer->Compare(f_objContainer);
 
       //l_objContainer->printAll();
 
-      TCanvas canvas("Partition summary","partition summary",1400,1000); 
-      l_objContainer->fillByPartition(canvas,300,0.1,300.);
-	  
+      TCanvas canvas("Partition summary", "partition summary", 1400, 1000);
+      l_objContainer->fillByPartition(canvas, 300, 0.1, 300.);
+
       std::string fileName(m_imageFileName);
       canvas.SaveAs(fileName.c_str());
 
       return true;
-    }// fill
+    }  // fill
   };
 
-
   class SiStripPedestalDiffByPartition : public cond::payloadInspector::PlotImage<SiStripPedestals> {
-    
   public:
-    SiStripPedestalDiffByPartition() : cond::payloadInspector::PlotImage<SiStripPedestals>("SiStrip Diff Pedestals By Partition"){
-      setSingleIov( false );
+    SiStripPedestalDiffByPartition()
+        : cond::payloadInspector::PlotImage<SiStripPedestals>("SiStrip Diff Pedestals By Partition") {
+      setSingleIov(false);
     }
-    
-    bool fill( const std::vector<std::tuple<cond::Time_t,cond::Hash> >& iovs ) override{
 
-      std::vector<std::tuple<cond::Time_t,cond::Hash> > sorted_iovs = iovs;
-       
+    bool fill(const std::vector<std::tuple<cond::Time_t, cond::Hash>>& iovs) override {
+      std::vector<std::tuple<cond::Time_t, cond::Hash>> sorted_iovs = iovs;
+
       // make absolute sure the IOVs are sortd by since
-      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const &t1, auto const &t2) {
-	  return std::get<0>(t1) < std::get<0>(t2);
-	});
-      
-      auto firstiov  = sorted_iovs.front();
-      auto lastiov   = sorted_iovs.back();
-      
-      std::shared_ptr<SiStripPedestals> last_payload  = fetchPayload( std::get<1>(lastiov) );
-      std::shared_ptr<SiStripPedestals> first_payload = fetchPayload( std::get<1>(firstiov) );
-      
-      SiStripPedestalContainer* l_objContainer = new SiStripPedestalContainer(last_payload,  std::get<0>(lastiov), std::get<1>(lastiov));
-      SiStripPedestalContainer* f_objContainer = new SiStripPedestalContainer(first_payload, std::get<0>(firstiov),std::get<1>(firstiov));
-	
+      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const& t1, auto const& t2) {
+        return std::get<0>(t1) < std::get<0>(t2);
+      });
+
+      auto firstiov = sorted_iovs.front();
+      auto lastiov = sorted_iovs.back();
+
+      std::shared_ptr<SiStripPedestals> last_payload = fetchPayload(std::get<1>(lastiov));
+      std::shared_ptr<SiStripPedestals> first_payload = fetchPayload(std::get<1>(firstiov));
+
+      SiStripPedestalContainer* l_objContainer =
+          new SiStripPedestalContainer(last_payload, std::get<0>(lastiov), std::get<1>(lastiov));
+      SiStripPedestalContainer* f_objContainer =
+          new SiStripPedestalContainer(first_payload, std::get<0>(firstiov), std::get<1>(firstiov));
+
       l_objContainer->Subtract(f_objContainer);
 
       //l_objContainer->printAll();
 
-      TCanvas canvas("Partition summary","partition summary",1400,1000); 
-      l_objContainer->fillByPartition(canvas,100,-30.,30.);
-	  
+      TCanvas canvas("Partition summary", "partition summary", 1400, 1000);
+      l_objContainer->fillByPartition(canvas, 100, -30., 30.);
+
       std::string fileName(m_imageFileName);
       canvas.SaveAs(fileName.c_str());
 
       return true;
-    }// fill
+    }  // fill
   };
->>>>>>> 89fbeb10afb (add SiStripContainers to Pedestals Payload Inspector)
 
   /************************************************
     test class
@@ -1074,7 +1074,7 @@ namespace {
 
 }  // namespace
 
-PAYLOAD_INSPECTOR_MODULE(SiStripPedestals){
+PAYLOAD_INSPECTOR_MODULE(SiStripPedestals) {
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalCompareByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalDiffByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalsTest);
