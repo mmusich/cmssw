@@ -1,29 +1,32 @@
 #ifndef CondCore_SiStripPlugins_SiStripCondObjectRepresent_h
 #define CondCore_SiStripPlugins_SiStripCondObjectRepresent_h
 
-#include "FWCore/Utilities/interface/Exception.h"
-#include <string>
-#include <iostream>
+// system includes
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
+
+// user includes
+#include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
+#include "CommonTools/TrackerMap/interface/TrackerMap.h"
+#include "CondCore/SiStripPlugins/interface/SiStripPayloadInspectorHelper.h"
+#include "DataFormats/DetId/interface/DetId.h"
+#include "FWCore/Utilities/interface/Exception.h"
+
+// ROOT includes
+#include "TCanvas.h"
+#include "TColor.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "DataFormats/DetId/interface/DetId.h"
-#include "TROOT.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TColor.h"
-#include "TLine.h"
 #include "TLatex.h"
-#include "TProfile.h"
+#include "TLegend.h"
+#include "TLine.h"
 #include "TPaveLabel.h"
-#include "CalibTracker/StandaloneTrackerTopology/interface/StandaloneTrackerTopology.h"
-#include "CondCore/SiStripPlugins/interface/SiStripPayloadInspectorHelper.h"
-
-// needed for the tracker map
-#include "CommonTools/TrackerMap/interface/TrackerMap.h"
+#include "TProfile.h"
+#include "TROOT.h"
+#include "TStyle.h"
 
 //functions for correct representation of data in summary and plot
 namespace SiStripCondObjectRepresent {
@@ -100,7 +103,7 @@ namespace SiStripCondObjectRepresent {
         bool flush = false;
         switch (mymode) {
           case (SiStripPI::APV_BASED):
-            flush = (prev_det != 0 && prev_apv != istrip / 128);
+            flush = (prev_det != 0 && prev_apv != istrip / sistrip::STRIPS_PER_APV);
             break;
           case (SiStripPI::MODULE_BASED):
             flush = (prev_det != 0 && prev_det != detid);
@@ -117,7 +120,7 @@ namespace SiStripCondObjectRepresent {
 
         entry.add(value);
 
-        prev_apv = istrip / 128;
+        prev_apv = istrip / sistrip::STRIPS_PER_APV;
         istrip++;
       }
     }

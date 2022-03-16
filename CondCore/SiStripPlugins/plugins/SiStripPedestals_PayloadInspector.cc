@@ -260,9 +260,9 @@ namespace {
               Form("Pedestal profile %s", std::to_string(the_detid).c_str()),
               Form("SiStrip Pedestal profile for DetId: %s;Strip number;SiStrip Pedestal [ADC counts]",
                    std::to_string(the_detid).c_str()),
-              128 * nAPVs,
+              sistrip::STRIPS_PER_APV * nAPVs,
               -0.5,
-              (128 * nAPVs) - 0.5);
+              (sistrip::STRIPS_PER_APV * nAPVs) - 0.5);
 
           histo->SetStats(false);
           histo->SetTitle("");
@@ -293,7 +293,7 @@ namespace {
 
           std::vector<int> boundaries;
           for (size_t b = 0; b < v_nAPVs.at(index); b++) {
-            boundaries.push_back(b * 128);
+            boundaries.push_back(b * sistrip::STRIPS_PER_APV);
           }
 
           std::vector<std::shared_ptr<TLine>> linesVec;
@@ -480,7 +480,7 @@ namespace {
           bool flush = false;
           switch (op_mode_) {
             case (SiStripPI::APV_BASED):
-              flush = (prev_det != 0 && prev_apv != istrip / 128);
+              flush = (prev_det != 0 && prev_apv != istrip / sistrip::STRIPS_PER_APV);
               break;
             case (SiStripPI::MODULE_BASED):
               flush = (prev_det != 0 && prev_det != d);
@@ -496,7 +496,7 @@ namespace {
           }
 
           epedestal.add(std::min<float>(pedestal, 300.));
-          prev_apv = istrip / 128;
+          prev_apv = istrip / sistrip::STRIPS_PER_APV;
           istrip++;
         }
         prev_det = d;
@@ -628,7 +628,7 @@ namespace {
           bool flush = false;
           switch (op_mode_) {
             case (SiStripPI::APV_BASED):
-              flush = (prev_det != 0 && prev_apv != istrip / 128);
+              flush = (prev_det != 0 && prev_apv != istrip / sistrip::STRIPS_PER_APV);
               break;
             case (SiStripPI::MODULE_BASED):
               flush = (prev_det != 0 && prev_det != d);
@@ -643,7 +643,7 @@ namespace {
             epedestal.reset();
           }
           epedestal.add(std::min<float>(pedestal, 300.));
-          prev_apv = istrip / 128;
+          prev_apv = istrip / sistrip::STRIPS_PER_APV;
           istrip++;
         }
         prev_det = d;
@@ -666,7 +666,7 @@ namespace {
           bool flush = false;
           switch (op_mode_) {
             case (SiStripPI::APV_BASED):
-              flush = (prev_det != 0 && prev_apv != istrip / 128);
+              flush = (prev_det != 0 && prev_apv != istrip / sistrip::STRIPS_PER_APV);
               break;
             case (SiStripPI::MODULE_BASED):
               flush = (prev_det != 0 && prev_det != d);
@@ -682,7 +682,7 @@ namespace {
           }
 
           epedestal.add(std::min<float>(pedestal, 300.));
-          prev_apv = istrip / 128;
+          prev_apv = istrip / sistrip::STRIPS_PER_APV;
           istrip++;
         }
         prev_det = d;
@@ -804,7 +804,8 @@ namespace {
             zeropeds_per_detid[d] += 1;
           }
         }  // end of loop on strips
-        float fraction = zeropeds_per_detid[d] / (128. * detInfo.getNumberOfApvsAndStripLength(d).first);
+        float fraction =
+            zeropeds_per_detid[d] / (sistrip::STRIPS_PER_APV * detInfo.getNumberOfApvsAndStripLength(d).first);
         if (fraction > 0.) {
           tmap->fill(d, fraction);
           std::cout << "detid: " << d << " (n. APVs=" << detInfo.getNumberOfApvsAndStripLength(d).first << ") has "
