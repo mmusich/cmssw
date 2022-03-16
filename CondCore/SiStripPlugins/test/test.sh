@@ -97,7 +97,6 @@ getPayloadData.py \
 mv *.png $W_DIR/results/SiStripConfObjectDisplay.png
 
 ######################
-<<<<<<< HEAD
 # Test DetVOff
 ######################
 getPayloadData.py \
@@ -147,3 +146,5 @@ getPayloadData.py \
     --tag  SiStripLorentzAngleDeco_GR10_v1_prompt \
     --time_type Run \
     --iovs '{"start_iov": "1", "end_iov": "1"}' \
+    --db Prod \
+    --test ;

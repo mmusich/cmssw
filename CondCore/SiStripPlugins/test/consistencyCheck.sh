@@ -14,8 +14,7 @@ if [ ! -d $W_DIR/results ]; then
     mkdir $W_DIR/results
 fi
  
-# # reference
-
+# reference
 getPayloadData.py \
     --plugin pluginSiStripNoises_PayloadInspector \
     --plot plot_SiStripNoiseValueComparisonPerAPV \
@@ -28,7 +27,6 @@ getPayloadData.py \
 mv *.png $W_DIR/results/SiStripNoisesPerAPVValues_ref.png
 
 # target
-
 getPayloadData.py \
     --plugin pluginSiStripNoises_PayloadInspector \
     --plot plot_SiStripNoiseConsistencyCheck \
@@ -41,7 +39,6 @@ getPayloadData.py \
 mv *.png $W_DIR/results/SiStripNoisesPerAPVValues_tar.png
 
 # LA test
-
 getPayloadData.py \
     --plugin pluginSiStripLorentzAngle_PayloadInspector \
     --plot plot_SiStripLorentzAngleTest \
