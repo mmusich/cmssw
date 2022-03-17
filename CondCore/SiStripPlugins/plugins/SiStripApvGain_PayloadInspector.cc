@@ -68,16 +68,15 @@ namespace {
   /************************************************
     testing the machinery
   ************************************************/
-  class SiStripApvGainTest : public cond::payloadInspector::Histogram1D<SiStripApvGain> {
+  class SiStripApvGainTest : public cond::payloadInspector::Histogram1D<SiStripApvGain, SINGLE_IOV> {
   public:
     SiStripApvGainTest()
-        : cond::payloadInspector::Histogram1D<SiStripApvGain>(
-              "SiStrip ApvGain values", "SiStrip ApvGain values", 1, 0.0, 1.) {
-      Base::setSingleIov(true);
-    }
+        : cond::payloadInspector::Histogram1D<SiStripApvGain, SINGLE_IOV>(
+              "SiStrip ApvGain values", "SiStrip ApvGain values", 1, 0.0, 1.) {}
 
-    bool fill(const std::vector<std::tuple<cond::Time_t, cond::Hash>>& iovs) override {
-      for (auto const& iov : iovs) {
+    bool fill() override {
+      auto tag = PlotBase::getTag<0>();
+      for (auto const& iov : tag.iovs) {
         std::shared_ptr<SiStripApvGain> payload = Base::fetchPayload(std::get<1>(iov));
         if (payload.get()) {
           SiStripApvGainContainer* objContainer =
