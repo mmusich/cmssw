@@ -18,6 +18,7 @@
 // ROOT includes
 #include "TCanvas.h"
 #include "TColor.h"
+#include "TGaxis.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TLatex.h"
@@ -759,7 +760,7 @@ namespace SiStripCondObjectRepresent {
       for (const auto &detId : listOfDetIds) {
         auto values = SiStripCondData_.get(detId);
         int subid = DetId(detId).subdetId();
-        unsigned int counter = 0;
+        unsigned int counter{0};
         for (const auto &value : values) {
           counter++;
           switch (subid) {
@@ -854,6 +855,121 @@ namespace SiStripCondObjectRepresent {
       }
     }
 
+    /***********************************************************************/
+    void fillCorrelationByPartition(TCanvas &canvas, int nbins, float min, float max)
+    /***********************************************************************/
+    {
+      SiStripPI::setPaletteStyle(SiStripPI::DEFAULT); /* better looking palette ;)*/
+
+      if (PlotMode_ != COMPARISON) {
+        throw cms::Exception("Logic error") << "not being in compared mode, cannot plot correlations";
+      }
+
+      std::map<std::string, TH2F *> h2_parts;
+
+      std::map<std::string, int> colormap;
+      std::map<std::string, int> markermap;
+      colormap["TIB"] = kRed;
+      markermap["TIB"] = kFullCircle;
+      colormap["TOB"] = kGreen;
+      markermap["TOB"] = kFullTriangleUp;
+      colormap["TID"] = kBlack;
+      markermap["TID"] = kFullSquare;
+      colormap["TEC"] = kBlue;
+      markermap["TEC"] = kFullTriangleDown;
+
+      std::vector<std::string> parts = {"TEC", "TOB", "TIB", "TID"};
+
+      const char *device;
+      switch (granularity_) {
+        case PERSTRIP:
+          device = "strips";
+          break;
+        case PERAPV:
+          device = "APVs";
+          break;
+        case PERMODULE:
+          device = "modules";
+          break;
+        default:
+          device = "unrecognized device";
+          break;
+      }
+
+      for (const auto &part : parts) {
+        TString globalTitle = Form("%s - %s %s;%s %s (#color[4]{%s});%s %s (#color[4]{%s});n. %s",
+                                   "Correlation",  // FIXME: can use the getPlotDescriptor()
+                                   payloadType_.c_str(),
+                                   part.c_str(),
+                                   payloadType_.c_str(),
+                                   (units_[payloadType_]).c_str(),
+                                   std::to_string(run_).c_str(),
+                                   payloadType_.c_str(),
+                                   (units_[payloadType_]).c_str(),
+                                   std::to_string(additionalIOV_.first).c_str(),
+                                   device);
+
+        h2_parts[part] = new TH2F(Form("h2_%s", part.c_str()), globalTitle, nbins, min, max, nbins, min, max);
+      }
+
+      if (!SiStripCondData_.isCached())
+        getAllValues();
+      auto listOfDetIds = SiStripCondData_.getDetIds(false);
+      for (const auto &detId : listOfDetIds) {
+        auto values = SiStripCondData_.getDemux(detId);
+        int subid = DetId(detId).subdetId();
+        unsigned int counter{0};
+        for (const auto &value : values.first) {
+          switch (subid) {
+            case StripSubdetector::TIB:
+              h2_parts["TIB"]->Fill(value, (values.second)[counter]);
+              break;
+            case StripSubdetector::TID:
+              h2_parts["TID"]->Fill(value, (values.second)[counter]);
+              break;
+            case StripSubdetector::TOB:
+              h2_parts["TOB"]->Fill(value, (values.second)[counter]);
+              break;
+            case StripSubdetector::TEC:
+              h2_parts["TEC"]->Fill(value, (values.second)[counter]);
+              break;
+            default:
+              edm::LogError("LogicError") << "Unknown partition: " << subid;
+              break;
+          }
+          counter++;
+        }
+      }
+
+      canvas.Divide(2, 2);
+
+      int index = 0;
+      for (const auto &part : parts) {
+        index++;
+        canvas.cd(index)->SetTopMargin(0.07);
+        canvas.cd(index)->SetLeftMargin(0.13);
+        canvas.cd(index)->SetRightMargin(0.17);
+
+        SiStripPI::makeNicePlotStyle(h2_parts[part]);
+        h2_parts[part]->GetZaxis()->SetTitleOffset(1.6);
+        h2_parts[part]->GetZaxis()->SetTitleSize(0.04);
+        h2_parts[part]->GetZaxis()->CenterTitle();
+        h2_parts[part]->GetZaxis()->SetMaxDigits(2); /* exponentiate z-axis */
+
+        //h2_parts[part]->SetMarkerColor(colormap[part]);
+        //h2_parts[part]->SetMarkerStyle(markermap[part]);
+        //h2_parts[part]->SetStats(false);
+        //h2_parts[part]->Draw("P");
+        h2_parts[part]->Draw("colz");
+
+        TLegend *leg = new TLegend(.13, 0.87, 0.27, 0.93);
+        leg->SetTextSize(0.045);
+        leg->SetHeader(Form("#bf{%s}", part.c_str()), "C");  // option "C" allows to center the header
+        //leg->AddEntry(h2_parts[part], Form("#DeltaIOV: #splitline{%i}{%i}", run_, additionalIOV_.first),"P");
+        leg->Draw("same");
+      }
+    }
+
   protected:
     std::shared_ptr<Item> payload_;
     std::string payloadType_;
@@ -873,10 +989,10 @@ namespace SiStripCondObjectRepresent {
     std::map<std::string, std::string> units_ = {{"SiStripPedestals", "[ADC counts]"},
                                                  {"SiStripApvGain", ""},  //dimensionless TODO: verify
                                                  {"SiStripNoises", "[ADC counts]"},
-                                                 {"SiStripLorentzAngle", "[T^{-}]"},
+                                                 {"SiStripLorentzAngle", "[1/T}]"},
                                                  {"SiStripBackPlaneCorrection", ""},
-                                                 {"SiStripBadStrip", ""},
-                                                 {"SiStripDetVOff", ""}};
+                                                 {"SiStripBadStrip", ""},  // dimensionless
+                                                 {"SiStripDetVOff", ""}};  // dimensionless
 
     std::string opType(SiStripPI::OpMode mode) {
       std::string types[3] = {"Strip", "APV", "Module"};

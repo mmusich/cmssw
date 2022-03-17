@@ -150,6 +150,44 @@ namespace {
     }  // fill
   };
 
+  class SiStripPedestalCorrelationByPartition : public cond::payloadInspector::PlotImage<SiStripPedestals> {
+  public:
+    SiStripPedestalCorrelationByPartition()
+        : cond::payloadInspector::PlotImage<SiStripPedestals>("SiStrip Pedestals Correlation By Partition") {
+      setSingleIov(false);
+    }
+
+    bool fill(const std::vector<std::tuple<cond::Time_t, cond::Hash>>& iovs) override {
+      std::vector<std::tuple<cond::Time_t, cond::Hash>> sorted_iovs = iovs;
+
+      // make absolute sure the IOVs are sortd by since
+      std::sort(begin(sorted_iovs), end(sorted_iovs), [](auto const& t1, auto const& t2) {
+        return std::get<0>(t1) < std::get<0>(t2);
+      });
+
+      auto firstiov = sorted_iovs.front();
+      auto lastiov = sorted_iovs.back();
+
+      std::shared_ptr<SiStripPedestals> last_payload = fetchPayload(std::get<1>(lastiov));
+      std::shared_ptr<SiStripPedestals> first_payload = fetchPayload(std::get<1>(firstiov));
+
+      SiStripPedestalContainer* l_objContainer =
+          new SiStripPedestalContainer(last_payload, std::get<0>(lastiov), std::get<1>(lastiov));
+      SiStripPedestalContainer* f_objContainer =
+          new SiStripPedestalContainer(first_payload, std::get<0>(firstiov), std::get<1>(firstiov));
+
+      l_objContainer->Compare(f_objContainer);
+
+      TCanvas canvas("Partition summary", "partition summary", 1200, 1200);
+      l_objContainer->fillCorrelationByPartition(canvas, 100, 0., 300.);
+
+      std::string fileName(m_imageFileName);
+      canvas.SaveAs(fileName.c_str());
+
+      return true;
+    }  // fill
+  };
+
   /************************************************
     test class
   *************************************************/
@@ -1078,6 +1116,7 @@ namespace {
 PAYLOAD_INSPECTOR_MODULE(SiStripPedestals) {
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalCompareByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalDiffByPartition);
+  PAYLOAD_INSPECTOR_CLASS(SiStripPedestalCorrelationByPartition);
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalsTest);
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalPerDetId);
   PAYLOAD_INSPECTOR_CLASS(SiStripPedestalsValue);
