@@ -1,5 +1,7 @@
 // Include our own header first
 #include "RecoLocalTracker/SiPixelRecHits/interface/PixelCPETemplateReco.h"
+#include "RecoLocalTracker/SiPixelRecHits/interface/PixelCPENNReco.h"
+
 
 // Geometry services
 #include "Geometry/CommonDetUnit/interface/PixelGeomDetUnit.h"
@@ -8,6 +10,7 @@
 //#define DEBUG
 
 // MessageLogger
+
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 // Magnetic field
@@ -40,53 +43,60 @@ namespace {
 //  Constructor.
 //
 //-----------------------------------------------------------------------------
-PixelCPETemplateReco::PixelCPETemplateReco(edm::ParameterSet const& conf,
+PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
                                            const MagneticField* mag,
                                            const TrackerGeometry& geom,
                                            const TrackerTopology& ttopo,
                                            const SiPixelLorentzAngle* lorentzAngle,
-                                           const SiPixelTemplateDBObject* templateDBobject)
-    : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1) {
+                                           const SiPixelTemplateDBObject* templateDBobject
+                                           const CacheData* cacheData)
+    : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1),
+    inputTensorName_x(config.getParameter<std::string>("inputTensorName_x")),
+    anglesTensorName_x(config.getParameter<std::string>("anglesTensorName_x")),
+    outputTensorName_(config.getParameter<std::string>("outputTensorName")),
+    session_x(tensorflow::createSession(cacheData->graphDef)),
+    //use_det_angles(config.getParameter<bool>("use_det_angles")),
+    cpe(config.getParameter<std::string>("cpe")) {
   //cout << endl;
-  //cout << "Constructing PixelCPETemplateReco::PixelCPETemplateReco(...)................................................." << endl;
+  //cout << "Constructing PixelCPENNReco::PixelCPENNReco(...)................................................." << endl;
   //cout << endl;
 
   // Configurable parameters
   //DoCosmics_ = conf.getParameter<bool>("DoCosmics"); // Not used in templates
   //LoadTemplatesFromDB_ = conf.getParameter<bool>("LoadTemplatesFromDB"); // Moved to Base
 
-  //cout << " PixelCPETemplateReco : (int)LoadTemplatesFromDB_ = " << (int)LoadTemplatesFromDB_ << endl;
+  //cout << " PixelCPENNReco : (int)LoadTemplatesFromDB_ = " << (int)LoadTemplatesFromDB_ << endl;
   //cout << "field_magnitude = " << field_magnitude << endl;
 
   // configuration parameter to decide between DB or text file template access
 
   if (LoadTemplatesFromDB_) {
-    //cout << "PixelCPETemplateReco: Loading templates from database (DB) --------- " << endl;
+    //cout << "PixelCPENNReco: Loading templates from database (DB) --------- " << endl;
 
     // Initialize template store to the selected ID [Morris, 6/25/08]
     if (!SiPixelTemplate::pushfile(*templateDBobject_, thePixelTemp_))
-      throw cms::Exception("PixelCPETemplateReco")
+      throw cms::Exception("PixelCPENNReco")
           << "\nERROR: Templates not filled correctly. Check the sqlite file. Using SiPixelTemplateDBObject version "
           << (*templateDBobject_).version() << "\n\n";
   } else {
-    //cout << "PixelCPETemplateReco : Loading templates for barrel and forward from ASCII files ----------" << endl;
+    //cout << "PixelCPENNReco : Loading templates for barrel and forward from ASCII files ----------" << endl;
     barrelTemplateID_ = conf.getParameter<int>("barrelTemplateID");
     forwardTemplateID_ = conf.getParameter<int>("forwardTemplateID");
     templateDir_ = conf.getParameter<int>("directoryWithTemplates");
 
     if (!SiPixelTemplate::pushfile(barrelTemplateID_, thePixelTemp_, templateDir_))
-      throw cms::Exception("PixelCPETemplateReco")
+      throw cms::Exception("PixelCPENNReco")
           << "\nERROR: Template ID " << barrelTemplateID_
           << " not loaded correctly from text file. Reconstruction will fail.\n\n";
 
     if (!SiPixelTemplate::pushfile(forwardTemplateID_, thePixelTemp_, templateDir_))
-      throw cms::Exception("PixelCPETemplateReco")
+      throw cms::Exception("PixelCPENNReco")
           << "\nERROR: Template ID " << forwardTemplateID_
           << " not loaded correctly from text file. Reconstruction will fail.\n\n";
   }
 
   speed_ = conf.getParameter<int>("speed");
-  LogDebug("PixelCPETemplateReco::PixelCPETemplateReco:") << "Template speed = " << speed_ << "\n";
+  LogDebug("PixelCPENNReco::PixelCPENNReco:") << "Template speed = " << speed_ << "\n";
 
   UseClusterSplitter_ = conf.getParameter<bool>("UseClusterSplitter");
 }
@@ -94,9 +104,9 @@ PixelCPETemplateReco::PixelCPETemplateReco(edm::ParameterSet const& conf,
 //-----------------------------------------------------------------------------
 //  Clean up.
 //-----------------------------------------------------------------------------
-PixelCPETemplateReco::~PixelCPETemplateReco() {}
+PixelCPENNReco::~PixelCPENNReco() {}
 
-std::unique_ptr<PixelCPEBase::ClusterParam> PixelCPETemplateReco::createClusterParam(const SiPixelCluster& cl) const {
+std::unique_ptr<PixelCPEBase::ClusterParam> PixelCPENNReco::createClusterParam(const SiPixelCluster& cl) const {
   return std::make_unique<ClusterParamTemplate>(cl);
 }
 
@@ -107,11 +117,11 @@ std::unique_ptr<PixelCPEBase::ClusterParam> PixelCPETemplateReco::createClusterP
 //------------------------------------------------------------------
 //  The main call to the template code.
 //------------------------------------------------------------------
-LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, ClusterParam& theClusterParamBase) const {
+LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterParam& theClusterParamBase) const {
   ClusterParamTemplate& theClusterParam = static_cast<ClusterParamTemplate&>(theClusterParamBase);
 
   if (!GeomDetEnumerators::isTrackerPixel(theDetParam.thePart))
-    throw cms::Exception("PixelCPETemplateReco::localPosition :") << "A non-pixel detector type in here?";
+    throw cms::Exception("PixelCPENNReco::localPosition :") << "A non-pixel detector type in here?";
   //  barrel(false) or forward(true)
   const bool fpix = GeomDetEnumerators::isEndcap(theDetParam.thePart);
 
@@ -120,14 +130,22 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
     int ID0 = templateDBobject_->getTemplateID(theDetParam.theDet->geographicalId());  // just to comapre
     ID = theDetParam.detTemplateId;
     if (ID0 != ID)
-      edm::LogError("PixelCPETemplateReco") << " different id" << ID << " " << ID0 << endl;
+      edm::LogError("PixelCPENNReco") << " different id" << ID << " " << ID0 << endl;
   } else {  // from asci file
     if (!fpix)
       ID = barrelTemplateID_;  // barrel
     else
       ID = forwardTemplateID_;  // forward
   }
-  //cout << "PixelCPETemplateReco : ID = " << ID << endl;
+  //cout << "PixelCPENNReco : ID = " << ID << endl;
+
+  if(fpix){
+    throw cms::Exception("PixelCPENNReco::localPosition :") << "graph is trained on BPIX only";
+  }
+  // how to access layer info from det_id? can i use the tracker topology token here? so i have to add it to the det_id or 
+  if(ttopo.pxbLayer(theDetParam.theDet->geographicalId()) != 1){
+    throw cms::Exception("PixelCPENNReco::localPosition :") << "graph is trained on BPIX L1 only";
+  }
 
   SiPixelTemplate templ(thePixelTemp_);
 
@@ -165,8 +183,8 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
   if (theClusterParam.with_track_angle)
     lp = theDetParam.theTopol->localPosition(MeasurementPoint(tmp_x, tmp_y), theClusterParam.loc_trk_pred);
   else {
-    edm::LogError("PixelCPETemplateReco") << "@SUB = PixelCPETemplateReco::localPosition"
-                                          << "Should never be here. PixelCPETemplateReco should always be called with "
+    edm::LogError("PixelCPENNReco") << "@SUB = PixelCPENNReco::localPosition"
+                                          << "Should never be here. PixelCPENNReco should always be called with "
                                              "track angles. This is a bad error !!! ";
 
     lp = theDetParam.theTopol->localPosition(MeasurementPoint(tmp_x, tmp_y));
@@ -190,21 +208,91 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
   assert(mrow > 0);
   assert(mcol > 0);
 
-  float clustMatrix[mrow][mcol];
+  float clustMatrix[mrow][mcol], clustMatrix_temp[mrow][mcol], clustMatrix_x[mrow];
   memset(clustMatrix, 0, sizeof(float) * mrow * mcol);
+  memset(clustMatrix_temp, 0, sizeof(float) * mrow * mcol);
+  memset(clustMatrix_x, 0, sizeof(float) * mrow);
+
+  int n_double_x = 0, n_double_y = 0;
+        int clustersize = 0;
+        int double_row[5], double_col[5]; 
+        for(int i=0;i<5;i++){
+          double_row[i]=-1;
+          double_col[i]=-1;
+        }
+        
+        int irow_sum = 0, icol_sum = 0;
+        for (int i = 0;  i < theClusterParam.theCluster->size(); i++) {
+          auto pix = theClusterParam.theCluster->pixel(i);
+          int irow = int(pix.x) - row_offset;
+          int icol = int(pix.y) - col_offset;
+          if ((irow >= mrow) || (icol >= mcol)) continue; 
+          if ((int)pix.x == 79 || (int)pix.x == 80){
+            int flag=0;
+            for(int j=0;j<5;j++){
+              if(irow==double_row[j]) {flag = 1; break;}
+            }
+            if(flag!=1) {double_row[n_double_x]=irow; n_double_x++;}
+          }
+          if ((int)pix.y % 52 == 0 || (int)pix.y % 52 == 51){
+            int flag=0;
+            for(int j=0;j<5;j++){
+              if(icol==double_col[j]) {flag = 1; break;}
+            }
+            if(flag!=1) {double_col[n_double_y]=icol; n_double_y++;}
+          }
+          irow_sum+=irow;
+          icol_sum+=icol;
+          clustersize++;
+        //if(float(pix.adc) > cluster_max) cluster_max = float(pix.adc); 
+        //if(float(pix.adc) < cluster_min) cluster_min = float(pix.adc); 
+
+        }
+        if(clustersize==0){printf("EMPTY CLUSTER, SKIPPING\n");continue;} 
+        if(n_double_x>2 or n_double_y>2){
+    //  printf("MORE THAN 2 DOUBLE COL in X  = %i, SKIPPING\n",n_double);
+      continue; //currently can only deal with single double pix
+    }
+    n_double_x=0; n_double_y=0;
+      //printf("max = %f, min = %f\n",cluster_max,cluster_min);
+    int clustersize_x = theClusterParam.theCluster.sizeX(), clustersize_y = theClusterParam.theCluster.sizeY();
+    mid_x = round(float(irow_sum)/float(clustersize));
+    mid_y = round(float(icol_sum)/float(clustersize));
+    int offset_x = 6 - mid_x;
+    int offset_y = 10 - mid_y;
+      
+
 
   // Copy clust's pixels (calibrated in electrons) into clusMatrix;
   for (int i = 0; i != theClusterParam.theCluster->size(); ++i) {
     auto pix = theClusterParam.theCluster->pixel(i);
-    int irow = int(pix.x) - row_offset;
-    int icol = int(pix.y) - col_offset;
+    int irow = int(pix.x) - row_offset + offset_x;
+    int icol = int(pix.y) - col_offset + offset_y;
 
+    if ((irow >= mrow+offset_x) || (icol >= mcol+offset_y)){
+        printf("irow or icol exceeded, SKIPPING. irow = %i, mrow = %i, offset_x = %i,icol = %i, mcol = %i, offset_y = %i\n",irow,mrow,offset_x,icol,mcol,offset_y);
+        continue;
+      }
+      if ((int)pix.x == 79 || (int)pix.x == 80){
+        int flag=0;
+        for(int j=0;j<5;j++){
+          if(irow==double_row[j]) {flag = 1; break;}
+        }
+        if(flag!=1) {double_row[n_double_x]=irow; n_double_x++;}
+      }
+      if ((int)pix.y % 52 == 0 || (int)pix.y % 52 == 51 ){
+        int flag=0;
+        for(int j=0;j<5;j++){
+          if(icol==double_col[j]) {flag = 1; break;}
+        }
+        if(flag!=1) {double_col[n_double_y]=icol; n_double_y++;}
+      }
     // Gavril : what do we do here if the row/column is larger than cluster_matrix_size_x/cluster_matrix_size_y  ?
     // Ignore them for the moment...
     if ((irow < mrow) & (icol < mcol))
-      clustMatrix[irow][icol] = float(pix.adc);
+      clustMatrix_temp[irow][icol] = float(pix.adc)/25000.;
   }
-
+/*
   // Make and fill the bool arrays flagging double pixels
   bool xdouble[mrow], ydouble[mcol];
   // x directions (shorter), rows
@@ -214,25 +302,87 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
   // y directions (longer), columns
   for (int icol = 0; icol < mcol; ++icol)
     ydouble[icol] = theDetParam.theRecTopol->isItBigPixelInY(icol + col_offset);
+*/
+ // SiPixelTemplateReco::ClusMatrix clusterPayload{&clustMatrix[0][0], xdouble, ydouble, mrow, mcol};
 
-  SiPixelTemplateReco::ClusMatrix clusterPayload{&clustMatrix[0][0], xdouble, ydouble, mrow, mcol};
+  //deal with double width pixels
+  if(n_double_x==1 && clustersize_x>12) {printf("clustersize_x > 12, SKIPPING\n"); continue;} // NEED TO FIX CLUSTERSIZE COMPUTATION
+    if(n_double_x==2 && clustersize_x>11) {printf("clustersize_x > 11, SKIPPING\n"); continue;}
+    if(n_double_y==1 && clustersize_y>20) {printf("clustersize_y = %i > 20, SKIPPING\n", clustersize_y);continue;}
+    if(n_double_y==2 && clustersize_x>19) {printf("clustersize_y = %i > 19, SKIPPING\n", clustersize_y);continue;}
+
+//first deal with double width pixels in x
+    int k=0,m=0;
+    for(int i=0;i<mrow;i++){
+      if(i==double_row[m] and clustersize_x>1){
+        printf("TREATING DPIX%i IN X\n",m+1);
+        for(int j=0;j<mcol;j++){
+          clustMatrix[i][j]=clustMatrix_temp[k][j]/2.;
+          clustMatrix[i+1][j]=clustMatrix_temp[k][j]/2.;
+        }
+        i++;
+        if(m==0 and n_double_x==2) {
+          double_row[1]++;
+          m++;
+        }
+      }
+      else{
+        for(int j=0;j<mcol;j++){
+          clustMatrix[i][j]=clustMatrix_temp[k][j];
+        }
+      }
+      k++;
+    }
+    k=0;m=0;
+    for(int i=0;i<mrow;i++){
+      for(int j=0;j<mcol;j++){
+        clustMatrix_temp[i][j]=clustMatrix[i][j];
+        clustMatrix[i][j]=0.;
+      }
+    }
+    for(int j=0;j<mcol;j++){
+      if(j==double_col[m] and clustersize_y>1){
+        printf("TREATING DPIX%i IN Y\n",m+1);
+        for(int i=0;i<mrow;i++){
+          clustMatrix[i][j]=clustMatrix_temp[i][k]/2.;
+          clustMatrix[i][j+1]=clustMatrix_temp[i][k]/2.;
+        }
+        j++;
+        if(m==0 and n_double_y==2) {
+          double_col[1]++;
+          m++;
+        }
+      }
+      else{
+        for(int i=0;i<mrow;i++){
+          clustMatrix[i][j]=clustMatrix_temp[i][k];
+        }
+      }
+      k++;
+    }
+//compute the 1d projection 
+   for(int i = 0;i < mrow; i++){
+      for(int j = 0; j < mcol; j++){
+        clustMatrix_x[i] += clustMatrix[i][j];
 
   // Output:
   float nonsense = -99999.9f;  // nonsense init value
   theClusterParam.templXrec_ = theClusterParam.templYrec_ = theClusterParam.templSigmaX_ =
       theClusterParam.templSigmaY_ = nonsense;
   // If the template recontruction fails, we want to return 1.0 for now
-  theClusterParam.templProbY_ = theClusterParam.templProbX_ = theClusterParam.templProbQ_ = 1.0f;
-  theClusterParam.templQbin_ = 0;
+  //theClusterParam.templProbY_ = theClusterParam.templProbX_ = theClusterParam.templProbQ_ = 1.0f;
+  //theClusterParam.templQbin_ = 0;
   // We have a boolean denoting whether the reco failed or not
-  theClusterParam.hasFilledProb_ = false;
+  //theClusterParam.hasFilledProb_ = false;
 
+  float NNYrec1_ = nonsense;
+  float NNXrec1_ = nonsense;
   float templYrec1_ = nonsense;
   float templXrec1_ = nonsense;
   float templYrec2_ = nonsense;
   float templXrec2_ = nonsense;
 
-  // ******************************************************************
+  /******************************************************************
   // Do it! Use cotalpha_ and cotbeta_ calculated in PixelCPEBase
 
   float locBz = theDetParam.bz;
@@ -255,11 +405,58 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
                                          speed_,
                                          theClusterParam.templProbQ_);
 
-  // ******************************************************************
+  // ******************************************************************/
+
+  //========================================================================================
+        // define a tensor and fill it with cluster projection
+        tensorflow::Tensor cluster_flat_x(tensorflow::DT_FLOAT, {1,TXSIZE,1});
+      tensorflow::Tensor cluster_(tensorflow::DT_FLOAT, {1,TXSIZE,TYSIZE,1});
+        // angles
+      tensorflow::Tensor angles(tensorflow::DT_FLOAT, {1,2});
+      angles.tensor<float,2>()(0, 0) = cotAlpha;
+      angles.tensor<float,2>()(0, 1) = cotBeta;
+
+      for (int i = 0; i < TXSIZE; i++) {
+        cluster_flat_x.tensor<float,3>()(0, i, 0) = 0;
+        for (int j = 0; j < TYSIZE; j++){
+            //1D projection in x
+          cluster_flat_x.tensor<float,3>()(0, i, 0) = clustMatrix_x[i];
+          cluster_.tensor<float,4>()(0, i, j, 0) = clustMatrix[i][j];
+          
+          //printf("%i ",int(clusbuf[i][j]));
+
+        }
+          //printf("\n");
+      }
+      //  Determine current time
+
+          //gettimeofday(&now0, &timz);
+        // define the output and run
+      std::vector<tensorflow::Tensor> output_x;
+      if(cpe=="cnn2d"){ gettimeofday(&now0, &timz);
+        tensorflow::run(session_x, {{inputTensorName_x,cluster_}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
+        gettimeofday(&now1, &timz);
+      }
+      else {  gettimeofday(&now0, &timz);
+        tensorflow::run(session_x, {{inputTensorName_x,cluster_flat_x}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
+        gettimeofday(&now1, &timz);
+      }
+      // convert microns to cms
+      NNXrec1_ = output_x[0].matrix<float>()(0,0);
+
+      //printf("x_nn[%i] = %f\n",count,x_nn[count]);
+      //if(isnan(x_nn[count])){
+      //for(int i=0;i<TXSIZE;i++){
+      //  for(int j=0;j<TYSIZE;j++)
+      //    printf("%i ",int(clusbuf[i][j]));
+      //  printf("\n");
+      //}
+      //printf("\n");}
+      NNXrec1_ = NNXrec1_ + pixelsize_x*(mid_x); 
 
   // Check exit status
   if UNLIKELY (theClusterParam.ierr != 0) {
-    LogDebug("PixelCPETemplateReco::localPosition")
+    LogDebug("PixelCPENNReco::localPosition")
         << "reconstruction failed with error " << theClusterParam.ierr << "\n";
 
     // Template reco has failed, compute position estimates based on cluster center of gravity + Lorentz drift
@@ -272,15 +469,15 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
       theClusterParam.templYrec_ =
           theDetParam.theTopol->localY(theClusterParam.theCluster->y(), theClusterParam.loc_trk_pred) + lorentzshiftY;
     } else {
-      edm::LogError("PixelCPETemplateReco") << "@SUB = PixelCPETemplateReco::localPosition"
-                                            << "Should never be here. PixelCPETemplateReco should always be called "
+      edm::LogError("PixelCPENNReco") << "@SUB = PixelCPENNReco::localPosition"
+                                            << "Should never be here. PixelCPENNReco should always be called "
                                                "with track angles. This is a bad error !!! ";
 
       theClusterParam.templXrec_ = theDetParam.theTopol->localX(theClusterParam.theCluster->x()) + lorentzshiftX;
       theClusterParam.templYrec_ = theDetParam.theTopol->localY(theClusterParam.theCluster->y()) + lorentzshiftY;
     }
   } else if UNLIKELY (UseClusterSplitter_ && theClusterParam.templQbin_ == 0) {
-    edm::LogError("PixelCPETemplateReco") << " PixelCPETemplateReco: Qbin = 0 but using cluster splitter, we should "
+    edm::LogError("PixelCPENNReco") << " PixelCPENNReco: Qbin = 0 but using cluster splitter, we should "
                                              "never be here !!!!!!!!!!!!!!!!!!!!!! \n"
                                           << "(int)UseClusterSplitter_ = " << (int)UseClusterSplitter_ << endl;
 
@@ -325,20 +522,24 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
         theClusterParam.templYrec_ =
             theDetParam.theTopol->localY(theClusterParam.theCluster->y(), theClusterParam.loc_trk_pred) + lorentzshiftY;
       } else {
-        edm::LogError("PixelCPETemplateReco") << "@SUB = PixelCPETemplateReco::localPosition"
-                                              << "Should never be here. PixelCPETemplateReco should always be called "
+        edm::LogError("PixelCPENNReco") << "@SUB = PixelCPENNReco::localPosition"
+                                              << "Should never be here. PixelCPENNReco should always be called "
                                                  "with track angles. This is a bad error !!! ";
         theClusterParam.templXrec_ = theDetParam.theTopol->localX(theClusterParam.theCluster->x()) + lorentzshiftX;
         theClusterParam.templYrec_ = theDetParam.theTopol->localY(theClusterParam.theCluster->y()) + lorentzshiftY;
       }
     } else {
       // go from micrometer to centimeter
+      NNXrec1_ *= micronsToCm;
+      NNYrec1_ *= micronsToCm;
       templXrec1_ *= micronsToCm;
       templYrec1_ *= micronsToCm;
       templXrec2_ *= micronsToCm;
       templYrec2_ *= micronsToCm;
 
       // go back to the module coordinate system
+      NNXrec1_ += lp.x();
+      NNYrec1_ += lp.y();
       templXrec1_ += lp.x();
       templYrec1_ += lp.y();
       templXrec2_ += lp.x();
@@ -407,7 +608,7 @@ LocalPoint PixelCPETemplateReco::localPosition(DetParam const& theDetParam, Clus
 //------------------------------------------------------------------
 //  localError() relies on localPosition() being called FIRST!!!
 //------------------------------------------------------------------
-LocalError PixelCPETemplateReco::localError(DetParam const& theDetParam, ClusterParam& theClusterParamBase) const {
+LocalError PixelCPENNReco::localError(DetParam const& theDetParam, ClusterParam& theClusterParamBase) const {
   ClusterParamTemplate& theClusterParam = static_cast<ClusterParamTemplate&>(theClusterParamBase);
 
   //cout << endl;
@@ -456,7 +657,7 @@ LocalError PixelCPETemplateReco::localError(DetParam const& theDetParam, Cluster
       //yerr = 10.0 * (float)theClusterParam.theCluster->sizeX() * yerr;
 
       if (!GeomDetEnumerators::isTrackerPixel(theDetParam.thePart))
-        throw cms::Exception("PixelCPETemplateReco::localPosition :") << "A non-pixel detector type in here?";
+        throw cms::Exception("PixelCPENNReco::localPosition :") << "A non-pixel detector type in here?";
 
       // Assign better errors based on the residuals for failed template cases
       if (GeomDetEnumerators::isBarrel(theDetParam.thePart)) {
@@ -483,7 +684,7 @@ LocalError PixelCPETemplateReco::localError(DetParam const& theDetParam, Cluster
         xerr = bothEdgeXError_ * micronsToCm;
         yerr = bothEdgeYError_ * micronsToCm;
       } else {
-        throw cms::Exception(" PixelCPETemplateReco::localError: Something wrong with pixel edge flag !!!");
+        throw cms::Exception(" PixelCPENNReco::localError: Something wrong with pixel edge flag !!!");
       }
 
       //cout << "xerr = " << xerr << endl;
@@ -503,7 +704,7 @@ LocalError PixelCPETemplateReco::localError(DetParam const& theDetParam, Cluster
     }
 
     if (theVerboseLevel > 9) {
-      LogDebug("PixelCPETemplateReco") << " Sizex = " << theClusterParam.theCluster->sizeX()
+      LogDebug("PixelCPENNReco") << " Sizex = " << theClusterParam.theCluster->sizeX()
                                        << " Sizey = " << theClusterParam.theCluster->sizeY() << " Edgex = " << edgex
                                        << " Edgey = " << edgey << " ErrX  = " << xerr << " ErrY  = " << yerr;
     }
@@ -511,26 +712,33 @@ LocalError PixelCPETemplateReco::localError(DetParam const& theDetParam, Cluster
   }  // else
 
   if (!(xerr > 0.0f))
-    throw cms::Exception("PixelCPETemplateReco::localError")
+    throw cms::Exception("PixelCPENNReco::localError")
         << "\nERROR: Negative pixel error xerr = " << xerr << "\n\n";
 
   if (!(yerr > 0.0f))
-    throw cms::Exception("PixelCPETemplateReco::localError")
+    throw cms::Exception("PixelCPENNReco::localError")
         << "\nERROR: Negative pixel error yerr = " << yerr << "\n\n";
 
   //cout << "Final errors set to: " << endl;
   //cout << "xerr = " << xerr << endl;
   //cout << "yerr = " << yerr << endl;
-  //cout << "Out of PixelCPETemplateREco..........................................................................." << endl;
+  //cout << "Out of PixelCPENNREco..........................................................................." << endl;
   //cout << endl;
 
   return LocalError(xerr * xerr, 0, yerr * yerr);
 }
 
-void PixelCPETemplateReco::fillPSetDescription(edm::ParameterSetDescription& desc) {
+void PixelCPENNReco::fillPSetDescription(edm::ParameterSetDescription& desc) {
   desc.add<int>("barrelTemplateID", 0);
   desc.add<int>("forwardTemplateID", 0);
   desc.add<int>("directoryWithTemplates", 0);
   desc.add<int>("speed", -2);
   desc.add<bool>("UseClusterSplitter", false);
+  //some defaults for testing
+  desc.add<std::string>("graphPath_x","/uscms_data/d3/ssekhar/CMSSW_11_1_2/src/TrackerStuff/PixelHitsCNN/data/graph_x_1dcnn_p1_2024_by25k_irrad_BPIXL1_022122");
+  desc.add<std::string>("inputTensorName_x","input_1");
+  desc.add<std::string>("anglesTensorName_x","input_2");
+  desc.add<std::string>("outputTensorName","Identity");
+  desc.add<bool>("use_det_angles", false);
+  desc.add<std::string>("cpe", "cnn1d");
 }

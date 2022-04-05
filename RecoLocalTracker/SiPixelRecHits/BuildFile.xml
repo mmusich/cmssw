@@ -10,6 +10,7 @@
 <use name="HeterogeneousCore/CUDACore"/>
 <use name="HeterogeneousCore/CUDAUtilities"/>
 <use name="RecoLocalTracker/ClusterParameterEstimator"/>
+<use name="PhysicsTools/TensorFlow" />
 <export>
   <lib name="1"/>
 </export>
