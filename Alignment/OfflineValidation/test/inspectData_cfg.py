@@ -14,7 +14,7 @@ options.register('OutFileName',
                  "name of the output file (test.root is default)")
 
 options.register('myGT',
-                 "auto:phase1_2021_cosmics_0T", # default value
+                 "auto:run3_data_prompt", # default value
                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                  VarParsing.VarParsing.varType.string, # string, int, or float
                  "name of the input Global Tag")
@@ -33,17 +33,18 @@ options.register('maxEvents',
 
 options.parseArguments()
 
-process = cms.Process("AlCaRECOAnalysis")
+process = cms.Process("RECOAnalysis")
 
 ###################################################################
 # Message logger service
 ###################################################################
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr = cms.untracked.PSet(enable = cms.untracked.bool(False))
-process.MessageLogger.cout = cms.untracked.PSet(INFO = cms.untracked.PSet(
-    reportEvery = cms.untracked.int32(1000) # every 100th only
-    #    limit = cms.untracked.int32(10)       # or limit to 10 printouts...
-    ))
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+# process.MessageLogger.cerr = cms.untracked.PSet(enable = cms.untracked.bool(False))
+# process.MessageLogger.cout = cms.untracked.PSet(INFO = cms.untracked.PSet(
+#     reportEvery = cms.untracked.int32(1000) # every 100th only
+#     #    limit = cms.untracked.int32(10)       # or limit to 10 printouts...
+#     ))
 
 ###################################################################
 # Geometry producer and standard includes
@@ -84,13 +85,13 @@ process.GlobalTag = GlobalTag(process.GlobalTag,options.myGT, '')
 readFiles = cms.untracked.vstring()
 process.source = cms.Source("PoolSource",fileNames = readFiles)
 the_files=[]
-file_list = glob.glob("/eos/cms/store/mc/Run3Winter20CosmicDR/TKCosmics_0T/ALCARECO/TkAlCosmics0T-0T_110X_mcRun3_2021cosmics_realistic_deco_v4-v1/40000/*")
+file_list = glob.glob("/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/350/010/00000/*")
 for f in file_list:
     the_files.append(f.replace("/eos/cms",""))
 
 readFiles.extend(the_files)
     
-print(the_files)
+#print(the_files)
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 # readFiles.extend(['/store/mc/Run3Winter20CosmicDR/TKCosmics_0T/ALCARECO/TkAlCosmics0T-0T_110X_mcRun3_2021cosmics_realistic_deco_v4-v1/40000/4AC4A0B1-12CD-CC4C-AA44-BF94D02DA323.root',
@@ -106,30 +107,9 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEv
 process.load("RecoTracker.TrackProducer.MomentumConstraintProducer_cff")
 import RecoTracker.TrackProducer.MomentumConstraintProducer_cff
 process.AliMomConstraint = RecoTracker.TrackProducer.MomentumConstraintProducer_cff.MyMomConstraint.clone()
-process.AliMomConstraint.src = 'ALCARECOTkAlCosmicsCTF0T'
+process.AliMomConstraint.src = 'ctfWithMaterialTracksP5'
 process.AliMomConstraint.fixedMomentum = 5.0
 process.AliMomConstraint.fixedMomentumError = 0.005
-
-###################################################################
-# Alignment Track Selector
-###################################################################
-import Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi
-
-process.MuSkimSelector = Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi.AlignmentTrackSelector.clone(
-    applyBasicCuts = True,                                                                            
-    filter = True,
-    src = 'ALCARECOTkAlCosmicsCTF0T',
-    ptMin = 17.,
-    pMin = 17.,
-    etaMin = -2.5,
-    etaMax = 2.5,
-    d0Min = -2.,
-    d0Max = 2.,
-    dzMin = -25.,
-    dzMax = 25.,
-    nHitMin = 6,
-    nHitMin2D = 0,
-    )
 
 ###################################################################
 # The TrackRefitter
@@ -137,7 +117,7 @@ process.MuSkimSelector = Alignment.CommonAlignmentProducer.AlignmentTrackSelecto
 process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 import RecoTracker.TrackProducer.TrackRefitters_cff
 process.TrackRefitter1 = process.TrackRefitterP5.clone(
-    src =  'ALCARECOTkAlCosmicsCTF0T', #'AliMomConstraint',
+    src =  'ctfWithMaterialTracksP5', #'AliMomConstraint',
     TrajectoryInEvent = True,
     TTRHBuilder = "WithTrackAngle",  #"WithAngleAndTemplate",
     NavigationSchool = "",
@@ -146,10 +126,20 @@ process.TrackRefitter1 = process.TrackRefitterP5.clone(
     )
 
 ###################################################################
+# the pT filter
+###################################################################
+
+from CommonTools.RecoAlgos.ptMaxTrackCountFilter_cfi import ptMaxTrackCountFilter
+process.myfilter = ptMaxTrackCountFilter.clone(src = cms.InputTag('ctfWithMaterialTracksP5'),
+                                               ptMax = cms.double(3.))
+
+
+###################################################################
 # The analysis module
 ###################################################################
 process.myanalysis = cms.EDAnalyzer("GeneralPurposeTrackAnalyzer",
-                                    TkTag  = cms.InputTag('TrackRefitter1'),
+                                    #TkTag  = cms.InputTag('TrackRefitter1'),
+                                    TkTag  = cms.InputTag('ctfWithMaterialTracksP5'),
                                     isCosmics = cms.bool(True)
                                     )
 
@@ -168,9 +158,10 @@ process.TFileService = cms.Service("TFileService",
 ###################################################################
 # Path
 ###################################################################
-process.p1 = cms.Path(process.offlineBeamSpot*
+process.p1 = cms.Path(process.myfilter*
+                      process.offlineBeamSpot*
                       #process.AliMomConstraint*
-                      process.TrackRefitter1*
-                      process.myanalysis*
-                      process.fastdmr
+                      #process.TrackRefitter1*
+                      process.myanalysis
+                      #*process.fastdmr
                       )
