@@ -47,6 +47,7 @@ if(options.isUnitTest):
     process.MessageLogger.cerr.enable = False
     process.MessageLogger.TkHistoMap = dict()
     process.MessageLogger.SiStripHitEfficiency = dict()  
+    process.MessageLogger.SiStripHitEfficiencyHarvester = dict()
     process.MessageLogger.cout = cms.untracked.PSet(
         enable    = cms.untracked.bool(True),        
         threshold = cms.untracked.string("INFO"),
@@ -56,6 +57,7 @@ if(options.isUnitTest):
                                        reportEvery = cms.untracked.int32(1)),
         TkHistoMap = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
         SiStripHitEfficiency = cms.untracked.PSet( limit = cms.untracked.int32(-1))
+        SiStripHitEfficiencyHarvester =  cms.untracked.PSet( limit = cms.untracked.int32(-1))
     )
 else:
     process.MessageLogger = cms.Service(
@@ -68,7 +70,10 @@ else:
             )
         ),
         debugModules = cms.untracked.vstring("hiteffharvest"),
-        categories=cms.untracked.vstring("TkHistoMap", "SiStripHitEfficiency:HitEff", "SiStripHitEfficiency")
+        categories=cms.untracked.vstring("TkHistoMap", 
+                                         "SiStripHitEfficiency:HitEff", 
+                                         "SiStripHitEfficiency", 
+                                         "SiStripHitEfficiencyHarvester")
     )
 
 process.TFileService = cms.Service("TFileService",
