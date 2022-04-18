@@ -37,6 +37,7 @@ namespace {
   constexpr float micronsToCm = 1.0e-4;
   constexpr int cluster_matrix_size_x = 13;
   constexpr int cluster_matrix_size_y = 21;
+  constexpr float pixelsize_x = 100., pixelsize_y = 150., pixelsize_z = 285.0;
 }  // namespace
 
 //-----------------------------------------------------------------------------
@@ -48,7 +49,7 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
                                            const TrackerGeometry& geom,
                                            const TrackerTopology& ttopo,
                                            const SiPixelLorentzAngle* lorentzAngle,
-                                           const SiPixelTemplateDBObject* templateDBobject
+                                           const SiPixelTemplateDBObject* templateDBobject,
                                            const CacheData* cacheData)
     : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1),
     inputTensorName_x(config.getParameter<std::string>("inputTensorName_x")),
@@ -442,7 +443,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
         gettimeofday(&now1, &timz);
       }
       // convert microns to cms
-      NNXrec1_ = output_x[0].matrix<float>()(0,0);
+      theClusterParam.NNXrec_ = output_x[0].matrix<float>()(0,0);
       
       //printf("x_nn[%i] = %f\n",count,x_nn[count]);
       //if(isnan(x_nn[count])){
@@ -452,9 +453,9 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       //  printf("\n");
       //}
       //printf("\n");}
-      NNXrec1_ = NNXrec1_ + pixelsize_x*(mid_x); 
+      theClusterParam.NNXrec_ = theClusterParam.NNXrec_ + pixelsize_x*(mid_x); 
       //for testing purposes
-      NNYrec1_ = 500;
+      theClusterParam.NNYrec_ = 500;
       theClusterParam.NNSigmaX_ = 1;
       theClusterParam.NNSigmaY_ = 1;
       if(isnan(NNXrec1_) or NNXrec1_>=999e4) theClusterParam.ierr = 12345;

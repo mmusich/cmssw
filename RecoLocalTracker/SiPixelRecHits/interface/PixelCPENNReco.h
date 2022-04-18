@@ -35,8 +35,8 @@ public:
   struct ClusterParamTemplate : ClusterParam {
     ClusterParamTemplate(const SiPixelCluster &cl) : ClusterParam(cl) {}
     // The result of PixelTemplateReco2D
-    float NNXrec1_;
-    float NNXrec1_;
+    float NNXrec_;
+    float NNXrec_;
     float NNSigmaX_;
     float NNSigmaY_;
     // Add new information produced by SiPixelTemplateReco::PixelTempReco2D &&&
@@ -96,8 +96,8 @@ private:
   tensorflow::Session* session_x;
   
   //int MAXCLUSTER = 80000;
-  float micronsToCm = 1e-4;
-  float pixelsize_x = 100., pixelsize_y = 150., pixelsize_z = 285.0;
+  //float micronsToCm = 1e-4;
+  
   int mid_x = 0, mid_y = 0;
   //float clsize_1[MAXCLUSTER][2], clsize_2[MAXCLUSTER][2], clsize_3[MAXCLUSTER][2], clsize_4[MAXCLUSTER][2], clsize_5[MAXCLUSTER][2], clsize_6[MAXCLUSTER][2];
   struct timeval now0, now1;
