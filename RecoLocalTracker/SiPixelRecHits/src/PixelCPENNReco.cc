@@ -367,8 +367,8 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
 
   // Output:
   float nonsense = -99999.9f;  // nonsense init value
-  theClusterParam.templXrec_ = theClusterParam.templYrec_ = theClusterParam.templSigmaX_ =
-      theClusterParam.templSigmaY_ = nonsense;
+  theClusterParam.NNXrec_ = theClusterParam.NNYrec_ = theClusterParam.NNSigmaX_ =
+      theClusterParam.NNSigmaY_ = nonsense;
   // If the template recontruction fails, we want to return 1.0 for now
   //theClusterParam.templProbY_ = theClusterParam.templProbX_ = theClusterParam.templProbQ_ = 1.0f;
   //theClusterParam.templQbin_ = 0;
@@ -377,10 +377,10 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
 
   float NNYrec1_ = nonsense;
   float NNXrec1_ = nonsense;
-  float templYrec1_ = nonsense;
-  float templXrec1_ = nonsense;
-  float templYrec2_ = nonsense;
-  float templXrec2_ = nonsense;
+  //float templYrec1_ = nonsense;
+ // float templXrec1_ = nonsense;
+ // float templYrec2_ = nonsense;
+//  float templXrec2_ = nonsense;
 
   /******************************************************************
   // Do it! Use cotalpha_ and cotbeta_ calculated in PixelCPEBase
@@ -413,8 +413,8 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       tensorflow::Tensor cluster_(tensorflow::DT_FLOAT, {1,TXSIZE,TYSIZE,1});
         // angles
       tensorflow::Tensor angles(tensorflow::DT_FLOAT, {1,2});
-      angles.tensor<float,2>()(0, 0) = cotAlpha;
-      angles.tensor<float,2>()(0, 1) = cotBeta;
+      angles.tensor<float,2>()(0, 0) = theClusterParam.cotalpha;
+      angles.tensor<float,2>()(0, 1) = theClusterParam.cotbeta;
 
       for (int i = 0; i < TXSIZE; i++) {
         cluster_flat_x.tensor<float,3>()(0, i, 0) = 0;
@@ -443,7 +443,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       }
       // convert microns to cms
       NNXrec1_ = output_x[0].matrix<float>()(0,0);
-
+      
       //printf("x_nn[%i] = %f\n",count,x_nn[count]);
       //if(isnan(x_nn[count])){
       //for(int i=0;i<TXSIZE;i++){
@@ -453,6 +453,12 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       //}
       //printf("\n");}
       NNXrec1_ = NNXrec1_ + pixelsize_x*(mid_x); 
+      //for testing purposes
+      NNYrec1_ = 500;
+      theClusterParam.NNSigmaX_ = 1;
+      theClusterParam.NNSigmaY_ = 1;
+      if(isnan(NNXrec1_) or NNXrec1_>=999e4) theClusterParam.ierr = 12345;
+      else theClusterParam.ierr = 0.;
 
   // Check exit status
   if UNLIKELY (theClusterParam.ierr != 0) {
@@ -464,19 +470,21 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
 
     // ggiurgiu@jhu.edu, 21/09/2010 : trk angles needed to correct for bows/kinks
     if (theClusterParam.with_track_angle) {
-      theClusterParam.templXrec_ =
+      theClusterParam.NNXrec_ =
           theDetParam.theTopol->localX(theClusterParam.theCluster->x(), theClusterParam.loc_trk_pred) + lorentzshiftX;
-      theClusterParam.templYrec_ =
+      theClusterParam.NNYrec_ =
           theDetParam.theTopol->localY(theClusterParam.theCluster->y(), theClusterParam.loc_trk_pred) + lorentzshiftY;
     } else {
       edm::LogError("PixelCPENNReco") << "@SUB = PixelCPENNReco::localPosition"
                                             << "Should never be here. PixelCPENNReco should always be called "
                                                "with track angles. This is a bad error !!! ";
 
-      theClusterParam.templXrec_ = theDetParam.theTopol->localX(theClusterParam.theCluster->x()) + lorentzshiftX;
-      theClusterParam.templYrec_ = theDetParam.theTopol->localY(theClusterParam.theCluster->y()) + lorentzshiftY;
+      theClusterParam.NNXrec_ = theDetParam.theTopol->localX(theClusterParam.theCluster->x()) + lorentzshiftX;
+      theClusterParam.NNYrec_ = theDetParam.theTopol->localY(theClusterParam.theCluster->y()) + lorentzshiftY;
     }
-  } else if UNLIKELY (UseClusterSplitter_ && theClusterParam.templQbin_ == 0) {
+  } 
+  /*
+  else if UNLIKELY (UseClusterSplitter_ && theClusterParam.templQbin_ == 0) {
     edm::LogError("PixelCPENNReco") << " PixelCPENNReco: Qbin = 0 but using cluster splitter, we should "
                                              "never be here !!!!!!!!!!!!!!!!!!!!!! \n"
                                           << "(int)UseClusterSplitter_ = " << (int)UseClusterSplitter_ << endl;
@@ -495,6 +503,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
     ///SiPixelTemplate2D templ2D_(thePixelTemp2D_);
 
     theClusterParam.ierr = -123;
+    */
     /*
        float dchisq;
        float templProbQ_;
@@ -511,6 +520,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
        templ2D_ );
        
        */
+  /*
     if (theClusterParam.ierr != 0) {
       // Template reco has failed, compute position estimates based on cluster center of gravity + Lorentz drift
       // Future improvement would be to call generic reco instead
@@ -530,8 +540,8 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       }
     } else {
       // go from micrometer to centimeter
-      NNXrec1_ *= micronsToCm;
-      NNYrec1_ *= micronsToCm;
+      //NNXrec1_ *= micronsToCm;
+      //NNYrec1_ *= micronsToCm;
       templXrec1_ *= micronsToCm;
       templYrec1_ *= micronsToCm;
       templXrec2_ *= micronsToCm;
@@ -554,18 +564,19 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       theClusterParam.templYrec_ = (distY1 < distY2 ? templYrec1_ : templYrec2_);
     }
   }  // else if ( UseClusterSplitter_ && templQbin_ == 0 )
-
+*/
   else  // apparenly this is the good one!
   {
     // go from micrometer to centimeter
-    theClusterParam.templXrec_ *= micronsToCm;
-    theClusterParam.templYrec_ *= micronsToCm;
+    theClusterParam.NNXrec_ *= micronsToCm;
+    theClusterParam.NNYrec_ *= micronsToCm;
 
     // go back to the module coordinate system
-    theClusterParam.templXrec_ += lp.x();
-    theClusterParam.templYrec_ += lp.y();
+    theClusterParam.NNXrec_ += lp.x();
+    theClusterParam.NNYrec_ += lp.y();
 
     // Compute the Alignment Group Corrections [template ID should already be selected from call to reco procedure]
+    /*
     if (doLorentzFromAlignment_) {
       // Do only if the lotentzshift has meaningfull numbers
       if (theDetParam.lorentzShiftInCmX != 0.0 || theDetParam.lorentzShiftInCmY != 0.0) {
@@ -589,20 +600,26 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
         //   <<" "<<theDetParam.lorentzShiftInCmY
         //   << endl; //dk
       }  //else {cout<<" LA is 0, disable offset corrections "<<endl;} //dk
-    }    //else {cout<<" Do not do LA offset correction "<<endl;} //dk
+    } */   //else {cout<<" Do not do LA offset correction "<<endl;} //dk
   }
 
   // Save probabilities and qBin in the quantities given to us by the base class
   // (for which there are also inline getters).  &&& templProbX_ etc. should be retired...
+  /*
   theClusterParam.probabilityX_ = theClusterParam.templProbX_;
   theClusterParam.probabilityY_ = theClusterParam.templProbY_;
   theClusterParam.probabilityQ_ = theClusterParam.templProbQ_;
   theClusterParam.qBin_ = theClusterParam.templQbin_;
+  */
+   theClusterParam.probabilityX_ = 0.05;
+  theClusterParam.probabilityY_ = 0.05;
+  theClusterParam.probabilityQ_ = 0.05;
+  theClusterParam.qBin_ = 0.05;
 
   if (theClusterParam.ierr == 0)  // always true here
     theClusterParam.hasFilledProb_ = true;
 
-  return LocalPoint(theClusterParam.templXrec_, theClusterParam.templYrec_);
+  return LocalPoint(theClusterParam.NNXrec_, theClusterParam.NNYrec_);
 }
 
 //------------------------------------------------------------------
@@ -693,8 +710,8 @@ LocalError PixelCPENNReco::localError(DetParam const& theDetParam, ClusterParam&
       // &&& need a class const
       //const float micronsToCm = 1.0e-4;
 
-      xerr = theClusterParam.templSigmaX_ * micronsToCm;
-      yerr = theClusterParam.templSigmaY_ * micronsToCm;
+      xerr = theClusterParam.NNSigmaX_ * micronsToCm;
+      yerr = theClusterParam.NNSigmaY_ * micronsToCm;
 
       //cout << "xerr = " << xerr << endl;
       //cout << "yerr = " << yerr << endl;
@@ -735,7 +752,7 @@ void PixelCPENNReco::fillPSetDescription(edm::ParameterSetDescription& desc) {
   desc.add<int>("speed", -2);
   desc.add<bool>("UseClusterSplitter", false);
   //some defaults for testing
-  desc.add<std::string>("graphPath_x","/uscms_data/d3/ssekhar/CMSSW_11_1_2/src/TrackerStuff/PixelHitsCNN/data/graph_x_1dcnn_p1_2024_by25k_irrad_BPIXL1_022122");
+  desc.add<std::string>("graphPath_x","/uscms_data/d3/ssekhar/CMSSW_11_1_2/src/TrackerStuff/PixelHitsCNN/data/graph_x_1dcnn_p1_2024_by25k_irrad_BPIXL1_022122.pb");
   desc.add<std::string>("inputTensorName_x","input_1");
   desc.add<std::string>("anglesTensorName_x","input_2");
   desc.add<std::string>("outputTensorName","Identity");
