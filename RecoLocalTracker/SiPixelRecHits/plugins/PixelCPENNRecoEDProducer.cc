@@ -8,7 +8,7 @@
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 
-//#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "RecoLocalTracker/SiPixelRecHits/interface/PixelCPENNReco.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h" // note EDProducer instead of Analyzer 
 
@@ -22,9 +22,16 @@
 
 using namespace edm;
 
+//struct CacheData {
+//  CacheData() : graphDef(nullptr) {}
+//  std::atomic<tensorflow::GraphDef*> graphDef;
+//};
+
+
 class PixelCPENNRecoEDProducer : public edm::stream::EDProducer<edm::GlobalCache<CacheData>> {
 public:
-  PixelCPENNRecoEDProducer(const edm::ParameterSet& p);
+  PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData);
+  ~PixelCPENNRecoEDProducer() override;
   std::unique_ptr<PixelClusterParameterEstimator> produce(const TkPixelCPERecord&);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -37,7 +44,7 @@ private:
   edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> pDDToken_;
   edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> hTTToken_;
   edm::ESGetToken<SiPixelLorentzAngle, SiPixelLorentzAngleRcd> lorentzAngleToken_;
-  edm::ESGetToken<SiPixelTemplateDBObject, SiPixelTemplateDBObjectEDProducerRcd> templateDBobjectToken_;
+  edm::ESGetToken<SiPixelTemplateDBObject, SiPixelTemplateDBObjectESProducerRcd> templateDBobjectToken_;
 
   edm::ParameterSet pset_;
   bool doLorentzFromAlignment_;
@@ -73,7 +80,7 @@ void PixelCPENNRecoEDProducer::globalEndJob(const CacheData* cacheData) {
 
 
 
-PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData) {
+PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p) {
   std::string myname = p.getParameter<std::string>("ComponentName");
 
   useLAFromDB_ = p.getParameter<bool>("useLAFromDB");
@@ -110,6 +117,9 @@ std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produc
                                                 &iRecord.get(templateDBobjectToken_));
 }
 //=================================================================================================
+
+PixelCPENNRecoEDProducer::~PixelCPENNRecoEDProducer() {}
+
 void PixelCPENNRecoEDProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
 
@@ -117,7 +127,7 @@ void PixelCPENNRecoEDProducer::fillDescriptions(edm::ConfigurationDescriptions& 
   PixelCPEBase::fillPSetDescription(desc);
 
   // from PixelCPETemplateReco
-  PixelCPETemplateReco::fillPSetDescription(desc);
+  PixelCPENNReco::fillPSetDescription(desc);
 
   // specific to PixelCPENNRecoEDProducer
 
@@ -127,7 +137,7 @@ void PixelCPENNRecoEDProducer::fillDescriptions(edm::ConfigurationDescriptions& 
   desc.add<std::string>("outputTensorName");
   //desc.add<bool>("use_det_angles");
   //desc.add<std::string>("cpe");
-  desc.add<std::string>("ComponentName", "PixelCPETemplateReco");
+  desc.add<std::string>("ComponentName", "PixelCPENNReco");
   descriptions.add("_templates_default", desc);
 }
 

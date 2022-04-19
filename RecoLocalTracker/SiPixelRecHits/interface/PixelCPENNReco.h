@@ -29,6 +29,11 @@
  */
 #endif
 
+struct CacheData {
+  CacheData() : graphDef(nullptr) {}
+  std::atomic<tensorflow::GraphDef*> graphDef;
+};
+
 class MagneticField;
 class PixelCPENNReco : public PixelCPEBase{
 public:
@@ -36,7 +41,7 @@ public:
     ClusterParamTemplate(const SiPixelCluster &cl) : ClusterParam(cl) {}
     // The result of PixelTemplateReco2D
     float NNXrec_;
-    float NNXrec_;
+    float NNYrec_;
     float NNSigmaX_;
     float NNSigmaY_;
     // Add new information produced by SiPixelTemplateReco::PixelTempReco2D &&&
@@ -58,7 +63,7 @@ public:
                        const TrackerTopology &,
                        const SiPixelLorentzAngle *,
                        const SiPixelTemplateDBObject *,
-                       const CacheData*);
+                       const CacheData *);
 
   ~PixelCPENNReco() override;
 
@@ -97,11 +102,11 @@ private:
   
   //int MAXCLUSTER = 80000;
   //float micronsToCm = 1e-4;
-  
-  int mid_x = 0, mid_y = 0;
+  std::string cpe; 
+  //int mid_x = 0, mid_y = 0;
   //float clsize_1[MAXCLUSTER][2], clsize_2[MAXCLUSTER][2], clsize_3[MAXCLUSTER][2], clsize_4[MAXCLUSTER][2], clsize_5[MAXCLUSTER][2], clsize_6[MAXCLUSTER][2];
-  struct timeval now0, now1;
-  struct timezone timz;
+  //struct timeval now0, now1;
+  //struct timezone timz;
   //bool DoCosmics_;
   //bool LoadTemplatesFromDB_;
 };

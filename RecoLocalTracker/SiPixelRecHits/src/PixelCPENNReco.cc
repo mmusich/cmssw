@@ -52,12 +52,12 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
                                            const SiPixelTemplateDBObject* templateDBobject,
                                            const CacheData* cacheData)
     : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1),
-    inputTensorName_x(config.getParameter<std::string>("inputTensorName_x")),
-    anglesTensorName_x(config.getParameter<std::string>("anglesTensorName_x")),
-    outputTensorName_(config.getParameter<std::string>("outputTensorName")),
+    inputTensorName_x(conf.getParameter<std::string>("inputTensorName_x")),
+    anglesTensorName_x(conf.getParameter<std::string>("anglesTensorName_x")),
+    outputTensorName_(conf.getParameter<std::string>("outputTensorName")),
     session_x(tensorflow::createSession(cacheData->graphDef)),
     //use_det_angles(config.getParameter<bool>("use_det_angles")),
-    cpe(config.getParameter<std::string>("cpe")) {
+    cpe(conf.getParameter<std::string>("cpe")) {
   //cout << endl;
   //cout << "Constructing PixelCPENNReco::PixelCPENNReco(...)................................................." << endl;
   //cout << endl;
@@ -144,7 +144,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
     throw cms::Exception("PixelCPENNReco::localPosition :") << "graph is trained on BPIX only";
   }
   // how to access layer info from det_id? can i use the tracker topology token here? so i have to add it to the det_id or 
-  if(ttopo.pxbLayer(theDetParam.theDet->geographicalId()) != 1){
+  if(ttopo_.pxbLayer(theDetParam.theDet->geographicalId()) != 1){
     throw cms::Exception("PixelCPENNReco::localPosition :") << "graph is trained on BPIX L1 only";
   }
 
@@ -215,7 +215,8 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
   memset(clustMatrix_x, 0, sizeof(float) * mrow);
 
   int n_double_x = 0, n_double_y = 0;
-        int clustersize = 0;
+  int mid_x = 0, mid_y = 0;    
+    int clustersize = 0;
         int double_row[5], double_col[5]; 
         for(int i=0;i<5;i++){
           double_row[i]=-1;
@@ -249,14 +250,13 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
         //if(float(pix.adc) < cluster_min) cluster_min = float(pix.adc); 
 
         }
-        if(clustersize==0){printf("EMPTY CLUSTER, SKIPPING\n");continue;} 
+        if(clustersize==0){edm::LogError("PixelCPENNReco") <<"EMPTY CLUSTER\n";} 
         if(n_double_x>2 or n_double_y>2){
-    //  printf("MORE THAN 2 DOUBLE COL in X  = %i, SKIPPING\n",n_double);
-      continue; //currently can only deal with single double pix
-    }
+        edm::LogError("PixelCPENNReco") << "MORE THAN 2 DOUBLE COL in X or Y";
+      }
     n_double_x=0; n_double_y=0;
       //printf("max = %f, min = %f\n",cluster_max,cluster_min);
-    int clustersize_x = theClusterParam.theCluster.sizeX(), clustersize_y = theClusterParam.theCluster.sizeY();
+    int clustersize_x = theClusterParam.theCluster->sizeX(), clustersize_y = theClusterParam.theCluster->sizeY();
     mid_x = round(float(irow_sum)/float(clustersize));
     mid_y = round(float(icol_sum)/float(clustersize));
     int offset_x = 6 - mid_x;
@@ -307,10 +307,10 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
  // SiPixelTemplateReco::ClusMatrix clusterPayload{&clustMatrix[0][0], xdouble, ydouble, mrow, mcol};
 
   //deal with double width pixels
-  if(n_double_x==1 && clustersize_x>12) {printf("clustersize_x > 12, SKIPPING\n"); continue;} // NEED TO FIX CLUSTERSIZE COMPUTATION
-    if(n_double_x==2 && clustersize_x>11) {printf("clustersize_x > 11, SKIPPING\n"); continue;}
-    if(n_double_y==1 && clustersize_y>20) {printf("clustersize_y = %i > 20, SKIPPING\n", clustersize_y);continue;}
-    if(n_double_y==2 && clustersize_x>19) {printf("clustersize_y = %i > 19, SKIPPING\n", clustersize_y);continue;}
+  if(n_double_x==1 && clustersize_x>12) {printf("clustersize_x > 12, SKIPPING\n"); } // NEED TO FIX CLUSTERSIZE COMPUTATION
+    if(n_double_x==2 && clustersize_x>11) {printf("clustersize_x > 11, SKIPPING\n"); }
+    if(n_double_y==1 && clustersize_y>20) {printf("clustersize_y = %i > 20, SKIPPING\n", clustersize_y);}
+    if(n_double_y==2 && clustersize_x>19) {printf("clustersize_y = %i > 19, SKIPPING\n", clustersize_y);}
 
 //first deal with double width pixels in x
     int k=0,m=0;
@@ -365,7 +365,8 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
    for(int i = 0;i < mrow; i++){
       for(int j = 0; j < mcol; j++){
         clustMatrix_x[i] += clustMatrix[i][j];
-
+	}
+    }
   // Output:
   float nonsense = -99999.9f;  // nonsense init value
   theClusterParam.NNXrec_ = theClusterParam.NNYrec_ = theClusterParam.NNSigmaX_ =
@@ -434,13 +435,13 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
           //gettimeofday(&now0, &timz);
         // define the output and run
       std::vector<tensorflow::Tensor> output_x;
-      if(cpe=="cnn2d"){ gettimeofday(&now0, &timz);
+      if(cpe=="cnn2d"){ //gettimeofday(&now0, &timz);
         tensorflow::run(session_x, {{inputTensorName_x,cluster_}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
-        gettimeofday(&now1, &timz);
+       // gettimeofday(&now1, &timz);
       }
-      else {  gettimeofday(&now0, &timz);
+      else { // gettimeofday(&now0, &timz);
         tensorflow::run(session_x, {{inputTensorName_x,cluster_flat_x}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
-        gettimeofday(&now1, &timz);
+       // gettimeofday(&now1, &timz);
       }
       // convert microns to cms
       theClusterParam.NNXrec_ = output_x[0].matrix<float>()(0,0);
