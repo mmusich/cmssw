@@ -45,13 +45,13 @@ namespace {
 //
 //-----------------------------------------------------------------------------
 PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
-                                           const MagneticField* mag,
+                                           //const MagneticField* mag,
                                            const TrackerGeometry& geom,
                                            const TrackerTopology& ttopo,
-                                           const SiPixelLorentzAngle* lorentzAngle,
-                                           const SiPixelTemplateDBObject* templateDBobject,
+                                           //const SiPixelLorentzAngle* lorentzAngle,
+                                           //const SiPixelTemplateDBObject* templateDBobject,
                                            const CacheData* cacheData)
-    : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1),
+    : PixelCPEBase(conf, nullptr, geom, ttopo, nullptr, nullptr, nullptr, nullptr, 1),
     inputTensorName_x(conf.getParameter<std::string>("inputTensorName_x")),
     anglesTensorName_x(conf.getParameter<std::string>("anglesTensorName_x")),
     outputTensorName_(conf.getParameter<std::string>("outputTensorName")),
@@ -70,7 +70,7 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
   //cout << "field_magnitude = " << field_magnitude << endl;
 
   // configuration parameter to decide between DB or text file template access
-
+/*
   if (LoadTemplatesFromDB_) {
     //cout << "PixelCPENNReco: Loading templates from database (DB) --------- " << endl;
 
@@ -100,6 +100,7 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
   LogDebug("PixelCPENNReco::PixelCPENNReco:") << "Template speed = " << speed_ << "\n";
 
   UseClusterSplitter_ = conf.getParameter<bool>("UseClusterSplitter");
+  */
 }
 
 //-----------------------------------------------------------------------------
@@ -125,7 +126,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
     throw cms::Exception("PixelCPENNReco::localPosition :") << "A non-pixel detector type in here?";
   //  barrel(false) or forward(true)
   const bool fpix = GeomDetEnumerators::isEndcap(theDetParam.thePart);
-
+/*
   int ID = -9999;
   if (LoadTemplatesFromDB_) {
     int ID0 = templateDBobject_->getTemplateID(theDetParam.theDet->geographicalId());  // just to comapre
@@ -139,7 +140,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
       ID = forwardTemplateID_;  // forward
   }
   //cout << "PixelCPENNReco : ID = " << ID << endl;
-
+*/
   if(fpix){
     throw cms::Exception("PixelCPENNReco::localPosition :") << "graph is trained on BPIX only";
   }
@@ -148,7 +149,7 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
     throw cms::Exception("PixelCPENNReco::localPosition :") << "graph is trained on BPIX L1 only";
   }
 
-  SiPixelTemplate templ(thePixelTemp_);
+ // SiPixelTemplate templ(thePixelTemp_);
 
   // Preparing to retrieve ADC counts from the SiPixeltheClusterParam.theCluster->  In the cluster,
   // we have the following:

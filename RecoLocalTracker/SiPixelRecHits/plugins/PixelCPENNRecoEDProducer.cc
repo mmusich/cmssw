@@ -80,41 +80,41 @@ void PixelCPENNRecoEDProducer::globalEndJob(const CacheData* cacheData) {
 
 
 
-PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p) {
+PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData ) {
   std::string myname = p.getParameter<std::string>("ComponentName");
 
-  useLAFromDB_ = p.getParameter<bool>("useLAFromDB");
-  doLorentzFromAlignment_ = p.getParameter<bool>("doLorentzFromAlignment");
+  //useLAFromDB_ = p.getParameter<bool>("useLAFromDB");
+  //doLorentzFromAlignment_ = p.getParameter<bool>("doLorentzFromAlignment");
 
   pset_ = p;
-  auto c = setWhatProduced(this, myname);
-  magfieldToken_ = c.consumes();
-  pDDToken_ = c.consumes();
-  hTTToken_ = c.consumes(); // is this the tracker topology token?
+  //auto c = setWhatProduced(this, myname);
+  magfieldToken_ = esConsumes<MagneticField, IdealMagneticFieldRecord>();
+  pDDToken_ = esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>();
+  hTTToken_ = = esConsumes <TrackerTopology, TrackerTopologyRcd>(); // is this the tracker topology token?
   
-  templateDBobjectToken_ = c.consumes();
-  if (useLAFromDB_ || doLorentzFromAlignment_) {
-    char const* laLabel = doLorentzFromAlignment_ ? "fromAlignment" : "";
-    lorentzAngleToken_ = c.consumes(edm::ESInputTag("", laLabel));
-  }
+  //templateDBobjectToken_ = c.consumes();
+  //if (useLAFromDB_ || doLorentzFromAlignment_) {
+  //  char const* laLabel = doLorentzFromAlignment_ ? "fromAlignment" : "";
+  //  lorentzAngleToken_ = c.consumes(edm::ESInputTag("", laLabel));
+  //}
 }
 //===================== how should this communicate with PixelCPENNReco.cc? =========================== 
-std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produce(
-    const TkPixelCPERecord& iRecord) {
+std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produce(const TkPixelCPERecord& iRecord, const CacheData* cacheData ) {
   // Normal, default LA is used in case of template failure, load it unless
   // turned off
   // if turned off, null is ok, becomes zero
-  const SiPixelLorentzAngle* lorentzAngleProduct = nullptr;
-  if (useLAFromDB_ || doLorentzFromAlignment_) {
-    lorentzAngleProduct = &iRecord.get(lorentzAngleToken_);
-  }
+ // const SiPixelLorentzAngle* lorentzAngleProduct = nullptr;
+ // if (useLAFromDB_ || doLorentzFromAlignment_) {
+  //  lorentzAngleProduct = &iRecord.get(lorentzAngleToken_);
+ // }
 
   return std::make_unique<PixelCPENNReco>(pset_,
-                                                &iRecord.get(magfieldToken_),
+                                                //&iRecord.get(magfieldToken_),
                                                 iRecord.get(pDDToken_),
                                                 iRecord.get(hTTToken_),
-                                                lorentzAngleProduct,
-                                                &iRecord.get(templateDBobjectToken_));
+                                                //lorentzAngleProduct,
+                                                //&iRecord.get(templateDBobjectToken_)
+                                                cacheData);
 }
 //=================================================================================================
 

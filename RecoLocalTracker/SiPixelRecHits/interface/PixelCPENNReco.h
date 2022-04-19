@@ -58,11 +58,11 @@ public:
 
   // PixelCPETemplateReco( const DetUnit& det );
   PixelCPENNReco(edm::ParameterSet const &conf,
-                       const MagneticField *,
+                   //    const MagneticField *,
                        const TrackerGeometry &,
                        const TrackerTopology &,
-                       const SiPixelLorentzAngle *,
-                       const SiPixelTemplateDBObject *,
+                     //  const SiPixelLorentzAngle *,
+                     //  const SiPixelTemplateDBObject *,
                        const CacheData *);
 
   ~PixelCPENNReco() override;
