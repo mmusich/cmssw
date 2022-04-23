@@ -1004,6 +1004,12 @@ namespace dqm::impl {
     return static_cast<TH2S *>(accessRootObject(access, __PRETTY_FUNCTION__, 2));
   }
 
+  THnSparseS *MonitorElement::getTHnSparseS() {
+    auto access = this->accessMut();
+    assert(kind() == Kind::TH2SSPARSE);
+    return static_cast<THnSparseS *>(accessRootObject(access, __PRETTY_FUNCTION__, 2));
+  }
+
   TH2D *MonitorElement::getTH2D() {
     auto access = this->accessMut();
     assert(kind() == Kind::TH2D);

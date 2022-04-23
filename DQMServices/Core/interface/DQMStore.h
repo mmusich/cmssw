@@ -257,6 +257,39 @@ namespace dqm {
             },
             /* forceReplace */ true);
       }
+      
+      //  MM 23.04.22 add sparse histograms
+
+      // ROOT constructor
+      // THnSparse(const char *name, const char *title, Int_t dim, const Int_t *nbins, const Double_t *xmin, const Double_t *xmax, Int_t chunksize)
+      template <typename FUNC = NOOP, std::enable_if_t<not std::is_arithmetic<FUNC>::value, int> = 0>
+      MonitorElement* book2SSparse(TString const& name,
+				   TString const& title,
+				   int dim,
+				   int const* nbins,
+				   double const* xmin,
+				   double const* xmax,
+				   int chunksize,				
+				   FUNC onbooking = NOOP()) {
+        return bookME(name, MonitorElementData::Kind::TH2SSPARSE, [=]() {
+	    auto th2 = new THnSparseS(name, title, dim, nbins, xmin, xmax, chunksize);
+	    onbooking(th2);
+	    return th2;
+	  });
+      }
+      template <typename FUNC = NOOP, std::enable_if_t<not std::is_arithmetic<FUNC>::value, int> = 0>
+      MonitorElement* book2SSparse(TString const& name, TH2S* object, FUNC onbooking = NOOP()) {
+        return bookME(
+		      name,
+		      MonitorElementData::Kind::TH2SSPARSE,
+		      [=]() {
+			auto th2 = static_cast<THnSparseS*>(object->Clone(name));
+			onbooking(th2);
+			return th2;
+		      },
+		      /* forceReplace */ true);
+      }
+      // MM 23.04.2022 Add sparse histograms 
       template <typename FUNC = NOOP, std::enable_if_t<not std::is_arithmetic<FUNC>::value, int> = 0>
       MonitorElement* book2DD(TString const& name,
                               TString const& title,
