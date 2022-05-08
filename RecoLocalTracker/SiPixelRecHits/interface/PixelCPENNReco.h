@@ -29,10 +29,7 @@
  */
 #endif
 
-struct CacheData {
-  CacheData() : graphDef(nullptr) {}
-  std::atomic<tensorflow::GraphDef*> graphDef;
-};
+
 
 class MagneticField;
 class PixelCPENNReco : public PixelCPEBase{
@@ -63,7 +60,8 @@ public:
                        const TrackerTopology &,
                      //  const SiPixelLorentzAngle *,
                      //  const SiPixelTemplateDBObject *,
-                       const CacheData *);
+                       //const CacheData *
+                       );
 
   ~PixelCPENNReco() override;
 
@@ -98,7 +96,7 @@ private:
   std::string inputTensorName_x, inputTensorName_y, anglesTensorName_x, anglesTensorName_y;
   std::string outputTensorName_;
   //std::string     fRootFileName;
-  tensorflow::Session* session_x;
+
   
   //int MAXCLUSTER = 80000;
   //float micronsToCm = 1e-4;

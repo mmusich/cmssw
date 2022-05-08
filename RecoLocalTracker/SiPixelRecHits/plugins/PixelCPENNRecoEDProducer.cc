@@ -22,11 +22,11 @@
 
 using namespace edm;
 
-//struct CacheData {
-//  CacheData() : graphDef(nullptr) {}
-//  std::atomic<tensorflow::GraphDef*> graphDef;
-//};
 
+struct CacheData {
+  CacheData() : graphDef(nullptr) {}
+  std::atomic<tensorflow::GraphDef*> graphDef;
+};
 
 class PixelCPENNRecoEDProducer : public edm::stream::EDProducer<edm::GlobalCache<CacheData>> {
 public:
@@ -49,6 +49,7 @@ private:
   edm::ParameterSet pset_;
   bool doLorentzFromAlignment_;
   bool useLAFromDB_;
+  tensorflow::Session* session_x;
 };
 
 std::unique_ptr<CacheData> PixelCPENNRecoEDProducer::initializeGlobalCache(const edm::ParameterSet& config) 
@@ -80,7 +81,8 @@ void PixelCPENNRecoEDProducer::globalEndJob(const CacheData* cacheData) {
 
 
 
-PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData ) {
+PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData ) 
+: session_x(tensorflow::createSession(cacheData->graphDef)),{
   std::string myname = p.getParameter<std::string>("ComponentName");
 
   //useLAFromDB_ = p.getParameter<bool>("useLAFromDB");
@@ -99,7 +101,7 @@ PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, c
   //}
 }
 //===================== how should this communicate with PixelCPENNReco.cc? =========================== 
-std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produce(const TkPixelCPERecord& iRecord, const CacheData* cacheData ) {
+std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produce(const edm::EventSetup& setup ) {
   // Normal, default LA is used in case of template failure, load it unless
   // turned off
   // if turned off, null is ok, becomes zero
@@ -110,11 +112,13 @@ std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produc
 
   return std::make_unique<PixelCPENNReco>(pset_,
                                                 //&iRecord.get(magfieldToken_),
-                                                iRecord.get(pDDToken_),
-                                                iRecord.get(hTTToken_),
+                                                //iRecord.get(pDDToken_),
+                                                setup.getHandle(pDDToken_),
+                                                //iRecord.get(hTTToken_),
+                                                setup.getHandle(hTTToken_),
                                                 //lorentzAngleProduct,
                                                 //&iRecord.get(templateDBobjectToken_)
-                                                cacheData);
+                                                );
 }
 //=================================================================================================
 

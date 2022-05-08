@@ -50,12 +50,13 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
                                            const TrackerTopology& ttopo,
                                            //const SiPixelLorentzAngle* lorentzAngle,
                                            //const SiPixelTemplateDBObject* templateDBobject,
-                                           const CacheData* cacheData)
+                                           //const CacheData* cacheData
+                                           )
     : PixelCPEBase(conf, nullptr, geom, ttopo, nullptr, nullptr, nullptr, nullptr, 1),
     inputTensorName_x(conf.getParameter<std::string>("inputTensorName_x")),
     anglesTensorName_x(conf.getParameter<std::string>("anglesTensorName_x")),
     outputTensorName_(conf.getParameter<std::string>("outputTensorName")),
-    session_x(tensorflow::createSession(cacheData->graphDef)),
+    //session_x(tensorflow::createSession(cacheData->graphDef)),
     //use_det_angles(config.getParameter<bool>("use_det_angles")),
     cpe(conf.getParameter<std::string>("cpe")) {
   //cout << endl;
