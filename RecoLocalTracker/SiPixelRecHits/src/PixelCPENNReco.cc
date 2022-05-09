@@ -29,7 +29,7 @@
 
 #include <iostream>
 
-using namespace SiPixelTemplateReco;
+//using namespace SiPixelTemplateReco;
 //using namespace SiPixelTemplateSplit;
 using namespace std;
 

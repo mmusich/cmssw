@@ -15,7 +15,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ModuleFactory.h"
-#include "FWCore/Framework/interface/ESProducer.h"
+//#include "FWCore/Framework/interface/ESProducer.h"
 
 #include <string>
 #include <memory>
@@ -30,9 +30,9 @@ using namespace edm;
 
 class PixelCPENNRecoEDProducer : public edm::stream::EDProducer<edm::GlobalCache<CacheData>> {
 public:
-  PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData);
+  explicit PixelCPENNRecoEDProducer(const edm::ParameterSet& , const CacheData* );
   ~PixelCPENNRecoEDProducer() override;
-  std::unique_ptr<PixelClusterParameterEstimator> produce(const edm::EventSetup& setup, const CacheData* cacheData);
+  std::unique_ptr<PixelClusterParameterEstimator> produce(const edm::EventSetup& , const CacheData* );
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
     // two additional static methods for handling the global cache
