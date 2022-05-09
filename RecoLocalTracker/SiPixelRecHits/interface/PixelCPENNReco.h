@@ -28,7 +28,10 @@
  * the Det angle to estimate the track impact angle
  */
 #endif
-
+struct CacheData {
+  CacheData() : graphDef(nullptr) {}
+  std::atomic<tensorflow::GraphDef*> graphDef;
+};
 
 
 class MagneticField;
@@ -60,14 +63,14 @@ public:
                        const TrackerTopology &,
                      //  const SiPixelLorentzAngle *,
                      //  const SiPixelTemplateDBObject *,
-                       //const CacheData *
+                       const CacheData *
                        );
 
   ~PixelCPENNReco() override;
 
   static void fillPSetDescription(edm::ParameterSetDescription &desc);
-  //static std::unique_ptr<CacheData> initializeGlobalCache(const edm::ParameterSet&);
-  //static void globalEndJob(const CacheData*);
+  static std::unique_ptr<CacheData> initializeGlobalCache(const edm::ParameterSet&);
+  static void globalEndJob(const CacheData*);
 
 private:
   std::unique_ptr<ClusterParam> createClusterParam(const SiPixelCluster &cl) const override;
@@ -97,7 +100,7 @@ private:
   std::string outputTensorName_;
   //std::string     fRootFileName;
 
-  
+  tensorflow::Session* session_x;  
   //int MAXCLUSTER = 80000;
   //float micronsToCm = 1e-4;
   std::string cpe; 
