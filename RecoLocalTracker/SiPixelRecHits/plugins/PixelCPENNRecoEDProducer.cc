@@ -32,7 +32,8 @@ class PixelCPENNRecoEDProducer : public edm::stream::EDProducer<edm::GlobalCache
 public:
   explicit PixelCPENNRecoEDProducer(const edm::ParameterSet& , const CacheData* );
   ~PixelCPENNRecoEDProducer() override;
-  std::unique_ptr<PixelClusterParameterEstimator> produce(const edm::EventSetup& , const CacheData* );
+  //std::unique_ptr<PixelClusterParameterEstimator> produce(const edm::EventSetup& , const CacheData* );
+  void produce(edm::Event&, const edm::EventSetup&);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
     // two additional static methods for handling the global cache
@@ -82,7 +83,7 @@ void PixelCPENNRecoEDProducer::globalEndJob(const CacheData* cacheData) {
 
 
 PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, const CacheData* cacheData ) 
-//: session_x(tensorflow::createSession(cacheData->graphDef))
+: session_x(tensorflow::createSession(cacheData->graphDef))
 {
   std::string myname = p.getParameter<std::string>("ComponentName");
 
@@ -95,6 +96,7 @@ PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, c
   pDDToken_ = esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>();
   hTTToken_ = esConsumes <TrackerTopology, TrackerTopologyRcd>(); // is this the tracker topology token?
   
+  produces<PixelCPENNReco>();
   //templateDBobjectToken_ = c.consumes();
   //if (useLAFromDB_ || doLorentzFromAlignment_) {
   //  char const* laLabel = doLorentzFromAlignment_ ? "fromAlignment" : "";
@@ -102,7 +104,8 @@ PixelCPENNRecoEDProducer::PixelCPENNRecoEDProducer(const edm::ParameterSet& p, c
   //}
 }
 //===================== how should this communicate with PixelCPENNReco.cc? =========================== 
-std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produce(const edm::EventSetup& setup, const CacheData* cacheData ) {
+//std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produce(const edm::EventSetup& setup, const CacheData* cacheData ) {
+  void PixelCPENNRecoEDProducer::produce(edm::Event& iEvent, const edm::EventSetup& setup) {
   // Normal, default LA is used in case of template failure, load it unless
   // turned off
   // if turned off, null is ok, becomes zero
@@ -114,7 +117,7 @@ std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produc
   auto const& tkGmt = *tGeomHandle;
   edm::ESHandle<TrackerTopology> tTopoHandle = setup.getHandle(hTTToken_);
   auto const& tkTpl = *tTopoHandle;
-  return std::make_unique<PixelCPENNReco>(pset_,
+  auto nnreco_instance =  std::make_unique<PixelCPENNReco>(pset_,
                                                 //&iRecord.get(magfieldToken_),
                                                 //iRecord.get(pDDToken_),
                                                 tkGmt,
@@ -122,8 +125,9 @@ std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoEDProducer::produc
                                                 tkTpl,
                                                 //lorentzAngleProduct,
                                                 //&iRecord.get(templateDBobjectToken_)
-                                                cacheData
-						);
+                                                session_x
+						                                    );
+  iEvent.put(std::move(nnreco_instance));
 }
 //=================================================================================================
 

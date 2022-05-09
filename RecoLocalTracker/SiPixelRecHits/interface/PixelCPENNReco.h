@@ -63,7 +63,7 @@ public:
                        const TrackerTopology &,
                      //  const SiPixelLorentzAngle *,
                      //  const SiPixelTemplateDBObject *,
-                       const CacheData *
+                       tensorflow::Session*
                        );
 
   ~PixelCPENNReco() override;
