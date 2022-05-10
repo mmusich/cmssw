@@ -898,12 +898,44 @@ void AlignmentProducerBase::writeDB(Alignments* alignments,
 
   if (globalCoordinates  // happens only if (applyDbAlignment_ == true)
       && globalCoordinates->transform() != AlignTransform::Transform::Identity) {
-    Alignments tempAlignments{};                            // temporary storage for
-    AlignmentErrorsExtended tempAlignmentErrorsExtended{};  // final alignments and errors
+    //Alignments tempAlignments{};                            // temporary storage for
+    //AlignmentErrorsExtended tempAlignmentErrorsExtended{};  // final alignments and errors
+
+    std::unique_ptr<Alignments> tempAlignments = std::make_unique<Alignments>();
+    std::unique_ptr<AlignmentErrorsExtended> tempAlignmentErrorsExtended = std::make_unique<AlignmentErrorsExtended>();
 
     GeometryAligner aligner;
+    //aligner.removeGlobalTransform(
+    //				  alignments, alignmentErrors, *globalCoordinates, &tempAlignments, &tempAlignmentErrorsExtended);
+
     aligner.removeGlobalTransform(
-        alignments, alignmentErrors, *globalCoordinates, &tempAlignments, &tempAlignmentErrorsExtended);
+        alignments, alignmentErrors, *globalCoordinates, tempAlignments.get(), tempAlignmentErrorsExtended.get());
+
+    float xBar{0}, yBar{0}, zBar{0};
+    std::vector<AlignTransform> alignT = alignments->m_align;
+    unsigned int counter{0};
+    for (const auto& ali : alignT) {
+      xBar += ali.translation().x();
+      yBar += ali.translation().y();
+      zBar += ali.translation().z();
+      counter++;
+    }
+
+    std::cout << "barycenter x: " << xBar / counter << " barycenter y: " << yBar / counter
+              << " barycenter z: " << zBar / counter << std::endl;
+
+    float xBar1{0}, yBar1{0}, zBar1{0};
+    std::vector<AlignTransform> alignT1 = tempAlignments->m_align;
+    unsigned int counter1{0};
+    for (const auto& ali : alignT1) {
+      xBar1 += ali.translation().x();
+      yBar1 += ali.translation().y();
+      zBar1 += ali.translation().z();
+      counter1++;
+    }
+
+    std::cout << "barycenter x: " << xBar1 / counter << " barycenter y: " << yBar1 / counter
+              << " barycenter z: " << zBar1 / counter << std::endl;
 
     delete alignments;       // have to delete original alignments
     delete alignmentErrors;  // same thing for the errors
@@ -915,11 +947,13 @@ void AlignmentProducerBase::writeDB(Alignments* alignments,
 
   if (saveToDB_) {
     edm::LogInfo("Alignment") << "Writing Alignments for run " << time << " to " << alignRcd << ".";
+    //poolDb->writeOneIOV<Alignments>(tempAlignments, time, alignRcd);
     poolDb->writeOneIOV<Alignments>(tempAlignments, time, alignRcd);
   }
 
   if (saveApeToDB_) {
     edm::LogInfo("Alignment") << "Writing AlignmentErrorsExtended for run " << time << " to " << errRcd << ".";
+    //poolDb->writeOneIOV<AlignmentErrorsExtended>(tempAlignmentErrorsExtended, time, errRcd);
     poolDb->writeOneIOV<AlignmentErrorsExtended>(tempAlignmentErrorsExtended, time, errRcd);
   }
 }
