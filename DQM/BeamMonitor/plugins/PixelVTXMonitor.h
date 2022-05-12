@@ -14,7 +14,7 @@
 #include <vector>
 #include <map>
 
-#include <FWCore/Framework/interface/EDAnalyzer.h>
+#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
@@ -27,22 +27,19 @@
 // class declaration
 //
 
-class PixelVTXMonitor : public edm::EDAnalyzer {
+class PixelVTXMonitor : public DQMEDAnalyzer {
 public:
   typedef dqm::legacy::MonitorElement MonitorElement;
   typedef dqm::legacy::DQMStore DQMStore;
-  PixelVTXMonitor(const edm::ParameterSet&);
-  ~PixelVTXMonitor() override;
+  PixelVTXMonitor(const edm::ParameterSet &);
+  ~PixelVTXMonitor() override = default;
 
 protected:
-  void beginJob() override;
-  void beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup) override;
-  void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
-  void endRun(edm::Run const& iRun, edm::EventSetup const& iSetup) override;
-  void endJob() override;
+  void bookHistograms(DQMStore::IBooker &iBooker, const edm::Run &iRun, const edm::EventSetup &iSetup) override;
 
 private:
-  void bookHistograms();
+  void dqmBeginRun(const edm::Run &iRun, const edm::EventSetup &iSetup) override;
+  void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) override;
 
   edm::ParameterSet parameters_;
 
@@ -56,12 +53,11 @@ private:
   edm::InputTag hltInputTag_;
   float minVtxDoF_;
 
-  DQMStore* dbe_;
   HLTConfigProvider hltConfig_;
 
   struct PixelMEs {
-    MonitorElement* clusME;
-    MonitorElement* vtxME;
+    MonitorElement *clusME;
+    MonitorElement *vtxME;
   };
 
   std::map<std::string, PixelMEs> histoMap_;

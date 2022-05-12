@@ -33,9 +33,7 @@ PixelVTXMonitor::PixelVTXMonitor(const edm::ParameterSet& ps) : parameters_(ps) 
   minVtxDoF_ = parameters_.getParameter<double>("MinVtxDoF");
 }
 
-PixelVTXMonitor::~PixelVTXMonitor() {}
-
-void PixelVTXMonitor::bookHistograms() {
+void PixelVTXMonitor::bookHistograms(DQMStore::IBooker& iBooker, const edm::Run&, const edm::EventSetup&) {
   std::vector<std::string> hltPathsOfInterest =
       parameters_.getParameter<std::vector<std::string> >("HLTPathsOfInterest");
   if (hltPathsOfInterest.empty())
@@ -59,7 +57,7 @@ void PixelVTXMonitor::bookHistograms() {
   edm::ParameterSet VtxHistoPar = parameters_.getParameter<edm::ParameterSet>("TH1VtxPar");
 
   std::string currentFolder = moduleName_ + "/" + folderName_;
-  dbe_->setCurrentFolder(currentFolder);
+  iBooker.setCurrentFolder(currentFolder);
 
   PixelMEs local_MEs;
   for (std::vector<std::string>::iterator it = selectedPaths.begin(); it != selectedPaths.end(); it++) {
@@ -72,30 +70,28 @@ void PixelVTXMonitor::bookHistograms() {
       hname += tag;
       htitle = "# of Pixel Clusters (";
       htitle += tag + ")";
-      local_MEs.clusME = dbe_->book1D(hname,
-                                      htitle,
-                                      ClusHistoPar.getParameter<int32_t>("Xbins"),
-                                      ClusHistoPar.getParameter<double>("Xmin"),
-                                      ClusHistoPar.getParameter<double>("Xmax"));
+      local_MEs.clusME = iBooker.book1D(hname,
+                                        htitle,
+                                        ClusHistoPar.getParameter<int32_t>("Xbins"),
+                                        ClusHistoPar.getParameter<double>("Xmin"),
+                                        ClusHistoPar.getParameter<double>("Xmax"));
 
       hname = "nPxlVtx_";
       hname += tag;
       htitle = "# of Pixel Vertices (";
       htitle += tag + ")";
-      local_MEs.vtxME = dbe_->book1D(hname,
-                                     htitle,
-                                     VtxHistoPar.getParameter<int32_t>("Xbins"),
-                                     VtxHistoPar.getParameter<double>("Xmin"),
-                                     VtxHistoPar.getParameter<double>("Xmax"));
+      local_MEs.vtxME = iBooker.book1D(hname,
+                                       htitle,
+                                       VtxHistoPar.getParameter<int32_t>("Xbins"),
+                                       VtxHistoPar.getParameter<double>("Xmin"),
+                                       VtxHistoPar.getParameter<double>("Xmax"));
 
       histoMap_.insert(std::make_pair(tag, local_MEs));
     }
   }
 }
 
-void PixelVTXMonitor::beginJob() { dbe_ = edm::Service<DQMStore>().operator->(); }
-
-void PixelVTXMonitor::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
+void PixelVTXMonitor::dqmBeginRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
   bool changed = true;
   if (hltConfig_.init(iRun, iSetup, hltInputTag_.process(), changed)) {
     // if init returns TRUE, initialisation has succeeded!
@@ -108,7 +104,6 @@ void PixelVTXMonitor::beginRun(edm::Run const& iRun, edm::EventSetup const& iSet
                                      << " failed";
     // In this case, all access methods will return empty values!
   }
-  bookHistograms();
 }
 void PixelVTXMonitor::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
   if (histoMap_.empty())
@@ -162,14 +157,6 @@ void PixelVTXMonitor::analyze(edm::Event const& iEvent, edm::EventSetup const& i
   }
 }
 
-void PixelVTXMonitor::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {}
-
-void PixelVTXMonitor::endJob() {}
 // Define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(PixelVTXMonitor);
-
-// Local Variables:
-// show-trailing-whitespace: t
-// truncate-lines: t
-// End:
