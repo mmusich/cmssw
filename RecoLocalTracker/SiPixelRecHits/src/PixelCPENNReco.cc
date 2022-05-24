@@ -50,13 +50,13 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
                                            const TrackerTopology& ttopo,
                                            //const SiPixelLorentzAngle* lorentzAngle,
                                            //const SiPixelTemplateDBObject* templateDBobject,
-                                           tensorflow::Session* session_x
+                                           const tensorflow::Session* session_x
                                            )
     : PixelCPEBase(conf, nullptr, geom, ttopo, nullptr, nullptr, nullptr, nullptr, 1),
     inputTensorName_x(conf.getParameter<std::string>("inputTensorName_x")),
     anglesTensorName_x(conf.getParameter<std::string>("anglesTensorName_x")),
     outputTensorName_(conf.getParameter<std::string>("outputTensorName")),
-    //session_x(tensorflow::createSession(cacheData->graphDef)),
+   // session_x(nullptr),
     //use_det_angles(config.getParameter<bool>("use_det_angles")),
     cpe(conf.getParameter<std::string>("cpe")) {
   //cout << endl;
@@ -438,11 +438,11 @@ LocalPoint PixelCPENNReco::localPosition(DetParam const& theDetParam, ClusterPar
         // define the output and run
       std::vector<tensorflow::Tensor> output_x;
       if(cpe=="cnn2d"){ //gettimeofday(&now0, &timz);
-        tensorflow::run(session_x, {{inputTensorName_x,cluster_}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
+        tensorflow::run(const_cast<tensorflow::Session *>(session_x), {{inputTensorName_x,cluster_}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
        // gettimeofday(&now1, &timz);
       }
       else { // gettimeofday(&now0, &timz);
-        tensorflow::run(session_x, {{inputTensorName_x,cluster_flat_x}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
+        tensorflow::run(const_cast<tensorflow::Session *>(session_x), {{inputTensorName_x,cluster_flat_x}, {anglesTensorName_x,angles}}, {outputTensorName_}, &output_x);
        // gettimeofday(&now1, &timz);
       }
       // convert microns to cms
