@@ -52,7 +52,7 @@ PixelCPENNReco::PixelCPENNReco(edm::ParameterSet const& conf,
                                            //const SiPixelTemplateDBObject* templateDBobject,
                                            const tensorflow::Session* session_x
                                            )
-    : PixelCPEBase(conf, nullptr, geom, ttopo, nullptr, nullptr, nullptr, nullptr, 1),
+    : PixelCPEBase(conf, nullptr, geom, ttopo, nullptr, nullptr, nullptr, nullptr, session_x,1),
     inputTensorName_x(conf.getParameter<std::string>("inputTensorName_x")),
     anglesTensorName_x(conf.getParameter<std::string>("anglesTensorName_x")),
     outputTensorName_(conf.getParameter<std::string>("outputTensorName")),

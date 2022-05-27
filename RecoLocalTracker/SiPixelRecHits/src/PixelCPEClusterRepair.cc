@@ -42,7 +42,7 @@ PixelCPEClusterRepair::PixelCPEClusterRepair(edm::ParameterSet const& conf,
                                              const SiPixelLorentzAngle* lorentzAngle,
                                              const SiPixelTemplateDBObject* templateDBobject,
                                              const SiPixel2DTemplateDBObject* templateDBobject2D)
-    : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, 1) {
+    : PixelCPEBase(conf, mag, geom, ttopo, lorentzAngle, nullptr, templateDBobject, nullptr, nullptr,1) {
   LogDebug("PixelCPEClusterRepair::(constructor)") << endl;
 
   //--- Parameter to decide between DB or text file template access

@@ -16,6 +16,8 @@
 #include "TrackingTools/Records/interface/TfGraphRecord.h"
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "RecoTracker/FinalTrackSelectors/interface/TfGraphDefWrapper.h"
+#include "RecoLocalTracker/SiPixelRecHits/interface/PixelCPENNReco.h"
+
 
 #include <string>
 #include <memory>
@@ -23,7 +25,7 @@
 class PixelCPENNRecoESProducer : public edm::ESProducer {
 public:
   PixelCPENNRecoESProducer(const edm::ParameterSet& p);
-  std::unique_ptr<PixelClusterParameterEstimator> produce(const TkPixelCPERecord&, const TfGraphRecord& );
+  std::unique_ptr<PixelClusterParameterEstimator> produce(const TkPixelCPERecord& );
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
@@ -32,8 +34,9 @@ private:
   edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> hTTToken_;
   edm::ESGetToken<SiPixelLorentzAngle, SiPixelLorentzAngleRcd> lorentzAngleToken_;
   edm::ESGetToken<SiPixelTemplateDBObject, SiPixelTemplateDBObjectESProducerRcd> templateDBobjectToken_;
-  const edm::ESGetToken<TfGraphDefWrapper, TfGraphRecord> tfDnnToken_;
-  const std::string tfDnnLabel_;
+  std::string tfDnnLabel_;
+  edm::ESGetToken<TfGraphDefWrapper, TfGraphRecord> tfDnnToken_;
+  
   //const tensorflow::Session *tfSession_;
 
 
@@ -46,11 +49,10 @@ private:
 
 using namespace edm;
 
-PixelCPENNRecoESProducer::PixelCPENNRecoESProducer(const edm::ParameterSet& p) 
-: tfDnnLabel_(ps.getParameter<std::string>("tfDnnLabel")),
-  tfDnnToken_(esConsumes(edm::ESInputTag("", tfDnnLabel_))) {
+PixelCPENNRecoESProducer::PixelCPENNRecoESProducer(const edm::ParameterSet& p) {
+//  tfDnnToken_(esConsumes(edm::ESInputTag("", tfDnnLabel_))) {
   std::string myname = p.getParameter<std::string>("ComponentName");
-
+  tfDnnLabel_ = p.getParameter<std::string>("tfDnnLabel");
   //filename_ = p.getParameter<std::string>("FileName");
   
   useLAFromDB_ = p.getParameter<bool>("useLAFromDB");
@@ -62,6 +64,9 @@ PixelCPENNRecoESProducer::PixelCPENNRecoESProducer(const edm::ParameterSet& p)
   pDDToken_ = c.consumes();
   hTTToken_ = c.consumes();
   templateDBobjectToken_ = c.consumes();
+
+  tfDnnToken_ = c.consumes(edm::ESInputTag("", tfDnnLabel_));
+
   if (useLAFromDB_ || doLorentzFromAlignment_) {
     char const* laLabel = doLorentzFromAlignment_ ? "fromAlignment" : "";
     lorentzAngleToken_ = c.consumes(edm::ESInputTag("", laLabel));
@@ -69,24 +74,24 @@ PixelCPENNRecoESProducer::PixelCPENNRecoESProducer(const edm::ParameterSet& p)
 }
 
 std::unique_ptr<PixelClusterParameterEstimator> PixelCPENNRecoESProducer::produce(
-    const TkPixelCPERecord& iRecord, const TfGraphRecord& iRecord_TF) {
+    const TkPixelCPERecord& iRecord) {
   // Normal, default LA is used in case of template failure, load it unless
   // turned off
   // if turned off, null is ok, becomes zero
   //auto* graph = tensorflow::loadGraphDef(filename_);
 
-  const SiPixelLorentzAngle* lorentzAngleProduct = nullptr;
-  if (useLAFromDB_ || doLorentzFromAlignment_) {
-    lorentzAngleProduct = &iRecord.get(lorentzAngleToken_);
-  }
+  //const SiPixelLorentzAngle* lorentzAngleProduct = nullptr;
+  //if (useLAFromDB_ || doLorentzFromAlignment_) {
+  //  lorentzAngleProduct = &iRecord.get(lorentzAngleToken_);
+  //}
 
-  return std::make_unique<PixelCPETemplateReco>(pset_,
-                                                &iRecord.get(magfieldToken_),
+  return std::make_unique<PixelCPENNReco>(pset_,
+                                               // &iRecord.get(magfieldToken_),
                                                 iRecord.get(pDDToken_),
                                                 iRecord.get(hTTToken_),
-                                                lorentzAngleProduct,
-                                                &iRecord.get(templateDBobjectToken_)
-                                                &iRecord_TF.getData(tfDnnToken_).getSession());
+                                                //lorentzAngleProduct,
+                                                //&iRecord.get(templateDBobjectToken_),
+                                                iRecord.get(tfDnnToken_).getSession());
 }
 
 void PixelCPENNRecoESProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

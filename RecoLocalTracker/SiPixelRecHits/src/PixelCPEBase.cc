@@ -35,7 +35,8 @@ PixelCPEBase::PixelCPEBase(edm::ParameterSet const& conf,
                            const SiPixelGenErrorDBObject* genErrorDBObject,
                            const SiPixelTemplateDBObject* templateDBobject,
                            const SiPixelLorentzAngle* lorentzAngleWidth,
-                           int flag)
+                           const tensorflow::Session* session,
+			   int flag)
     //  : useLAAlignmentOffsets_(false), useLAOffsetFromConfig_(false),
     : useLAOffsetFromConfig_(false),
       useLAWidthFromConfig_(false),

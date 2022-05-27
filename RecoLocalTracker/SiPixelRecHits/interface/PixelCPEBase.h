@@ -38,6 +38,8 @@
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "RecoLocalTracker/ClusterParameterEstimator/interface/PixelClusterParameterEstimator.h"
 
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+
 class RectangularPixelTopology;
 class MagneticField;
 class PixelCPEBase : public PixelClusterParameterEstimator {
@@ -116,7 +118,8 @@ public:
                const SiPixelGenErrorDBObject* genErrorDBObject,
                const SiPixelTemplateDBObject* templateDBobject,
                const SiPixelLorentzAngle* lorentzAngleWidth,
-               int flag = 0  // flag=0 for generic, =1 for templates
+               const tensorflow::Session* session,
+	       int flag = 0  // flag=0 for generic, =1 for templates
   );                         // NEW
 
   static void fillPSetDescription(edm::ParameterSetDescription& desc);
