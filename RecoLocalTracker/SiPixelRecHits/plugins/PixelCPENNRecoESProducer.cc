@@ -13,11 +13,10 @@
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 
-#include "TrackingTools/Records/interface/TfGraphRecord.h"
+#include "PhysicsTools/TensorFlow/interface/TfGraphRecord.h"
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
-#include "RecoTracker/FinalTrackSelectors/interface/TfGraphDefWrapper.h"
+#include "PhysicsTools/TensorFlow/interface/TfGraphDefWrapper.h"
 #include "RecoLocalTracker/SiPixelRecHits/interface/PixelCPENNReco.h"
-
 
 #include <string>
 #include <memory>
@@ -109,7 +108,7 @@ void PixelCPENNRecoESProducer::fillDescriptions(edm::ConfigurationDescriptions& 
 
   //desc.add<std::string>("FileName","/uscms_data/d3/ssekhar/CMSSW_11_1_2/src/TrackerStuff/PixelHitsCNN/data/graph_x_1dcnn_p1_2024_by25k_irrad_BPIXL1_022122.pb");
 
-  descriptions.add("_templates_default", desc);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 DEFINE_FWK_EVENTSETUP_MODULE(PixelCPENNRecoESProducer);
