@@ -119,7 +119,7 @@ public:
                const SiPixelTemplateDBObject* templateDBobject,
                const SiPixelLorentzAngle* lorentzAngleWidth,
                const tensorflow::Session* session,
-	       int flag = 0  // flag=0 for generic, =1 for templates
+               int flag = 0  // flag=0 for generic, =1 for templates
   );                         // NEW
 
   static void fillPSetDescription(edm::ParameterSetDescription& desc);

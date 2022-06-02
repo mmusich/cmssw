@@ -30,12 +30,11 @@
 #endif
 struct CacheData {
   CacheData() : graphDef(nullptr) {}
-  std::atomic<tensorflow::GraphDef*> graphDef;
+  std::atomic<tensorflow::GraphDef *> graphDef;
 };
 
-
 class MagneticField;
-class PixelCPENNReco : public PixelCPEBase{
+class PixelCPENNReco : public PixelCPEBase {
 public:
   struct ClusterParamTemplate : ClusterParam {
     ClusterParamTemplate(const SiPixelCluster &cl) : ClusterParam(cl) {}
@@ -58,19 +57,18 @@ public:
 
   // PixelCPETemplateReco( const DetUnit& det );
   PixelCPENNReco(edm::ParameterSet const &conf,
-                   //    const MagneticField *,
-                       const TrackerGeometry &,
-                       const TrackerTopology &,
-                     //  const SiPixelLorentzAngle *,
-                     //  const SiPixelTemplateDBObject *,
-                       const tensorflow::Session*
-                       );
+                 //    const MagneticField *,
+                 const TrackerGeometry &,
+                 const TrackerTopology &,
+                 //  const SiPixelLorentzAngle *,
+                 //  const SiPixelTemplateDBObject *,
+                 const tensorflow::Session *);
 
   ~PixelCPENNReco() override;
 
   static void fillPSetDescription(edm::ParameterSetDescription &desc);
-  static std::unique_ptr<CacheData> initializeGlobalCache(const edm::ParameterSet&);
-  static void globalEndJob(const CacheData*);
+  static std::unique_ptr<CacheData> initializeGlobalCache(const edm::ParameterSet &);
+  static void globalEndJob(const CacheData *);
 
 private:
   std::unique_ptr<ClusterParam> createClusterParam(const SiPixelCluster &cl) const override;
@@ -95,15 +93,14 @@ private:
   int forwardTemplateID_;
   std::string templateDir_;
 
-
   std::string inputTensorName_x, inputTensorName_y, anglesTensorName_x, anglesTensorName_y;
   std::string outputTensorName_;
   //std::string     fRootFileName;
 
-  tensorflow::Session* session_x;  
+  tensorflow::Session *session_x;
   //int MAXCLUSTER = 80000;
   //float micronsToCm = 1e-4;
-  std::string cpe; 
+  std::string cpe;
   //int mid_x = 0, mid_y = 0;
   //float clsize_1[MAXCLUSTER][2], clsize_2[MAXCLUSTER][2], clsize_3[MAXCLUSTER][2], clsize_4[MAXCLUSTER][2], clsize_5[MAXCLUSTER][2], clsize_6[MAXCLUSTER][2];
   //struct timeval now0, now1;
