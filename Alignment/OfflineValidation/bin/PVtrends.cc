@@ -18,6 +18,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/optional.hpp>
+#include <fmt/printf.h>
 
 #include "TString.h"
 #include "TColor.h"
@@ -157,8 +158,8 @@ int trends(int argc, char *argv[]) {
       TString gname = alignment.second.get<string>("title");
       gname.ReplaceAll(" ", "_");
 
-      auto gMean = Get<TGraph>("mean_%s_%s", gname.Data(), variables[i].data());
-      auto hRMS = Get<TH1>("RMS_%s_%s", gname.Data(), variables[i].data());
+      auto gMean = Get<TGraph>(fmt::sprintf("mean_%s_%s", gname.Data(), variables[i].data()).c_str());
+      auto hRMS = Get<TH1>(fmt::sprintf("RMS_%s_%s", gname.Data(), variables[i].data()).c_str());
       assert(gMean != nullptr);
       assert(hRMS != nullptr);
 

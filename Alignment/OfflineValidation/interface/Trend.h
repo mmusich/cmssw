@@ -121,7 +121,7 @@ struct Trend {
 
 template <typename T, typename... Args>
 inline T* Get(Args... args) {
-  return dynamic_cast<T*>(gDirectory->Get(Form(args...)));
+  return dynamic_cast<T*>(gDirectory->Get(args...));
 }
 
 #endif  // ALIGNMENT_OFFLINEVALIDATION_TREND_H
