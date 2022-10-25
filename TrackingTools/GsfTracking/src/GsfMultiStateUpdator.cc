@@ -28,15 +28,56 @@ TrajectoryStateOnSurface GsfMultiStateUpdator::update(const TrajectoryStateOnSur
   MultiTrajectoryStateAssembler result;
 
   int i = 0;
+  //float pzSign = 1.;
   for (auto const& tsosI : predictedComponents) {
     TrajectoryStateOnSurface updatedTSOS = KFUpdator().update(tsosI, aRecHit);
+    /*
+    if (i == 0) {
+      // select the pz sign of the first component
+      pzSign = updatedTSOS.localParameters().pzSign();
+    } else {
+      // skip components with the "wrong" pz sign
+      if (pzSign * updatedTSOS.localParameters().pzSign() < 0) {
+    	edm::LogError("GsfMultiStateUpdator") << "KF updated state " << i << " leads to mixed pZ signs. Skipping...";
+        continue;
+      }
+    }
+   
+    // in order to check for pos-def of error matrix
+    std::function<bool(AlgebraicSymMatrix55, int)> sylvesterCriterion = [this](AlgebraicSymMatrix55 curvError,
+                                                                               int index) {
+      //Sylvester's criterion, start from the smaller submatrix size
+      double det = 0;      
+      if ((!curvError.Sub<AlgebraicSymMatrix22>(0, 0).Det(det)) || det < 0) {
+        edm::LogInfo("GsfMultiStateUpdator") << "Fail pos-def check sub2.det for state " << index;
+        return false;
+      } else if ((!curvError.Sub<AlgebraicSymMatrix33>(0, 0).Det(det)) || det < 0) {
+        edm::LogInfo("GsfMultiStateUpdator") << "Fail pos-def check sub3.det for state " << index;
+        return false;
+      } else if ((!curvError.Sub<AlgebraicSymMatrix44>(0, 0).Det(det)) || det < 0) {
+        edm::LogInfo("GsfMultiStateUpdator") << "Fail pos-def check sub4.det for state " << index;
+        return false;
+      } else if ((!curvError.Det2(det)) || det < 0) {
+        edm::LogInfo("GsfMultiStateUpdator") << "Fail pos-def check det for state " << index;
+        return false;
+      }
+      // in case all the above was not realized
+      return true;
+    };
+    */
 
-    if (double det;
-        updatedTSOS.isValid() && updatedTSOS.localError().valid() && updatedTSOS.localError().posDef() &&
-        (det = 0., updatedTSOS.curvilinearError().matrix().Sub<AlgebraicSymMatrix22>(0, 0).Det(det) && det > 0) &&
-        (det = 0., updatedTSOS.curvilinearError().matrix().Sub<AlgebraicSymMatrix33>(0, 0).Det(det) && det > 0) &&
-        (det = 0., updatedTSOS.curvilinearError().matrix().Sub<AlgebraicSymMatrix44>(0, 0).Det(det) && det > 0) &&
-        (det = 0., updatedTSOS.curvilinearError().matrix().Det2(det) && det > 0)) {
+    std::function<bool(AlgebraicSymMatrix55)> posDef = [this](AlgebraicSymMatrix55 curvError) {
+      if ((curvError(0, 0) >= 0) && (curvError(1, 1) >= 0) && (curvError(2, 2) >= 0) && (curvError(3, 3) >= 0) && (curvError(4, 4) >= 0)){
+	return true; 
+      } else {
+	edm::LogWarning("GsfMultiStateUpdator") << "local error not pos-def\n" << curvError;
+	return false;
+      }
+    };
+
+    if (updatedTSOS.isValid() && updatedTSOS.localError().valid() && updatedTSOS.localError().posDef() 
+	//&& sylvesterCriterion(updatedTSOS.curvilinearError().matrix(), i)
+	&& posDef(updatedTSOS.curvilinearError().matrix())) {
       result.addState(TrajectoryStateOnSurface(weights[i],
                                                updatedTSOS.localParameters(),
                                                updatedTSOS.localError(),
@@ -49,5 +90,7 @@ TrajectoryStateOnSurface GsfMultiStateUpdator::update(const TrajectoryStateOnSur
     ++i;
   }
 
+  edm::LogPrint("GsfMultiStateUpdator") << "################## returning a multi-state with " << i << "states"<< std::endl;
+// 
   return result.combinedState();
 }
