@@ -88,6 +88,7 @@ namespace {
 
   private:
     const bool applyVertexCut_;
+    const bool isRunAtHLT_;
     const SiPixelTemplateDBObject* templateDBobject_;
     std::vector<SiPixelTemplateStore> thePixelTemp_;
     const TrackerTopology* tkTpl = nullptr;
@@ -104,7 +105,9 @@ namespace {
   };
 
   SiPixelPhase1TrackClusters::SiPixelPhase1TrackClusters(const edm::ParameterSet& iConfig)
-      : SiPixelPhase1Base(iConfig), applyVertexCut_(iConfig.getUntrackedParameter<bool>("VertexCut", true)) {
+      : SiPixelPhase1Base(iConfig),
+        applyVertexCut_(iConfig.getUntrackedParameter<bool>("VertexCut", true)),
+        isRunAtHLT_(iConfig.getUntrackedParameter<bool>("isRunAtHLT", false)) {
     tracksToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
 
     offlinePrimaryVerticesToken_ =
@@ -119,6 +122,7 @@ namespace {
     clusterShapeHitFilterToken_ =
         esConsumes<ClusterShapeHitFilter, CkfComponentsRecord>(edm::ESInputTag("", "ClusterShapeHitFilter"));
     templateDBobjectToken_ = esConsumes<edm::Transition::BeginRun>();
+    templateDBobject_ = nullptr;
   }
 
   void SiPixelPhase1TrackClusters::dqmBeginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
@@ -126,11 +130,14 @@ namespace {
     tkTpl = &iSetup.getData(trackerTopoToken_);
 
     // Initialize 1D templates
-    templateDBobject_ = &iSetup.getData(templateDBobjectToken_);
-    if (!SiPixelTemplate::pushfile(*templateDBobject_, thePixelTemp_))
-      edm::LogError("SiPixelPhase1TrackClusters")
-          << "Templates not filled correctly. Check the sqlite file. Using SiPixelTemplateDBObject version "
-          << (*templateDBobject_).version() << std::endl;
+    const auto& templateHandle = iSetup.getHandle(templateDBobjectToken_);
+    if (templateHandle.isValid() && !isRunAtHLT_) {
+      templateDBobject_ = templateHandle.product();
+      if (!SiPixelTemplate::pushfile(*templateDBobject_, thePixelTemp_))
+        edm::LogError("SiPixelPhase1TrackClusters")
+            << "Templates not filled correctly. Check the sqlite file. Using SiPixelTemplateDBObject version "
+            << (*templateDBobject_).version() << std::endl;
+    }
   }
 
   void SiPixelPhase1TrackClusters::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -216,7 +223,10 @@ namespace {
           continue;
 
         auto geomdetunit = dynamic_cast<const PixelGeomDetUnit*>(pixhit->detUnit());
-        auto const& topol = geomdetunit->specificTopology();
+        const PixelTopology* topol = nullptr;
+        if (geomdetunit) {
+          topol = &geomdetunit->specificTopology();
+        }
 
         // get the cluster
         auto clustp = pixhit->cluster();
@@ -228,8 +238,8 @@ namespace {
           float pixx = pixelsVec[i].x;  // index as float=iteger, row index
           float pixy = pixelsVec[i].y;  // same, col index
 
-          bool bigInX = topol.isItBigPixelInX(int(pixx));
-          bool bigInY = topol.isItBigPixelInY(int(pixy));
+          bool bigInX = !isRunAtHLT_ ? topol->isItBigPixelInX(int(pixx)) : false;
+          bool bigInY = !isRunAtHLT_ ? topol->isItBigPixelInY(int(pixy)) : false;
           float pixel_charge = pixelsVec[i].adc;
 
           if (bigInX == true || bigInY == true) {
@@ -244,20 +254,26 @@ namespace {
 
         // correct charge for track impact angle
         auto charge = cluster.charge() * ltp.absdz();
-        //Correct charge with Template1D
-        float cotAlpha = ltp.dxdz();
-        float cotBeta = ltp.dydz();
-        float locBx = 1.;
-        if (cotBeta < 0.)
-          locBx = -1.;
-        float locBz = locBx;
-        if (cotAlpha < 0.)
-          locBz = -locBx;
-        templ.interpolate(templateDBobject_->getTemplateID(id), cotAlpha, cotBeta, locBz, locBx);
-        auto charge_cor = (charge * templ.qscale()) / templ.r_qMeas_qTrue();
-        auto tmpl = templ.qscale() / templ.r_qMeas_qTrue();
 
-        auto clustgp = pixhit->globalPosition();  // from rechit
+        float charge_cor = -1.f;
+        float tmpl = -1.f;
+
+        if (templateDBobject_) {
+          //Correct charge with Template1D
+          float cotAlpha = ltp.dxdz();
+          float cotBeta = ltp.dydz();
+          float locBx = 1.;
+          if (cotBeta < 0.)
+            locBx = -1.;
+          float locBz = locBx;
+          if (cotAlpha < 0.)
+            locBz = -locBx;
+          templ.interpolate(templateDBobject_->getTemplateID(id), cotAlpha, cotBeta, locBz, locBx);
+          charge_cor = (charge * templ.qscale()) / templ.r_qMeas_qTrue();
+          tmpl = templ.qscale() / templ.r_qMeas_qTrue();
+        }
+
+        auto clustgp = !isRunAtHLT_ ? pixhit->globalPosition() : GlobalPoint();  // from rechit
 
         int part;
         ClusterData::ArrayType meas;
@@ -300,8 +316,10 @@ namespace {
         histo[TEMPLATE_CORRECTION].fill(tmpl, id, &iEvent);
         histo[ON_TRACK_SIZE].fill(cluster.size(), id, &iEvent);
 
-        histo[ON_TRACK_POSITIONB].fill(clustgp.z(), clustgp.phi(), id, &iEvent);
-        histo[ON_TRACK_POSITIONF].fill(clustgp.x(), clustgp.y(), id, &iEvent);
+        if (!isRunAtHLT_) {
+          histo[ON_TRACK_POSITIONB].fill(clustgp.z(), clustgp.phi(), id, &iEvent);
+          histo[ON_TRACK_POSITIONF].fill(clustgp.x(), clustgp.y(), id, &iEvent);
+        }
 
         histo[CHARGE_VS_SIZE_ON_TRACK].fill(cluster.size(), charge, id, &iEvent);
 
@@ -341,7 +359,6 @@ namespace {
     histo[ON_TRACK_NCLUSTERS].executePerEventHarvesting(&iEvent);
     histo[ON_TRACK_NDIGIS].executePerEventHarvesting(&iEvent);
   }
-
 }  // namespace
 
 #include "FWCore/Framework/interface/MakerMacros.h"
