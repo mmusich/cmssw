@@ -21,6 +21,8 @@ from RecoTracker.Configuration.RecoTrackerBHM_cff import *
 #
 from RecoLocalCalo.Configuration.RecoLocalCalo_Cosmics_cff import *
 from RecoEcal.Configuration.RecoEcalCosmics_cff import *
+from RecoHGCal.Configuration.recoHGCAL_cff import *
+
 #
 # muons
 #
@@ -67,16 +69,27 @@ egammaCosmicsTask = cms.Task(egammarecoGlobal_cosmicsTask,egammarecoCosmics_woEl
 from FWCore.Modules.logErrorHarvester_cfi import *
 
 
-reconstructionCosmicsTask         = cms.Task(localReconstructionCosmicsTask,
-                                             beamhaloTracksTask,
-                                             jetsCosmicsTask,
-                                             muonsCosmicsTask,
-                                             regionalCosmicTracksTask,
-                                             cosmicDCTracksSeqTask,
-                                             metrecoCosmicsTask,
-                                             egammaCosmicsTask,
-                                             logErrorHarvester)
-reconstructionCosmics         = cms.Sequence(reconstructionCosmicsTask)
+reconstructionCosmicsTask = cms.Task(localReconstructionCosmicsTask,
+                                     beamhaloTracksTask,
+                                     jetsCosmicsTask,
+                                     muonsCosmicsTask,
+                                     regionalCosmicTracksTask,
+                                     cosmicDCTracksSeqTask,
+                                     metrecoCosmicsTask,
+                                     egammaCosmicsTask,
+                                     logErrorHarvester)
+
+from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
+_phase2HGALRecoTask = reconstructionCosmicsTask.copy()
+_phase2HGALRecoTask.add(iterTICLTask)
+phase2_hgcal.toReplaceWith(reconstructionCosmicsTask, _phase2HGALRecoTask)
+
+from Configuration.Eras.Modifier_phase2_hfnose_cff import phase2_hfnose
+_phase2HFNoseRecoTask = reconstructionCosmicsTask.copy()
+_phase2HFNoseRecoTask.add(iterHFNoseTICLTask)
+phase2_hfnose.toReplaceWith(reconstructionCosmicsTask, _phase2HFNoseRecoTask)
+
+reconstructionCosmics = cms.Sequence(reconstructionCosmicsTask)
 #logErrorHarvester should only wait for items produced in the reconstructionCosmics sequence
 _modulesInReconstruction = list()
 reconstructionCosmics.visit(cms.ModuleNamesFromGlobalsVisitor(globals(),_modulesInReconstruction))
