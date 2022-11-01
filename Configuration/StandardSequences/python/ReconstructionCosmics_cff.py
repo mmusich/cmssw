@@ -46,6 +46,10 @@ from RecoEgamma.Configuration.RecoEgammaCosmics_cff import *
 
 # local reco
 trackerCosmicsTask = cms.Task(offlineBeamSpot,trackerlocalrecoTask,MeasurementTrackerEvent,tracksP5Task)
+
+from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
+phase2_tracker.toReplaceWith(trackerCosmicsTask,trackerCosmicsTask.copyAndExclude([tracksP5Task]))  
+
 trackerCosmics = cms.Sequence(trackerCosmicsTask)
 caloCosmicsTask = cms.Task(calolocalrecoTaskCosmics,ecalClustersCosmicsTask)
 caloCosmics = cms.Sequence(caloCosmicsTask)
@@ -53,21 +57,19 @@ caloCosmics_HcalNZSTask = cms.Task(calolocalrecoTaskCosmicsNZS,ecalClustersCosmi
 caloCosmics_HcalNZS = cms.Sequence(caloCosmics_HcalNZSTask)
 muonsLocalRecoCosmicsTask = cms.Task(muonlocalrecoTask,muonlocalrecoT0SegTask)
 muonsLocalRecoCosmics = cms.Sequence(muonsLocalRecoCosmicsTask)
-
 localReconstructionCosmicsTask         = cms.Task(bunchSpacingProducer,trackerCosmicsTask,caloCosmicsTask,muonsLocalRecoCosmicsTask,vertexrecoCosmicsTask)
+phase2_tracker.toReplaceWith(localReconstructionCosmicsTask,localReconstructionCosmicsTask.copyAndExclude([vertexrecoCosmicsTask]))  
+
 localReconstructionCosmics         = cms.Sequence(localReconstructionCosmicsTask)
 localReconstructionCosmics_HcalNZSTask = cms.Task(bunchSpacingProducer,trackerCosmicsTask,caloCosmics_HcalNZSTask,muonsLocalRecoCosmicsTask,vertexrecoCosmicsTask)
 localReconstructionCosmics_HcalNZS = cms.Sequence(localReconstructionCosmics_HcalNZSTask)
-
 
 # global reco
 muonsCosmicsTask = cms.Task(muonRecoGRTask)
 jetsCosmicsTask = cms.Task(recoCaloTowersGRTask,recoJetsGRTask)
 egammaCosmicsTask = cms.Task(egammarecoGlobal_cosmicsTask,egammarecoCosmics_woElectronsTask)
 
-
 from FWCore.Modules.logErrorHarvester_cfi import *
-
 
 reconstructionCosmicsTask = cms.Task(localReconstructionCosmicsTask,
                                      beamhaloTracksTask,
@@ -78,6 +80,8 @@ reconstructionCosmicsTask = cms.Task(localReconstructionCosmicsTask,
                                      metrecoCosmicsTask,
                                      egammaCosmicsTask,
                                      logErrorHarvester)
+
+phase2_tracker.toReplaceWith(reconstructionCosmicsTask,reconstructionCosmicsTask.copyAndExclude([beamhaloTracksTask,cosmicDCTracksSeqTask,regionalCosmicTracksTask]))  
 
 from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
 _phase2HGALRecoTask = reconstructionCosmicsTask.copy()
@@ -104,7 +108,10 @@ reconstructionCosmics_HcalNZSTask = cms.Task(localReconstructionCosmics_HcalNZST
                                              metrecoCosmicsTask,
                                              egammaCosmicsTask,
                                              logErrorHarvester)
+
+phase2_tracker.toReplaceWith(reconstructionCosmics_HcalNZSTask,reconstructionCosmics_HcalNZSTask.copyAndExclude([beamhaloTracksTask,cosmicDCTracksSeqTask,regionalCosmicTracksTask]))
 reconstructionCosmics_HcalNZS = cms.Sequence(reconstructionCosmics_HcalNZSTask)
+
 reconstructionCosmics_woTkBHMTask = cms.Task(localReconstructionCosmicsTask,
                                              jetsCosmicsTask,
                                              muonsCosmicsTask,
@@ -112,4 +119,6 @@ reconstructionCosmics_woTkBHMTask = cms.Task(localReconstructionCosmicsTask,
                                              cosmicDCTracksSeqTask,
                                              metrecoCosmicsTask,
                                              egammaCosmicsTask)
+
+phase2_tracker.toReplaceWith(reconstructionCosmics_woTkBHMTask,reconstructionCosmics_woTkBHMTask.copyAndExclude([beamhaloTracksTask,cosmicDCTracksSeqTask,regionalCosmicTracksTask]))  
 reconstructionCosmics_woTkBHM = cms.Sequence(reconstructionCosmics_woTkBHMTask)

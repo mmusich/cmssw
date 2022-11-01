@@ -154,6 +154,17 @@ RAWSIMEventContent.outputCommands.extend(RecoGenMETFEVT.outputCommands)
 RAWSIMEventContent.outputCommands.extend(DigiToRawFEVT.outputCommands)
 RAWSIMEventContent.outputCommands.extend(MEtoEDMConverterFEVT.outputCommands)
 RAWSIMEventContent.outputCommands.extend(IOMCRAW.outputCommands)
+
+#
+# Temporary collections needed for Phase-2 RECO using RAWSIM as input in Prod-like workflow
+# They are until packer/unpackers are done.
+#
+from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
+phase2_common.toModify(RAWSIMEventContent,
+    outputCommands = RAWSIMEventContent.outputCommands+[
+        'keep *_sim*Digis_*_*',
+        'keep *Phase2TrackerDigi*_*_*_*'])
+
 #
 #
 # RECOSIM Data Tier definition
@@ -203,6 +214,14 @@ FEVTEventContent.outputCommands.extend(MEtoEDMConverterRECO.outputCommands)
 FEVTEventContent.outputCommands.extend(EvtScalersRECO.outputCommands)	
 FEVTEventContent.outputCommands.extend(OnlineMetaDataContent.outputCommands)	
 FEVTEventContent.outputCommands.extend(TcdsEventContent.outputCommands)	
+
+phase2_tracker.toModify(FEVTEventContent, 
+    outputCommands = FEVTEventContent.outputCommands + [
+        'keep Phase2TrackerDigiedmDetSetVector_mix_*_*',
+        'keep *_TTClustersFromPhase2TrackerDigis_*_*',
+        'keep *_TTStubsFromPhase2TrackerDigis_*_*',
+        'keep *_TrackerDTC_*_*',
+        'keep *_*_Level1TTTracks_*'])
 
 #replace FEVTEventContent.outputCommands += HLTriggerFEVT.outputCommands 
 FEVTHLTALLEventContent = cms.PSet(
