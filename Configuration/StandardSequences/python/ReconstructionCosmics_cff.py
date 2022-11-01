@@ -58,7 +58,7 @@ caloCosmics_HcalNZS = cms.Sequence(caloCosmics_HcalNZSTask)
 muonsLocalRecoCosmicsTask = cms.Task(muonlocalrecoTask,muonlocalrecoT0SegTask)
 muonsLocalRecoCosmics = cms.Sequence(muonsLocalRecoCosmicsTask)
 localReconstructionCosmicsTask         = cms.Task(bunchSpacingProducer,trackerCosmicsTask,caloCosmicsTask,muonsLocalRecoCosmicsTask,vertexrecoCosmicsTask)
-phase2_tracker.toReplaceWith(localReconstructionCosmicsTask,localReconstructionCosmicsTask.copyAndExclude([vertexrecoCosmicsTask]))  
+#phase2_tracker.toReplaceWith(localReconstructionCosmicsTask,localReconstructionCosmicsTask.copyAndExclude([vertexrecoCosmicsTask]))  
 
 localReconstructionCosmics         = cms.Sequence(localReconstructionCosmicsTask)
 localReconstructionCosmics_HcalNZSTask = cms.Task(bunchSpacingProducer,trackerCosmicsTask,caloCosmics_HcalNZSTask,muonsLocalRecoCosmicsTask,vertexrecoCosmicsTask)
