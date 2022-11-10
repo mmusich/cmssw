@@ -663,6 +663,11 @@ pv::biases PreparePVTrends::getBiases(TH1F *hist)
 /*--------------------------------------------------------------------*/
 {
   int nbins = hist->GetNbinsX();
+  // to avoid memory leak flagged by S.A. return default constructed object
+  // questionable taste...
+  if (nbins <= 0) {
+    return pv::biases();
+  }
 
   //extract median from histogram
   double *y = new double[nbins];
