@@ -360,8 +360,13 @@ private:
     int nHighPurityTracks = 0;
 
     for (auto track = tC.cbegin(); track != tC.cend(); track++) {
+      if (track->pt() < 1000) {
+        continue;
+      }
+
       unsigned int nHit2D = 0;
       std::bitset<16> rocsToMask;
+      /*
       for (auto iHit = track->recHitsBegin(); iHit != track->recHitsEnd(); ++iHit) {
         if (this->isHit2D(**iHit)) {
           ++nHit2D;
@@ -373,6 +378,7 @@ private:
 
         const SiPixelRecHit *pixhit = dynamic_cast<const SiPixelRecHit *>(*iHit);
 
+	
         if (pixhit) {
           if (pixhit->isValid()) {
             unsigned int subid = detId.subdetId();
@@ -431,6 +437,7 @@ private:
           }
         }
       }
+      */
 
       hHit2D->Fill(nHit2D);
       hHit->Fill(track->numberOfValidHits());
@@ -473,6 +480,22 @@ private:
       hchi2ndof->Fill(track->normalizedChi2());
       hEta->Fill(track->eta());
       hPhi->Fill(track->phi());
+
+      if (track->pt() > 1000) {
+        std::cout << "Suspicious track found!"
+                  << " pT: " << track->pt() << " GeV"
+                  << " , pT error: " << track->ptError() << " GeV"
+                  << " , eta: " << track->eta() << " , phi: " << track->phi()
+                  << " , originalAlgo: " << reco::TrackBase::algoNames[track->originalAlgo()]
+                  << " , isHP:" << track->quality(reco::TrackBase::highPurity) << " , chi2: " << track->chi2()
+                  << " , chi2/ndof: " << track->normalizedChi2() << " , n. valid hits: " << track->numberOfValidHits()
+                  << " , n. valid hits in PXB: " << track->hitPattern().numberOfValidPixelBarrelHits()
+                  << " , n. valid hits in PXF: " << track->hitPattern().numberOfValidPixelEndcapHits()
+                  << " , n. valid hits in TIB: " << track->hitPattern().numberOfValidStripTIBHits()
+                  << " , n. valid hits in TID: " << track->hitPattern().numberOfValidStripTIDHits()
+                  << " , n. valid hits in TOB: " << track->hitPattern().numberOfValidStripTOBHits()
+                  << " , n. valid hits in TEC: " << track->hitPattern().numberOfValidStripTECHits() << std::endl;
+      }
 
       if (fabs(track->eta()) < 0.8) {
         hPhiBarrel->Fill(track->phi());
