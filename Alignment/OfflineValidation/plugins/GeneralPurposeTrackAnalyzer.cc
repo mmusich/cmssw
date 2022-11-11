@@ -46,6 +46,8 @@
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/GeometrySurface/interface/LocalError.h"
 #include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
 #include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
@@ -266,8 +268,12 @@ private:
   TH1D *hMultCand;
 
   TH1D *hdxyBS;
+  TH1D *hsigdxyBS;
+  TH1D *hmaxsigdxyBS;
+  TH1D *hmaxsigdxyBSOutCut;
   TH1D *hd0BS;
   TH1D *hdzBS;
+  TH1D *hsigdzBS;
   TH1D *hdxyPV;
   TH1D *hd0PV;
   TH1D *hdzPV;
@@ -289,6 +295,10 @@ private:
   int mode;
   float etaMax_;
   SiPixelPI::phase phase_;
+
+  int oneTrkEvenCount_;
+  int twoTrkEvenCount_;
+  int moreThanTwoTrkEvenCount_;
 
   const TrackerGeometry *trackerGeometry_;
 
@@ -313,7 +323,20 @@ private:
   void analyze(const edm::Event &event, const edm::EventSetup &setup) override
   //*************************************************************
   {
+    double maxBSdxySig = 0;
     ievt++;
+
+    edm::Handle<reco::VertexCollection> vertexHandle = event.getHandle(vertexToken_);
+    const auto &vC = *(vertexHandle.product());
+    unsigned int vtxSize = vC.size();
+
+    bool hasGoodVtx{false};
+    for (const auto &vtx : vC) {
+      if (!vtx.isFake()) {
+        hasGoodVtx = true;
+        break;
+      }
+    }
 
     // geometry setup
     const TrackerGeometry *theGeometry = &setup.getData(geomToken_);
@@ -321,6 +344,29 @@ private:
     edm::Handle<reco::TrackCollection> trackCollection = event.getHandle(theTrackCollectionToken_);
     const reco::TrackCollection tC = *(trackCollection.product());
     itrks += tC.size();
+
+    if (!hasGoodVtx) {
+      if (tC.size() == 2) {
+        double thisDeltaPhi = ::deltaPhi(tC[0].phi(), tC[1].phi());
+        double thisDeltaEta = tC[0].eta() - tC[1].eta();
+        double thisDeltaR2 = ::deltaR2(double(tC[0].eta()), double(tC[0].phi()), tC[1].eta(), tC[1].phi());
+        std::cout << "pair delta-Phi: " << thisDeltaPhi << " | pair delta-Eta: " << thisDeltaEta
+                  << "| pair dR: " << std::sqrt(thisDeltaR2) << std::endl;
+      } else {
+        std::cout << "didn't find 2 generalTracks tracks, but " << tC.size() << std::endl;
+      }
+    } else {
+      std::cout << "FOUND A GOOD VERTEX, no point in continuing";
+      return;
+    }
+
+    if (tC.size() == 1) {
+      oneTrkEvenCount_++;
+    } else if (tC.size() == 2) {
+      twoTrkEvenCount_++;
+    } else if (tC.size() > 2) {
+      moreThanTwoTrkEvenCount_++;
+    }
 
     runInfoMap_[event.run()].first += 1;
     runInfoMap_[event.run()].second += tC.size();
@@ -357,8 +403,13 @@ private:
     int nHighPurityTracks = 0;
 
     for (auto track = tC.cbegin(); track != tC.cend(); track++) {
+      if (tC.size() < 2) {
+        continue;
+      }
+
       unsigned int nHit2D = 0;
       std::bitset<16> rocsToMask;
+      /*
       for (auto iHit = track->recHitsBegin(); iHit != track->recHitsEnd(); ++iHit) {
         if (this->isHit2D(**iHit)) {
           ++nHit2D;
@@ -370,6 +421,7 @@ private:
 
         const SiPixelRecHit *pixhit = dynamic_cast<const SiPixelRecHit *>(*iHit);
 
+	
         if (pixhit) {
           if (pixhit->isValid()) {
             unsigned int subid = detId.subdetId();
@@ -428,6 +480,7 @@ private:
           }
         }
       }
+      */
 
       hHit2D->Fill(nHit2D);
       hHit->Fill(track->numberOfValidHits());
@@ -470,6 +523,40 @@ private:
       hchi2ndof->Fill(track->normalizedChi2());
       hEta->Fill(track->eta());
       hPhi->Fill(track->phi());
+
+      if (!hasGoodVtx) {
+        double dxy{0.};
+        double dz{0.};
+        double dxyerr{-99.};
+        double dzerr{-99.};
+        //dxy with respect to the beamspot
+        reco::BeamSpot beamSpot;
+        edm::Handle<reco::BeamSpot> beamSpotHandle = event.getHandle(beamspotToken_);
+        if (beamSpotHandle.isValid()) {
+          beamSpot = *beamSpotHandle;
+          math::XYZPoint point(beamSpot.x0(), beamSpot.y0(), beamSpot.z0());
+          dxy = track->dxy(point);
+          dz = track->dz(point);
+          dxyerr = track->dxyError();
+          dzerr = track->dzError();
+        }
+
+        std::cout << "track found!"
+                  << " pT: " << track->pt() << " GeV"
+                  << " , pT error: " << track->ptError() << " GeV"
+                  << " , eta: " << track->eta() << " , phi: " << track->phi()
+                  << " , originalAlgo: " << reco::TrackBase::algoNames[track->originalAlgo()]
+                  << " , isHP:" << track->quality(reco::TrackBase::highPurity) << " , chi2: " << track->chi2()
+                  << " , chi2/ndof: " << track->normalizedChi2() << " , n. valid hits: " << track->numberOfValidHits()
+                  << " , n. valid hits in PXB: " << track->hitPattern().numberOfValidPixelBarrelHits()
+                  << " , n. valid hits in PXF: " << track->hitPattern().numberOfValidPixelEndcapHits()
+                  << " , n. valid hits in TIB: " << track->hitPattern().numberOfValidStripTIBHits()
+                  << " , n. valid hits in TID: " << track->hitPattern().numberOfValidStripTIDHits()
+                  << " , n. valid hits in TOB: " << track->hitPattern().numberOfValidStripTOBHits()
+                  << " , n. valid hits in TEC: " << track->hitPattern().numberOfValidStripTECHits()
+                  << " , dxy(BS): " << dxy * 10000 << " um, dz(BS): " << dz * 10000 << " um"
+                  << " , dxy/err_dxy(BS): " << dxy / dxyerr << " dz/err_dz(BS): " << dz / dzerr << std::endl;
+      }
 
       if (fabs(track->eta()) < 0.8) {
         hPhiBarrel->Fill(track->phi());
@@ -652,11 +739,17 @@ private:
         hdxyBS->Fill(dxy);
         hd0BS->Fill(-dxy);
         hdzBS->Fill(dz);
+
+        if (std::fabs(dxy / track->dxyError()) > std::fabs(maxBSdxySig)) {
+          maxBSdxySig = dxy / track->dxyError();
+        }
+
+        hsigdxyBS->Fill(dxy / track->dxyError());
+        hsigdzBS->Fill(dz / track->dzError());
       }
 
       //dxy with respect to the primary vertex
       reco::Vertex pvtx;
-      edm::Handle<reco::VertexCollection> vertexHandle = event.getHandle(vertexToken_);
       double mindxy = 100.;
       double dz = 100;
       if (vertexHandle.isValid() && !isCosmics_) {
@@ -689,6 +782,12 @@ private:
       if (DEBUG) {
         edm::LogInfo("GeneralPurposeTrackAnalyzer") << "end of track loop" << std::endl;
       }
+    }
+
+    hmaxsigdxyBS->Fill(maxBSdxySig);
+
+    if (std::fabs(maxBSdxySig) > 4) {
+      hmaxsigdxyBSOutCut->Fill(maxBSdxySig);
     }
 
     hNtrk->Fill(tC.size());
@@ -772,6 +871,10 @@ private:
 
     ievt = 0;
     itrks = 0;
+
+    oneTrkEvenCount_ = 0;
+    twoTrkEvenCount_ = 0;
+    moreThanTwoTrkEvenCount_ = 0;
 
     hrun = book<TH1D>("h_run", "run", 100000, 230000, 240000);
     hlumi = book<TH1D>("h_lumi", "lumi", 1000, 0, 1000);
@@ -867,8 +970,13 @@ private:
       hd0PVvspt = book<TH2D>("h2_d0PVvspt", "hdPV0vspt;track p_{T};d_{0}(PV) [cm]", 50, 0., 100., 100, -1, 1.);
 
       hdxyBS = book<TH1D>("h_dxyBS", "hdxyBS; track d_{xy}(BS) [cm];tracks", 100, -0.1, 0.1);
+      hsigdxyBS = book<TH1D>("h_sigdxyBS", "hsigdxyBS; track significance of d_{xy}(BS) ;tracks", 100, -20, 20);
+      hmaxsigdxyBS = book<TH1D>("h_maxsigdxyBS", "hsigdxyBS;track significance of d_{xy}(BS) ;tracks", 200, -100, 100);
+      hmaxsigdxyBSOutCut =
+          book<TH1D>("h_maxsigdxyBSOutCut", "hsigdxyBS;track significance of d_{xy}(BS) ;tracks", 200, -100, 100);
       hd0BS = book<TH1D>("h_d0BS", "hd0BS ; track d_{0}(BS) [cm];tracks", 100, -0.1, 0.1);
       hdzBS = book<TH1D>("h_dzBS", "hdzBS ; track d_{z}(BS) [cm];tracks", 100, -12, 12);
+      hsigdzBS = book<TH1D>("h_sigdzyBS", "hsigdzBS; track significance of d_{z}(BS) ;tracks", 100, -20, 20);
       hdxyPV = book<TH1D>("h_dxyPV", "hdxyPV; track d_{xy}(PV) [cm];tracks", 100, -0.1, 0.1);
       hd0PV = book<TH1D>("h_d0PV", "hd0PV ; track d_{0}(PV) [cm];tracks", 100, -0.15, 0.15);
       hdzPV = book<TH1D>("h_dzPV", "hdzPV ; track d_{z}(PV) [cm];tracks", 100, -0.1, 0.1);
@@ -992,6 +1100,11 @@ private:
   {
     edm::LogPrint("GeneralPurposeTrackAnalyzer") << "*******************************" << std::endl;
     edm::LogPrint("GeneralPurposeTrackAnalyzer") << "Events run in total: " << ievt << std::endl;
+    edm::LogPrint("GeneralPurposeTrackAnalyzer") << "Events with  1 track: " << oneTrkEvenCount_ << std::endl;
+    edm::LogPrint("GeneralPurposeTrackAnalyzer") << "Events with  2 tracks:" << twoTrkEvenCount_ << std::endl;
+    edm::LogPrint("GeneralPurposeTrackAnalyzer") << "Events with >2 tracks:" << moreThanTwoTrkEvenCount_ << std::endl;
+    edm::LogPrint("GeneralPurposeTrackAnalyzer") << "*******************************" << std::endl;
+
     edm::LogPrint("GeneralPurposeTrackAnalyzer") << "n. tracks: " << itrks << std::endl;
     edm::LogPrint("GeneralPurposeTrackAnalyzer") << "*******************************" << std::endl;
 
