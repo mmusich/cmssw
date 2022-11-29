@@ -23,7 +23,7 @@ MuonTrackProducer::MuonTrackProducer(const edm::ParameterSet& ps) :
   bsTag_(ps.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
   muonToken_(consumes<reco::MuonCollection>(muonTag_)),
   bsToken_(consumes<reco::BeamSpot>(bsTag_)),
-  maxEta_(ps.getUntrackedParameter<double>("maxEta", 2.1)),
+  maxEta_(ps.getUntrackedParameter<double>("maxEta", 2.4)),
   minPt_(ps.getUntrackedParameter<double>("minPt", 5)),
   maxNormChi2_(ps.getUntrackedParameter<double>("maxNormChi2", 10)),
   maxD0_(ps.getUntrackedParameter<double>("maxD0", 0.02)),
@@ -68,7 +68,7 @@ void MuonTrackProducer::produce(edm::Event& iEvent, edm::EventSetup const& iSetu
       double chi2 = gtk->chi2();
       double ndof = gtk->ndof();
       double chbyndof = (ndof > 0) ? chi2/ndof : 0;
-      if (chbyndof >= maxNormChi2_) continue;
+      //if (chbyndof >= maxNormChi2_) continue;
 
       reco::TrackRef tk = mu.innerTrack();
       double trkd0 = tk->d0();
@@ -91,6 +91,8 @@ void MuonTrackProducer::produce(edm::Event& iEvent, edm::EventSetup const& iSetu
       if (mu.numberOfMatches() < minMatches_) continue;
       if (mu.numberOfMatchedStations() < minMatchedStations_) continue;
       if (!muon::isGoodMuon(mu, muon::GlobalMuonPromptTight)) continue;
+
+      //if (!muon::isMediumMuon(mu)) continue;
 
       // PF Isolation      
       const reco::MuonPFIsolation& pfIso04 = mu.pfIsolationR04();

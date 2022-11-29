@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <iostream>
+#include <fstream>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -18,6 +20,7 @@
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
 
 class BeamSpot;
 class TrackCollection;
@@ -47,6 +50,10 @@ private:
 
   std::string moduleName_;
   std::string folderName_;
+  std::ifstream bpixfile_;
+  std::vector<unsigned int> runs_;
+  std::vector<float> bpix_X_, bpix_Y_, bpix_Z_;
+  float bpix_x_=0, bpix_y_=0, bpix_z_=0;
 
   SiStripClusterInfo siStripClusterInfo_;
 
@@ -55,17 +62,21 @@ private:
   const edm::InputTag vertexTag_;
   const edm::InputTag puSummaryTag_;
   const edm::InputTag clusterTag_;
+  const edm::InputTag jetsTag_;
   const edm::EDGetTokenT<reco::TrackCollection> trackToken_;
   const edm::EDGetTokenT<reco::BeamSpot> bsToken_;
   const edm::EDGetTokenT<reco::VertexCollection> vertexToken_;
   const edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puSummaryToken_; 
   const edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> > clusterToken_;
+  const edm::EDGetTokenT<std::vector<reco::PFJet> > jetsToken_;
   // track MVA
   const std::string trackQuality_;
   const bool doPUCorrection_;
+  const bool doTrackCorrection_;
   const bool isMC_;
   const bool haveAllHistograms_;
   const std::string puScaleFactorFile_;
+  const std::string trackScaleFactorFile_;
   const std::vector<std::string> mvaProducers_;
   const edm::InputTag mvaTrackTag_;
   edm::EDGetTokenT<edm::View<reco::Track> > mvaTrackToken_;
@@ -89,6 +100,7 @@ private:
   MonitorElement* trackPhierrH_;
   MonitorElement* trackPH_;
   MonitorElement* trackPtH_;
+  MonitorElement* trackPt_ZoomH_;
   MonitorElement* trackPtUpto2GeVH_;
   MonitorElement* trackPtOver10GeVH_;
   MonitorElement* trackPterrH_;
@@ -116,6 +128,7 @@ private:
   MonitorElement* trackStoppingSourceH_;
 
   MonitorElement* DistanceOfClosestApproachToPVH_;
+  MonitorElement* DistanceOfClosestApproachToPVZoomedH_;
   MonitorElement* DistanceOfClosestApproachToPVVsPhiH_;
   MonitorElement* xPointOfClosestApproachVsZ0wrtPVH_;
   MonitorElement* yPointOfClosestApproachVsZ0wrtPVH_;
@@ -231,6 +244,7 @@ private:
   MonitorElement* nLostHitsVsEtaH_;
   MonitorElement* nLostHitsVsCosThetaH_;
   MonitorElement* nLostHitsVsPhiH_;
+  MonitorElement* nLostHitsVsIterationH_;
 
   MonitorElement* nHitsTIBSVsEtaH_;
   MonitorElement* nHitsTOBSVsEtaH_;
@@ -276,6 +290,15 @@ private:
   MonitorElement* nLostHitsTOBVsEtaH_;
   MonitorElement* nLostHitsTECVsEtaH_;
   MonitorElement* nLostHitsTIDVsEtaH_;
+
+  MonitorElement* nLostHitsPixVsIterationH_;
+  MonitorElement* nLostHitsPixBVsIterationH_;
+  MonitorElement* nLostHitsPixEVsIterationH_;
+  MonitorElement* nLostHitsStripVsIterationH_;
+  MonitorElement* nLostHitsTIBVsIterationH_;
+  MonitorElement* nLostHitsTOBVsIterationH_;
+  MonitorElement* nLostHitsTECVsIterationH_;
+  MonitorElement* nLostHitsTIDVsIterationH_;
 
   MonitorElement* nLostHitsPixVsPhiH_;
   MonitorElement* nLostHitsPixBVsPhiH_;
@@ -353,11 +376,21 @@ private:
   std::vector<MonitorElement*> trackMVAsVsEtaProfile;
   std::vector<MonitorElement*> trackMVAsHPVsEtaProfile;
 
+  MonitorElement* nJet_;
+  MonitorElement* Jet_pt_;
+  MonitorElement* Jet_eta_;
+  MonitorElement* Jet_energy_;
+  MonitorElement* Jet_chargedMultiplicity_;
+
+  MonitorElement* Zpt_;
+  MonitorElement* ZInvMass_;
+
   unsigned long long m_cacheID_;
 
   std::vector<int> lumivec1;
   std::vector<int> lumivec2;
   std::vector<float> vpu_;
+  std::vector<float> vtrack_;
   std::map<uint32_t, std::set<const SiStripCluster*> > clusterMap_;
 };
 #endif

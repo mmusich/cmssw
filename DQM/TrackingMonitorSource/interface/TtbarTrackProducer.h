@@ -1,22 +1,25 @@
+#ifndef DQM_TrackingMonitorSource_TtbarTrackProducer_h
+#define DQM_TrackingMonitorSource_TtbarTrackProducer_h
 
-#ifndef DQM_TrackingMonitorSource_ttbarEventSelector_h
-#define DQM_TrackingMonitorSource_ttbarEventSelector_h
+#include <memory>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDFilter.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h"	
 
-
-class ttbarEventSelector : public edm::stream::EDFilter<> {
+class TtbarTrackProducer : public edm::EDProducer {
 public:
-  explicit ttbarEventSelector(const edm::ParameterSet&);
+  explicit TtbarTrackProducer (const edm::ParameterSet&);
+  ~TtbarTrackProducer();
 
-  bool filter(edm::Event&, edm::EventSetup const&) override;
+  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
 
 private:
-  // module config parameters
+
+      // ----------member data ---------------------------
+
   const edm::InputTag electronTag_;
   const edm::InputTag jetsTag_; 
   const edm::InputTag bjetsTag_;
@@ -46,8 +49,8 @@ private:
   const double minMatches_;
   const double minMatchedStations_;
 
-  const double maxEtaHighest_Jets_;
-  const double maxEta_Jets_;
+  const double minEtaHighest_Jets_;
+  const double minEta_Jets_;
 
   const double btagFactor_;
  
@@ -68,8 +71,5 @@ private:
   const double maxMet_;
   const double minWmass_;
   const double maxWmass_;
-  double getMt(const TLorentzVector& vlep, const reco::PFMET& obj);
-  int    EventCategory(int& nEle, int& nMu, int& nJets, int& nbJets);  
-
 };
 #endif

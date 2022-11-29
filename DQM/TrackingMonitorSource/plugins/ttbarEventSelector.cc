@@ -41,11 +41,11 @@ using namespace edm;
   
 ttbarEventSelector::ttbarEventSelector(const edm::ParameterSet& ps): 
   electronTag_(ps.getUntrackedParameter<edm::InputTag>("electronInputTag", edm::InputTag("gedGsfElectrons"))),
-  jetsTag_(ps.getUntrackedParameter<edm::InputTag>("jetsInputTag", edm::InputTag("slimmedJets"))), //
+  jetsTag_(ps.getUntrackedParameter<edm::InputTag>("jetsInputTag", edm::InputTag("ak4PFJetsCHS"))), //
   //  bJetsTag_(ps.getUntrackedParameter<edm::InputTag>("jetsInputTag", edm\|#include "DataFormats/EgammaCandidates/interface/Electron.h"
   //						    ::InputTag("slimmedJets"))),
 
-  bjetsTag_(ps.getUntrackedParameter<edm::InputTag>("bjetsInputTag", edm::InputTag("pfCombinedSecondaryVertexV2BJetTags"))),
+  bjetsTag_(ps.getUntrackedParameter<edm::InputTag>("bjetsInputTag", edm::InputTag("pfDeepCSVJetTags","probb"))),
   pfmetTag_(ps.getUntrackedParameter<edm::InputTag>("pfmetTag", edm::InputTag("pfMet"))),                  //("pfMetT1T2Txy"))),  
   muonTag_(ps.getUntrackedParameter<edm::InputTag>("muonInputTag", edm::InputTag("muons"))),
   bsTag_(ps.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
@@ -56,7 +56,7 @@ ttbarEventSelector::ttbarEventSelector(const edm::ParameterSet& ps):
   muonToken_(consumes<reco::MuonCollection>(muonTag_)),
   bsToken_(consumes<reco::BeamSpot>(bsTag_)),
   maxEtaEle_(ps.getUntrackedParameter<double>("maxEta", 2.4)),
-  maxEtaMu_(ps.getUntrackedParameter<double>("maxEta", 2.1)),
+  maxEtaMu_(ps.getUntrackedParameter<double>("maxEta", 2.4)),
   minPt_(ps.getUntrackedParameter<double>("minPt", 5)),
 
   // for Electron only
@@ -75,10 +75,11 @@ ttbarEventSelector::ttbarEventSelector(const edm::ParameterSet& ps):
   minMatchedStations_(ps.getUntrackedParameter<double>("minMatchedStations", 2)),
 
   // for Jets only
-  minEtaHighest_Jets_(ps.getUntrackedParameter<double>("minEtaHighest_Jets", 4.7)),
+  maxEtaHighest_Jets_(ps.getUntrackedParameter<double>("maxEtaHighest_Jets", 2.4)),
+  maxEta_Jets_(ps.getUntrackedParameter<double>("maxEta_Jets", 3.0)),
 
   // for b-tag only
-  btagFactor_(ps.getUntrackedParameter<double>("btagFactor",0.8484)),
+  btagFactor_(ps.getUntrackedParameter<double>("btagFactor",0.6)),
  
   maxNormChi2_(ps.getUntrackedParameter<double>("maxNormChi2", 10)),
   maxD0_(ps.getUntrackedParameter<double>("maxD0", 0.02)),
@@ -87,14 +88,16 @@ ttbarEventSelector::ttbarEventSelector(const edm::ParameterSet& ps):
   minStripHits_(ps.getUntrackedParameter<uint32_t>("minStripHits", 8)),  
   maxIsoEle_(ps.getUntrackedParameter<double>("maxIso", 0.5)),
   maxIsoMu_(ps.getUntrackedParameter<double>("maxIso", 0.3)),
-  minPtHighest_(ps.getUntrackedParameter<double>("minPtHighest", 24)),
+  minPtHighestMu_(ps.getUntrackedParameter<double>("minPtHighestMu", 24)),
+  minPtHighestEle_(ps.getUntrackedParameter<double>("minPtHighestEle", 32)),
   minPtHighest_Jets_(ps.getUntrackedParameter<double>("minPtHighest_Jets", 30)),
+  minPt_Jets_(ps.getUntrackedParameter<double>("minPt_Jets", 20)),
   minInvMass_(ps.getUntrackedParameter<double>("minInvMass", 140)),
   maxInvMass_(ps.getUntrackedParameter<double>("maxInvMass", 200)),
-  minMet_(ps.getUntrackedParameter<double>("minMet", 60)),
+  minMet_(ps.getUntrackedParameter<double>("minMet", 50)),
   maxMet_(ps.getUntrackedParameter<double>("maxMet", 80)),
   minWmass_(ps.getUntrackedParameter<double>("minWmass", 50)),
-  maxWmass_(ps.getUntrackedParameter<double>("maxWmass", 50))
+  maxWmass_(ps.getUntrackedParameter<double>("maxWmass", 130))
 {
 }
 
@@ -179,9 +182,9 @@ bool ttbarEventSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetu
     edm::LogError("ElectronSelector") << "Error >> Failed to get ElectronCollection for label: " 
 					<< electronTag_;
   }
-  if (list_ele.size() < 2) return false;
-  if (chrgeList_ele[0] + chrgeList_ele[1] != 0) return false;
-  if (list_ele[0].Pt() < minPtHighest_) return false;
+  //if (list_ele.size() < 2) return false;
+  //if (chrgeList_ele[0] + chrgeList_ele[1] != 0) return false;
+  //if (list_ele[0].Pt() < minPtHighest_) return false;
 
   // Read Muon Collection                                                                                                                     
   edm::Handle<reco::MuonCollection> muonColl;
@@ -243,9 +246,9 @@ bool ttbarEventSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetu
     return false;
   }
 
-  if (list_mu.size() < 2) return false;
+  //if (list_mu.size() < 2) return false;
   //  if (chrgeList_ele[0] + chrgeList_ele[1] != 0) return false;
-  if (list_mu[0].Pt() < minPtHighest_) return false;
+  //if (list_mu[0].Pt() < minPtHighest_) return false;
   //  TLorentzVector zv_mu = list[0] + list[1];
 
   // for Track jet collections
@@ -255,8 +258,8 @@ bool ttbarEventSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetu
 
   if (jetColl.isValid()){
     for (const auto& jets: *jetColl){
-      if (jets.pt() < minPtHighest_Jets_) return false;
-      if (std::fabs(jets.eta()) < minPtHighest_Jets_) return false;
+      if (jets.pt() < minPt_Jets_) continue;
+      if (std::fabs(jets.eta()) > maxEta_Jets_) continue;
       TLorentzVector lv_jets;// lv_bJets;
       lv_jets.SetPtEtaPhiE(jets.pt(), jets.eta(), jets.phi(), jets.energy());
       list_jets.push_back(lv_jets);
@@ -279,112 +282,115 @@ bool ttbarEventSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetu
     for (unsigned bj = 0; bj != bTags.size(); ++bj) {
       TLorentzVector lv_bjets;
       lv_bjets.SetPtEtaPhiE(bTags[bj].first->pt(), bTags[bj].first->eta(), bTags[bj].first->phi(), bTags[bj].first->energy());
-      if (bTags[bj].second > btagFactor_) list_bjets.push_back(lv_bjets); 
+      if ((bTags[bj].second > btagFactor_)&&(lv_bjets.Pt()>minPt_Jets_)) list_bjets.push_back(lv_bjets); 
       
     }
     lbj = list_bjets.size();
     
   }
 
+  std::cout<<"le "<<le<<"\tlm "<<lm<<"\tlj "<<lj<<"\tlbj "<<lbj<<std::endl;
+
   // int bj = list_bjets.size();
 
   // for MET collection
   edm::Handle<reco::PFMETCollection> pfColl;
   iEvent.getByToken(pfmetToken_, pfColl);
-  if (EventCategory(le,lm,lj,lbj) == 11){ // dilepton- ele ele 
-    if (list_ele[0].Pt() < minPtHighest_) return false;
-    if ((list_ele[0].Pt() < list_mu[0].Pt()) || (list_ele[1].Pt() < list_mu[0].Pt())) return false; 
-    if (chrgeList_ele[0] + chrgeList_ele[1] != 0) return false;
-    if (pfColl.isValid()) {
-      double mt1 = getMt(list_ele[0], pfColl->front());
-      double mt2 = getMt(list_ele[1], pfColl->front());
-      double mt = mt1 + mt2;
-      if (mt < 2*minMet_ || mt > 2*maxMet_) return false;
-    } 
-    else {
-      edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton ele-ele channel for label: " << pfmetTag_;
-      return false;
-    }
-      
-  }
-  else if (EventCategory(le,lm,lj,lbj) == 12){ // dilepton - mu mu
-    if (list_mu[0].Pt() < minPtHighest_) return false;
-    if ((list_mu[0].Pt() < list_ele[0].Pt()) || (list_mu[1].Pt() < list_ele[0].Pt())) return false;
-    if (chrgeList_mu[0] + chrgeList_mu[1] != 0) return false;
-    if (pfColl.isValid()) {
-      double mt1 = getMt(list_mu[0], pfColl->front());
-      double mt2 = getMt(list_mu[1], pfColl->front());
-      double mt = mt1 + mt2;
-      if (mt < 2*minMet_ || mt > 2*maxMet_) return false;
-    }
-    else {
-      edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton mu-mu channel for label: " << pfmetTag_;
-      return false;
-    }
-  }
-  else if (EventCategory(le,lm,lj,lbj) == 13){ // dilepton - ele mu
-    if ((list_mu[0].Pt() < list_ele[1].Pt()) || (list_ele[0].Pt() < list_mu[1].Pt()) ) return false;
-    if ((list_mu[0].Pt() < minPtHighest_)||(list_ele[0].Pt() < minPtHighest_)) return false;
-    if (chrgeList_mu[0] + chrgeList_ele[0] != 0) return false;
-    if (pfColl.isValid()) {
-      double mt1 = getMt(list_mu[0], pfColl->front());
-      double mt2 = getMt(list_ele[0], pfColl->front());
-      double mt = mt1 + mt2;
-      if (mt < 2*minMet_ || mt > 2*maxMet_) return false;
-    }
-    else {
-      edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton ele-mu channel for label: " << pfmetTag_;
-      return false;
-    }
-  }
-  else if (EventCategory( le,lm,lj,lbj) == 21 || EventCategory(le,lm,lj,lbj) == 22){ // semilepton - ele or mu
+  //if (EventCategory(le,lm,lj,lbj) == 11){ // dilepton- ele ele 
+  //  if (list_ele[0].Pt() < minPtHighest_) return false;
+  //  if ((list_ele[0].Pt() < list_mu[0].Pt()) || (list_ele[1].Pt() < list_mu[0].Pt())) return false; 
+  //  if (chrgeList_ele[0] + chrgeList_ele[1] != 0) return false;
+  //  if (pfColl.isValid()) {
+  //    double mt1 = getMt(list_ele[0], pfColl->front());
+  //    double mt2 = getMt(list_ele[1], pfColl->front());
+  //    double mt = mt1 + mt2;
+  //    if (mt < 2*minMet_ || mt > 2*maxMet_) return false;
+  //  } 
+  //  else {
+  //    edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton ele-ele channel for label: " << pfmetTag_;
+  //    return false;
+  //  }
+  //}
+  //else if (EventCategory(le,lm,lj,lbj) == 12){ // dilepton - mu mu
+  //  if (list_mu[0].Pt() < minPtHighest_) return false;
+  //  if ((list_mu[0].Pt() < list_ele[0].Pt()) || (list_mu[1].Pt() < list_ele[0].Pt())) return false;
+  //  if (chrgeList_mu[0] + chrgeList_mu[1] != 0) return false;
+  //  if (pfColl.isValid()) {
+  //    double mt1 = getMt(list_mu[0], pfColl->front());
+  //    double mt2 = getMt(list_mu[1], pfColl->front());
+  //    double mt = mt1 + mt2;
+  //    if (mt < 2*minMet_ || mt > 2*maxMet_) return false;
+  //  }
+  //  else {
+  //    edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton mu-mu channel for label: " << pfmetTag_;
+  //    return false;
+  //  }
+  //}
+  //else if (EventCategory(le,lm,lj,lbj) == 13){ // dilepton - ele mu
+  //  if ((list_mu[0].Pt() < list_ele[1].Pt()) || (list_ele[0].Pt() < list_mu[1].Pt()) ) return false;
+  //  if ((list_mu[0].Pt() < minPtHighest_)||(list_ele[0].Pt() < minPtHighest_)) return false;
+  //  if (chrgeList_mu[0] + chrgeList_ele[0] != 0) return false;
+  //  if (pfColl.isValid()) {
+  //    double mt1 = getMt(list_mu[0], pfColl->front());
+  //    double mt2 = getMt(list_ele[0], pfColl->front());
+  //    double mt = mt1 + mt2;
+  //    if (mt < 2*minMet_ || mt > 2*maxMet_) return false;
+  //  }
+  //  else {
+  //    edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton ele-mu channel for label: " << pfmetTag_;
+  //    return false;
+  //  }
+  //}
+  if (EventCategory( le,lm,lj,lbj) == 21){ // semilepton - ele or mu
     if (list_jets[0].Pt() < minPtHighest_Jets_) return false;
-    if (list_ele.size() < 1 && list_mu.size() < 1) return false;
-
-    TLorentzVector Wv = list_jets[0] + list_jets[1];
-    if (Wv.M() < minWmass_ || Wv.M() > maxWmass_) return false;
-
+    
+    if (list_ele[0].Pt() < minPtHighestEle_) return false;
     // Both should not be present at the same time                                                                                           
-    if ((list_ele.size() > 0 && list_ele[0].Pt() > 20) && (list_mu.size() > 0 && list_mu[0].Pt() > 20)) return false;
+    if ((list_ele.size() > 0 && list_ele[0].Pt() > minPtHighestEle_) && (list_mu.size() > 0 && list_mu[0].Pt() > minPtHighestMu_)) return false;
     
-    // find the high pt lepton                                                                                                               
-    TLorentzVector vlep;
-    if (list_ele.size() > 0 && list_mu.size() > 0) {
-      vlep = (list_ele[0].Pt() > list_mu[0].Pt()) ? list_ele[0] : list_mu[0];
-    }
-    else if (list_ele.size() > 0) {
-      vlep = list_ele[0];
-    }
-    else {
-      vlep = list_mu[0];
-    }
-    if (vlep.Pt() < minPtHighest_) return false;
-    
-    if (pfColl.isValid()) {
+    /*if (pfColl.isValid()) {
       double mt = getMt(vlep, pfColl->front());
       if (mt < minMet_ || mt > maxMet_) return false;
     }
     else {
       edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton ele-mu channel for label: " << pfmetTag_;
       return false;
-    }
+    }*/
+    return true;
   }
-  else if (EventCategory(le,lm,lj,lbj) == 30){
+  if (EventCategory( le,lm,lj,lbj) == 22){ // semilepton - ele or mu
     if (list_jets[0].Pt() < minPtHighest_Jets_) return false;
-    for (int i=0; i<4; i++){
-      TLorentzVector vjet1;
-      for (int j=i+1; j<4; j++){
-	TLorentzVector vjet2;
-	vjet1 = list_jets[i];
-	vjet2 = list_jets[j];
-	TLorentzVector vjet = vjet1 + vjet2;
-	if (vjet.M() < minWmass_ || vjet.M() > maxWmass_) return false; 
-      }
+    
+    if (list_mu[0].Pt() < minPtHighestMu_) return false;
+    // Both should not be present at the same time                                                                                           
+    if ((list_ele.size() > 0 && list_ele[0].Pt() > minPtHighestEle_) && (list_mu.size() > 0 && list_mu[0].Pt() > minPtHighestMu_)) return false;
+    
+    /*if (pfColl.isValid()) {
+      double mt = getMt(vlep, pfColl->front());
+      if (mt < minMet_ || mt > maxMet_) return false;
     }
+    else {
+      edm::LogError("ttbarEventSelector") << "Error >> Failed to get PFMETCollection in dilepton ele-mu channel for label: " << pfmetTag_;
+      return false;
+    }*/
+    return true;
   }
-  else if (EventCategory(le,lm,lj,lbj) == 50) return false;
+  //else if (EventCategory(le,lm,lj,lbj) == 30){
+  //  if (list_jets[0].Pt() < minPtHighest_Jets_) return false;
+  //  for (int i=0; i<4; i++){
+  //    TLorentzVector vjet1;
+  //    for (int j=i+1; j<4; j++){
+//	TLorentzVector vjet2;
+//	vjet1 = list_jets[i];
+//	vjet2 = list_jets[j];
+//	TLorentzVector vjet = vjet1 + vjet2;
+//	if (vjet.M() < minWmass_ || vjet.M() > maxWmass_) return false; 
+//      }
+//    }
+//  }
+//  else if (EventCategory(le,lm,lj,lbj) == 50) return false;
   
-  return true;
+  return false;
 }
 
 int ttbarEventSelector::EventCategory(int& nEle, int& nMu, int& nJets, int& nbJets){
@@ -394,7 +400,7 @@ int ttbarEventSelector::EventCategory(int& nEle, int& nMu, int& nJets, int& nbJe
     else if (nMu >=2 && nJets < 2) cat = 12;
     else if (nEle >=1 && nMu >=1 && nJets < 2) cat = 13;
   }
-  else if ((nEle >=1 || nMu >=1) && nJets > 3 && nbJets > 1) { //semi-lepton
+  else if ((nEle >=1 || nMu >=1) && nJets > 3 && nbJets > 2) { //semi-lepton
     if (nEle >=1 && nJets >1) cat = 21;
     else if (nMu >=1 && nJets > 1) cat = 22;
   }

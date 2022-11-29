@@ -5,6 +5,9 @@
 #include "TFile.h"
 #include "TH1.h"
 #include "TMath.h"
+#include <iostream>
+#include <fstream>
+#include "TSystem.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/Common/interface/Handle.h"
@@ -34,6 +37,7 @@
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "DQM/TrackingMonitorSource/interface/StandaloneTrackMonitor.h"
 #include "DQM/TrackingMonitor/interface/TrackBuildingAnalyzer.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
 #include "TLorentzVector.h"
 #include <string>
 #include <ostream>
@@ -55,16 +59,20 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps):
   vertexTag_(parameters_.getUntrackedParameter<edm::InputTag>("vertexTag", edm::InputTag("offlinePrimaryVertices"))),
   puSummaryTag_(parameters_.getUntrackedParameter<edm::InputTag>("puTag", edm::InputTag("addPileupInfo"))),
   clusterTag_(parameters_.getUntrackedParameter<edm::InputTag>("clusterTag", edm::InputTag("siStripClusters"))),
+  jetsTag_(parameters_.getUntrackedParameter<edm::InputTag>("PFJetsCollection", edm::InputTag("ak4PFJetsCHS"))),
   trackToken_(consumes<reco::TrackCollection>(trackTag_)),
   bsToken_(consumes<reco::BeamSpot>(bsTag_)),
   vertexToken_(consumes<reco::VertexCollection>(vertexTag_)),
   puSummaryToken_(consumes<std::vector<PileupSummaryInfo> >(puSummaryTag_)),
   clusterToken_(consumes<edmNew::DetSetVector<SiStripCluster> >(clusterTag_)),
+  jetsToken_(consumes<std::vector<reco::PFJet> >(jetsTag_)),
   trackQuality_(parameters_.getUntrackedParameter<std::string>("trackQuality", "highPurity")),
   doPUCorrection_(parameters_.getUntrackedParameter<bool>("doPUCorrection", false)),
+  doTrackCorrection_(parameters_.getUntrackedParameter<bool>("doTrackCorrection", false)),
   isMC_(parameters_.getUntrackedParameter<bool>("isMC", false)),
   haveAllHistograms_(parameters_.getUntrackedParameter<bool>("haveAllHistograms", false)),
   puScaleFactorFile_(parameters_.getUntrackedParameter<std::string>("puScaleFactorFile", "PileupScaleFactor.root")),
+  trackScaleFactorFile_(parameters_.getUntrackedParameter<std::string>("trackScaleFactorFile", "PileupScaleFactor.root")),
   mvaProducers_(parameters_.getUntrackedParameter<std::vector<std::string> >("MVAProducers")),
   mvaTrackTag_(parameters_.getUntrackedParameter<edm::InputTag>("TrackProducerForMVA")),
   mvaTrackToken_(consumes<edm::View<reco::Track> >(mvaTrackTag_)),
@@ -74,6 +82,23 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps):
   geomToken_(esConsumes<TrackerGeometry, TrackerDigiGeometryRecord, edm::Transition::BeginRun>()),
   transTrackToken_(esConsumes<TransientTrackBuilder, TransientTrackRecord, edm::Transition::Event>(edm::ESInputTag{"","TransientTrackBuilder"}))
 {
+  std::string name("$CMSSW_BASE/src/DQM/TrackingMonitorSource/data/BPIX_2022.txt");
+  bpixfile_.open(gSystem->ExpandPathName(name.c_str()));
+  int c1;
+  float c2, c3, c4;
+  runs_.reserve(200);
+  bpix_X_.reserve(200);
+  bpix_Y_.reserve(200);
+  bpix_Z_.reserve(200);
+  while (bpixfile_>>c1) {
+    bpixfile_>>c2; bpixfile_>>c3; bpixfile_>>c4;
+	std::cerr<<c1<<" "<<c2<<" "<<c3<<" "<<c4<<"\n";
+    runs_.push_back(c1);
+    bpix_X_.push_back(c2);
+    bpix_Y_.push_back(c3);
+    bpix_Z_.push_back(c4);
+  }
+
   for (auto v: mvaProducers_) {
     mvaQualityTokens_.push_back(std::make_tuple(consumes<MVACollection>(edm::InputTag(v, "MVAValues")),
 						consumes<QualityMaskCollection>(edm::InputTag(v, "QualityMasks")))
@@ -91,6 +116,7 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps):
   nLostHitsVsEtaH_ = nullptr;
   nLostHitsVsCosThetaH_ = nullptr;
   nLostHitsVsPhiH_ = nullptr;
+  nLostHitsVsIterationH_ = nullptr;
 
   nHitsTIBSVsEtaH_ = nullptr;
   nHitsTOBSVsEtaH_ = nullptr;
@@ -146,6 +172,15 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps):
   nLostHitsTECVsPhiH_ = nullptr;
   nLostHitsTIDVsPhiH_ = nullptr;
 
+  nLostHitsPixVsIterationH_ = nullptr;
+  nLostHitsPixBVsIterationH_ = nullptr;
+  nLostHitsPixEVsIterationH_ = nullptr;
+  nLostHitsStripVsIterationH_ = nullptr;
+  nLostHitsTIBVsIterationH_ = nullptr;
+  nLostHitsTOBVsIterationH_ = nullptr;
+  nLostHitsTECVsIterationH_ = nullptr;
+  nLostHitsTIDVsIterationH_ = nullptr;
+
   hOnTrkClusChargeThinH_ = nullptr;
   hOnTrkClusWidthThinH_ = nullptr;
   hOnTrkClusChargeThickH_ = nullptr;
@@ -157,6 +192,9 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps):
   hOffTrkClusWidthThickH_ = nullptr;
 
   // Read pileup weight factors
+
+  if (isMC_ && doPUCorrection_ && doTrackCorrection_) {throw std::runtime_error("if isMC is true, only one of doPUCorrection and doTrackCorrection can be true");}
+
   if (isMC_ && doPUCorrection_) {
     vpu_.clear();
     TFile* f1 = TFile::Open(puScaleFactorFile_.c_str());
@@ -164,10 +202,31 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps):
     for (int i = 1; i <= h1->GetNbinsX(); ++i) vpu_.push_back(h1->GetBinContent(i));
     f1->Close();
   }
+
+  if (isMC_ && doTrackCorrection_) {
+    vtrack_.clear();
+    TFile* f1 = TFile::Open(trackScaleFactorFile_.c_str());
+    TH1F* h1 = dynamic_cast<TH1F*>(f1->Get("trackweight"));
+    for (int i = 1; i <= h1->GetNbinsX(); ++i) vtrack_.push_back(h1->GetBinContent(i));
+    f1->Close();
+  }
+  bpixfile_.close();
 }
 
 void StandaloneTrackMonitor::dqmBeginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
   tkGeom_ = &(iSetup.getData(geomToken_));
+  if (!isMC_) {
+    unsigned int index=0;
+    while (iRun.id().run()>runs_[index]) {
+      index++;
+      if (index==runs_.size()) {
+        index--;
+        break;
+      }
+    }
+    bpix_x_=bpix_X_[index]; bpix_y_=bpix_Y_[index]; bpix_z_=bpix_Z_[index];
+	std::cerr<<"RUN: "<<iRun.id().run()<<" "<<bpix_x_<<" "<<bpix_y_<<" "<<bpix_z_<<"\n";
+  }
 }
 
 void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run const& iRun, edm::EventSetup const& iSetup) {
@@ -249,6 +308,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 			     TrackPtHistoPar.getParameter<int32_t>("Xbins"),
 			     TrackPtHistoPar.getParameter<double>("Xmin"),
 			     TrackPtHistoPar.getParameter<double>("Xmax"));
+    trackPt_ZoomH_ = ibook.book1D("trackPt_Zoom", "Track Pt", 100, 60, 70);
     //    trackPtUpto2GeVH_ = ibook.book1D("trackPtUpto2GeV", "Track Pt upto 2GeV",100,0,2.0);
     //trackPtOver10GeVH_ = ibook.book1D("trackPtOver10GeV","Track Pt greater than 10 GeV",100,0,100.0);
     trackPterrH_ = ibook.book1D("trackPterr", "Track Pt Error",100,0.0,100.0);
@@ -275,6 +335,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     trackorigalgoH_ = ibook.book1D("trackorigalgo", "Track Original Algo",46,0.0,46.0);
     trackStoppingSourceH_ = ibook.book1D("trackstoppingsource", "Track Stopping Source",12,0.0,12.0);
     DistanceOfClosestApproachToPVH_ = ibook.book1D("DistanceOfClosestApproachToPV", "DistanceOfClosestApproachToPV",1000,-1.0,1.0);
+    DistanceOfClosestApproachToPVZoomedH_ = ibook.book1D("DistanceOfClosestApproachToPVZoomed", "DistanceOfClosestApproachToPV",1000,-0.1,0.1);
     DistanceOfClosestApproachToPVVsPhiH_ = ibook.bookProfile("DistanceOfClosestApproachToPVVsPhi", "DistanceOfClosestApproachToPVVsPhi",100,-3.5,3.5,0.0,0.0,"g");
     xPointOfClosestApproachVsZ0wrtPVH_ = ibook.bookProfile("xPointOfClosestApproachVsZ0wrtPV", "xPointOfClosestApproachVsZ0wrtPV",120,-60,60,0.0,0.0,"g");
     yPointOfClosestApproachVsZ0wrtPVH_ = ibook.bookProfile("yPointOfClosestApproachVsZ0wrtPV", "yPointOfClosestApproachVsZ0wrtPV",120,-60,60,0.0,0.0,"g");
@@ -351,11 +412,11 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     beamSpotZposH_ = ibook.book1D("beamSpotZpos", "Z position of beam spot",100,-20.0,20.0);
     beamSpotZposerrH_ = ibook.book1D("beamSpotZposerr", "Error in Z position of beam spot", 50, 0.0, 5.0);
 
-    vertexXposH_ = ibook.book1D("vertexXpos", "Vertex X position", 50, -1.0, 1.0);
-    vertexYposH_ = ibook.book1D("vertexYpos", "Vertex Y position", 50, -1.0, 1.0);
+    vertexXposH_ = ibook.book1D("vertexXpos", "Vertex X position", 100, 0.05, 0.15);
+    vertexYposH_ = ibook.book1D("vertexYpos", "Vertex Y position", 200, -0.1, 0.1);
     vertexZposH_ = ibook.book1D("vertexZpos", "Vertex Z position", 100,-20.0,20.0);
-    nVertexH_ = ibook.book1D("nVertex", "# of vertices", 60, -0.5, 59.5);
-    nVtxH_ = ibook.book1D("nVtx", "# of vtxs", 60, -0.5, 59.5);
+    nVertexH_ = ibook.book1D("nVertex", "# of vertices", 120, -0.5, 119.5);
+    nVtxH_ = ibook.book1D("nVtx", "# of vtxs", 120, -0.5, 119.5);
     
 
     nMissingInnerHitBH_ = ibook.book1D("nMissingInnerHitB", "No. missing inner hit per Track in Barrel", 6, -0.5, 5.5);
@@ -376,7 +437,14 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     residualYTECH_ = ibook.book1D("residualYStripTEC", "Residual in Y in Strip TEC", 100, -4., 4.);
     residualYTIDH_ = ibook.book1D("residualYStripTID", "Residual in Y in Strip TID", 100, -4., 4.);*/
 
-    nTracksH_ = ibook.book1D("nTracks", "No. of Tracks", 300, -0.5, 299.5);
+    nTracksH_ = ibook.book1D("nTracks", "No. of Tracks", 1200, -0.5, 1199.5);
+    nJet_ = ibook.book1D("nJet", "Number of Jets", 101, -0.5, 100.5);
+    Jet_pt_ = ibook.book1D("Jet_pt", "Jet p_{T}", 200, 0., 200.);
+    Jet_eta_ = ibook.book1D("Jet_eta", "Jet #eta", 100, -5.2, 5.2);
+    Jet_energy_ = ibook.book1D("Jet_energy", "Jet Energy", 200, 0., 200.);
+    Jet_chargedMultiplicity_ = ibook.book1D("Jet_chargedMultiplicity", "Jet charged Hadron Multiplicity", 201, -0.5, 200.5);
+    Zpt_ = ibook.book1D("Zpt","Z-boson transverse momentum", 100, 0, 100);
+	ZInvMass_ = ibook.book1D("ZInvMass","m_{ll}",120,75,105);
   }
   if (isMC_) {
     bunchCrossingH_ = ibook.book1D("bunchCrossing", "Bunch Crossing", 60, 0, 60.0);
@@ -404,6 +472,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 				       TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
   nLostHitsVsCosThetaH_ = ibook.bookProfile("nLostHitsVsCosTheta", "Number of Lost Hits Vs Cos(Theta)",50,-1.0,1.0,0.0,0.0,"g");
   nLostHitsVsPhiH_ = ibook.bookProfile("nLostHitsVsPhi", "Number of Lost Hits Vs Phi",100,-3.5,3.5,0.0,0.0,"g");
+  nLostHitsVsIterationH_ = ibook.bookProfile("nLostHitsVsIteration", "Number of Lost Hits Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
 
   nHitsTIBSVsEtaH_ = ibook.bookProfile("nHitsTIBSVsEta", "Number of Hits in TIB Vs Eta (Single-sided)",
 				       TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
@@ -592,6 +661,16 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 					   TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
 					   TrackEtaHistoPar.getParameter<double>("Xmin"),
 					   TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
+
+  nLostHitsPixVsIterationH_ = ibook.bookProfile("nLostHitsPixVsIteration", "Number of Lost Hits in Pixel Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsPixBVsIterationH_ = ibook.bookProfile("nLostHitsPixBVsIteration", "Number of Lost Hits in Pixel Barrel Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsPixEVsIterationH_ = ibook.bookProfile("nLostHitsPixEVsIteration", "Number of Lost Hits in Pixel Endcap Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsStripVsIterationH_ = ibook.bookProfile("nLostHitsStripVsIteration", "Number of Lost Hits in SiStrip Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsTIBVsIterationH_ = ibook.bookProfile("nLostHitsTIBVsIteration", "Number of Lost Hits in TIB Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsTOBVsIterationH_ = ibook.bookProfile("nLostHitsTOBVsIteration", "Number of Lost Hits in TOB Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsTECVsIterationH_ = ibook.bookProfile("nLostHitsTECVsIteration", "Number of Lost Hits in TEC Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+  nLostHitsTIDVsIterationH_ = ibook.bookProfile("nLostHitsTIDVsIteration", "Number of Lost Hits in TID Vs Iteration",47,-0.5,46.5,0.0,0.0,"g");
+
   trackChi2oNDFVsEtaH_ = ibook.bookProfile("trackChi2oNDFVsEta", "chi2/ndof of Tracks Vs Eta",
 				      TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
 				      TrackEtaHistoPar.getParameter<double>("Xmin"),
@@ -732,6 +811,15 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
     }
     else 
       std::cerr << "PUSummary for input tag: " << puSummaryTag_ << " not found!!" << std::endl;
+	if (doTrackCorrection_) {
+		int ntrack = 0;
+        for (auto const& track : *tracks) {
+          if (!track.quality(reco::Track::qualityByName(trackQuality_))) continue;
+          ++ntrack;
+        }  
+	    if (ntrack > -1 && ntrack < int(vtrack_.size())) wfac = vtrack_.at(ntrack);
+	    else wfac = 0.0;
+	}
   }
   if (verbose_) edm::LogInfo("StandaloneTrackMonitor") << "PU reweight factor = " << wfac;
   if (verbose_) std::cout << "PU scale factor" << wfac << std::endl;
@@ -816,9 +904,11 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
     reco::Track::TrackQuality quality = reco::Track::qualityByName(trackQuality_);
     if (verbose_) std::cout <<"Total # of Tracks: " << tracks->size() << std::endl;
 
+    std::vector<TLorentzVector> list;
+
  
     for (auto const& track : *tracks) {
-      //if (!track.quality(quality)) continue;
+      if (!track.quality(quality)) continue;
       ++ntracks;     
  
       double eta = track.eta();
@@ -854,6 +944,8 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
            track2.SetPtEtaPhiM(TRACK.pt(),TRACK.eta(),TRACK.phi(),0.);
            if (track1.DeltaR(track2)<trackdeltaR) trackdeltaR=track1.DeltaR(track2);
       }
+
+      list.push_back(track1);
 
       // loop over the hits of the track.
       int nHitsBPixL1 = 0;
@@ -921,11 +1013,13 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
       int nLostStripTIDHits = hitp.numberOfLostStripTIDHits(reco::HitPattern::TRACK_HITS);
       int nLostStripTOBHits = hitp.numberOfLostStripTOBHits(reco::HitPattern::TRACK_HITS);
       int nLostStripTECHits = hitp.numberOfLostStripTECHits(reco::HitPattern::TRACK_HITS);
+      int nIteration = track.originalAlgo();
       
       nLostHitsVspTH_->Fill(pt, nLostTrackerHits);
       nLostHitsVsEtaH_->Fill(eta, nLostTrackerHits);
       nLostHitsVsCosThetaH_->Fill(std::cos(theta), nLostTrackerHits);
       nLostHitsVsPhiH_->Fill(phi, nLostTrackerHits);
+      nLostHitsVsIterationH_->Fill(nIteration, nLostTrackerHits);
 
       nLostHitsPixVsEtaH_->Fill(eta, nLostPixHits);
       nLostHitsPixBVsEtaH_->Fill(eta, nLostPixBHits);
@@ -944,6 +1038,15 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
       nLostHitsTOBVsPhiH_->Fill(phi, nLostStripTOBHits);
       nLostHitsTECVsPhiH_->Fill(phi, nLostStripTECHits);
       nLostHitsTIDVsPhiH_->Fill(phi, nLostStripTIDHits);
+
+      nLostHitsPixVsIterationH_->Fill(nIteration, nLostPixHits);
+      nLostHitsPixBVsIterationH_->Fill(nIteration, nLostPixBHits);
+      nLostHitsPixEVsIterationH_->Fill(nIteration, nLostPixEHits);
+      nLostHitsStripVsIterationH_->Fill(nIteration, nLostStripHits);
+      nLostHitsTIBVsIterationH_->Fill(nIteration, nLostStripTIBHits);
+      nLostHitsTOBVsIterationH_->Fill(nIteration, nLostStripTOBHits);
+      nLostHitsTECVsIterationH_->Fill(nIteration, nLostStripTECHits);
+      nLostHitsTIDVsIterationH_->Fill(nIteration, nLostStripTIDHits);
 
 
       if (abs(eta) <= 1.4) {
@@ -1182,7 +1285,7 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	
 	if(ip2d.first) sip2dToPV = ip2d.second.value()/ip2d.second.error();
         double sipDxyToPV = track.dxy(pv.position())/track.dxyError();
-	double sipDzToPV = track.dz(pv.position())/track.dzError();				             
+	double sipDzToPV = track.dz(pv.position())/track.dzError();			     
 	
 	// Fill the histograms
     trackDeltaRwrtClosestTrack_->Fill(trackdeltaR, wfac);
@@ -1194,6 +1297,7 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	trackPhierrH_->Fill(phiError, wfac);
 	trackPH_->Fill(p, wfac);
 	trackPtH_->Fill(pt, wfac);
+	trackPt_ZoomH_->Fill(pt, wfac);
 	//	if (pt <= 2) trackPtUpto2GeVH_->Fill(pt, wfac);
 	//if (pt >= 10) trackPtOver10GeVH_->Fill(pt, wfac);
 	trackPterrH_->Fill(ptError, wfac);
@@ -1258,11 +1362,12 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	beamSpotZposH_->Fill(dz, wfac);
 	beamSpotZposerrH_->Fill(dzError, wfac);
 	
-	vertexXposH_->Fill(vx, wfac);
-	vertexYposH_->Fill(vy, wfac);
-	vertexZposH_->Fill(vz, wfac);
+	vertexXposH_->Fill(vx-bpix_x_, wfac);
+	vertexYposH_->Fill(vy-bpix_y_, wfac);
+	vertexZposH_->Fill(vz-bpix_z_, wfac);
 	
         DistanceOfClosestApproachToPVH_->Fill(distanceOfClosestApproachToPV, wfac);
+        DistanceOfClosestApproachToPVZoomedH_->Fill(distanceOfClosestApproachToPV, wfac);
 	DistanceOfClosestApproachToPVVsPhiH_->Fill(phi, distanceOfClosestApproachToPV);
 	xPointOfClosestApproachVsZ0wrtPVH_->Fill(positionZ0, xPointOfClosestApproachwrtPV);
 	yPointOfClosestApproachVsZ0wrtPVH_->Fill(positionZ0, yPointOfClosestApproachwrtPV);
@@ -1420,6 +1525,11 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
       nHitsStripDVsEtaH_->Fill(eta, nStripTIBD+nStripTOBD+nStripTECD+nStripTIDD);
       */
 
+      if (list.size()>=2) {
+          Zpt_->Fill((list[0]+list[1]).Pt(),wfac);
+          ZInvMass_->Fill((list[0]+list[1]).Mag(),wfac);
+      }      
+
     }
   }
   else {
@@ -1430,7 +1540,18 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
   //std::cout << "chi2it for each event : " << chi2it << " : chi2itGt for each event : " << chi2itGt  << " : chi2itLt for each event : "<< chi2itLt << std::endl;
   //  if (chi2itGt + chi2itLt != chi2it) std::cout << "something wrong after one event!" << std::endl;
 
-  if (haveAllHistograms_) nTracksH_->Fill(ntracks, wfac);
+  if (haveAllHistograms_) {nTracksH_->Fill(ntracks, wfac);
+    edm::Handle<std::vector<reco::PFJet> > jetsColl;
+    iEvent.getByToken(jetsToken_, jetsColl); 
+    nJet_->Fill(jetsColl->size());
+
+    for (auto const& jet : *jetsColl) {
+      Jet_pt_->Fill(jet.pt(), wfac);
+      Jet_eta_->Fill(jet.eta(), wfac);
+      Jet_energy_->Fill(jet.energy(), wfac);
+      Jet_chargedMultiplicity_->Fill(jet.chargedHadronMultiplicity(), wfac);	
+    }   
+  }
   
   // off track cluster properties
   processClusters(iEvent, iSetup, tkGeom, wfac);

@@ -26,14 +26,14 @@ ZtoEEEventSelector::ZtoEEEventSelector(const edm::ParameterSet& ps)
       bsToken_(consumes<reco::BeamSpot>(bsTag_)),
       maxEta_(ps.getUntrackedParameter<double>("maxEta", 2.4)),
       minPt_(ps.getUntrackedParameter<double>("minPt", 5)),
-      maxDeltaPhiInEB_(ps.getUntrackedParameter<double>("maxDeltaPhiInEB", .15)),
-      maxDeltaEtaInEB_(ps.getUntrackedParameter<double>("maxDeltaEtaInEB", .007)),
-      maxHOEEB_(ps.getUntrackedParameter<double>("maxHOEEB", .12)),
-      maxSigmaiEiEEB_(ps.getUntrackedParameter<double>("maxSigmaiEiEEB", .01)),
-      maxDeltaPhiInEE_(ps.getUntrackedParameter<double>("maxDeltaPhiInEE", .1)),
-      maxDeltaEtaInEE_(ps.getUntrackedParameter<double>("maxDeltaEtaInEE", .009)),
+      maxDeltaPhiInEB_(ps.getUntrackedParameter<double>("maxDeltaPhiInEB", 0.15)),
+      maxDeltaEtaInEB_(ps.getUntrackedParameter<double>("maxDeltaEtaInEB", 0.007)),
+      maxHOEEB_(ps.getUntrackedParameter<double>("maxHOEEB", 0.12)),
+      maxSigmaiEiEEB_(ps.getUntrackedParameter<double>("maxSigmaiEiEEB", 0.01)),
+      maxDeltaPhiInEE_(ps.getUntrackedParameter<double>("maxDeltaPhiInEE", 0.1)),
+      maxDeltaEtaInEE_(ps.getUntrackedParameter<double>("maxDeltaEtaInEE", 0.009)),
       maxHOEEE_(ps.getUntrackedParameter<double>("maxHOEEB_", .10)),
-      maxSigmaiEiEEE_(ps.getUntrackedParameter<double>("maxSigmaiEiEEE", .03)),
+      maxSigmaiEiEEE_(ps.getUntrackedParameter<double>("maxSigmaiEiEEE", 0.03)),
       maxNormChi2_(ps.getUntrackedParameter<double>("maxNormChi2", 10)),
       maxD0_(ps.getUntrackedParameter<double>("maxD0", 0.02)),
       maxDz_(ps.getUntrackedParameter<double>("maxDz", 20.)),
@@ -113,8 +113,7 @@ bool ZtoEEEventSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetu
       float absiso =
           pfIso.sumChargedHadronPt + std::max(0.0, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt);
       float eiso = absiso / (ele.pt());
-      if (eiso > maxIso_)
-        continue;
+      if (eiso >  maxIso_) continue;
 
       TLorentzVector lv;
       lv.SetPtEtaPhiE(ele.pt(), ele.eta(), ele.phi(), ele.energy());

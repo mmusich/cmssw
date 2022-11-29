@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from DQM.TrackingMonitorSource.StandaloneTrackMonitor_cfi import *
 from DQM.TrackingMonitorSource.RecoTrackMonitor_cfi import *
+from DQM.TrackingMonitorSource.ZEEDetails_cfi import *
 # from DQM.TrackingMonitor.V0Monitor_cfi import *
 
 # Primary Vertex Selector
@@ -55,6 +56,34 @@ hltPathFilter = cms.EDFilter("HLTPathSelector",
                              triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
                              triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
                              )
+
+# HLT path selector Muon
+hltPathFilterMuon = cms.EDFilter("HLTPathSelector",
+                             processName = cms.string("HLT"),
+                             verbose = cms.untracked.bool(False),
+                             hltPathsOfInterest = cms.vstring("HLT_IsoMu24_v"),
+                             triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
+                             triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
+                             )
+
+# HLT path selector Electron
+hltPathFilterElectron = cms.EDFilter("HLTPathSelector",
+                             processName = cms.string("HLT"),
+                             verbose = cms.untracked.bool(False),
+                             hltPathsOfInterest = cms.vstring("HLT_Ele32_WPTight_Gsf_v"),
+                             triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
+                             triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
+                             )
+
+# HLT path selector ttbar
+hltPathFilterTtbar = cms.EDFilter("HLTPathSelector",
+                             processName = cms.string("HLT"),
+                             verbose = cms.untracked.bool(False),
+                             hltPathsOfInterest = cms.vstring("HLT_Ele32_WPTight_Gsf_v","HLT_IsoMu24_v"),
+                             triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
+                             triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
+                             )
+
 # Z->MuMu event selector
 ztoMMEventSelector = cms.EDFilter("ZtoMMEventSelector")
 muonTracks = cms.EDProducer("MuonTrackProducer")
@@ -63,6 +92,7 @@ ztoEEEventSelector = cms.EDFilter("ZtoEEEventSelector")
 electronTracks = cms.EDProducer("ElectronTrackProducer")
 #ttbar event selector
 ttbarEventSelector = cms.EDFilter("ttbarEventSelector")
+ttbarTracks = cms.EDProducer("TtbarTrackProducer")
 
 # Added module for V0Monitoring for Ks only
 # KshortMonitor = v0Monitor.clone()
@@ -86,20 +116,20 @@ recoTrackMonitorMC = recoTrackMonitor.clone(
     isMC              = cms.untracked.bool(True)
     )
 standaloneValidationMinbias = cms.Sequence(
-#    hltPathFilter
-#    * selectedPrimaryVertices 
+    hltPathFilter
+    * selectedPrimaryVertices 
 #    * selectedMultiplicityTracks  # Use selectedMultiplicityTracks if needed nTracks > desired multiplicity
 #    * selectedAlcaRecoZBTracks
-    selectedTracks
+    * selectedTracks
     * standaloneTrackMonitor)
 #    * recoTrackMonitor	)
 standaloneValidationMinbiasMC = cms.Sequence(
-#    hltPathFilter
-#    * selectedPrimaryVertices
+    hltPathFilter
+    * selectedPrimaryVertices 
 #    * selectedMultiplicityTracks  # Use selectedMultiplicityTracks if needed nTracks > desired multiplicity
 #    * selectedAlcaRecoZBTracks
-    selectedTracks
-    * standaloneTrackMonitorMC )
+    * selectedTracks
+    * standaloneTrackMonitorMC)
 #    * recoTrackMonitorMC )
 # For ZtoEE
 standaloneTrackMonitorElec = standaloneTrackMonitor.clone(
@@ -115,20 +145,30 @@ standaloneTrackMonitorElecMC = standaloneTrackMonitor.clone(
     isMC              = cms.untracked.bool(True)
     )
 
+ZEEDetailsMC = ZEEDetails.clone(
+    puScaleFactorFile = cms.untracked.string("PileupScaleFactor_316082_wrt_nVertex_DYToLL.root"),
+    doPUCorrection    = cms.untracked.bool(True),
+    isMC              = cms.untracked.bool(True)
+    )
+
 standaloneValidationElec = cms.Sequence(
-    selectedTracks
+    hltPathFilterElectron
+    * selectedTracks
     * selectedPrimaryVertices
     * ztoEEEventSelector
     * electronTracks
     * standaloneTrackMonitorElec   
-    * standaloneTrackMonitor)
+    * standaloneTrackMonitor
+    * ZEEDetails)
 standaloneValidationElecMC = cms.Sequence(
-    selectedTracks
+    hltPathFilterElectron
+    * selectedTracks
     * selectedPrimaryVertices
     * ztoEEEventSelector
     * electronTracks
     * standaloneTrackMonitorElecMC   
-    * standaloneTrackMonitorMC)
+    * standaloneTrackMonitorMC
+    * ZEEDetailsMC)
 # For ZtoMM
 standaloneTrackMonitorMuon = standaloneTrackMonitor.clone(
     folderName = cms.untracked.string("MuonTracks"),
@@ -153,7 +193,8 @@ standaloneTrackMonitorMuonMC = standaloneTrackMonitor.clone(
 #    isMC              = cms.untracked.bool(True)
 #)
 standaloneValidationMuon = cms.Sequence(
-    selectedTracks
+    hltPathFilterMuon
+    * selectedTracks
     * selectedPrimaryVertices
     * ztoMMEventSelector
     * muonTracks
@@ -162,7 +203,8 @@ standaloneValidationMuon = cms.Sequence(
     * standaloneTrackMonitor)
 #    * recoTrackMonitor	)
 standaloneValidationMuonMC = cms.Sequence(
-    selectedTracks
+    hltPathFilterMuon
+    * selectedTracks
     * selectedPrimaryVertices
     * ztoMMEventSelector
     * muonTracks
@@ -170,16 +212,31 @@ standaloneValidationMuonMC = cms.Sequence(
     * standaloneTrackMonitorMC)
 
 # For ttbar
-standaloneValidationTTbar = cms.Sequence(
-    selectedTracks
-    * selectedPrimaryVertices
-    * ttbarEventSelector
-#    * selectedTracks
-    * standaloneTrackMonitor)
-standaloneValidationTTbarMC = cms.Sequence(
-    selectedTracks
-    * selectedPrimaryVertices
-    * ttbarEventSelector
-#    * selectedTracks
-    * standaloneTrackMonitorMC)
+standaloneTrackMonitorTTbar = standaloneTrackMonitor.clone(
+    folderName = cms.untracked.string("TTbarTracks"),
+    trackInputTag = cms.untracked.InputTag('ttbarTracks'),
+    )
 
+standaloneTrackMonitorTTbarMC = standaloneTrackMonitor.clone(
+    folderName = cms.untracked.string("TTbarTracks"),
+    trackInputTag = cms.untracked.InputTag('ttbarTracks'),
+    puScaleFactorFile = cms.untracked.string("PileupScaleFactor_316082_wrt_nVertex_DYToLL.root"),
+    doPUCorrection    = cms.untracked.bool(True),
+    isMC              = cms.untracked.bool(True)
+    )
+
+standaloneValidationTTbar = cms.Sequence(
+    hltPathFilterTtbar
+    * selectedPrimaryVertices
+    * ttbarEventSelector
+    * ttbarTracks
+#    * selectedTracks
+    * standaloneTrackMonitorTTbar)
+
+standaloneValidationTTbarMC = cms.Sequence(
+    hltPathFilterTtbar
+    * selectedPrimaryVertices
+    * ttbarEventSelector
+    * ttbarTracks
+#    * selectedTracks
+    * standaloneTrackMonitorTTbarMC)
