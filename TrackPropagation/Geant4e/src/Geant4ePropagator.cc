@@ -230,6 +230,8 @@ bool Geant4ePropagator::configurePropagation(G4ErrorMode &mode,
 template <class SurfaceType>
 std::pair<TrajectoryStateOnSurface, double> Geant4ePropagator::propagateGeneric(const FreeTrajectoryState &ftsStart,
                                                                                 const SurfaceType &pDest) const {
+  edm::LogPrint("") << "start propagation";
+
   ///////////////////////////////
   // Construct the target surface
   //
@@ -451,14 +453,14 @@ void Geant4ePropagator::debugReportPlaneSetup(GlobalPoint const &posPlane,
                                               GlobalVector const &normalPlane,
                                               HepGeom::Normal3D<double> const &surfNorm,
                                               const Plane &pDest) const {
-  LogDebug("Geant4e") << "G4e -  Destination CMS plane position:" << posPlane << "cm\n"
-                      << "G4e -                  (Ro, eta, phi): (" << posPlane.perp() << " cm, " << posPlane.eta()
-                      << ", " << posPlane.phi().degrees() << " deg)\n"
-                      << "G4e -  Destination G4  plane position: " << surfPos << " mm, Ro = " << surfPos.perp()
-                      << " mm";
-  LogDebug("Geant4e") << "G4e -  Destination CMS plane normal  : " << normalPlane << "\n"
-                      << "G4e -  Destination G4  plane normal  : " << normalPlane;
-  LogDebug("Geant4e") << "G4e -  Distance from plane position to plane: " << pDest.localZ(posPlane) << " cm";
+  edm::LogPrint("Geant4e") << "G4e -  Destination CMS plane position:" << posPlane << "cm\n"
+                           << "G4e -                  (Ro, eta, phi): (" << posPlane.perp() << " cm, " << posPlane.eta()
+                           << ", " << posPlane.phi().degrees() << " deg)\n"
+                           << "G4e -  Destination G4  plane position: " << surfPos << " mm, Ro = " << surfPos.perp()
+                           << " mm";
+  edm::LogPrint("Geant4e") << "G4e -  Destination CMS plane normal  : " << normalPlane << "\n"
+                           << "G4e -  Destination G4  plane normal  : " << normalPlane;
+  edm::LogPrint("Geant4e") << "G4e -  Distance from plane position to plane: " << pDest.localZ(posPlane) << " cm";
 }
 
 template <class SurfaceType>
@@ -468,11 +470,12 @@ void Geant4ePropagator::debugReportTrackState(std::string const &currentContext,
                                               GlobalVector const &cmsInitMom,
                                               CLHEP::Hep3Vector const &g4InitMom,
                                               const SurfaceType &pDest) const {
-  LogDebug("Geant4e") << "G4e - Current Context: " << currentContext;
-  LogDebug("Geant4e") << "G4e -  CMS point position:" << cmsInitPos << "cm\n"
-                      << "G4e -              (Ro, eta, phi): (" << cmsInitPos.perp() << " cm, " << cmsInitPos.eta()
-                      << ", " << cmsInitPos.phi().degrees() << " deg)\n"
-                      << "G4e -   G4  point position: " << g4InitPos << " mm, Ro = " << g4InitPos.perp() << " mm";
-  LogDebug("Geant4e") << "G4e -   CMS momentum      :" << cmsInitMom << "GeV\n"
-                      << " pt: " << cmsInitMom.perp() << "G4e -  G4  momentum      : " << g4InitMom << " MeV";
+  edm::LogPrint("Geant4e") << "G4e - Current Context: " << currentContext;
+  edm::LogPrint("Geant4e") << "G4e - CMS point position:" << cmsInitPos << "cm\n"
+                           << "G4e -              (Ro, eta, phi): (" << cmsInitPos.perp() << " cm, " << cmsInitPos.eta()
+                           << ", " << cmsInitPos.phi().degrees() << " deg)\n"
+                           << "G4e - G4  point position: " << g4InitPos << " mm, Ro = " << g4InitPos.perp() << " mm";
+  edm::LogPrint("Geant4e") << "G4e - CMS momentum      :" << cmsInitMom << "GeV"
+                           << " pt: " << cmsInitMom.perp() << "\n"
+                           << "G4e - G4  momentum      : " << g4InitMom << " MeV";
 }
