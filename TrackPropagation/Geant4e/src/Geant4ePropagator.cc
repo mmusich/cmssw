@@ -46,7 +46,7 @@ Geant4ePropagator::Geant4ePropagator(const MagneticField *field,
       theG4eManager(G4ErrorPropagatorManager::GetErrorPropagatorManager()),
       theG4eData(G4ErrorPropagatorData::GetErrorPropagatorData()),
       plimit_(plimit) {
-  LogDebug("Geant4e") << "Geant4e Propagator initialized";
+  edm::LogPrint("Geant4e") << "Geant4e Propagator initialized";
 
   // has to be called here, doing it later will not load the G4 physics list
   // properly when using the G4 ES Producer. Reason: unclear
@@ -58,6 +58,7 @@ Geant4ePropagator::Geant4ePropagator(const MagneticField *field,
 Geant4ePropagator::~Geant4ePropagator() {
   LogDebug("Geant4e") << "Geant4ePropagator::~Geant4ePropagator()" << std::endl;
 
+  //theG4eManager->CloseGeometry();
   // don't close the g4 Geometry here, because the propagator might have been
   // cloned
   // but there is only one, globally-shared Geometry
@@ -72,9 +73,9 @@ Geant4ePropagator::~Geant4ePropagator() {
  */
 
 void Geant4ePropagator::ensureGeant4eIsInitilized(bool forceInit) const {
-  LogDebug("Geant4e") << "ensureGeant4eIsInitilized called" << std::endl;
+  edm::LogPrint("Geant4e") << "ensureGeant4eIsInitilized called" << std::endl;
   if ((G4ErrorPropagatorData::GetErrorPropagatorData()->GetState() == G4ErrorState_PreInit) || forceInit) {
-    LogDebug("Geant4e") << "Initializing G4 propagator" << std::endl;
+    edm::LogPrint("Geant4e") << "Initializing G4 propagator" << std::endl;
 
     //G4UImanager::GetUIpointer()->ApplyCommand("/exerror/setField -10. kilogauss");
 
@@ -83,14 +84,56 @@ void Geant4ePropagator::ensureGeant4eIsInitilized(bool forceInit) const {
     const G4Field *field = G4TransportationManager::GetTransportationManager()->GetFieldManager()->GetDetectorField();
     if (field == nullptr) {
       edm::LogError("Geant4e") << "No G4 magnetic field defined";
-    }
-    LogDebug("Geant4e") << "G4 propagator initialized" << std::endl;
+    }  //else {
+    //this->dumpMagneticField(field);
+    //}
+    edm::LogPrint("Geant4e") << "G4 propagator initialized" << std::endl;
   } else {
-    LogDebug("Geant4e") << "G4 not in preinit state: " << G4ErrorPropagatorData::GetErrorPropagatorData()->GetState()
-                        << std::endl;
+    edm::LogPrint("Geant4e") << "G4 not in preinit state: "
+                             << G4ErrorPropagatorData::GetErrorPropagatorData()->GetState() << std::endl;
   }
   // define 10 mm step limit for propagator
   G4UImanager::GetUIpointer()->ApplyCommand("/geant4e/limits/stepLength 10.0 mm");
+}
+
+void Geant4ePropagator::dumpMagneticField(const G4Field *field) const {
+  // CMS magnetic field volume
+  double rmax = 9000 * mm;
+  double zmax = 24000 * mm;
+
+  double dr = 10 * cm;
+  double dz = 50 * cm;
+
+  int nr = (int)(rmax / dr);
+  int nz = 2 * (int)(zmax / dz);
+
+  double r = 0.0;
+  double z0 = -zmax;
+  double z;
+
+  double phi = 0.0;
+  double cosf = cos(phi);
+  double sinf = sin(phi);
+
+  double point[4] = {0.0, 0.0, 0.0, 0.0};
+  double bfield[3] = {0.0, 0.0, 0.0};
+
+  std::cout << std::setprecision(6);
+  for (int i = 0; i <= nr; ++i) {
+    z = z0;
+    for (int j = 0; j <= nz; ++j) {
+      point[0] = r * cosf;
+      point[1] = r * sinf;
+      point[2] = z;
+      field->GetFieldValue(point, bfield);
+      std::cout << "R(mm)= " << r / mm << " phi(deg)= " << phi / degree << " Z(mm)= " << z / mm
+                << "   Bz(tesla)= " << bfield[2] / tesla
+                << " Br(tesla)= " << (bfield[0] * cosf + bfield[1] * sinf) / tesla
+                << " Bphi(tesla)= " << (bfield[0] * sinf - bfield[1] * cosf) / tesla << G4endl;
+      z += dz;
+    }
+    r += dr;
+  }
 }
 
 template <>
@@ -230,7 +273,7 @@ bool Geant4ePropagator::configurePropagation(G4ErrorMode &mode,
 template <class SurfaceType>
 std::pair<TrajectoryStateOnSurface, double> Geant4ePropagator::propagateGeneric(const FreeTrajectoryState &ftsStart,
                                                                                 const SurfaceType &pDest) const {
-  edm::LogPrint("") << "start propagation";
+  LogDebug("") << "start propagation";
 
   ///////////////////////////////
   // Construct the target surface
@@ -453,14 +496,14 @@ void Geant4ePropagator::debugReportPlaneSetup(GlobalPoint const &posPlane,
                                               GlobalVector const &normalPlane,
                                               HepGeom::Normal3D<double> const &surfNorm,
                                               const Plane &pDest) const {
-  edm::LogPrint("Geant4e") << "G4e -  Destination CMS plane position:" << posPlane << "cm\n"
-                           << "G4e -                  (Ro, eta, phi): (" << posPlane.perp() << " cm, " << posPlane.eta()
-                           << ", " << posPlane.phi().degrees() << " deg)\n"
-                           << "G4e -  Destination G4  plane position: " << surfPos << " mm, Ro = " << surfPos.perp()
-                           << " mm";
-  edm::LogPrint("Geant4e") << "G4e -  Destination CMS plane normal  : " << normalPlane << "\n"
-                           << "G4e -  Destination G4  plane normal  : " << normalPlane;
-  edm::LogPrint("Geant4e") << "G4e -  Distance from plane position to plane: " << pDest.localZ(posPlane) << " cm";
+  LogDebug("Geant4e") << "G4e -  Destination CMS plane position:" << posPlane << "cm\n"
+                      << "G4e -                  (Ro, eta, phi): (" << posPlane.perp() << " cm, " << posPlane.eta()
+                      << ", " << posPlane.phi().degrees() << " deg)\n"
+                      << "G4e -  Destination G4  plane position: " << surfPos << " mm, Ro = " << surfPos.perp()
+                      << " mm";
+  LogDebug("Geant4e") << "G4e -  Destination CMS plane normal  : " << normalPlane << "\n"
+                      << "G4e -  Destination G4  plane normal  : " << normalPlane;
+  LogDebug("Geant4e") << "G4e -  Distance from plane position to plane: " << pDest.localZ(posPlane) << " cm";
 }
 
 template <class SurfaceType>
@@ -470,12 +513,12 @@ void Geant4ePropagator::debugReportTrackState(std::string const &currentContext,
                                               GlobalVector const &cmsInitMom,
                                               CLHEP::Hep3Vector const &g4InitMom,
                                               const SurfaceType &pDest) const {
-  edm::LogPrint("Geant4e") << "G4e - Current Context: " << currentContext;
-  edm::LogPrint("Geant4e") << "G4e - CMS point position:" << cmsInitPos << "cm\n"
-                           << "G4e -              (Ro, eta, phi): (" << cmsInitPos.perp() << " cm, " << cmsInitPos.eta()
-                           << ", " << cmsInitPos.phi().degrees() << " deg)\n"
-                           << "G4e - G4  point position: " << g4InitPos << " mm, Ro = " << g4InitPos.perp() << " mm";
-  edm::LogPrint("Geant4e") << "G4e - CMS momentum      :" << cmsInitMom << "GeV"
-                           << " pt: " << cmsInitMom.perp() << "\n"
-                           << "G4e - G4  momentum      : " << g4InitMom << " MeV";
+  LogDebug("Geant4e") << "G4e - Current Context: " << currentContext;
+  LogDebug("Geant4e") << "G4e - CMS point position:" << cmsInitPos << "cm\n"
+                      << "G4e -              (Ro, eta, phi): (" << cmsInitPos.perp() << " cm, " << cmsInitPos.eta()
+                      << ", " << cmsInitPos.phi().degrees() << " deg)\n"
+                      << "G4e - G4  point position: " << g4InitPos << " mm, Ro = " << g4InitPos.perp() << " mm";
+  LogDebug("Geant4e") << "G4e - CMS momentum      :" << cmsInitMom << "GeV"
+                      << " pt: " << cmsInitMom.perp() << "\n"
+                      << "G4e - G4  momentum      : " << g4InitMom << " MeV";
 }

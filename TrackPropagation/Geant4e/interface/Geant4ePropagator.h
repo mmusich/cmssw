@@ -8,6 +8,7 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 
 // - Geant4e
+#include "G4Field.hh"
 #include "G4ErrorPropagatorData.hh"
 #include "G4ErrorPropagatorManager.hh"
 #include "G4ErrorSurfaceTarget.hh"
@@ -159,6 +160,8 @@ private:
                              GlobalVector const &cmsInitMom,
                              CLHEP::Hep3Vector const &g4InitMom,
                              const SurfaceType &pDest) const;
+
+  void dumpMagneticField(const G4Field *field) const;
 };
 
 #endif
