@@ -75,7 +75,7 @@ void trackanalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void trackanalysis::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.addUntracked<edm::InputTag>("tracks",edm::InputTag("ctfWithMaterialTracks"));
+  desc.addUntracked<edm::InputTag>("tracks", edm::InputTag("ctfWithMaterialTracks"));
   descriptions.addWithDefaultLabel(desc);
 }
 
