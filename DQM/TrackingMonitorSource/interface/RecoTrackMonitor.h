@@ -26,19 +26,23 @@ class VertexCollection;
 class TrackingRecHit;
 
 class RecoTrackMonitor : public DQMEDAnalyzer {
- public:
-  RecoTrackMonitor( const edm::ParameterSet& );
+public:
+  RecoTrackMonitor(const edm::ParameterSet&);
 
- protected:
-
+protected:
   void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
-  void processHit(const TrackingRecHit& recHit, edm::EventSetup const& iSetup, const TrackerGeometry& tkGeom, double wfac=1);
-  void processClusters(const edm::Handle<edmNew::DetSetVector<SiStripCluster>>& clusterHandle, edm::EventSetup const& iSetup, const TrackerGeometry& tkGeom, double wfac=1);
+  void processHit(const TrackingRecHit& recHit,
+                  edm::EventSetup const& iSetup,
+                  const TrackerGeometry& tkGeom,
+                  double wfac = 1);
+  void processClusters(const edm::Handle<edmNew::DetSetVector<SiStripCluster>>& clusterHandle,
+                       edm::EventSetup const& iSetup,
+                       const TrackerGeometry& tkGeom,
+                       double wfac = 1);
   void addClusterToMap(uint32_t detid, const SiStripCluster* cluster);
-  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &);
+  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
 
- private:
-
+private:
   edm::ParameterSet parameters_;
 
   std::string moduleName_;
@@ -54,8 +58,8 @@ class RecoTrackMonitor : public DQMEDAnalyzer {
   const edm::EDGetTokenT<reco::TrackCollection> trackToken_;
   const edm::EDGetTokenT<reco::BeamSpot> bsToken_;
   const edm::EDGetTokenT<reco::VertexCollection> vertexToken_;
-  const edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puSummaryToken_; 
-  const edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> > clusterToken_;
+  const edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puSummaryToken_;
+  const edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster>> clusterToken_;
 
   const std::string trackQuality_;
   const bool doPUCorrection_;
@@ -76,7 +80,7 @@ class RecoTrackMonitor : public DQMEDAnalyzer {
   MonitorElement* residualYTOBH_;
   MonitorElement* residualYTIDH_;
   MonitorElement* residualYTECH_;
- 
+
   MonitorElement* hitmap_pixelH_;
   MonitorElement* hitEta_pixelH_;
   MonitorElement* hitPhi_pixelH_;
@@ -96,7 +100,7 @@ class RecoTrackMonitor : public DQMEDAnalyzer {
   MonitorElement* hitPhi_TIB_LayerH_[4];
   MonitorElement* hitmap2_TIB_LayerH_[4];
 
-  MonitorElement* hitmap_TOB_LayerH_[6]; 
+  MonitorElement* hitmap_TOB_LayerH_[6];
   MonitorElement* hitEta_TOB_LayerH_[6];
   MonitorElement* hitPhi_TOB_LayerH_[6];
   MonitorElement* hitmap2_TOB_LayerH_[6];
@@ -128,6 +132,6 @@ class RecoTrackMonitor : public DQMEDAnalyzer {
   unsigned long long m_cacheID_;
 
   std::vector<float> vpu_;
-  std::map<uint32_t, std::set<const SiStripCluster*> > clusterMap_;
+  std::map<uint32_t, std::set<const SiStripCluster*>> clusterMap_;
 };
 #endif

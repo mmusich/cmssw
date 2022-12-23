@@ -21,13 +21,12 @@
 //                                                                        // class declaration                                                    //
 
 class AlcaRecoTrackSelector : public edm::EDProducer {
- public:
+public:
   explicit AlcaRecoTrackSelector(const edm::ParameterSet&);
-  ~AlcaRecoTrackSelector()=default;
+  ~AlcaRecoTrackSelector() override = default;
 
- private:
-
-  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
+private:
+  void produce(edm::Event& iEvent, edm::EventSetup const& iSetup) override;
 
   edm::ParameterSet parameters_;
   const edm::InputTag tracksTag_;
@@ -37,7 +36,5 @@ class AlcaRecoTrackSelector : public edm::EDProducer {
   const double etamin_;
   const double etamax_;
   const int nhits_;
-
-   
 };
 #endif

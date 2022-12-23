@@ -7,18 +7,17 @@
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"	
+#include "FWCore/Utilities/interface/InputTag.h"
 
 class ElectronTrackProducer : public edm::EDProducer {
 public:
-  explicit ElectronTrackProducer (const edm::ParameterSet&);
-  ~ElectronTrackProducer();
+  explicit ElectronTrackProducer(const edm::ParameterSet&);
+  ~ElectronTrackProducer() override;
 
-  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
+  void produce(edm::Event& iEvent, edm::EventSetup const& iSetup) override;
 
 private:
-
-      // ----------member data ---------------------------
+  // ----------member data ---------------------------
   const edm::InputTag electronTag_;
   const edm::InputTag bsTag_;
   const edm::EDGetTokenT<reco::GsfElectronCollection> electronToken_;

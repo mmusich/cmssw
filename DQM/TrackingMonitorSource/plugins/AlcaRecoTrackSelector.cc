@@ -20,38 +20,41 @@ using namespace std;
 using namespace edm;
 
 AlcaRecoTrackSelector::AlcaRecoTrackSelector(const edm::ParameterSet& ps)
-: parameters_(ps),
-    tracksTag_(parameters_.getUntrackedParameter<edm::InputTag>("trackInputTag", edm::InputTag("generalTracks"))),
-    tracksToken_(consumes<reco::TrackCollection>(tracksTag_)),
-    ptmin_( parameters_.getUntrackedParameter<double> ("ptmin", 0. ) ),
-    pmin_( parameters_.getUntrackedParameter<double> ("pmin", 0. ) ),
-    etamin_( parameters_.getUntrackedParameter<double> ("etamin", -4.)),
-    etamax_( parameters_.getUntrackedParameter<double> ("etamax", 4. )),
-    nhits_( parameters_.getUntrackedParameter<uint32_t> ("nhits", 1 ))
-{
+    : parameters_(ps),
+      tracksTag_(parameters_.getUntrackedParameter<edm::InputTag>("trackInputTag", edm::InputTag("generalTracks"))),
+      tracksToken_(consumes<reco::TrackCollection>(tracksTag_)),
+      ptmin_(parameters_.getUntrackedParameter<double>("ptmin", 0.)),
+      pmin_(parameters_.getUntrackedParameter<double>("pmin", 0.)),
+      etamin_(parameters_.getUntrackedParameter<double>("etamin", -4.)),
+      etamax_(parameters_.getUntrackedParameter<double>("etamax", 4.)),
+      nhits_(parameters_.getUntrackedParameter<uint32_t>("nhits", 1)) {
   produces<reco::TrackCollection>("");
 }
-    
-void AlcaRecoTrackSelector::produce(edm::Event& iEvent,const edm::EventSetup& iSetup) {
-  std::unique_ptr< reco::TrackCollection > outputTColl( new reco::TrackCollection() ) ;
-  
+
+void AlcaRecoTrackSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  std::unique_ptr<reco::TrackCollection> outputTColl(new reco::TrackCollection());
+
   // Read Track collection
   edm::Handle<reco::TrackCollection> tracks;
   iEvent.getByToken(tracksToken_, tracks);
 
-  if (tracks.isValid()){
+  if (tracks.isValid()) {
     for (auto const& trk : *tracks) {
       //      std::cout << "alcareco track pt : " << trk.pt() << "  |  eta : " << trk.eta() << "  |  nhits : " << trk.hitPattern().numberOfAllHits(reco::HitPattern::TRACK_HITS) << std::endl;
-      if (trk.pt() < ptmin_) continue;
-      if (trk.p() < pmin_) continue;
-      if (trk.eta() < etamin_) continue;
-      if (trk.eta() > etamax_) continue;
-      if (trk.hitPattern().numberOfAllHits(reco::HitPattern::TRACK_HITS) <= nhits_) continue;
+      if (trk.pt() < ptmin_)
+        continue;
+      if (trk.p() < pmin_)
+        continue;
+      if (trk.eta() < etamin_)
+        continue;
+      if (trk.eta() > etamax_)
+        continue;
+      if (trk.hitPattern().numberOfAllHits(reco::HitPattern::TRACK_HITS) <= nhits_)
+        continue;
       outputTColl->push_back(trk);
     }
 
-  }
-  else {
+  } else {
     edm::LogError("AlcaRecoTrackSelector") << "Error >> Failed to get AlcaRecoTrackSelector for label: " << tracksTag_;
   }
 

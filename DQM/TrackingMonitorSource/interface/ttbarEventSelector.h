@@ -8,7 +8,6 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
-
 class ttbarEventSelector : public edm::stream::EDFilter<> {
 public:
   explicit ttbarEventSelector(const edm::ParameterSet&);
@@ -18,7 +17,7 @@ public:
 private:
   // module config parameters
   const edm::InputTag electronTag_;
-  const edm::InputTag jetsTag_; 
+  const edm::InputTag jetsTag_;
   const edm::InputTag bjetsTag_;
   const edm::InputTag pfmetTag_;
   const edm::InputTag muonTag_;
@@ -50,7 +49,7 @@ private:
   const double maxEta_Jets_;
 
   const double btagFactor_;
- 
+
   const double maxNormChi2_;
   const double maxD0_;
   const double maxDz_;
@@ -69,7 +68,6 @@ private:
   const double minWmass_;
   const double maxWmass_;
   double getMt(const TLorentzVector& vlep, const reco::PFMET& obj);
-  int    EventCategory(int& nEle, int& nMu, int& nJets, int& nbJets);  
-
+  int EventCategory(int& nEle, int& nMu, int& nJets, int& nbJets);
 };
 #endif

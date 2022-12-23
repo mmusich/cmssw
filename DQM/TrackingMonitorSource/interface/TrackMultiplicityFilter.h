@@ -23,20 +23,20 @@
 //
 
 class TrackMultiplicityFilter : public edm::global::EDFilter<> {
- public:
+public:
   explicit TrackMultiplicityFilter(const edm::ParameterSet&);
-  ~TrackMultiplicityFilter()=default;
+  ~TrackMultiplicityFilter() override = default;
 
   //  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
- private:
-  virtual bool filter(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
+private:
+  bool filter(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
   // ----------member data ---------------------------
   edm::ParameterSet parameters_;
   const edm::InputTag tracksTag_;
   edm::EDGetTokenT<reco::TrackCollection> tracksToken_;
-  
+
   StringCutObjectSelector<reco::Track> selector_;
 
   unsigned int nmin_;

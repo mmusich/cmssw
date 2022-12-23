@@ -113,7 +113,8 @@ bool ZtoEEEventSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetu
       float absiso =
           pfIso.sumChargedHadronPt + std::max(0.0, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - 0.5 * pfIso.sumPUPt);
       float eiso = absiso / (ele.pt());
-      if (eiso >  maxIso_) continue;
+      if (eiso > maxIso_)
+        continue;
 
       TLorentzVector lv;
       lv.SetPtEtaPhiE(ele.pt(), ele.eta(), ele.phi(), ele.energy());

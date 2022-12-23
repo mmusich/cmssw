@@ -7,21 +7,20 @@
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"	
+#include "FWCore/Utilities/interface/InputTag.h"
 
 class TtbarTrackProducer : public edm::EDProducer {
 public:
-  explicit TtbarTrackProducer (const edm::ParameterSet&);
-  ~TtbarTrackProducer();
+  explicit TtbarTrackProducer(const edm::ParameterSet&);
+  ~TtbarTrackProducer() override;
 
-  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
+  void produce(edm::Event& iEvent, edm::EventSetup const& iSetup) override;
 
 private:
-
-      // ----------member data ---------------------------
+  // ----------member data ---------------------------
 
   const edm::InputTag electronTag_;
-  const edm::InputTag jetsTag_; 
+  const edm::InputTag jetsTag_;
   const edm::InputTag bjetsTag_;
   const edm::InputTag pfmetTag_;
   const edm::InputTag muonTag_;
@@ -53,7 +52,7 @@ private:
   const double minEta_Jets_;
 
   const double btagFactor_;
- 
+
   const double maxNormChi2_;
   const double maxD0_;
   const double maxDz_;

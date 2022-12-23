@@ -20,14 +20,12 @@ using namespace std;
 using namespace edm;
 
 TrackMultiplicityFilter::TrackMultiplicityFilter(const edm::ParameterSet& ps)
-  :  parameters_(ps), 
-  tracksTag_(parameters_.getUntrackedParameter<edm::InputTag>("trackInputTag", edm::InputTag("generalTracks"))),
-  tracksToken_(consumes<reco::TrackCollection>(tracksTag_)),
-    selector_( parameters_.getUntrackedParameter<std::string> ("cut", "" ) ),
-    nmin_( parameters_.getUntrackedParameter<uint32_t> ("nmin", 0. ) )
-{
+    : parameters_(ps),
+      tracksTag_(parameters_.getUntrackedParameter<edm::InputTag>("trackInputTag", edm::InputTag("generalTracks"))),
+      tracksToken_(consumes<reco::TrackCollection>(tracksTag_)),
+      selector_(parameters_.getUntrackedParameter<std::string>("cut", "")),
+      nmin_(parameters_.getUntrackedParameter<uint32_t>("nmin", 0.)) {
   //now do what ever initialization is needed
-
 }
 
 //
@@ -35,9 +33,7 @@ TrackMultiplicityFilter::TrackMultiplicityFilter(const edm::ParameterSet& ps)
 //
 
 // ------------ method called on each new Event  ------------
-bool
-TrackMultiplicityFilter::filter(edm::StreamID iStream, edm::Event& iEvent, const edm::EventSetup& iSetup) const
-{
+bool TrackMultiplicityFilter::filter(edm::StreamID iStream, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
   bool pass = false;
 
   edm::Handle<reco::TrackCollection> tracks;
@@ -51,7 +47,7 @@ TrackMultiplicityFilter::filter(edm::StreamID iStream, edm::Event& iEvent, const
   std::cout << "nmin_ : " << nmin_ << std::endl;
   std::cout << "tracks size : " << tracks->size() << std::endl;
 
-  pass = ( count >= nmin_ );
+  pass = (count >= nmin_);
 
   std::cout << "pass : " << pass << std::endl;
 

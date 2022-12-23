@@ -7,18 +7,17 @@
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"	
+#include "FWCore/Utilities/interface/InputTag.h"
 
 class MuonTrackProducer : public edm::EDProducer {
 public:
-  explicit MuonTrackProducer (const edm::ParameterSet&);
-  ~MuonTrackProducer();
+  explicit MuonTrackProducer(const edm::ParameterSet&);
+  ~MuonTrackProducer() override;
 
-  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
+  void produce(edm::Event& iEvent, edm::EventSetup const& iSetup) override;
 
 private:
-
-      // ----------member data ---------------------------
+  // ----------member data ---------------------------
 
   const edm::InputTag muonTag_;
   const edm::InputTag bsTag_;

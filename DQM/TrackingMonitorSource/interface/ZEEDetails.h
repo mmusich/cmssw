@@ -28,11 +28,11 @@
 
 class ZEEDetails : public DQMEDAnalyzer {
 public:
-  ZEEDetails( const edm::ParameterSet& );
+  ZEEDetails(const edm::ParameterSet&);
 
 protected:
   void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
-  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &);
+  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
 
 private:
   edm::ParameterSet ps_;
