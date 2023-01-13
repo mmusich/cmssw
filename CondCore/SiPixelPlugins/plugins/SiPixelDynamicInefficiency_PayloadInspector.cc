@@ -164,10 +164,9 @@ namespace {
       return pufactors_db;
     }
 
-    /* 
     //(Not used for the moment)
     //_________________________________________________
-    bool matches(const DetId& detid, const DetId& db_id, const std::vector<uint32_t>& DetIdmasks) {
+    [[maybe_unused]] bool matches(const DetId& detid, const DetId& db_id, const std::vector<uint32_t>& DetIdmasks) {
       if (detid.subdetId() != db_id.subdetId())
         return false;
       for (size_t i = 0; i < DetIdmasks.size(); ++i) {
@@ -180,7 +179,6 @@ namespace {
       }
       return true;
     }
-    */
 
     //_________________________________________________
     bool checkPhase(const SiPixelPI::phase phase, const std::vector<uint32_t>& masks_db) {
