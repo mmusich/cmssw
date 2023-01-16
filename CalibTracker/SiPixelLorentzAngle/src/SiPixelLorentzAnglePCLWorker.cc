@@ -54,6 +54,8 @@
 #include "TrackingTools/Records/interface/TransientRecHitRecord.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
 // ROOT includes
 #include <TTree.h>
@@ -97,6 +99,8 @@ struct Rechit {
   float y;
 };
 
+enum LorentzAngleAnalysisTypeEnum {eGrazingAngle, eMinimumClusterSize};
+
 class SiPixelLorentzAnglePCLWorker : public DQMEDAnalyzer {
 public:
   explicit SiPixelLorentzAnglePCLWorker(const edm::ParameterSet&);
@@ -117,6 +121,7 @@ private:
   const std::pair<LocalPoint, LocalPoint> surface_deformation(const PixelTopology* topol,
                                                               TrajectoryStateOnSurface& tsos,
                                                               const SiPixelRecHit* recHitPix) const;
+  LorentzAngleAnalysisTypeEnum convertStringToLorentzAngleAnalysisTypeEnum(std::string type);
   // ------------ member data ------------
   SiPixelLorentzAngleCalibrationHistograms iHists;
 
@@ -124,7 +129,8 @@ private:
   edm::ESWatcher<SiPixelTemplateDBObjectESProducerRcd> watchSiPixelTemplateRcd_;
   const SiPixelTemplateDBObject* templateDBobject_;
   std::vector<SiPixelTemplateStore> thePixelTemp_;
-
+  
+  LorentzAngleAnalysisTypeEnum analysisType_;
   std::string folder_;
   bool notInPCL_;
   std::string filename_;
@@ -191,6 +197,7 @@ private:
   edm::ESGetToken<SiPixelTemplateDBObject, SiPixelTemplateDBObjectESProducerRcd> siPixelTemplateEsToken_;
   edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoPerEventEsToken_;
   edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomPerEventEsToken_;
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_;
 
   // event consumes
   edm::EDGetTokenT<TrajTrackAssociationCollection> t_trajTrack;
@@ -200,7 +207,8 @@ private:
 // constructors and destructor
 //
 SiPixelLorentzAnglePCLWorker::SiPixelLorentzAnglePCLWorker(const edm::ParameterSet& iConfig)
-    : folder_(iConfig.getParameter<std::string>("folder")),
+    : analysisType_(convertStringToLorentzAngleAnalysisTypeEnum(iConfig.getParameter<std::string>("analysisType"))),
+      folder_(iConfig.getParameter<std::string>("folder")),
       notInPCL_(iConfig.getParameter<bool>("notInPCL")),
       filename_(iConfig.getParameter<std::string>("fileName")),
       newmodulelist_(iConfig.getParameter<std::vector<std::string>>("newmodulelist")),
@@ -216,7 +224,8 @@ SiPixelLorentzAnglePCLWorker::SiPixelLorentzAnglePCLWorker(const edm::ParameterS
       topoEsToken_(esConsumes<edm::Transition::BeginRun>()),
       siPixelTemplateEsToken_(esConsumes<edm::Transition::BeginRun>()),
       topoPerEventEsToken_(esConsumes()),
-      geomPerEventEsToken_(esConsumes()) {
+      geomPerEventEsToken_(esConsumes()),
+      magneticFieldToken_(esConsumes()){
   t_trajTrack = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<edm::InputTag>("src"));
 
   // now do what ever initialization is needed
@@ -314,6 +323,9 @@ void SiPixelLorentzAnglePCLWorker::analyze(edm::Event const& iEvent, edm::EventS
 
   // Retrieve track geometry
   const TrackerGeometry* tracker = &iSetup.getData(geomPerEventEsToken_);
+
+  // Retrieve magnetic field
+  const MagneticField* magField = &iSetup.getData(magneticFieldToken_);
 
   // get the association map between tracks and trajectories
   edm::Handle<TrajTrackAssociationCollection> trajTrackCollectionHandle;
@@ -447,7 +459,7 @@ void SiPixelLorentzAnglePCLWorker::analyze(edm::Event const& iEvent, edm::EventS
 
           auto detId = detIdObj.rawId();
           int DetId_index = -1;
-
+	  
           const auto& newModIt = (std::find(iHists.BPixnewDetIds_.begin(), iHists.BPixnewDetIds_.end(), detId));
           bool isNewMod = (newModIt != iHists.BPixnewDetIds_.end());
           if (isNewMod) {
@@ -482,6 +494,8 @@ void SiPixelLorentzAnglePCLWorker::analyze(edm::Event const& iEvent, edm::EventS
             SiPixelLorentzAngleTreeBarrel_->Fill();
           }
 
+	  if (analysisType_ != eGrazingAngle)
+ 	    continue;
           // is one pixel in cluster a large pixel ? (hit will be excluded)
           bool large_pix = false;
           for (int j = 0; j < pixinfo_.npix; j++) {
@@ -600,7 +614,7 @@ void SiPixelLorentzAnglePCLWorker::analyze(edm::Event const& iEvent, edm::EventS
           clustF_.maxPixelRow = cluster->maxPixelRow();
           clustF_.minPixelCol = cluster->minPixelCol();
           clustF_.minPixelRow = cluster->minPixelRow();
-
+	  
           // fill the trackhit info
           TrajectoryStateOnSurface tsos = itTraj.updatedState();
           if (!tsos.isValid()) {
@@ -650,6 +664,60 @@ void SiPixelLorentzAnglePCLWorker::analyze(edm::Event const& iEvent, edm::EventS
           if (notInPCL_) {
             SiPixelLorentzAngleTreeForward_->Fill();
           }
+
+	  if (analysisType_ != eMinimumClusterSize)
+	    continue;
+
+	  LocalVector Bfield = theGeomDet->surface().toLocal(magField->inTesla(theGeomDet->surface().position()));
+
+	  if (fabs(fabs(Bfield.z())-3.75) > 0.5)
+	    continue;
+	  
+	  double chi2_ndof = chi2_/ndof_;
+	  if (chi2_ndof >= normChi2Max_)
+	    continue;
+	  
+	  //--- large pixel cut
+	  bool large_pix = false;
+	  for (int j = 0; j <  pixinfoF_.npix; j++){
+	    int colpos = static_cast<int>(pixinfoF_.col[j]);
+	    if (pixinfoF_.row[j] == 0 || pixinfoF_.row[j] == 79 ||
+		pixinfoF_.row[j] == 80 || pixinfoF_.row[j] == 159 ||
+		colpos % 52 == 0 || colpos % 52 == 51 ){
+	      large_pix = true;
+	    }
+	  }
+	  
+	  if (large_pix)
+	    continue;	  
+	  
+	  //--- residual cut 
+	  double residual = sqrt(pow(trackhitCorrXF_ - rechitCorrF_.x, 2) +
+				 pow(trackhitCorrYF_ - rechitCorrF_.y, 2));
+	  
+	  if (residual > residualMax_)
+	    continue;
+	  
+	  int ringIdx = bladeF_ <= 22? 0: 1;
+	  int panelIdx = panelF_-1;
+	  int sideIdx = sideF_-1;
+	  int idx = iHists.nSides_*iHists.nPanels_*ringIdx + iHists.nSides_*panelIdx+sideIdx;
+	  int idxBeta = iHists.betaStartIdx_ + idx;
+	  
+	  double cotanAlpha  = TMath::Tan(TMath::Pi()/2. - trackhitF_.alpha);
+	  double cotanBeta  = TMath::Tan(TMath::Pi()/2. - trackhitF_.beta);
+	  
+	  iHists.h_fpixMagField_[0][idx]->Fill(Bfield.x());
+	  iHists.h_fpixMagField_[1][idx]->Fill(Bfield.y());
+	  iHists.h_fpixMagField_[2][idx]->Fill(Bfield.z());
+	  
+	  if (clustF_.size_y >= 2){	    
+	    iHists.h_fpixAngleSize_[idx]->Fill(cotanAlpha,clustF_.size_x);
+	  }
+	  
+	  if (clust_.size_x  >= 0){
+	    iHists.h_fpixAngleSize_[idxBeta]->Fill(cotanBeta,clustF_.size_y);
+	  }	  
         }
       }  //end iteration over trajectory measurements
     }    //end iteration over trajectories
@@ -708,6 +776,10 @@ void SiPixelLorentzAnglePCLWorker::dqmBeginRun(edm::Run const& run, edm::EventSe
 void SiPixelLorentzAnglePCLWorker::bookHistograms(DQMStore::IBooker& iBooker,
                                                   edm::Run const& run,
                                                   edm::EventSetup const& iSetup) {
+
+  char name[128];
+  char title[256];    
+  if (analysisType_ == eGrazingAngle){
   // book the by partition monitoring
   const auto maxSect = iHists.nlay * iHists.nModules_[iHists.nlay - 1] + (int)iHists.BPixnewDetIds_.size();
 
@@ -722,8 +794,6 @@ void SiPixelLorentzAnglePCLWorker::bookHistograms(DQMStore::IBooker& iBooker,
   static constexpr double max_drift_ = 500.;
 
   // book the mean values projections and set the bin names of the by sector monitoring
-  char name[128];
-  char title[256];
   for (int i_layer = 1; i_layer <= iHists.nlay; i_layer++) {
     for (int i_module = 1; i_module <= iHists.nModules_[i_layer - 1]; i_module++) {
       unsigned int i_index = i_module + (i_layer - 1) * iHists.nModules_[i_layer - 1];
@@ -814,7 +884,64 @@ void SiPixelLorentzAnglePCLWorker::bookHistograms(DQMStore::IBooker& iBooker,
     iHists.h_drift_depth_[new_index] =
         iBooker.book2D(name, title, hist_drift_, min_drift_, max_drift_, hist_depth_, min_depth_, max_depth_);
   }
-
+  } // end if GrazinAngleAnalysis
+  else {    
+    iBooker.setCurrentFolder(folder_);
+    char baseName[64];
+    char baseTitle[128];
+    
+    for (int r=0; r < iHists.nRings_;++r){
+      for (int p=0; p < iHists.nPanels_;++p){
+        for (int s=0; s < iHists.nSides_;++s){	  
+	  sprintf(baseName, "R%d_P%d_z%d", r+1, p+1, s+1);
+	  if (s == 0)
+	    sprintf(baseTitle, "Ring%d_Panel%d_z-", r+1, p+1);
+	  else
+	    sprintf(baseTitle, "Ring%d_Panel%d_z+", r+1, p+1);
+	  
+	  int idx = iHists.nSides_*iHists.nPanels_*r + iHists.nSides_*p+s;
+	  int idxBeta = iHists.betaStartIdx_ + idx;
+	  
+	  sprintf(name, "%s_alphaMean", baseName);
+	  sprintf(title, "%s_alphaMean;cot(#alpha); Average cluster size x (pixel)", baseTitle);	  
+	  iHists.h_fpixMean_[idx] = iBooker.book1D(name, title, 60, -3., 3.);
+	  sprintf(name, "%s_betaMean", baseName);
+	  sprintf(title, "%s_betaMean;cot(#beta); Average cluster size y (pixel)", baseTitle);	  
+	  iHists.h_fpixMean_[idxBeta] = iBooker.book1D(name, title, 60, -3., 3.);
+	  
+        } // loop over sides
+      }  // loop over panels 
+    } // loop over rings 
+    iBooker.setCurrentFolder(fmt::sprintf("%s/FPix", folder_.data()));
+    for (int r=0; r < iHists.nRings_;++r){
+      for (int p=0; p < iHists.nPanels_;++p){
+        for (int s=0; s < iHists.nSides_;++s){	  
+	  sprintf(baseName, "R%d_P%d_z%d", r+1, p+1, s+1);
+	  if (s == 0)
+	    sprintf(baseTitle, "Ring%d_Panel%d_z-", r+1, p+1);
+	  else
+	    sprintf(baseTitle, "Ring%d_Panel%d_z+", r+1, p+1);
+	  
+	  int idx = iHists.nSides_*iHists.nPanels_*r + iHists.nSides_*p+s;
+	  int idxBeta = iHists.betaStartIdx_ + idx;
+	  
+	  sprintf(name, "%s_alpha", baseName);
+	  sprintf(title, "%s_alpha;cot(#alpha); Cluster size x (pixel)", baseTitle);	  
+	  iHists.h_fpixAngleSize_[idx] = iBooker.book2D(name, title, 60, -3., 3., 10, 0.5, 10.5);
+	  sprintf(name, "%s_beta", baseName);
+	  sprintf(title, "%s_beta;cot(#beta); Cluster size y (pixel) ", baseTitle);	  	  
+	  iHists.h_fpixAngleSize_[idxBeta] = iBooker.book2D(name, title, 60, -3., 3., 10, 0.5, 10.5);	  
+          for (int m=0; m < 3;++m){
+	    sprintf(name, "%s_B%d", baseName, m);
+	    char bComp = m == 0 ? 'x': (m == 1 ? 'y':'z');  
+	    sprintf(title, "%s_magField%d;B_{%c} [T];Entries", baseTitle, m, bComp);	  
+            iHists.h_fpixMagField_[m][idx] = iBooker.book1D(name, title, 10000, -5., 5.);	    
+          } // mag. field comps 
+        } // loop over sides
+      }  // loop over panels 
+    } // loop over rings 
+  }// if MinimalClusterSize
+  
   // book the track monitoring plots
   iBooker.setCurrentFolder(fmt::sprintf("%s/TrackMonitoring", folder_.data()));
   iHists.h_tracks_ = iBooker.book1D("h_tracks", ";tracker volume;tracks", 2, -0.5, 1.5);
@@ -870,10 +997,18 @@ const std::pair<LocalPoint, LocalPoint> SiPixelLorentzAnglePCLWorker::surface_de
   return lps;
 }
 
+LorentzAngleAnalysisTypeEnum SiPixelLorentzAnglePCLWorker::convertStringToLorentzAngleAnalysisTypeEnum(std::string type){
+  if (type == "GrazingAngle")
+    return eGrazingAngle;
+  else
+    return eMinimumClusterSize;
+}
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void SiPixelLorentzAnglePCLWorker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setComment("Worker module of the SiPixel Lorentz Angle PCL monitoring workflow");
+  desc.add<std::string>("analysisType", "GrazingAngle")->setComment("analysis type - GrazingAngle (default) or MinimumClusterSize");
   desc.add<std::string>("folder", "AlCaReco/SiPixelLorentzAngle")->setComment("directory of PCL Worker output");
   desc.add<bool>("notInPCL", false)->setComment("create TTree (true) or not (false)");
   desc.add<std::string>("fileName", "testrun.root")->setComment("name of the TTree file if notInPCL = true");
