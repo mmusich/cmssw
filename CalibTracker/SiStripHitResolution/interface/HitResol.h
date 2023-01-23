@@ -50,9 +50,8 @@ public:
   double checkConsistency(const StripClusterParameterEstimator::LocalValues& parameters, double xx, double xerr);
   bool isDoubleSided(unsigned int iidd, const TrackerTopology* tTopo) const;
   bool check2DPartner(unsigned int iidd, const std::vector<TrajectoryMeasurement>& traj);
-  ~HitResol() override;
+  ~HitResol() override = default;
   unsigned int checkLayer(unsigned int iidd, const TrackerTopology* tTopo);
-  //  float getSimHitRes(const GeomDetUnit * det, const LocalVector& trackdirection, const TrackingRecHit& recHit, float & trackWidth,   float* pitch, LocalVector& drift);
   void getSimHitRes(const GeomDetUnit* det,
                     const LocalVector& trackdirection,
                     const TrackingRecHit& recHit,
@@ -131,7 +130,7 @@ private:
   double MomentumCut;
 
   // Tree declarations
-  //Hit Resolution Ntuple Content
+  // Hit Resolution Ntuple Content
   float mymom;
   int numHits;
   float ProbTrackChi2;

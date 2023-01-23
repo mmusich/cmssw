@@ -107,9 +107,6 @@ HitResol::HitResol(const edm::ParameterSet& conf)
   UsePairsOnly_ = conf.getUntrackedParameter<unsigned int>("UsePairsOnly", 1);
 }
 
-// Virtual destructor needed.
-HitResol::~HitResol() {}
-
 void HitResol::beginJob() {
   edm::Service<TFileService> fs;
   if (compSettings > 0) {
@@ -256,8 +253,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
 
   ////// Plugin of Nico code:
 
-  std::cout << "Starting analysis, nrun nevent, tracksCKF->size(): " << run_nr << " " << ev_nr << " "
-            << tracksCKF->size() << std::endl;
+  LogDebug("HitResol") << "Starting analysis, nrun nevent, tracksCKF->size(): " << run_nr << " " << ev_nr << " "
+                       << tracksCKF->size() << std::endl;
 
   for (unsigned int iT = 0; iT < tracksCKF->size(); ++iT) {
     track_momentum = tracksCKF->at(iT).pt();
@@ -273,7 +270,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
     //--------------------------------------------------------
     for (auto itm = TMeas.cbegin(); itm != TMeas.cend(); ++itm) {
       if (!itm->updatedState().isValid()) {
-        std::cout << "NONVALIDE" << std::endl;
+        LogDebug("HitResol") << "NONVALIDE" << std::endl;
         continue;
       }
 
@@ -283,16 +280,16 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
       ProbTrackChi2 = 0;
       numHits = 0;
 
-      ////    std::cout<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
-      //    std::cout<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
-      //    std::cout<<"numhits "<< itraj->foundHits()  <<std::endl;
+      ////    LogDebug("HitResol")<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
+      //    LogDebug("HitResol")<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
+      //    LogDebug("HitResol")<<"numhits "<< itraj->foundHits()  <<std::endl;
 
       numHits = traj.foundHits();
       ProbTrackChi2 = ChiSquaredProbability((double)(traj.chiSquared()), (double)(traj.ndof(false)));
 
       mymom = itm->updatedState().globalMomentum().perp();
 
-      std::cout << "mymom " << mymom << std::endl;
+      //LogDebug("HitResol") << "mymom " << mymom << std::endl;
 
       //      double  MomentumCut_ = 3. ;
 
@@ -301,9 +298,9 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
       const auto hit1 = itm->recHit();
       DetId id1 = hit1->geographicalId();
       //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) continue;
-      //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) std::cout<<"AUTRE"<<std::endl;
+      //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) LogDebug("HitResol")<<"AUTRE"<<std::endl;
 
-      //      if (    hit1->isValid()  && mymom > MomentumCut_) std::cout<<"mymom: "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
+      //      if (    hit1->isValid()  && mymom > MomentumCut_) LogDebug("HitResol")<<"mymom: "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
 
       if (hit1->isValid() && mymom > MomentumCut_ &&
           (id1.subdetId() >= StripSubdetector::TIB && id1.subdetId() <= StripSubdetector::TEC)) {
@@ -365,11 +362,13 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
             continue;
           //A check i dont completely understand but might as well keep there
           if (tTopo->glued(id1) == id1.rawId())
-            cout << "BAD GLUED: Have glued layer with id = " << id1.rawId() << " and glued id = " << tTopo->glued(id1)
-                 << "  and stereo = " << tTopo->isStereo(id1) << endl;
+            LogDebug("HitResol") << "BAD GLUED: Have glued layer with id = " << id1.rawId()
+                                 << " and glued id = " << tTopo->glued(id1) << "  and stereo = " << tTopo->isStereo(id1)
+                                 << endl;
           if (tTopo->glued(id2) == id2.rawId())
-            cout << "BAD GLUED: Have glued layer with id = " << id2.rawId() << " and glued id = " << tTopo->glued(id2)
-                 << "  and stereo = " << tTopo->isStereo(id2) << endl;
+            LogDebug("HitResol") << "BAD GLUED: Have glued layer with id = " << id2.rawId()
+                                 << " and glued id = " << tTopo->glued(id2) << "  and stereo = " << tTopo->isStereo(id2)
+                                 << endl;
 
           itTraj2 = itmCompare;
           break;
@@ -377,7 +376,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
 
         if (itTraj2 == TMeas.cend()) {
         } else {
-          //             std::cout<<"Found overlapping sensors "<<std::endl;
+          //             LogDebug("HitResol")<<"Found overlapping sensors "<<std::endl;
 
           //          pairsOnly = 1;
           pairsOnly = UsePairsOnly_;
@@ -440,41 +439,41 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
                                  trackParamDXDZE,
                                  trackParamDYDZE)) {
           } else {
-            //   std::cout<<"  "<<std::endl;
-            //   std::cout<<"  "<<std::endl;
-            //   std::cout<<"  "<<std::endl;
+            //   LogDebug("HitResol")<<"  "<<std::endl;
+            //   LogDebug("HitResol")<<"  "<<std::endl;
+            //   LogDebug("HitResol")<<"  "<<std::endl;
             //
-            // //   std::cout<<" momentum "<< track_momentum <<std::endl;
-            // //   std::cout<<" track_trackChi2      "<<   track_trackChi2<<std::endl;
-            // //   std::cout<<" track_trackChi2_2   "<<    track_trackChi2_2<<std::endl;
-            // //   std::cout<<" track_eta      "<<         track_eta<<std::endl;
-            //   std::cout<<" momentum       "<<         mymom<<std::endl;
-            //   std::cout<<" numHits         "<<        numHits<<std::endl;
-            //   std::cout<<" trackChi2       "<<        ProbTrackChi2<<std::endl;
-            //   std::cout<<" detID1         "<<         iidd1<<std::endl;
-            //   std::cout<<" pitch1          "<<        mypitch1<<std::endl;
-            //   std::cout<<" clusterW1        "<<       clusterWidth<<std::endl;
-            //   std::cout<<" expectedW1       "<<       expWidth<<std::endl;
-            //   std::cout<<" atEdge1          "<<       atEdge<<std::endl;
-            //   std::cout<<" simpleRes        "<<       simpleRes<<std::endl;
-            //   std::cout<<" detID2           "<<       iidd2<<std::endl;
-            //   std::cout<<" clusterW2        "<<       clusterWidth_2<<std::endl;
-            //   std::cout<<" expectedW2       "<<       expWidth_2<<std::endl;
-            //   std::cout<<" atEdge2          "<<       atEdge_2<<std::endl;
+            // //   LogDebug("HitResol")<<" momentum "<< track_momentum <<std::endl;
+            // //   LogDebug("HitResol")<<" track_trackChi2      "<<   track_trackChi2<<std::endl;
+            // //   LogDebug("HitResol")<<" track_trackChi2_2   "<<    track_trackChi2_2<<std::endl;
+            // //   LogDebug("HitResol")<<" track_eta      "<<         track_eta<<std::endl;
+            //   LogDebug("HitResol")<<" momentum       "<<         mymom<<std::endl;
+            //   LogDebug("HitResol")<<" numHits         "<<        numHits<<std::endl;
+            //   LogDebug("HitResol")<<" trackChi2       "<<        ProbTrackChi2<<std::endl;
+            //   LogDebug("HitResol")<<" detID1         "<<         iidd1<<std::endl;
+            //   LogDebug("HitResol")<<" pitch1          "<<        mypitch1<<std::endl;
+            //   LogDebug("HitResol")<<" clusterW1        "<<       clusterWidth<<std::endl;
+            //   LogDebug("HitResol")<<" expectedW1       "<<       expWidth<<std::endl;
+            //   LogDebug("HitResol")<<" atEdge1          "<<       atEdge<<std::endl;
+            //   LogDebug("HitResol")<<" simpleRes        "<<       simpleRes<<std::endl;
+            //   LogDebug("HitResol")<<" detID2           "<<       iidd2<<std::endl;
+            //   LogDebug("HitResol")<<" clusterW2        "<<       clusterWidth_2<<std::endl;
+            //   LogDebug("HitResol")<<" expectedW2       "<<       expWidth_2<<std::endl;
+            //   LogDebug("HitResol")<<" atEdge2          "<<       atEdge_2<<std::endl;
             //
-            //   std::cout<<" pairPath         "<<       pairPath<<std::endl;
-            //   std::cout<<" hitDX            "<<       hitDX<<std::endl;
-            //   std::cout<<" trackDX          "<<       trackDX<<std::endl;
-            //   std::cout<<" trackDXE         "<<       trackDXE<<std::endl;
+            //   LogDebug("HitResol")<<" pairPath         "<<       pairPath<<std::endl;
+            //   LogDebug("HitResol")<<" hitDX            "<<       hitDX<<std::endl;
+            //   LogDebug("HitResol")<<" trackDX          "<<       trackDX<<std::endl;
+            //   LogDebug("HitResol")<<" trackDXE         "<<       trackDXE<<std::endl;
             //
-            //   std::cout<<" trackParamX	  "<<        trackParamX<<std::endl;
-            //   std::cout<<" trackParamY	  "<<        trackParamY <<std::endl;
-            //   std::cout<<" trackParamDXDZ     "<<     trackParamDXDZ<<std::endl;
-            //   std::cout<<" trackParamDYDZ     "<<     trackParamDYDZ<<std::endl;
-            //   std::cout<<" trackParamXE        "<<    trackParamXE<<std::endl;
-            //   std::cout<<" trackParamYE        "<<    trackParamYE<<std::endl;
-            //   std::cout<<" trackParamDXDZE     "<<    trackParamDXDZE<<std::endl;
-            //   std::cout<<" trackParamDYDZE     "<<    trackParamDYDZE<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamX	  "<<        trackParamX<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamY	  "<<        trackParamY <<std::endl;
+            //   LogDebug("HitResol")<<" trackParamDXDZ     "<<     trackParamDXDZ<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamDYDZ     "<<     trackParamDYDZ<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamXE        "<<    trackParamXE<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamYE        "<<    trackParamYE<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamDXDZE     "<<    trackParamDXDZE<<std::endl;
+            //   LogDebug("HitResol")<<" trackParamDYDZE     "<<    trackParamDYDZE<<std::endl;
             //
             reso->Fill();
           }
@@ -625,10 +624,10 @@ bool HitResol::getPairParameters(const MagneticField* magField_,
   const TrajectoryStateOnSurface& bwdPred1 = traj1->backwardPredictedState();
   if (!bwdPred1.isValid())
     return false;
-  //cout << "momentum from backward predicted state = " << bwdPred1.globalMomentum().mag() << endl;
+  //LogDebug("HitResol") << "momentum from backward predicted state = " << bwdPred1.globalMomentum().mag() << endl;
   // forward predicted state at module 2
   const TrajectoryStateOnSurface& fwdPred2 = traj2->forwardPredictedState();
-  //cout << "momentum from forward predicted state = " << fwdPred2.globalMomentum().mag() << endl;
+  //LogDebug("HitResol")  << "momentum from forward predicted state = " << fwdPred2.globalMomentum().mag() << endl;
   if (!fwdPred2.isValid())
     return false;
   // extrapolate fwdPred2 to module 1
