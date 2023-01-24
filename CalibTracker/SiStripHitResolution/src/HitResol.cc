@@ -1,8 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Package:          CalibTracker/SiStripHitResolution
 // Class:            HitResol
-// Original Author:  DG
-//                   adapted from HitEff
+// Original Authors: Denis Gele and Kathryn Coldham (adapted from HitEff)
+//                   modified by Khawla Jaffel for CPE studies
+//                   ported to cmssw by M. Musich
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +66,8 @@
 
 #include "TMath.h"
 #include "TH1F.h"
+
+#include "vdt/vdtMath.h"
 
 //
 // constructors and destructor
@@ -741,6 +744,30 @@ unsigned int HitResol::checkLayer(unsigned int iidd, const TrackerTopology* tTop
     return tTopo->tecWheel(iidd) + 13;
   }
   return 0;
+}
+
+void HitResol::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("lumiScalers", edm::InputTag("scalersRawToDigi"));
+  desc.add<edm::InputTag>("commonMode", edm::InputTag("siStripDigis", "CommonMode"));
+  desc.add<edm::InputTag>("combinatorialTracks", edm::InputTag("generalTracks"));
+  desc.add<edm::InputTag>("trajectories", edm::InputTag("generalTracks"));
+  desc.add<edm::InputTag>("siStripClusters", edm::InputTag("siStripClusters"));
+  desc.add<edm::InputTag>("siStripDigis", edm::InputTag("siStripDigis"));
+  desc.add<edm::InputTag>("trackerEvent", edm::InputTag("MeasurementTrackerEvent"));
+  desc.addUntracked<int>("CompressionSettings", -1);
+  desc.add<int>("Layer", 0);
+  desc.add<bool>("Debug", false);
+  desc.addUntracked<bool>("addLumi", false);
+  desc.addUntracked<bool>("addCommonMode", false);
+  desc.addUntracked<bool>("cutOnTracks", false);
+  desc.addUntracked<unsigned int>("trackMultiplicity", 100);
+  desc.addUntracked<bool>("useFirstMeas", false);
+  desc.addUntracked<bool>("useLastMeas", false);
+  desc.addUntracked<bool>("useAllHitsFromTracksWithMissingHits", false);
+  desc.addUntracked<double>("MomentumCut", 3.);
+  desc.addUntracked<unsigned int>("UsePairsOnly", 1);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 //define this as a plug-in

@@ -47,6 +47,7 @@ class TrackerTopology;
 class HitResol : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
   explicit HitResol(const edm::ParameterSet& conf);
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   double checkConsistency(const StripClusterParameterEstimator::LocalValues& parameters, double xx, double xerr);
   bool isDoubleSided(unsigned int iidd, const TrackerTopology* tTopo) const;
   bool check2DPartner(unsigned int iidd, const std::vector<TrajectoryMeasurement>& traj);
