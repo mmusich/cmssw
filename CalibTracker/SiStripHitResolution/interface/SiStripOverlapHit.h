@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    SiStripCPE/CPEanalyzer
+// Package:    CalibTracker/SiStripHitResolution
 // Class:      SiStripOverlapHit
 //
-/**\class SiStripOverlapHit SiStripOverlapHit.h SiStripCPE/CPEanalyzer/interface/SiStripOverlapHit.cc
+/**\class SiStripOverlapHit SiStripOverlapHit.h CalibTracker/SiStripHitResolution/interface/SiStripOverlapHit.cc
 
  Description: A pair of hits on overlaping modules
 
@@ -15,14 +15,14 @@
 //         Created:  Fri, 20 Sep 2019 14:45:00 GMT
 //
 //
-#ifndef SiStripOverlapHit_H
-#define SiStripOverlapHit_H
+#ifndef CalibTracker_SiStripHitResolution_SiStripOverlapHit_H
+#define CalibTracker_SiStripHitResolution_SiStripOverlapHit_H
 
+#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit1D.h"
+#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "TrackingTools/PatternTools/interface/TrajectoryMeasurement.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
-#include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
-#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit1D.h"
 
 class SiStripOverlapHit {
 public:
@@ -32,7 +32,7 @@ public:
   // constructes an overlap from 2 hits and a track. Hits are internally sorted inside-out
   explicit SiStripOverlapHit(TrajectoryMeasurement const& measA, TrajectoryMeasurement const& measB);
   // destructor
-  virtual ~SiStripOverlapHit() {};
+  virtual ~SiStripOverlapHit(){};
 
   // access to indivitual hits and to the trajectory state
   inline ConstRecHitPointer const& hitA() const { return measA_.recHit(); }

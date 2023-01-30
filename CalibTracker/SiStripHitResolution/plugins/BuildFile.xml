@@ -1,11 +1,10 @@
 <use name="CalibTracker/SiStripCommon"/>
+<use name="CalibTracker/SiStripHitResolution"/>
 <use name="CommonTools/TrackerMap"/>
 <use name="CommonTools/UtilAlgos"/>
 <use name="CondCore/DBOutputService"/>
 <use name="CondFormats/SiStripObjects"/>
-<use name="DataFormats/CSCRecHit"/>
 <use name="DataFormats/Common"/>
-<use name="DataFormats/DTRecHit"/>
 <use name="DataFormats/DetId"/>
 <use name="DataFormats/Scalers"/> <!--Needed for typeinfo for LumiScalers for UBSAN builds-->
 <use name="DataFormats/SiStripCluster"/>

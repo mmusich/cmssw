@@ -1,5 +1,5 @@
 #include "CalibTracker/SiStripHitResolution/interface/SiStripOverlapHit.h"
-#include <math.h>
+#include <cmath>
 
 SiStripOverlapHit::SiStripOverlapHit(TrajectoryMeasurement const& measA, TrajectoryMeasurement const& measB) {
   // check which hit is closer to the IP
