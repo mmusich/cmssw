@@ -3,14 +3,15 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="CondCore/DBOutputService"/>
 <use name="CondFormats/SiStripObjects"/>
+<use name="DataFormats/CSCRecHit"/>
+<use name="DataFormats/Common"/>
+<use name="DataFormats/DTRecHit"/>
 <use name="DataFormats/DetId"/>
 <use name="DataFormats/Scalers"/> <!--Needed for typeinfo for LumiScalers for UBSAN builds-->
+<use name="DataFormats/SiStripCluster"/>
 <use name="DataFormats/SiStripDetId"/>
-<use name="DataFormats/TrackingRecHit"/>
-<use name="DataFormats/CSCRecHit"/>
-<use name="DataFormats/DTRecHit"/>
 <use name="DataFormats/TrackReco"/>
-<use name="DataFormats/Common"/>
+<use name="DataFormats/TrackingRecHit"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/MessageLogger"/>
 <use name="FWCore/ParameterSet"/>
@@ -21,15 +22,17 @@
 <use name="Geometry/TrackerGeometryBuilder"/>
 <use name="MagneticField/Engine"/>
 <use name="MagneticField/Records"/>
-<use name="RecoTracker/Record"/>
+<use name="RecoLocalTracker/ClusterParameterEstimator"/>
+<use name="RecoLocalTracker/Records"/>
 <use name="RecoTracker/MeasurementDet"/>
+<use name="RecoTracker/Record"/>
 <use name="RecoTracker/TkSeedGenerator"/>
+<use name="RecoTracker/TransientTrackingRecHit"/>
 <use name="SimDataFormats/TrackingAnalysis"/>
 <use name="SimTracker/TrackerHitAssociation"/>
+<use name="TrackingTools/DetLayers"/>
+<use name="TrackingTools/MeasurementDet"/>
 <use name="TrackingTools/PatternTools"/>
 <use name="TrackingTools/TrackFitters"/>
-<use name="TrackingTools/MeasurementDet"/>
-<use name="RecoTracker/TransientTrackingRecHit"/>
-<library   file="*.cc" name="CalibTrackerSiStripHitResolPlugins">
-  <flags   EDM_PLUGIN="1"/>
-</library>
+<flags EDM_PLUGIN="1"/>
+
