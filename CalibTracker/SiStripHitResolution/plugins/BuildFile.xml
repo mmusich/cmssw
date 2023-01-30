@@ -34,4 +34,3 @@
 <use name="TrackingTools/PatternTools"/>
 <use name="TrackingTools/TrackFitters"/>
 <flags EDM_PLUGIN="1"/>
-

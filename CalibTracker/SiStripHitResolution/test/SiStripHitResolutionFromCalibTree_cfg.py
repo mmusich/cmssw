@@ -9,8 +9,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 
 RunNumberBegin = 315264
 RunNumberEnd = 315264
-#RunNumberBegin = 325310
-#RunNumberEnd = 325310
 
 process.source = cms.Source("EmptyIOVSource",
   firstValue = cms.uint64(RunNumberBegin),
@@ -25,7 +23,6 @@ InputFilePath =  'root://cms-xrd-global.cern.ch///eos/cms/store/group/dpg_tracke
 InputFilePathEnd = '.root'
 
 FileName1 = InputFilePath + str(RunNumberBegin) + InputFilePathEnd
-#FileName2 = InputFilePath + str(RunNumberEnd) + InputFilePathEnd
 
 process.SiStripHitEff = cms.EDAnalyzer("SiStripHitResolFromCalibTree",
     CalibTreeFilenames = cms.untracked.vstring(FileName1),
@@ -85,4 +82,3 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.allPath = cms.Path(process.SiStripHitEff)
-
