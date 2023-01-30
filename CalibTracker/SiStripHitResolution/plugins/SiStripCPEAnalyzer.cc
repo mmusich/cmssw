@@ -324,20 +324,16 @@ void SiStripCPEAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup
   }
 }
 
-//TODO update this
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void SiStripCPEAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
-
-  //Specify that only 'tracks' is allowed
-  //To use, remove the default given above and uncomment below
-  //ParameterSetDescription desc;
-  //desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
-  //descriptions.addDefault(desc);
+  desc.addUntracked<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
+  desc.addUntracked<edm::InputTag>("trajectories", edm::InputTag("generalTracks"));
+  desc.addUntracked<edm::InputTag>("association", edm::InputTag("generalTracks"));
+  desc.addUntracked<edm::InputTag>("clusters", edm::InputTag("siStripClusters"));
+  desc.add<edm::ESInputTag>("StripCPE",
+			    edm::ESInputTag("StripCPEfromTrackAngleESProducer", "StripCPEfromTrackAngle"));
+  descriptions.addWithDefaultLabel(desc);
 }
 
 bool SiStripCPEAnalyzer::goodMeasurement(TrajectoryMeasurement const& m) {
