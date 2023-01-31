@@ -331,8 +331,7 @@ void SiStripCPEAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& descri
   desc.addUntracked<edm::InputTag>("trajectories", edm::InputTag("generalTracks"));
   desc.addUntracked<edm::InputTag>("association", edm::InputTag("generalTracks"));
   desc.addUntracked<edm::InputTag>("clusters", edm::InputTag("siStripClusters"));
-  desc.add<edm::ESInputTag>("StripCPE",
-			    edm::ESInputTag("StripCPEfromTrackAngleESProducer", "StripCPEfromTrackAngle"));
+  desc.add<edm::ESInputTag>("StripCPE", edm::ESInputTag("StripCPEfromTrackAngleESProducer", "StripCPEfromTrackAngle"));
   descriptions.addWithDefaultLabel(desc);
 }
 

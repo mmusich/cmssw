@@ -84,27 +84,12 @@ private:
   void analyze(const edm::Event& e, const edm::EventSetup& c) override;
 
   // ----------member data ---------------------------
+
+  // ED tokens
   const edm::EDGetTokenT<LumiScalersCollection> scalerToken_;
-  const edm::EDGetTokenT<edm::DetSetVector<SiStripRawDigi> > commonModeToken_;
-
-  bool addLumi_;
-  bool addCommonMode_;
-  bool cutOnTracks_;
-  unsigned int trackMultiplicityCut_;
-  bool useFirstMeas_;
-  bool useLastMeas_;
-  bool useAllHitsFromTracksWithMissingHits_;
-  double MomentumCut_;
-  unsigned int UsePairsOnly_;
-
   const edm::EDGetTokenT<reco::TrackCollection> combinatorialTracks_token_;
-  const edm::EDGetTokenT<std::vector<Trajectory> > trajectories_token_;
-  const edm::EDGetTokenT<TrajTrackAssociationCollection> trajTrackAsso_token_;
   const edm::EDGetTokenT<std::vector<Trajectory> > tjToken_;
   const edm::EDGetTokenT<reco::TrackCollection> tkToken_;
-  const edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> > clusters_token_;
-  const edm::EDGetTokenT<DetIdCollection> digis_token_;
-  const edm::EDGetTokenT<MeasurementTrackerEvent> trackerEvent_token_;
 
   // ES tokens
   const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoToken_;
@@ -112,23 +97,21 @@ private:
   const edm::ESGetToken<StripClusterParameterEstimator, TkStripCPERecord> cpeToken_;
   const edm::ESGetToken<SiStripQuality, SiStripQualityRcd> siStripQualityToken_;
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
-  const edm::ESGetToken<MeasurementTracker, CkfComponentsRecord> measurementTkToken_;
-  const edm::ESGetToken<Chi2MeasurementEstimatorBase, TrackingComponentsRecord> chi2MeasurementEstimatorToken_;
-  const edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorToken_;
 
-  edm::ParameterSet conf_;
+  // configuration parameters
+  const bool addLumi_;
+  const bool DEBUG_;
+  const bool cutOnTracks_;
+  const double momentumCut_;
+  const int compSettings_;
+  const unsigned int usePairsOnly_;
+  const unsigned int layers_;
+  const unsigned int trackMultiplicityCut_;
 
   TTree* reso;
   TTree* treso;
 
   int events, EventTrackCKF;
-
-  int compSettings;
-  unsigned int layers;
-  bool DEBUG;
-  unsigned int whatlayer;
-
-  double MomentumCut;
 
   // Tree declarations
   // Hit Resolution Ntuple Content

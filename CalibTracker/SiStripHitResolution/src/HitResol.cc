@@ -30,7 +30,6 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
-#include "DataFormats/TrackReco/interface/DeDxData.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackBase.h"
 #include "DataFormats/TrackReco/interface/TrackExtra.h"
@@ -75,46 +74,30 @@
 using namespace std;
 HitResol::HitResol(const edm::ParameterSet& conf)
     : scalerToken_(consumes<LumiScalersCollection>(conf.getParameter<edm::InputTag>("lumiScalers"))),
-      commonModeToken_(mayConsume<edm::DetSetVector<SiStripRawDigi> >(conf.getParameter<edm::InputTag>("commonMode"))),
       combinatorialTracks_token_(
           consumes<reco::TrackCollection>(conf.getParameter<edm::InputTag>("combinatorialTracks"))),
-      trajectories_token_(consumes<std::vector<Trajectory> >(conf.getParameter<edm::InputTag>("trajectories"))),
-      trajTrackAsso_token_(consumes<TrajTrackAssociationCollection>(conf.getParameter<edm::InputTag>("trajectories"))),
       tjToken_(consumes<std::vector<Trajectory> >(conf.getParameter<edm::InputTag>("trajectories"))),
-      clusters_token_(
-          consumes<edmNew::DetSetVector<SiStripCluster> >(conf.getParameter<edm::InputTag>("siStripClusters"))),
-      digis_token_(consumes<DetIdCollection>(conf.getParameter<edm::InputTag>("siStripDigis"))),
-      trackerEvent_token_(consumes<MeasurementTrackerEvent>(conf.getParameter<edm::InputTag>("trackerEvent"))),
       topoToken_(esConsumes()),
       geomToken_(esConsumes()),
       cpeToken_(esConsumes(edm::ESInputTag("", "StripCPEfromTrackAngle"))),
       siStripQualityToken_(esConsumes()),
       magFieldToken_(esConsumes()),
-      measurementTkToken_(esConsumes()),
-      chi2MeasurementEstimatorToken_(esConsumes(edm::ESInputTag("", "Chi2"))),
-      propagatorToken_(esConsumes(edm::ESInputTag("", "PropagatorWithMaterial"))),
-      conf_(conf) {
+      addLumi_(conf.getUntrackedParameter<bool>("addLumi", false)),
+      DEBUG_(conf.getParameter<bool>("Debug")),
+      cutOnTracks_(conf.getUntrackedParameter<bool>("cutOnTracks", false)),
+      momentumCut_(conf.getUntrackedParameter<double>("MomentumCut", 3.)),
+      compSettings_(conf.getUntrackedParameter<int>("CompressionSettings", -1)),
+      usePairsOnly_(conf.getUntrackedParameter<unsigned int>("UsePairsOnly", 1)),
+      layers_(conf.getParameter<int>("Layer")),
+      trackMultiplicityCut_(conf.getUntrackedParameter<unsigned int>("trackMultiplicity", 100)) {
   usesResource(TFileService::kSharedResource);
-  compSettings = conf_.getUntrackedParameter<int>("CompressionSettings", -1);
-  layers = conf_.getParameter<int>("Layer");
-  DEBUG = conf_.getParameter<bool>("Debug");
-  addLumi_ = conf_.getUntrackedParameter<bool>("addLumi", false);
-  addCommonMode_ = conf_.getUntrackedParameter<bool>("addCommonMode", false);
-  cutOnTracks_ = conf_.getUntrackedParameter<bool>("cutOnTracks", false);
-  trackMultiplicityCut_ = conf.getUntrackedParameter<unsigned int>("trackMultiplicity", 100);
-  useFirstMeas_ = conf_.getUntrackedParameter<bool>("useFirstMeas", false);
-  useLastMeas_ = conf_.getUntrackedParameter<bool>("useLastMeas", false);
-  useAllHitsFromTracksWithMissingHits_ =
-      conf_.getUntrackedParameter<bool>("useAllHitsFromTracksWithMissingHits", false);
-  MomentumCut_ = conf_.getUntrackedParameter<double>("MomentumCut", 3.);
-  UsePairsOnly_ = conf.getUntrackedParameter<unsigned int>("UsePairsOnly", 1);
 }
 
 void HitResol::beginJob() {
   edm::Service<TFileService> fs;
-  if (compSettings > 0) {
-    edm::LogInfo("SiStripHitResolution:HitResol") << "the compressions settings are:" << compSettings << std::endl;
-    fs->file().SetCompressionSettings(compSettings);
+  if (compSettings_ > 0) {
+    edm::LogInfo("SiStripHitResolution:HitResol") << "the compressions settings are:" << compSettings_ << std::endl;
+    fs->file().SetCompressionSettings(compSettings_);
   }
 
   reso = fs->make<TTree>("reso", "tree hit pairs for resolution studies");
@@ -157,36 +140,25 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
   //Retrieve tracker topology from geometry
   const TrackerTopology* tTopo = &es.getData(topoToken_);
 
-  //  bool DEBUG = false;
-
   LogDebug("SiStripHitResolution:HitResol") << "beginning analyze from HitResol" << endl;
 
   using namespace edm;
   using namespace reco;
+
   // Step A: Get Inputs
 
   int run_nr = e.id().run();
   int ev_nr = e.id().event();
 
-  //
-  edm::Handle<edm::DetSetVector<SiStripRawDigi> > commonModeDigis;
-  if (addCommonMode_)
-    e.getByToken(commonModeToken_, commonModeDigis);
-
-  //CombinatoriaTrack
+  // get the tracks
   edm::Handle<reco::TrackCollection> trackCollectionCKF;
   e.getByToken(combinatorialTracks_token_, trackCollectionCKF);
+  const reco::TrackCollection* tracksCKF = trackCollectionCKF.product();
 
-  edm::Handle<std::vector<Trajectory> > TrajectoryCollectionCKF;
-  e.getByToken(trajectories_token_, TrajectoryCollectionCKF);
-
-  edm::Handle<TrajTrackAssociationCollection> trajTrackAssociationHandle;
-  e.getByToken(trajTrackAsso_token_, trajTrackAssociationHandle);
-
-  // Clusters
-  // get the SiStripClusters from the event
-  edm::Handle<edmNew::DetSetVector<SiStripCluster> > theClusters;
-  e.getByToken(clusters_token_, theClusters);
+  // get the trajectory collection
+  edm::Handle<std::vector<Trajectory> > trajectoryCollectionHandle;
+  e.getByToken(tjToken_, trajectoryCollectionHandle);
+  const TrajectoryCollection* trajectoryCollection = trajectoryCollectionHandle.product();
 
   //get tracker geometry
   edm::ESHandle<TrackerGeometry> tracker = es.getHandle(geomToken_);
@@ -199,29 +171,10 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
   // get the SiStripQuality records
   edm::ESHandle<SiStripQuality> SiStripQuality_ = es.getHandle(siStripQualityToken_);
 
+  // get the magnetic field
   const MagneticField* magField_ = &es.getData(magFieldToken_);
 
-  // get the list of module IDs with FED-detected errors
-  edm::Handle<DetIdCollection> fedErrorIds;
-  e.getByToken(digis_token_, fedErrorIds);
-
-  edm::ESHandle<MeasurementTracker> measurementTrackerHandle = es.getHandle(measurementTkToken_);
-
-  edm::Handle<MeasurementTrackerEvent> measurementTrackerEvent;
-  e.getByToken(trackerEvent_token_, measurementTrackerEvent);
-
-  //   edm::ESHandle<Propagator> prop;
-  //   es.get<TrackingComponentsRecord>().get("PropagatorWithMaterial",prop);
-  //   const Propagator* thePropagator = prop.product();
-
-  edm::Handle<std::vector<Trajectory> > trajectoryCollectionHandle;
-  e.getByToken(tjToken_, trajectoryCollectionHandle);
-  const TrajectoryCollection* trajectoryCollection = trajectoryCollectionHandle.product();
-
   events++;
-
-  //   // *************** SiStripCluster Collection
-  //   const edmNew::DetSetVector<SiStripCluster>& input = *theClusters;
 
   // List of variables for SiStripHitResolution ntuple
   mymom = 0;
@@ -251,11 +204,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
   trackParamDYDZE = 0;
   pairsOnly = 0;
 
-  // Tracking
-  const reco::TrackCollection* tracksCKF = trackCollectionCKF.product();
-
-  ////// Plugin of Nico code:
-
   LogDebug("HitResol") << "Starting analysis, nrun nevent, tracksCKF->size(): " << run_nr << " " << ev_nr << " "
                        << tracksCKF->size() << std::endl;
 
@@ -273,7 +221,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
     //--------------------------------------------------------
     for (auto itm = TMeas.cbegin(); itm != TMeas.cend(); ++itm) {
       if (!itm->updatedState().isValid()) {
-        LogDebug("HitResol") << "NONVALIDE" << std::endl;
+        LogDebug("HitResol") << "trajectory measurement not valid" << std::endl;
         continue;
       }
 
@@ -283,29 +231,25 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
       ProbTrackChi2 = 0;
       numHits = 0;
 
-      ////    LogDebug("HitResol")<<"TrackChi2 =  "<< ChiSquaredProbability((double)( itm->chiSquared() ),(double)( itm->ndof(false) ))  <<std::endl;
-      //    LogDebug("HitResol")<<"itm->updatedState().globalMomentum().perp(): "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
-      //    LogDebug("HitResol")<<"numhits "<< itraj->foundHits()  <<std::endl;
+      LogDebug("HitResol") << "TrackChi2 =  "
+                           << ChiSquaredProbability((double)(traj.chiSquared()), (double)(traj.ndof(false))) << "\n"
+                           << "itm->updatedState().globalMomentum().perp(): "
+                           << itm->updatedState().globalMomentum().perp() << "\n"
+                           << "numhits " << traj.foundHits() << std::endl;
 
       numHits = traj.foundHits();
       ProbTrackChi2 = ChiSquaredProbability((double)(traj.chiSquared()), (double)(traj.ndof(false)));
 
       mymom = itm->updatedState().globalMomentum().perp();
 
-      //LogDebug("HitResol") << "mymom " << mymom << std::endl;
-
-      //      double  MomentumCut_ = 3. ;
-
       //Now for the first hit
       TrajectoryStateOnSurface mytsos = itm->updatedState();
       const auto hit1 = itm->recHit();
       DetId id1 = hit1->geographicalId();
-      //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) continue;
-      //      if(id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC) LogDebug("HitResol")<<"AUTRE"<<std::endl;
+      if (id1.subdetId() < StripSubdetector::TIB || id1.subdetId() > StripSubdetector::TEC)
+        continue;
 
-      //      if (    hit1->isValid()  && mymom > MomentumCut_) LogDebug("HitResol")<<"mymom: "<<  itm->updatedState().globalMomentum().perp() <<std::endl;
-
-      if (hit1->isValid() && mymom > MomentumCut_ &&
+      if (hit1->isValid() && mymom > momentumCut_ &&
           (id1.subdetId() >= StripSubdetector::TIB && id1.subdetId() <= StripSubdetector::TEC)) {
         const auto stripdet = dynamic_cast<const StripGeomDetUnit*>(tkgeom->idToDetUnit(hit1->geographicalId()));
         const StripTopology& Topo = stripdet->specificTopology();
@@ -321,7 +265,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
         const auto hit1d = dynamic_cast<const SiStripRecHit1D*>(myhit);
 
         if (hit1d) {
-          //             float myres = getSimHitRes(det,trackDirection,*hit1d,expWidth,&mypitch1,drift);
           getSimHitRes(det, trackDirection, *hit1d, expWidth, &mypitch1, drift);
           clusterWidth = hit1d->cluster()->amplitudes().size();
           uint16_t firstStrip = hit1d->cluster()->firstStrip();
@@ -332,7 +275,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
         const auto hit2d = dynamic_cast<const SiStripRecHit2D*>(myhit);
 
         if (hit2d) {
-          //             float myres = getSimHitRes(det,trackDirection,*hit2d, expWidth,&mypitch1,drift);
           getSimHitRes(det, trackDirection, *hit2d, expWidth, &mypitch1, drift);
           clusterWidth = hit2d->cluster()->amplitudes().size();
           uint16_t firstStrip = hit2d->cluster()->firstStrip();
@@ -379,10 +321,8 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
 
         if (itTraj2 == TMeas.cend()) {
         } else {
-          //             LogDebug("HitResol")<<"Found overlapping sensors "<<std::endl;
-
-          //          pairsOnly = 1;
-          pairsOnly = UsePairsOnly_;
+          LogDebug("HitResol") << "Found overlapping sensors " << std::endl;
+          pairsOnly = usePairsOnly_;
 
           //We found one....let's fill in the truth info!
           TrajectoryStateOnSurface tsos_2 = itTraj2->updatedState();
@@ -412,7 +352,6 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
 
           const auto hit2d_2 = dynamic_cast<const SiStripRecHit2D*>(myhit_2);
           if (hit2d_2) {
-            //             float myres_2 = getSimHitRes(det_2,trackDirection_2,*hit2d_2, expWidth_2,&mypitch_2,drift_2);
             getSimHitRes(det_2, trackDirection_2, *hit2d_2, expWidth_2, &mypitch_2, drift_2);
             clusterWidth_2 = hit2d_2->cluster()->amplitudes().size();
             uint16_t firstStrip_2 = hit2d_2->cluster()->firstStrip();
@@ -420,7 +359,7 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
             atEdge_2 = (firstStrip_2 == 0 || lastStrip_2 == (Nstrips_2 - 1));
           }
 
-          //        if(pairsOnly && (pitch != pitch2) ) fill = false;
+          // if(pairsOnly && (pitch != pitch2) ) fill = false;
 
           // Make AnalyticalPropagator to use in getPairParameters
           AnalyticalPropagator mypropagator(magField_, anyDirection);
@@ -442,58 +381,41 @@ void HitResol::analyze(const edm::Event& e, const edm::EventSetup& es) {
                                  trackParamDXDZE,
                                  trackParamDYDZE)) {
           } else {
-            //   LogDebug("HitResol")<<"  "<<std::endl;
-            //   LogDebug("HitResol")<<"  "<<std::endl;
-            //   LogDebug("HitResol")<<"  "<<std::endl;
-            //
-            // //   LogDebug("HitResol")<<" momentum "<< track_momentum <<std::endl;
-            // //   LogDebug("HitResol")<<" track_trackChi2      "<<   track_trackChi2<<std::endl;
-            // //   LogDebug("HitResol")<<" track_trackChi2_2   "<<    track_trackChi2_2<<std::endl;
-            // //   LogDebug("HitResol")<<" track_eta      "<<         track_eta<<std::endl;
-            //   LogDebug("HitResol")<<" momentum       "<<         mymom<<std::endl;
-            //   LogDebug("HitResol")<<" numHits         "<<        numHits<<std::endl;
-            //   LogDebug("HitResol")<<" trackChi2       "<<        ProbTrackChi2<<std::endl;
-            //   LogDebug("HitResol")<<" detID1         "<<         iidd1<<std::endl;
-            //   LogDebug("HitResol")<<" pitch1          "<<        mypitch1<<std::endl;
-            //   LogDebug("HitResol")<<" clusterW1        "<<       clusterWidth<<std::endl;
-            //   LogDebug("HitResol")<<" expectedW1       "<<       expWidth<<std::endl;
-            //   LogDebug("HitResol")<<" atEdge1          "<<       atEdge<<std::endl;
-            //   LogDebug("HitResol")<<" simpleRes        "<<       simpleRes<<std::endl;
-            //   LogDebug("HitResol")<<" detID2           "<<       iidd2<<std::endl;
-            //   LogDebug("HitResol")<<" clusterW2        "<<       clusterWidth_2<<std::endl;
-            //   LogDebug("HitResol")<<" expectedW2       "<<       expWidth_2<<std::endl;
-            //   LogDebug("HitResol")<<" atEdge2          "<<       atEdge_2<<std::endl;
-            //
-            //   LogDebug("HitResol")<<" pairPath         "<<       pairPath<<std::endl;
-            //   LogDebug("HitResol")<<" hitDX            "<<       hitDX<<std::endl;
-            //   LogDebug("HitResol")<<" trackDX          "<<       trackDX<<std::endl;
-            //   LogDebug("HitResol")<<" trackDXE         "<<       trackDXE<<std::endl;
-            //
-            //   LogDebug("HitResol")<<" trackParamX	  "<<        trackParamX<<std::endl;
-            //   LogDebug("HitResol")<<" trackParamY	  "<<        trackParamY <<std::endl;
-            //   LogDebug("HitResol")<<" trackParamDXDZ     "<<     trackParamDXDZ<<std::endl;
-            //   LogDebug("HitResol")<<" trackParamDYDZ     "<<     trackParamDYDZ<<std::endl;
-            //   LogDebug("HitResol")<<" trackParamXE        "<<    trackParamXE<<std::endl;
-            //   LogDebug("HitResol")<<" trackParamYE        "<<    trackParamYE<<std::endl;
-            //   LogDebug("HitResol")<<" trackParamDXDZE     "<<    trackParamDXDZE<<std::endl;
-            //   LogDebug("HitResol")<<" trackParamDYDZE     "<<    trackParamDYDZE<<std::endl;
-            //
+            LogDebug("HitResol") << " \n\n\n"
+                                 << " momentum       " << mymom << "\n"
+                                 << " numHits        " << numHits << "\n"
+                                 << " trackChi2      " << ProbTrackChi2 << "\n"
+                                 << " detID1         " << iidd1 << "\n"
+                                 << " pitch1         " << mypitch1 << "\n"
+                                 << " clusterW1      " << clusterWidth << "\n"
+                                 << " expectedW1     " << expWidth << "\n"
+                                 << " atEdge1        " << atEdge << "\n"
+                                 << " simpleRes      " << simpleRes << "\n"
+                                 << " detID2         " << iidd2 << "\n"
+                                 << " clusterW2      " << clusterWidth_2 << "\n"
+                                 << " expectedW2     " << expWidth_2 << "\n"
+                                 << " atEdge2        " << atEdge_2 << "\n"
+                                 << " pairPath       " << pairPath << "\n"
+                                 << " hitDX          " << hitDX << "\n"
+                                 << " trackDX        " << trackDX << "\n"
+                                 << " trackDXE       " << trackDXE << "\n"
+                                 << " trackParamX	   " << trackParamX << "\n"
+                                 << " trackParamY	   " << trackParamY << "\n"
+                                 << " trackParamDXDZ " << trackParamDXDZ << "\n"
+                                 << " trackParamDYDZ " << trackParamDYDZ << "\n"
+                                 << " trackParamXE   " << trackParamXE << "\n"
+                                 << " trackParamYE   " << trackParamYE << "\n"
+                                 << " trackParamDXDZE" << trackParamDXDZE << "\n"
+                                 << " trackParamDYDZE" << trackParamDYDZE << std::endl;
             reso->Fill();
           }
         }  //itTraj2 != TMeas.end()
-
-      }  //hit1->isValid()....
-
-    }  // itm
-  }    // it
-
-  ////// Endof Plugin of Nico code:
+      }    //hit1->isValid()....
+    }      // itm
+  }        // it
 }
 
 void HitResol::endJob() {
-  //   traj->GetDirectory()->cd();
-  //   traj->Write();
-
   LogDebug("SiStripHitResolution:HitResol") << " Events Analysed             " << events << endl;
   LogDebug("SiStripHitResolution:HitResol") << " Number Of Tracked events    " << EventTrackCKF << endl;
 
@@ -543,7 +465,6 @@ bool HitResol::isDoubleSided(unsigned int iidd, const TrackerTopology* tTopo) co
     return false;
 }
 
-//float HitResol::getSimHitRes(const GeomDetUnit * det, const LocalVector& trackdirection, const TrackingRecHit& recHit, float& trackWidth, float* pitch, LocalVector& drift){
 void HitResol::getSimHitRes(const GeomDetUnit* det,
                             const LocalVector& trackdirection,
                             const TrackingRecHit& recHit,
@@ -556,8 +477,6 @@ void HitResol::getSimHitRes(const GeomDetUnit* det,
   LocalPoint position = recHit.localPosition();
   (*pitch) = topol.localPitch(position);
 
-  //  float rechitrphiresMF = -1;
-
   float anglealpha = 0;
   if (trackdirection.z() != 0) {
     anglealpha = atan(trackdirection.x() / trackdirection.z()) * TMath::RadToDeg();
@@ -568,8 +487,6 @@ void HitResol::getSimHitRes(const GeomDetUnit* det,
   float tanalpha = tan(anglealpha * TMath::DegToRad());
   float tanalphaL = drift.x() / drift.z();
   (trackWidth) = fabs((thickness / (*pitch)) * tanalpha - (thickness / (*pitch)) * tanalphaL);
-
-  //  return rechitrphiresMF;
 }
 
 double HitResol::getSimpleRes(const TrajectoryMeasurement* traj1) {
@@ -627,10 +544,10 @@ bool HitResol::getPairParameters(const MagneticField* magField_,
   const TrajectoryStateOnSurface& bwdPred1 = traj1->backwardPredictedState();
   if (!bwdPred1.isValid())
     return false;
-  //LogDebug("HitResol") << "momentum from backward predicted state = " << bwdPred1.globalMomentum().mag() << endl;
+  LogDebug("HitResol") << "momentum from backward predicted state = " << bwdPred1.globalMomentum().mag() << endl;
   // forward predicted state at module 2
   const TrajectoryStateOnSurface& fwdPred2 = traj2->forwardPredictedState();
-  //LogDebug("HitResol")  << "momentum from forward predicted state = " << fwdPred2.globalMomentum().mag() << endl;
+  LogDebug("HitResol") << "momentum from forward predicted state = " << fwdPred2.globalMomentum().mag() << endl;
   if (!fwdPred2.isValid())
     return false;
   // extrapolate fwdPred2 to module 1
@@ -749,22 +666,14 @@ unsigned int HitResol::checkLayer(unsigned int iidd, const TrackerTopology* tTop
 void HitResol::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("lumiScalers", edm::InputTag("scalersRawToDigi"));
-  desc.add<edm::InputTag>("commonMode", edm::InputTag("siStripDigis", "CommonMode"));
   desc.add<edm::InputTag>("combinatorialTracks", edm::InputTag("generalTracks"));
   desc.add<edm::InputTag>("trajectories", edm::InputTag("generalTracks"));
-  desc.add<edm::InputTag>("siStripClusters", edm::InputTag("siStripClusters"));
-  desc.add<edm::InputTag>("siStripDigis", edm::InputTag("siStripDigis"));
-  desc.add<edm::InputTag>("trackerEvent", edm::InputTag("MeasurementTrackerEvent"));
   desc.addUntracked<int>("CompressionSettings", -1);
   desc.add<int>("Layer", 0);
   desc.add<bool>("Debug", false);
   desc.addUntracked<bool>("addLumi", false);
-  desc.addUntracked<bool>("addCommonMode", false);
   desc.addUntracked<bool>("cutOnTracks", false);
   desc.addUntracked<unsigned int>("trackMultiplicity", 100);
-  desc.addUntracked<bool>("useFirstMeas", false);
-  desc.addUntracked<bool>("useLastMeas", false);
-  desc.addUntracked<bool>("useAllHitsFromTracksWithMissingHits", false);
   desc.addUntracked<double>("MomentumCut", 3.);
   desc.addUntracked<unsigned int>("UsePairsOnly", 1);
   descriptions.addWithDefaultLabel(desc);
