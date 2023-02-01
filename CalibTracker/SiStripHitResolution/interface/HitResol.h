@@ -108,42 +108,73 @@ private:
   const unsigned int layers_;
   const unsigned int trackMultiplicityCut_;
 
+  // output file
   TTree* reso;
   TTree* treso;
+  std::map<TString, TH2F*> histos2d_;
 
+  // conversion
+  static constexpr float cmToUm = 10000.f;
+
+  // counters
   int events, EventTrackCKF;
 
   // Tree declarations
   // Hit Resolution Ntuple Content
   float mymom;
   int numHits;
+  int NumberOf_tracks;
   float ProbTrackChi2;
-  unsigned int iidd1;
-  float mypitch1;
+  float StripCPE1_smp_pos_error;
+  float StripCPE2_smp_pos_error;
+  float StripErrorSquared1;
+  float StripErrorSquared2;
+  float uerr2;
+  float uerr2_2;
   unsigned int clusterWidth;
-  float expWidth;
-  float atEdge;
-  float simpleRes;
-  unsigned int iidd2;
   unsigned int clusterWidth_2;
-  float expWidth_2;
-  float atEdge_2;
+  unsigned int clusterCharge;
+  unsigned int clusterCharge_2;
+  unsigned int iidd1;
+  unsigned int iidd2;
+  unsigned int pairsOnly;
   float pairPath;
+  float mypitch1;
+  float mypitch2;
+  float expWidth;
+  float expWidth_2;
+  float driftAlpha;
+  float driftAlpha_2;
+  float thickness;
+  float thickness_2;
+  float trackWidth;
+  float trackWidth_2;
+  float atEdge;
+  float atEdge_2;
+  float simpleRes;
   float hitDX;
   float trackDX;
   float trackDXE;
   float trackParamX;
   float trackParamY;
-  float trackParamDXDZ;
-  float trackParamDYDZ;
   float trackParamXE;
   float trackParamYE;
+  float trackParamDXDZ;
+  float trackParamDYDZ;
   float trackParamDXDZE;
   float trackParamDYDZE;
-  unsigned int pairsOnly;
   float track_momentum;
+  float track_pt;
   float track_eta;
+  float track_width;
+  float track_phi;
   float track_trackChi2;
+  float N1;
+  float N2;
+  float N1uProj;
+  float N2uProj;
+  int Nstrips;
+  int Nstrips_2;
 };
 
 //#endif
