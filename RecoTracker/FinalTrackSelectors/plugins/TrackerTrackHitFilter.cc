@@ -124,6 +124,7 @@ namespace reco {
       bool stripBackInvalidHits_;
       bool stripAllInvalidHits_;
 
+      bool isPhase2_;
       bool rejectBadStoNHits_;
       std::string CMNSubtractionMode_;
       std::vector<bool> subdetStoN_;           //(6); //,std::bool(false));
@@ -298,6 +299,7 @@ namespace reco {
           stripFrontInvalidHits_(iConfig.getParameter<bool>("stripFrontInvalidHits")),
           stripBackInvalidHits_(iConfig.getParameter<bool>("stripBackInvalidHits")),
           stripAllInvalidHits_(iConfig.getParameter<bool>("stripAllInvalidHits")),
+          isPhase2_(iConfig.getUntrackedParameter<bool>("isPhase2", false)),
           rejectBadStoNHits_(iConfig.getParameter<bool>("rejectBadStoNHits")),
           CMNSubtractionMode_(iConfig.getParameter<std::string>("CMNSubtractionMode")),
           detsToIgnore_(iConfig.getParameter<std::vector<uint32_t> >("detsToIgnore")),
@@ -309,7 +311,7 @@ namespace reco {
           pxlTPLProbXYQ_(iConfig.getParameter<double>("PxlTemplateProbXYChargeCut")),
           pxlTPLqBin_(iConfig.getParameter<std::vector<int32_t> >("PxlTemplateqBinCut")),
           PXLcorrClusChargeCut_(iConfig.getParameter<double>("PxlCorrClusterChargeCut")),
-          siStripClusterInfo_(consumesCollector()),
+          siStripClusterInfo_(isPhase2_ ? SiStripClusterInfo() : consumesCollector()),
           tagOverlaps_(iConfig.getParameter<bool>("tagOverlaps")) {
       tokenGeometry = esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>();
       tokenMagField = esConsumes<MagneticField, IdealMagneticFieldRecord>();
@@ -399,7 +401,8 @@ namespace reco {
       // read from EventSetup
       theGeometry = iSetup.getHandle(tokenGeometry);
       theMagField = iSetup.getHandle(tokenMagField);
-      siStripClusterInfo_.initEvent(iSetup);
+      if (!isPhase2_)
+        siStripClusterInfo_.initEvent(iSetup);
 
       // prepare output collection
       size_t candcollsize;
@@ -780,6 +783,12 @@ namespace reco {
       //  for(subdet_cnt=0;subdet_cnt<6; ++subdet_cnt){
 
       //  if( subdetStoN_[subdet_cnt-1]&& (id.subdetId()==subdet_cnt)  ){//check that hit is in a det belonging to a subdet where we decided to apply a S/N cut
+
+      // for phase-2 OT placehold, do nothing
+      if (GeomDetEnumerators::isOuterTracker(theGeometry->geomDetSubDetector(id.subdetId())) &&
+          !GeomDetEnumerators::isTrackerStrip(theGeometry->geomDetSubDetector(id.subdetId()))) {
+        return true;
+      }
 
       if (GeomDetEnumerators::isTrackerStrip(theGeometry->geomDetSubDetector(id.subdetId()))) {
         if (subdetStoN_[subdet_cnt - 1]) {

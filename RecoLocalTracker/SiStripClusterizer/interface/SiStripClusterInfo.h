@@ -21,6 +21,7 @@
 class SiStripClusterInfo {
 public:
   SiStripClusterInfo(edm::ConsumesCollector&&, const std::string& qualityLabel = "");
+  SiStripClusterInfo();
 
   void initEvent(const edm::EventSetup& iSetup);
   void setCluster(const SiStripCluster& cluster, int detId);
