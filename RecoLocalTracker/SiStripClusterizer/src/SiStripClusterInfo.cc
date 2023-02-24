@@ -2,12 +2,6 @@
 
 #include <cmath>
 
-SiStripClusterInfo::SiStripClusterInfo() {
-  siStripNoisesToken_ = edm::ESGetToken<SiStripNoises, SiStripNoisesRcd>();
-  siStripGainToken_ = edm::ESGetToken<SiStripGain, SiStripGainRcd>();
-  siStripQualityToken_ = edm::ESGetToken<SiStripQuality, SiStripQualityRcd>();
-}
-
 SiStripClusterInfo::SiStripClusterInfo(edm::ConsumesCollector&& iC, const std::string& qualityLabel)
     : siStripNoisesToken_{iC.esConsumes<SiStripNoises, SiStripNoisesRcd>()},
       siStripGainToken_{iC.esConsumes<SiStripGain, SiStripGainRcd>()},

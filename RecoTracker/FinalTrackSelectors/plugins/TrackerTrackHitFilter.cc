@@ -50,6 +50,7 @@
 
 #include <boost/regex.hpp>
 #include <map>
+#include <optional>
 //#include <math>
 
 /**
@@ -161,7 +162,7 @@ namespace reco {
       edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> tokenMagField;
       edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tokenTrackerTopo;
 
-      SiStripClusterInfo siStripClusterInfo_;
+      std::optional<SiStripClusterInfo> siStripClusterInfo_;
 
       bool tagOverlaps_;
       int nOverlaps;
@@ -315,8 +316,13 @@ namespace reco {
           pxlTPLProbXYQ_(iConfig.getParameter<double>("PxlTemplateProbXYChargeCut")),
           pxlTPLqBin_(iConfig.getParameter<std::vector<int32_t> >("PxlTemplateqBinCut")),
           PXLcorrClusChargeCut_(iConfig.getParameter<double>("PxlCorrClusterChargeCut")),
-          siStripClusterInfo_(isPhase2_ ? SiStripClusterInfo() : consumesCollector()),
           tagOverlaps_(iConfig.getParameter<bool>("tagOverlaps")) {
+      // construct the SiStripClusterInfo object only for Phase-0 / Phase-1
+      // no Strip modules in Phase-2
+      if (!isPhase2_) {
+        siStripClusterInfo_ = consumesCollector();
+      }
+
       tokenGeometry = esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>();
       tokenMagField = esConsumes<MagneticField, IdealMagneticFieldRecord>();
       tokenTrackerTopo = esConsumes<TrackerTopology, TrackerTopologyRcd>();
@@ -406,7 +412,7 @@ namespace reco {
       theGeometry = iSetup.getHandle(tokenGeometry);
       theMagField = iSetup.getHandle(tokenMagField);
       if (!isPhase2_)
-        siStripClusterInfo_.initEvent(iSetup);
+        siStripClusterInfo_->initEvent(iSetup);
 
       // prepare output collection
       size_t candcollsize;
@@ -829,14 +835,14 @@ namespace reco {
           }
 
           if (keepthishit) {
-            siStripClusterInfo_.setCluster(*cluster, id.rawId());
+            siStripClusterInfo_->setCluster(*cluster, id.rawId());
             if ((subdetStoNlowcut_[subdet_cnt - 1] > 0) &&
-                (siStripClusterInfo_.signalOverNoise() < subdetStoNlowcut_[subdet_cnt - 1]))
+                (siStripClusterInfo_->signalOverNoise() < subdetStoNlowcut_[subdet_cnt - 1]))
               keepthishit = false;
             if ((subdetStoNhighcut_[subdet_cnt - 1] > 0) &&
-                (siStripClusterInfo_.signalOverNoise() > subdetStoNhighcut_[subdet_cnt - 1]))
+                (siStripClusterInfo_->signalOverNoise() > subdetStoNhighcut_[subdet_cnt - 1]))
               keepthishit = false;
-            //if(!keepthishit)std::cout<<"Hit rejected because of bad S/N: "<<siStripClusterInfo_.signalOverNoise()<<std::endl;
+            //if(!keepthishit)std::cout<<"Hit rejected because of bad S/N: "<<siStripClusterInfo_->signalOverNoise()<<std::endl;
           }
 
         }  //end if  subdetStoN_[subdet_cnt]&&...
