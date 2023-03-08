@@ -156,7 +156,7 @@ int SiPixelCoordinates::half(const DetId& detid) {
 // Ladders have a staggered structure
 // Non-flipped ladders are on the outer radius
 // Phase 0: Outer ladders are odd for layer 1,3 and even for layer 2
-// Phase 1: Outer ladders are odd for layer 4 and even for layer 1,2,3
+// Phase 1: Outer ladders are odd for layer 1,2,3 and even for layer 4
 int SiPixelCoordinates::outer(const DetId& detid) {
   if (outer_.count(detid.rawId()))
     return outer_[detid.rawId()];
@@ -172,9 +172,9 @@ int SiPixelCoordinates::outer(const DetId& detid) {
       outer = odd_ladder;
   } else if (phase_ == 1) {
     if (layer == 4)
-      outer = odd_ladder;
-    else
       outer = !odd_ladder;
+    else
+      outer = odd_ladder;
   }
   return outer_[detid.rawId()] = outer;
 }
