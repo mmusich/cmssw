@@ -71,6 +71,10 @@ void SiStripNoises::verify(uint16_t strip, const Range& range) {
         << "[SiStripNoises::getNoise] looking for SiStripNoises for a strip out of range: strip " << strip;
 }
 
+bool SiStripNoises::isInRange(uint16_t strip, const Range& range) {
+  return (9 * strip < (range.second - range.first) * 8);
+}
+
 void SiStripNoises::setData(float noise_, InputVector& v) {
   v.push_back((static_cast<int16_t>(noise_ * 10.0 + 0.5) & 0x01FF));
 }

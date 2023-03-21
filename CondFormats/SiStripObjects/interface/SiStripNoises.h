@@ -70,6 +70,7 @@ public:
   }
 
   static void verify(uint16_t strip, const Range& range);
+  static bool isInRange(uint16_t strip, const Range& range);
   static float getNoise(uint16_t strip, const Range& range) {
 #ifdef EDM_ML_DEBUG
     verify(strip, range);
