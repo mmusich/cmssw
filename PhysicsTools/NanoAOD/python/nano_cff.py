@@ -447,7 +447,7 @@ def nanoAOD_customizeData(process):
     # load geometry needed by g4e propagator
     process.GlobalTag.toGet = cms.VPSet(
                                 cms.PSet(
-                                    record = cms.string("GeometryFileRcd"),tag = cms.string("XMLFILE_Geometry_2016_81YV1_Extended2016_mc"),label = cms.untracked.string("Extended"),
+                                    record = cms.string("GeometryFileRcd"),tag = cms.string("XMLFILE_Geometry_92YV5_Extended2017Plan1_mc"),label = cms.untracked.string("Extended"),
                                     ),
                                 )
 
