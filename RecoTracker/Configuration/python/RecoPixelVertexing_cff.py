@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 from HeterogeneousCore.CUDACore.SwitchProducerCUDA import SwitchProducerCUDA
 
 from RecoTracker.PixelTrackFitting.PixelTracks_cff import *
-from RecoTracker.PixelVertexFinding.PixelVertexes_cff import *
+from RecoVertex.PixelVertexFinding.PixelVertexes_cff import *
 
 # legacy pixel vertex reconsruction using the divisive vertex finder
 pixelVerticesTask = cms.Task(
@@ -14,8 +14,8 @@ from Configuration.ProcessModifiers.pixelNtupletFit_cff import pixelNtupletFit
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 
 # build the pixel vertices in SoA format on the CPU
-from RecoTracker.PixelVertexFinding.pixelVertexProducerCUDAPhase1_cfi import pixelVertexProducerCUDAPhase1 as _pixelVerticesCUDA
-from RecoTracker.PixelVertexFinding.pixelVertexProducerCUDAPhase2_cfi import pixelVertexProducerCUDAPhase2 as _pixelVerticesCUDAPhase2
+from RecoVertex.PixelVertexFinding.pixelVertexProducerCUDAPhase1_cfi import pixelVertexProducerCUDAPhase1 as _pixelVerticesCUDA
+from RecoVertex.PixelVertexFinding.pixelVertexProducerCUDAPhase2_cfi import pixelVertexProducerCUDAPhase2 as _pixelVerticesCUDAPhase2
 
 pixelVerticesSoA = SwitchProducerCUDA(
     cpu = _pixelVerticesCUDA.clone(
@@ -31,7 +31,7 @@ phase2_tracker.toModify(pixelVerticesSoA,cpu = _pixelVerticesCUDAPhase2.clone(
 ))
 
 # convert the pixel vertices from SoA to legacy format
-from RecoTracker.PixelVertexFinding.pixelVertexFromSoA_cfi import pixelVertexFromSoA as _pixelVertexFromSoA
+from RecoVertex.PixelVertexFinding.pixelVertexFromSoA_cfi import pixelVertexFromSoA as _pixelVertexFromSoA
 
 (pixelNtupletFit).toReplaceWith(pixelVertices, _pixelVertexFromSoA.clone(
     src = "pixelVerticesSoA"
@@ -61,7 +61,7 @@ phase2_tracker.toReplaceWith(pixelVerticesCUDA,_pixelVerticesCUDAPhase2.clone(
 ))
 
 # transfer the pixel vertices in SoA format to the CPU
-from RecoTracker.PixelVertexFinding.pixelVerticesSoA_cfi import pixelVerticesSoA as _pixelVerticesSoA
+from RecoVertex.PixelVertexFinding.pixelVerticesSoA_cfi import pixelVerticesSoA as _pixelVerticesSoA
 gpu.toModify(pixelVerticesSoA,
     cuda = _pixelVerticesSoA.clone(
         src = cms.InputTag("pixelVerticesCUDA")
