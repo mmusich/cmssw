@@ -255,10 +255,21 @@ bool FEDErrors::fillFatalFEDErrors(const FEDRawData& aFedData, const unsigned in
 }
 
 bool FEDErrors::fillCorruptBuffer(const sistrip::FEDBuffer& aBuffer) {
-  //corrupt buffer checks
+  //corrupt buffer check
   if (!(aBuffer.checkChannelLengthsMatchBufferLength() && aBuffer.checkChannelPacketCodes() &&
         aBuffer.checkFEUnitLengths())) {
     fedErrors_.CorruptBuffer = true;
+    std::cout << "buffers are corrupt" << std::endl;
+
+    if (!aBuffer.checkChannelLengthsMatchBufferLength()) {
+      std::cout << "does not pass checkChannelLengthsMatchBufferLength()" << std::endl;
+    }
+    if (!aBuffer.checkChannelPacketCodes()) {
+      std::cout << "does not pass checkChannelPacketCodes()" << std::endl;
+    }
+    if (!aBuffer.checkFEUnitLengths()) {
+      std::cout << "does not checkFEUnitLengths()" << std::endl;
+    }
 
     return false;
   }

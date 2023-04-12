@@ -30,25 +30,25 @@ options.register('runUniqueKey',
                  "Unique run key from RCMS for Frontier")
 
 options.register('runNumber',
-                 355380,
+                 365980,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Run number. This run number has to be present in the dataset configured with the dataset option.")
 
 options.register('dataset',
-                 '/ExpressPhysics/Run2022B-Express-v1/FEVT',
+                 '/ExpressCosmics/Run2023A-Express-v2/FEVT',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Dataset name like '/ExpressCosmics/Commissioning2021-Express-v1/FEVT'")
 
 options.register('maxLumi',
-                 20,
+                 10,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Only lumisections up to maxLumi are processed.")
 
 options.register('minLumi',
-                 19,
+                 10,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Only lumisections starting from minLumi are processed.")
@@ -60,7 +60,7 @@ options.register('lumiPattern',
                  "Only lumisections with numbers matching lumiPattern are processed.")
 
 options.register('eventsPerLumi',
-                 100,
+                 10000000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "This number of last events in each lumisection will be processed.")
@@ -99,25 +99,25 @@ for ls in range(options.minLumi, options.maxLumi+1):
     readFiles.extend(read)
     secFiles.extend(sec)
 
-    # Get last eventsPerLumi of events in this file
-    command = "edmFileUtil --events %s | tail -n +9 | head -n -5 | awk '{ print $3 }'" % read[0]
-    print(command)
-    events = subprocess.check_output(command, shell=True)
-    events = events.split(b'\n')
-    events = filter(lambda x: x != b"", events)
-    events = map(int, events)
-    events = sorted(events)
-    events = events[-options.eventsPerLumi:]
-    eventsToProcess.append("%s:%s:%s-%s:%s:%s" % (options.runNumber, ls, events[0], options.runNumber, ls, events[-1]))
+#     # Get last eventsPerLumi of events in this file
+#     command = "edmFileUtil --events %s | tail -n +9 | head -n -5 | awk '{ print $3 }'" % read[0]
+#     print(command)
+#     events = subprocess.check_output(command, shell=True)
+#     events = events.split(b'\n')
+#     events = filter(lambda x: x != b"", events)
+#     events = map(int, events)
+#     events = sorted(events)
+#     events = events[-options.eventsPerLumi:]
+#     eventsToProcess.append("%s:%s:%s-%s:%s:%s" % (options.runNumber, ls, events[0], options.runNumber, ls, events[-1]))
 
-eventRange = cms.untracked.VEventRange(eventsToProcess)
+# eventRange = cms.untracked.VEventRange(eventsToProcess)
 
 print("Got %d files." % len(readFiles))
 
 source = cms.Source ("PoolSource",
                      fileNames = readFiles,
                      secondaryFileNames = secFiles,
-                     eventsToProcess = eventRange,
+                     #eventsToProcess = eventRange,
                      ### As we are testing with FEVT, we don't want any unpacked collection
                      ### This makes the tests slightly more realistic (live production uses streamer files
                      inputCommands = cms.untracked.vstring(

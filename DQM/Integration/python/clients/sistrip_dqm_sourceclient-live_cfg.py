@@ -9,14 +9,7 @@ else:
   from Configuration.Eras.Era_Run3_cff import Run3
   process = cms.Process("SiStripMonitor", Run3)
 
-process.MessageLogger = cms.Service("MessageLogger",
-    debugModules = cms.untracked.vstring('siStripDigis',
-                                         'siStripClusters',
-                                         'siStripZeroSuppression',
-                                         'SiStripClusterizer'),
-    cout = cms.untracked.PSet(threshold = cms.untracked.string('ERROR')),
-    destinations = cms.untracked.vstring('cout')
-)
+process.load("FWCore.MessageService.MessageLogger_cfi")
 
 live=True
 unitTest=False
@@ -220,7 +213,7 @@ process.hltHighLevel.throw =  False
 #--------------------------
 # Scheduling
 #--------------------------
-process.SiStripSources_LocalReco = cms.Sequence(process.siStripFEDMonitor*process.SiStripMonitorDigi*process.SiStripMonitorClusterReal)
+process.SiStripSources_LocalReco = cms.Sequence(process.siStripFEDMonitor)
 if (process.runType.getRunType() == process.runType.commissioning_run):
     process.DQMCommon                = cms.Sequence(process.dqmEnv*process.dqmEnvTr*process.dqmSaver*process.dqmSaverPB)
 else:
@@ -281,20 +274,20 @@ if (process.runType.getRunType() == process.runType.cosmic_run or process.runTyp
     process.trackingQTester.qtestOnEndLumi          = True
     process.trackingQTester.qtestOnEndRun           = True
 
-    process.p = cms.Path(process.scalersRawToDigi*
-                         process.tcdsDigis*
-                         process.onlineMetaDataDigis*
-                         process.APVPhases*
-                         process.consecutiveHEs*
-                         process.hltTriggerTypeFilter*
+    process.p = cms.Path(#process.scalersRawToDigi*
+                         #process.tcdsDigis*
+                         #process.onlineMetaDataDigis*
+                         #process.APVPhases*
+                         #process.consecutiveHEs*
+                         #process.hltTriggerTypeFilter*
                          process.siStripFEDCheck *
-                         process.RecoForDQM_LocalReco*
-                         process.DQMCommon*
-                         process.SiStripClients*
-                         process.SiStripSources_LocalReco*
-                         process.RecoForDQM_TrkReco_cosmic*
-                         process.SiStripSources_TrkReco_cosmic*
-                         process.TrackingClient
+                         #process.RecoForDQM_LocalReco*
+                         #process.DQMCommon*
+                         #process.SiStripClients*
+                         #process.SiStripSources_LocalReco*
+                         #process.RecoForDQM_TrkReco_cosmic*
+                         process.SiStripSources_TrkReco_cosmic
+                         #process.TrackingClient
                          )
 
 
