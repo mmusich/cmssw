@@ -155,6 +155,8 @@ private:
   int variable_PairPt_nbins_;
 
   edm::EDGetTokenT<reco::TrackCollection> theTrackCollectionToken_;
+
+  TH1F* th1f_mass;
   TH2D* th2d_mass_variables_[varNumber_];  // actual histograms
   std::string variables_name_[varNumber_] = {
       "CosThetaCS", "DeltaEta", "EtaMinus", "EtaPlus", "PhiCS", "PhiMinus", "PhiPlus", "Pt"};
@@ -195,6 +197,8 @@ void DiMuonValidation::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       LV_mother = LV_track1 + LV_track2;
       double mother_mass = LV_mother.M();
+      th1f_mass->Fill(mother_mass);
+
       double mother_pt = LV_mother.Pt();
 
       int charge1 = track1.charge();
@@ -262,6 +266,8 @@ void DiMuonValidation::beginJob() {
   if (compressionSettings_ > 0) {
     fs->file().SetCompressionSettings(compressionSettings_);
   }
+
+  th1f_mass = fs->make<TH1F>("hMass", "mass;m_{#mu#mu} [GeV];events", 200, 0., 200.);
 
   for (int i = 0; i < varNumber_; i++) {
     std::string th2d_name = fmt::sprintf("th2d_mass_%s", variables_name_[i].c_str());
