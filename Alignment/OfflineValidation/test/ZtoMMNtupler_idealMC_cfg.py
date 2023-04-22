@@ -21,7 +21,7 @@ process.MessageLogger.cout = cms.untracked.PSet(
     threshold = cms.untracked.string("INFO"),
     default   = cms.untracked.PSet(limit = cms.untracked.int32(0)),                       
     FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
-                                   reportEvery = cms.untracked.int32(1000)
+                                   reportEvery = cms.untracked.int32(10000)
                                    ),                                                      
     ZtoMMNtupler = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
     enableStatistics = cms.untracked.bool(True)
@@ -143,7 +143,7 @@ process.DiMuonMassValidation = _diMuonValidation.clone(
 # Output name
 ###################################################################
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("ZmmNtuple_idealMC.root"))
+                                   fileName = cms.string("ZmmNtuple_realisticMC.root"))
 
 ###################################################################
 # Path

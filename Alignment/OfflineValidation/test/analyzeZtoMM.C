@@ -31,6 +31,8 @@ void analyzeZtoMM(const char* inputFile) {
   TH1F* hPt = new TH1F("hPt", ";muon p_{T} [GeV];events", 100, 0., 200.);
   TH1F* hEta = new TH1F("hEta", ";muon #eta;events", 100, -3.0, 3.0);
   TH1F* hPhi = new TH1F("hPhi", ";muon #phi;events", 100, -TMath::Pi(), TMath::Pi());
+  TH1F* hCorrection = new TH1F(
+      "hCorrection", "largest correction vs iteration;iteration number; #delta_{sagitta} correction ", 100, 0., 100);
   TH2F* hSagitta = new TH2F("hSagitta",
                             "#delta_{sagitta};muon #eta;muon #phi;#delta_{sagitta} [TeV^{-1}]",
                             24,
@@ -77,6 +79,7 @@ void analyzeZtoMM(const char* inputFile) {
   while ((std::abs(maxCorrection) > 1e-6) && iteration < 100) {
     maxCorrection = updateSagittaMap(tree, sagittaCorrections, hSagitta, iteration);
     std::cout << "iteration: " << iteration << " maxCorrection: " << maxCorrection << std::endl;
+    hCorrection->SetBinContent(iteration, maxCorrection);
     iteration++;
   }
 
@@ -91,7 +94,7 @@ void analyzeZtoMM(const char* inputFile) {
   for (unsigned int i = 0; i < 24; i++) {
     for (unsigned int j = 0; j < 24; j++) {
       const auto& index = std::make_pair(i, j);
-      hSagitta->SetBinContent(i + 1, j + 1, sagittaCorrections[index] * 10e-3);
+      hSagitta->SetBinContent(i + 1, j + 1, sagittaCorrections[index] * 10e3);  // 1/GeV = 1000/TeV
     }
   }
 
@@ -99,6 +102,7 @@ void analyzeZtoMM(const char* inputFile) {
   hPt->Write();
   hEta->Write();
   hPhi->Write();
+  hCorrection->Write();
   hSagitta->Write();
 
   outputFile->Close();

@@ -14,6 +14,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
+#include "TH1F.h"
+#include "TH2I.h"
 #include "TTree.h"
 #include "TLorentzVector.h"
 
@@ -46,6 +48,7 @@ private:
   float negTrackPt_;
 
   // control histograms
+  TH2I* h_VertexMatrix;
   TH1F* h_cutFlow;
   TH1F* h_DeltaD0;
   TH1F* h_DeltaDz;
@@ -67,8 +70,8 @@ ZtoMMNtupler::ZtoMMNtupler(const edm::ParameterSet& iConfig)
 
   edm::Service<TFileService> fs;
   h_cutFlow = fs->make<TH1F>("cutFlow", "cutFlow;cut;remaining events", 9, -0.5, 8.5);
-  std::string labels[8] = {"all events",
-                           "common vertex"
+  std::string labels[9] = {"all events",
+                           "common vertex",
                            "d0 cut",
                            "p_{T} cut",
                            "#eta cut",
@@ -82,6 +85,14 @@ ZtoMMNtupler::ZtoMMNtupler(const edm::ParameterSet& iConfig)
     h_cutFlow->GetXaxis()->SetBinLabel(count, label.c_str());
   }
 
+  h_VertexMatrix = fs->make<TH2I>("VertexMatrix",
+                                  ";index of closest vertex to #mu_{0};index of closest vertex to #mu_{1}",
+                                  100,
+                                  0,
+                                  100,
+                                  100,
+                                  0,
+                                  100);
   h_DeltaD0 = fs->make<TH1F>("DeltaD0", "#Deltad_{0};#Deltad_{0} [cm];events", 100, -0.5, 0.5);
   h_DeltaDz = fs->make<TH1F>("DeltaDz", "#Deltad_{z};#Deltad_{z} [cm];events", 100, -1, 1);
   h_CosOpeningAngle = fs->make<TH1F>("OpeningAngle", "cos(#gamma(#mu^{+},#mu^{-}));events", 100, -1., 1.);
@@ -113,7 +124,7 @@ void ZtoMMNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup
   math::XYZPoint bs(beamSpot.x0(), beamSpot.y0(), beamSpot.z0());
 
   if ((tracks.size() != 2)) {
-    edm::LogError("ZtoMMNtupler") << "Found " << tracks.size() << " muons in the event. Skipping";
+    LogTrace("ZtoMMNtupler") << "Found " << tracks.size() << " muons in the event. Skipping";
     return;
   }
 
@@ -128,7 +139,7 @@ void ZtoMMNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup
 
   double d0[2] = {0., 0.};
   double dz[2] = {0., 0.};
-  unsigned int vtxIndex[2] = {999., 999.};
+  unsigned int vtxIndex[2] = {999, 999};
 
   unsigned int i = 0;
   for (const auto& track : tracks) {
@@ -165,8 +176,10 @@ void ZtoMMNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup
     i++;
   }
 
+  h_VertexMatrix->Fill(vtxIndex[0], vtxIndex[1]);
   // check if the two muons have the same vertex
-  if (vtxIndex[0] != vtxIndex[1])
+  passSameVertex = (vtxIndex[0] == vtxIndex[1]);
+  if (!passSameVertex)
     return;
   h_cutFlow->Fill(1);
 
@@ -250,7 +263,7 @@ std::pair<unsigned int, reco::Vertex> ZtoMMNtupler::findClosestVertex(const reco
   unsigned int index{0}, theIndex{999};
   // Loop over the primary vertices and calculate the distance to the track
   for (const auto& vertex : vertices) {
-    math::XYZPoint vertexPosition = vertex.position();
+    const math::XYZPoint& vertexPosition = vertex.position();
 
     // Calculate the distance to the track
     const auto& trackMomentum = track.momentum();
