@@ -1,11 +1,11 @@
 #=================================
 #inputs
-globaltag = 'auto:phase1_2018_design'    #APEs are copied from this GT (and IdealGeometry and TrackerTopology are used)
+globaltag = '130X_dataRun3_Prompt_v2'    #APEs are copied from this GT (and IdealGeometry and TrackerTopology are used)
 inputsqlitefile = None                  #if None, uses the GT alignment
 alignmenttag = 'Alignments'             #tag name for TrackerAlignmentRcd in the input file, also used for the output file
-runnumberalignmentIOV = 1               #any run number in the iov that you want to start from
+runnumberalignmentIOV = 362362               #any run number in the iov that you want to start from
 
-outputfilename = 'outputfile.db'
+outputfilename = 'outputfile_sagitta.db'
 
 
 #misalignment amplitudes, -999 means no misalignment
@@ -20,7 +20,7 @@ zExpEpsilon       = -999. # 2.02e-4
 twistEpsilon      = -999. # 2.04e-6               #cm^-1
 ellipticalEpsilon = -999. # 5e-4
 skewEpsilon       = -999. # 5.5e-2                #cm
-sagittaEpsilon    = -999. # 5.0e-4
+sagittaEpsilon    = 5.0e-4 # 5.0e-4
 
 #phases for phi dependent misalignments
 ellipticalDelta   = 0.

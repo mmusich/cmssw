@@ -8,7 +8,10 @@
 #include <map>
 #include <iostream>
 
-double updateSagittaMap(TTree* tree, std::map<std::pair<int, int>, double>& theMap, TH2F*& hSagitta, const int iteration);
+double updateSagittaMap(TTree* tree,
+                        std::map<std::pair<int, int>, double>& theMap,
+                        TH2F*& hSagitta,
+                        const int iteration);
 
 void analyzeZtoMM(const char* inputFile) {
   TFile* file = TFile::Open(inputFile);
@@ -28,8 +31,14 @@ void analyzeZtoMM(const char* inputFile) {
   TH1F* hPt = new TH1F("hPt", ";muon p_{T} [GeV];events", 100, 0., 200.);
   TH1F* hEta = new TH1F("hEta", ";muon #eta;events", 100, -3.0, 3.0);
   TH1F* hPhi = new TH1F("hPhi", ";muon #phi;events", 100, -TMath::Pi(), TMath::Pi());
-  TH2F* hSagitta =
-      new TH2F("hSagitta", "#delta_{sagitta};muon #eta;muon #phi;#delta_{sagitta} [TeV^{-1}]", 24, -2.47, 2.47, 24, -TMath::Pi(), TMath::Pi());
+  TH2F* hSagitta = new TH2F("hSagitta",
+                            "#delta_{sagitta};muon #eta;muon #phi;#delta_{sagitta} [TeV^{-1}]",
+                            24,
+                            -2.47,
+                            2.47,
+                            24,
+                            -TMath::Pi(),
+                            TMath::Pi());
 
   std::map<std::pair<int, int>, double> sagittaCorrections;
   //sagittaCorrections.reserve(24 * 24);
@@ -64,10 +73,10 @@ void analyzeZtoMM(const char* inputFile) {
   }
 
   double maxCorrection{1.f};
-  int iteration=0;
-  while((std::abs(maxCorrection) > 1e-6) && iteration<20){
+  int iteration = 0;
+  while ((std::abs(maxCorrection) > 1e-6) && iteration < 100) {
     maxCorrection = updateSagittaMap(tree, sagittaCorrections, hSagitta, iteration);
-    std::cout <<"iteration: " << iteration << " maxCorrection: " << maxCorrection << std::endl;
+    std::cout << "iteration: " << iteration << " maxCorrection: " << maxCorrection << std::endl;
     iteration++;
   }
 
@@ -82,7 +91,7 @@ void analyzeZtoMM(const char* inputFile) {
   for (unsigned int i = 0; i < 24; i++) {
     for (unsigned int j = 0; j < 24; j++) {
       const auto& index = std::make_pair(i, j);
-      hSagitta->SetBinContent(i + 1, j + 1, sagittaCorrections[index]*10e-3);
+      hSagitta->SetBinContent(i + 1, j + 1, sagittaCorrections[index] * 10e-3);
     }
   }
 
@@ -96,7 +105,10 @@ void analyzeZtoMM(const char* inputFile) {
   file->Close();
 }
 
-double updateSagittaMap(TTree* tree, std::map<std::pair<int, int>, double>& theMap, TH2F*& hSagitta, const int iteration) {
+double updateSagittaMap(TTree* tree,
+                        std::map<std::pair<int, int>, double>& theMap,
+                        TH2F*& hSagitta,
+                        const int iteration) {
   std::cout << "calling the updateSagittaMap" << std::endl;
 
   std::map<std::pair<int, int>, double> deltaCorrection;
@@ -131,28 +143,32 @@ double updateSagittaMap(TTree* tree, std::map<std::pair<int, int>, double>& theM
     double MZ_PDG = 91.1876;
 
     // deal with the positive muon
-    const auto& etaPlusBin = hSagitta->GetXaxis()->FindBin(posTrackEta) -1;
-    const auto& phiPlusBin = hSagitta->GetYaxis()->FindBin(posTrackPhi) -1;
+    const auto& etaPlusBin = hSagitta->GetXaxis()->FindBin(posTrackEta) - 1;
+    const auto& phiPlusBin = hSagitta->GetYaxis()->FindBin(posTrackPhi) - 1;
 
-    if(etaPlusBin < 0 || etaPlusBin > 23){
-      std::cout << "etaPlusBin: "<< etaPlusBin << " posTrackEta: "<< posTrackEta << std::endl; 
+    if (etaPlusBin < 0 || etaPlusBin > 23) {
+      std::cout << "etaPlusBin: " << etaPlusBin << " posTrackEta: " << posTrackEta << std::endl;
+      continue;
     }
-    if(phiPlusBin < 0 || phiPlusBin > 23){
-      std::cout << "phiPlusBin: "<< phiPlusBin << " posTrackPhi: "<< posTrackPhi << std::endl; 
+    if (phiPlusBin < 0 || phiPlusBin > 23) {
+      std::cout << "phiPlusBin: " << phiPlusBin << " posTrackPhi: " << posTrackPhi << std::endl;
+      continue;
     }
 
     const auto& indexPlus = std::make_pair(etaPlusBin, phiPlusBin);
     double deltaSagittaPlus = theMap[indexPlus];
 
     //now deal with negative muon
-    const auto& etaMinusBin = hSagitta->GetXaxis()->FindBin(negTrackEta) -1;
-    const auto& phiMinusBin = hSagitta->GetYaxis()->FindBin(negTrackPhi) -1;
+    const auto& etaMinusBin = hSagitta->GetXaxis()->FindBin(negTrackEta) - 1;
+    const auto& phiMinusBin = hSagitta->GetYaxis()->FindBin(negTrackPhi) - 1;
 
-    if(etaMinusBin < 0 || etaMinusBin > 23){
-      std::cout << "etaMinusBin: "<< etaMinusBin << " posTrackEta: "<< negTrackEta << std::endl; 
+    if (etaMinusBin < 0 || etaMinusBin > 23) {
+      std::cout << "etaMinusBin: " << etaMinusBin << " posTrackEta: " << negTrackEta << std::endl;
+      continue;
     }
-    if(phiMinusBin < 0 || phiMinusBin > 23){
-      std::cout << "phiMinusBin: "<< phiMinusBin << " posTrackPhi: "<< negTrackPhi << std::endl; 
+    if (phiMinusBin < 0 || phiMinusBin > 23) {
+      std::cout << "phiMinusBin: " << phiMinusBin << " posTrackPhi: " << negTrackPhi << std::endl;
+      continue;
     }
 
     const auto& indexMinus = std::make_pair(etaMinusBin, phiMinusBin);
@@ -175,31 +191,33 @@ double updateSagittaMap(TTree* tree, std::map<std::pair<int, int>, double>& theM
     deltaCorrection[indexPlus] += deltaDeltaSagittaPlus;
     deltaCorrection[indexMinus] += deltaDeltaSagittaMinus;
 
-    countsPerBin[indexPlus]+=1.;
-    countsPerBin[indexMinus]+=1.;
+    countsPerBin[indexPlus] += 1.;
+    countsPerBin[indexMinus] += 1.;
   }
 
   for (unsigned int i = 0; i < 24; i++) {
     for (unsigned int j = 0; j < 24; j++) {
       const auto& index = std::make_pair(i, j);
-      //std::cout << index.first << ", " << index.second << " value: " << deltaCorrection[index] << " / " << countsPerBin[index]; 
-      deltaCorrection[index]/=countsPerBin[index];
-      //std::cout << " =  " << deltaCorrection[index] << std::endl;      
+      //std::cout << index.first << ", " << index.second << " value: " << deltaCorrection[index] << " / " << countsPerBin[index];
+      deltaCorrection[index] /= countsPerBin[index];
+      //std::cout << " =  " << deltaCorrection[index] << std::endl;
     }
   }
-  
+
   std::cout << " ================================ iteration: " << iteration << std::endl;
   for (unsigned int i = 0; i < 24; i++) {
     for (unsigned int j = 0; j < 24; j++) {
       const auto& index = std::make_pair(i, j);
-      std::cout << i << ", " << j << " initial: " << theMap[index] << " correction: " << deltaCorrection[index] << std::endl;
+      std::cout << i << ", " << j << " initial: " << theMap[index] << " correction: " << deltaCorrection[index]
+                << std::endl;
       theMap[index] += deltaCorrection[index];
     }
   }
 
   // find the largest element of the correction of this iteration
-  auto maxIter = std::max_element(deltaCorrection.begin(), deltaCorrection.end(),
-				  [](const auto& a, const auto& b) { return std::abs(a.second) < std::abs(b.second); });
-  
+  auto maxIter = std::max_element(deltaCorrection.begin(), deltaCorrection.end(), [](const auto& a, const auto& b) {
+    return std::abs(a.second) < std::abs(b.second);
+  });
+
   return maxIter->second;
 }
