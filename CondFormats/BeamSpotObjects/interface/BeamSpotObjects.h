@@ -12,6 +12,7 @@
  */
 
 #include "CondFormats/Serialization/interface/Serializable.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
 #include <cmath>
 #include <sstream>
@@ -20,7 +21,7 @@
 class BeamSpotObjects {
 public:
   /// default constructor
-  BeamSpotObjects() : sigmaZ_(0), beamwidthX_(0), beamwidthY_(0), dxdz_(0), dydz_(0), type_(-1) {
+  BeamSpotObjects() : sigmaZ_(0), beamwidthX_(0), beamwidthY_(0), dxdz_(0), dydz_(0), type_(reco::BeamSpot::Unknown) {
     beamwidthXError_ = 0;
     beamwidthYError_ = 0;
     emittanceX_ = 0;
@@ -55,7 +56,7 @@ public:
   /// set i,j element of the full covariance matrix 7x7
   void setCovariance(int i, int j, double val) { covariance_[i][j] = val; }
   /// set beam type
-  void setType(int type) { type_ = type; }
+  void setType(reco::BeamSpot::BeamType type) { type_ = type; }
   /// set emittance
   void setEmittanceX(double val) { emittanceX_ = val; }
   /// set emittance
@@ -98,7 +99,7 @@ public:
   /// get dydz slope, crossing angle in YZ Error
   double dydzError() const { return sqrt(covariance_[5][5]); }
   /// get beam type
-  int beamType() const { return type_; }
+  reco::BeamSpot::BeamType beamType() const { return type_; }
   /// get emittance
   double emittanceX() const { return emittanceX_; }
   /// get emittance
@@ -119,7 +120,7 @@ protected:
   double dxdz_;
   double dydz_;
   double covariance_[7][7];
-  int type_;
+  reco::BeamSpot::BeamType type_;
   double emittanceX_;
   double emittanceY_;
   double betaStar_;

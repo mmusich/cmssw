@@ -99,7 +99,7 @@ void BeamSpotWrite2DB::endJob() {
 
   BeamSpotObjects abeam;
 
-  abeam.setType(type);
+  abeam.setType(static_cast<reco::BeamSpot::BeamType>(type));
   abeam.setPosition(x, y, z);
   abeam.setSigmaZ(sigmaZ);
   abeam.setdxdz(dxdz);

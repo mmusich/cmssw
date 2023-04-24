@@ -194,7 +194,7 @@ void BeamSpotOnlineRecordsWriter::endJob() {
   abeam.setLastAnalyzedFill(lastAnalyzedFill);
   abeam.setStartTimeStamp(lumiRangeBeginTime);
   abeam.setEndTimeStamp(lumiRangeEndTime);
-  abeam.setType(type);
+  abeam.setType(static_cast<reco::BeamSpot::BeamType>(type));
   abeam.setPosition(x, y, z);
   abeam.setSigmaZ(sigmaZ);
   abeam.setdxdz(dxdz);

@@ -63,7 +63,7 @@ namespace edmtest {
       BeamSpotObjects mybeamspot;
       mybeamspot.setPosition(0.053, 0.1, 0.13);
       mybeamspot.setSigmaZ(3.8 + i);
-      mybeamspot.setType(int(lumiId));
+      mybeamspot.setType(static_cast<reco::BeamSpot::BeamType>(lumiId));
       auto payloadId = session.storePayload(mybeamspot);
       auto since = cond::time::lumiTime(m_run, lumiId);
       editor.insert(since, payloadId);

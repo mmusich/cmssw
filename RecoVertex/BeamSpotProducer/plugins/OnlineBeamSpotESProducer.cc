@@ -53,7 +53,7 @@ OnlineBeamSpotESProducer::OnlineBeamSpotESProducer(const edm::ParameterSet& p)
   fakeBS_.setBeamWidthY(0.1);
   fakeBS_.setSigmaZ(15.);
   fakeBS_.setPosition(0.0001, 0.0001, 0.0001);
-  fakeBS_.setType(-1);
+  fakeBS_.setType(reco::BeamSpot::Fake);
 
   bsHLTToken_ = cc.consumesFrom<BeamSpotOnlineObjects, BeamSpotOnlineHLTObjectsRcd>();
   bsLegacyToken_ = cc.consumesFrom<BeamSpotOnlineObjects, BeamSpotOnlineLegacyObjectsRcd>();
