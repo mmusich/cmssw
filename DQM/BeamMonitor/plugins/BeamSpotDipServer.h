@@ -90,7 +90,7 @@ private:
   time_t endTimeStamp = 0;
   std::string lumiRange = "0 - 0";
   std::string quality = "Uncertain";
-  int type = -1;
+  reco::BeamSpot::BeamType type = reco::BeamSpot::Unknown;
   float x = 0;
   float y = 0;
   float z = 0;

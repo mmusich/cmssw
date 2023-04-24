@@ -222,12 +222,8 @@ std::shared_ptr<onlinebeammonitor::NoCache> OnlineBeamMonitor::globalBeginLumino
     aSpot->setEmittanceX(spotDB.emittanceX());
     aSpot->setEmittanceY(spotDB.emittanceY());
     aSpot->setbetaStar(spotDB.betaStar());
+    aSpot->setType(spotDB.beamType());
 
-    if (spotDB.beamType() == 2) {
-      aSpot->setType(reco::BeamSpot::Tracker);
-    } else {
-      aSpot->setType(reco::BeamSpot::Fake);
-    }
     //LogInfo("OnlineBeamMonitor")
     //  << *aSpot << std::endl;
   } else {
@@ -263,12 +259,7 @@ std::shared_ptr<onlinebeammonitor::NoCache> OnlineBeamMonitor::globalBeginLumino
     aSpot->setEmittanceX(spotDB.emittanceX());
     aSpot->setEmittanceY(spotDB.emittanceY());
     aSpot->setbetaStar(spotDB.betaStar());
-
-    if (spotDB.beamType() == 2) {
-      aSpot->setType(reco::BeamSpot::Tracker);
-    } else {
-      aSpot->setType(reco::BeamSpot::Fake);
-    }
+    aSpot->setType(spotDB.beamType());
     //LogInfo("OnlineBeamMonitor")
     //  << *aSpot << std::endl;
   } else {
@@ -297,11 +288,7 @@ std::shared_ptr<onlinebeammonitor::NoCache> OnlineBeamMonitor::globalBeginLumino
     aSpot->setEmittanceX(spotDB.emittanceX());
     aSpot->setEmittanceY(spotDB.emittanceY());
     aSpot->setbetaStar(spotDB.betaStar());
-    if (spotDB.beamType() == 2) {
-      aSpot->setType(reco::BeamSpot::Tracker);
-    } else {
-      aSpot->setType(reco::BeamSpot::Fake);
-    }
+    aSpot->setType(spotDB.beamType());
 
     if (writeDIPTxt_) {
       std::ofstream outFile;

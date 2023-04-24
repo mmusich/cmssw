@@ -55,12 +55,7 @@ void AlcaBeamSpotFromDB::endLuminosityBlockProduce(edm::LuminosityBlock &lumiSeg
   aSpot.setEmittanceX(spotDB->emittanceX());
   aSpot.setEmittanceY(spotDB->emittanceY());
   aSpot.setbetaStar(spotDB->betaStar());
-
-  if (spotDB->beamType() == 2) {
-    aSpot.setType(reco::BeamSpot::Tracker);
-  } else {
-    aSpot.setType(reco::BeamSpot::Fake);
-  }
+  aSpot.setType(spotDB->beamType());
 
   auto result = std::make_unique<reco::BeamSpot>();
   *result = aSpot;

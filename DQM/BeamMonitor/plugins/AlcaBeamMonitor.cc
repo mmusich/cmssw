@@ -261,12 +261,8 @@ std::shared_ptr<alcabeammonitor::NoCache> AlcaBeamMonitor::globalBeginLuminosity
     aSpot->setEmittanceX(spotDB->emittanceX());
     aSpot->setEmittanceY(spotDB->emittanceY());
     aSpot->setbetaStar(spotDB->betaStar());
+    aSpot->setType(spotDB->beamType());
 
-    if (spotDB->beamType() == 2) {
-      aSpot->setType(reco::BeamSpot::Tracker);
-    } else {
-      aSpot->setType(reco::BeamSpot::Fake);
-    }
     //LogInfo("AlcaBeamMonitor")
     //  << *aSpot << std::endl;
   } else {

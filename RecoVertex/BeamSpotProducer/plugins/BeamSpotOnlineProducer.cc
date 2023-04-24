@@ -103,7 +103,7 @@ void BeamSpotOnlineProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   bool fallBackToDB = false;
   if (useTransientRecord_) {
     auto const& spotDB = iSetup.getData(beamTransientToken_);
-    if (spotDB.beamType() != 2) {
+    if (spotDB.beamType() != reco::BeamSpot::Tracker) {
       if (shoutMODE && beamTransientRcdESWatcher_.check(iSetup)) {
         edm::LogWarning("BeamSpotFromDB")
             << "Online Beam Spot producer falls back to DB value because the ESProducer returned a fake beamspot ";

@@ -402,7 +402,7 @@ bool BeamSpotDipServer::readRcd(const BeamSpotOnlineObjects& bs)
 
   if (testing)
     quality = qualities[0];  // Uncertain
-  else if (type >= 2)
+  else if (type >= reco::BeamSpot::Tracker)
     quality = qualities[2];  // Good
   else
     quality = qualities[1];  // Bad
@@ -489,10 +489,10 @@ bool BeamSpotDipServer::readRcd(ifstream& file)  // readFromNFS
           currentLS = stoi(tmp[3]);
           break;
         case 5:
-          type = stoi(tmp[1]);
+          type = static_cast<reco::BeamSpot::BeamType>(stoi(tmp[1]));
           if (testing)
             quality = qualities[0];  // Uncertain
-          else if (type >= 2)
+          else if (type >= reco::BeamSpot::Tracker)
             quality = qualities[2];  // Good
           else
             quality = qualities[1];  // Bad
