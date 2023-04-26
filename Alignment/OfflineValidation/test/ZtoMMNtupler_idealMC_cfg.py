@@ -2,6 +2,22 @@ import glob
 import math
 import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
+from FWCore.ParameterSet.VarParsing import VarParsing
+
+options = VarParsing('analysis')
+options.register('scenario', 
+                 'radial', 
+                 VarParsing.multiplicity.singleton,
+                 VarParsing.varType.string,
+                 "Name of input misalignment scenario")
+options.parseArguments()
+
+valid_scenarios = ['radial', 'telescope', 'layerRot', 'bowing', 'zExp', 'twist', 'elliptical', 'skew', 'sagitta']
+
+if options.scenario not in valid_scenarios:
+    print("Error: Invalid scenario specified. Please choose from the following list: ")
+    print(valid_scenarios)
+    exit(1)
 
 process = cms.Process("AlCaRECOAnalysis")
 
@@ -42,6 +58,10 @@ process.load("CondCore.CondDB.CondDB_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag,"112X_mcRun3_2021_realistic_v16", '')
+process.GlobalTag.toGet = cms.VPSet(cms.PSet(connect = cms.string("sqlite_file:/tmp/musich/CMSSW_13_1_X_2023-04-17-2300/src/Alignment/TrackerAlignment/test/mc_misalignment/"+options.scenario+".db"),                                             
+                                             record = cms.string('TrackerAlignmentRcd'),
+                                             tag = cms.string("Alignments")))
+
 # process.GlobalTag.toGet = cms.VPSet(cms.PSet(record = cms.string('TrackerAlignmentRcd'),
 #                                             tag = cms.string("TrackerAlignment_Upgrade2017_design_v4")),
 #                                    cms.PSet(record =  cms.string('TrackerSurfaceDeformationRcd'),
@@ -92,12 +112,13 @@ process.TrackRefitter1 = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitt
 # The analysis module
 ###################################################################
 process.myanalysis = cms.EDAnalyzer("ZtoMMNtupler",
-                                    #tracks = cms.InputTag('TrackRefitter1'))
-                                    tracks = cms.InputTag('ALCARECOTkAlZMuMu'))
-
+                                    tracks = cms.InputTag('TrackRefitter1'))
+                                    #tracks = cms.InputTag('ALCARECOTkAlZMuMu'))
+                                    
 from Alignment.OfflineValidation.diMuonValidation_cfi import diMuonValidation as _diMuonValidation
 process.DiMuonMassValidation = _diMuonValidation.clone(
-    TkTag = 'ALCARECOTkAlZMuMu',
+    #TkTag = 'ALCARECOTkAlZMuMu',
+    TkTag = 'TrackRefitter1',
     # mu mu mass
     Pair_mass_min   = 80.,
     Pair_mass_max   = 120.,
@@ -143,12 +164,12 @@ process.DiMuonMassValidation = _diMuonValidation.clone(
 # Output name
 ###################################################################
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("ZmmNtuple_realisticMC.root"))
+                                   fileName = cms.string("ZmmNtuple_MC_"+options.scenario+".root"))
 
 ###################################################################
 # Path
 ###################################################################
 process.p1 = cms.Path(process.offlineBeamSpot
-                      #* process.TrackRefitter1
+                      * process.TrackRefitter1
                       * process.myanalysis
                       * process.DiMuonMassValidation)
