@@ -1,5 +1,7 @@
 #include <TH1F.h>
+#include <TH1D.h>
 #include <TH2F.h>
+#include <TProfile.h>
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -98,12 +100,24 @@ void analyzeZtoMM(const char* inputFile) {
     }
   }
 
+  // The first argument is the name of the new TProfile,
+  // the second argument is the first bin to include (1 in this case, to skip underflow),
+  // the third argument is the last bin to include (-1 in this case, to skip overflow),
+  // and the fourth argument is an option "s" to compute the profile using weights from the bin contents.
+
+  TH1D* projVsEta = hSagitta->ProjectionX("projVsEta", 1, 24);
+  projVsEta->GetYaxis()->SetTitle("#delta_{sagitta} [TeV^{-1}]");
+  TH1D* projVsPhi = hSagitta->ProjectionY("projVsPhi", 1, 24);
+  projVsPhi->GetYaxis()->SetTitle("#delta_{sagitta} [TeV^{-1}]");
+
   hMass->Write();
   hPt->Write();
   hEta->Write();
   hPhi->Write();
   hCorrection->Write();
   hSagitta->Write();
+  projVsEta->Write();
+  projVsPhi->Write();
 
   outputFile->Close();
   file->Close();
