@@ -82,6 +82,8 @@ public:
    */
   int charge() const;
 
+  bool filter() const;
+
   /** Test (set) the merged status of the cluster
    *
    */
@@ -99,6 +101,7 @@ private:
   //these are used if amplitude information is not available (using approximate cluster constructor)
   float barycenter_ = 0;
   int charge_ = 0;
+  bool filter_ = false;
 
   // ggiurgiu@fnal.gov, 01/05/12
   // Add cluster errors to be used by rechits from split clusters.
