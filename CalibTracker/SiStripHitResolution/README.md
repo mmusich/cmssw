@@ -10,47 +10,47 @@ where $`\sigma_{HitDX-TrackDX}`$ is the standard deviation of the gaussian-fitte
 The following criteria are used:
 
 * The charged particle must have traversed through two sufficiently-overlapping detector modules. 
-* Tracks must have transverse momenta greater than 3 GeV ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/src/HitResol.cc#L324)).
-* Track momentum is > 15 GeV for strips and > 5 GeV for pixels ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L243)).
-* More than six hits must be left in the SST layers and the pixel detector ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L252)). 
-* No more than four of these hits can have a large cluster width ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L254)).
-* The track fit must yield a good $`\chi^{2}`$ probability of $`\chi^{2} \geqslant 10^{-2}`$ ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L251)).
-* The predicted path (the distance of propagation of the charged particle from one layer to the next) must be < 7cm in the TIB and TOB ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L238)).
-* The predicted path must be < 2cm for pixels([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L239)).
-* The error in the distance between two hit resolution measurements must be < 0.0025 ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L235)).
-* Clusters in the silicon module under consideration must have the same width ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L254)).
-* Clusters positioned on the edge of modules are not considered ([permalink](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/src/HitResol.cc#L346))
+* Tracks must have transverse momenta greater than 3 GeV ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/src/HitResol.cc#L324)).
+* Track momentum is > 15 GeV for strips and > 5 GeV for pixels ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L243)).
+* More than six hits must be left in the SST layers and the pixel detector ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L252)). 
+* No more than four of these hits can have a large cluster width ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L254)).
+* The track fit must yield a good $`\chi^{2}`$ probability of $`\chi^{2} \geqslant 10^{-2}`$ ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L251)).
+* The predicted path (the distance of propagation of the charged particle from one layer to the next) must be < 7cm in the TIB and TOB ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L238)).
+* The predicted path must be < 2cm for pixels([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L239)).
+* The error in the distance between two hit resolution measurements must be < 0.0025 ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L235)).
+* Clusters in the silicon module under consideration must have the same width ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L254)).
+* Clusters positioned on the edge of modules are not considered ([permalink](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/src/HitResol.cc#L346))
 
 Hit resolution measurements are obtained for each tracker region; the definitions for each region are based on those given under the "Phase 1 Upgrade Detector DetId schema" heading of the README file in the github repository linked [here](https://github.com/cms-sw/cmssw/blob/master/Geometry/TrackerNumberingBuilder/README.md). The permalinks to where these definitions are implemented are as follows:
 
-* [TIB L1](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L100)
-* [TIB L2](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L104)
-* [TIB L3](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L108)
-* [TIB L4](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L112)
-* [TID Side](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L117)
-* [TID Wheel](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L122)
-* [TID Ring](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L126)
-* [TOB L1](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L131)
-* [TOB L2](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L135)
-* [TOB L3](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L139)
-* [TOB L4](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L143)
-* [TOB L5](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L147)
-* [TOB L6](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L151)
-* [TEC Side](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L156)
-* [TEC Wheel](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L160)
-* [TEC Ring](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L163)
-* [All TIB](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L167)
-* [All TOB](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L171)
-* [All TID](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L175)
-* [All TEC](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L188)
-* [Pixel barrel](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L204)
-* [Pixel endcap disk](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L207)
+* [TIB L1](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L100)
+* [TIB L2](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L104)
+* [TIB L3](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L108)
+* [TIB L4](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L112)
+* [TID Side](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L117)
+* [TID Wheel](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L122)
+* [TID Ring](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L126)
+* [TOB L1](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L131)
+* [TOB L2](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L135)
+* [TOB L3](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L139)
+* [TOB L4](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L143)
+* [TOB L5](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L147)
+* [TOB L6](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L151)
+* [TEC Side](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L156)
+* [TEC Wheel](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L160)
+* [TEC Ring](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L163)
+* [All TIB](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L167)
+* [All TOB](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L171)
+* [All TID](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L175)
+* [All TEC](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L188)
+* [Pixel barrel](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L204)
+* [Pixel endcap disk](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L207)
 
 ## How to run the code ##
 The following scripts are used for the hit resolution study:
-* [src/HitResol.cc](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/src/HitResol.cc) (original author: Denis Gele)
+* [src/HitResol.cc](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/src/HitResol.cc) (original author: Denis Gele)
 * [test/SiStripHitResol_testULcosmics.py](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/test/SiStripHitResol_testULcosmics.py) (original author: Pieter David)
-* [Resolutions.cc](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc) (original author: Kathryn Coldham)
+* [Resolutions.cc](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc) (original author: Kathryn Coldham)
 * [ResolutionPlots.cc](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/ResolutionPlots.cc) (original author: Kathryn Coldham)
 
 The scripts should be run inside CMSSW_11_1_0_pre6. Firstly, the following commands should be used:
@@ -74,7 +74,7 @@ This will produce three output directories: GaussianFits, HitResolutionValues an
 * [HitResolutionValues](https://gitlab.cern.ch/coldham/hitresolutionproject/-/tree/master/HitResolutionValues) will contain the text files HitResolutionValues_Centimetres.txt or HitResolutionValues_PitchUnits.txt. 
 * [CutFlowReports](https://gitlab.cern.ch/coldham/hitresolutionproject/-/tree/master/CutFlowReports) will contain text files with the numbers of events that pass each filter, for each region.
 
-To choose between pitch units or centimetres, [UnitInteger](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L330) must be set as 0 (for pitch units) or 1 (for centimetres). To choose between using output file names that correspond to the UL or non-UL ALCARECO samples, the value of [ULInteger](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/Resolutions.cc#L331) must be set as 0 (for non-UL samples) or 1 (for UL samples). 
+To choose between pitch units or centimetres, [UnitInteger](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L330) must be set as 0 (for pitch units) or 1 (for centimetres). To choose between using output file names that correspond to the UL or non-UL ALCARECO samples, the value of [ULInteger](https://github.com/cms-sw/cmssw/blob/master/CalibTracker/SiStripHitResolution/macros/Resolutions.cc#L331) must be set as 0 (for non-UL samples) or 1 (for UL samples). 
 
 The plotting script [ResolutionPlots.cc](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/ResolutionPlots.cc) has been provided for comparing the hit resolution values for UL and non-UL samples. However, the elements of the arrays will need to be edited ([UL_Array](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/ResolutionPlots.cc#L20) for when the unit has been specified as centimetres, [NonUL_Array](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/ResolutionPlots.cc#L25) for centimetres, [UL_Array](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/ResolutionPlots.cc#L40) for pitch units and [NonUL_Array](https://gitlab.cern.ch/coldham/hitresolutionproject/-/blob/master/ResolutionPlots.cc#L43) for pitch units). The following command should then be used:
 
