@@ -1,0 +1,5 @@
+<library file="GBRForest_PayloadInspector.cc" name="GBRForest_PayloadInspector">
+  <use name="CondCore/Utilities"/>
+  <use name="CondCore/CondDB"/>
+  <use name="CondFormats/GBRForest"/>
+</library>
