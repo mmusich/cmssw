@@ -159,6 +159,7 @@ from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStrip_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStripGains_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStripGainsAAG_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStripHitEfficiency_cff import *
+from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiStripLorentzAngle_cff import *
 
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiPixelLorentzAngle_cff import *
 from Calibration.TkAlCaRecoProducers.ALCARECOPromptCalibProdSiPixelLorentzAngleMCS_cff import *
@@ -286,6 +287,7 @@ pathALCARECOPromptCalibProdSiStrip = cms.Path(seqALCARECOPromptCalibProdSiStrip)
 pathALCARECOPromptCalibProdSiStripGains = cms.Path(seqALCARECOPromptCalibProdSiStripGains)
 pathALCARECOPromptCalibProdSiStripGainsAAG = cms.Path(seqALCARECOPromptCalibProdSiStripGainsAAG)
 pathALCARECOPromptCalibProdSiStripHitEfficiency = cms.Path(seqALCARECOPromptCalibProdSiStripHitEfficiency)
+pathALCARECOPromptCalibProdSiStripLorentzAngle =  cms.Path(seqALCARECOPromptCalibProdSiStripLorentzAngle)
 pathALCARECOPromptCalibProdSiPixelLorentzAngle = cms.Path(seqALCARECOPromptCalibProdSiPixelLorentzAngle) 
 pathALCARECOPromptCalibProdSiPixelLorentzAngleMCS = cms.Path(seqALCARECOPromptCalibProdSiPixelLorentzAngleMCS)
 pathALCARECOPromptCalibProdSiPixelAli = cms.Path(seqALCARECOPromptCalibProdSiPixelAli)
@@ -1028,6 +1030,15 @@ ALCARECOStreamPromptCalibProdSiStripHitEff = cms.FilteredStream(
         paths  = (pathALCARECOPromptCalibProdSiStripHitEfficiency),
         content = OutALCARECOPromptCalibProdSiStripHitEff.outputCommands,
         selectEvents = OutALCARECOPromptCalibProdSiStripHitEff.SelectEvents,
+        dataTier = cms.untracked.string('ALCARECO')
+        )
+
+ALCARECOStreamPromptCalibProdSiStripLA = cms.FilteredStream(
+        responsible = 'Marco Musich',
+        name = 'PromptCalibProdSiStripLA',
+        paths  = (pathALCARECOPromptCalibProdSiStripLorentzAngle),
+        content = OutALCARECOPromptCalibProdSiStripLA.outputCommands,
+        selectEvents = OutALCARECOPromptCalibProdSiStripLA.SelectEvents,
         dataTier = cms.untracked.string('ALCARECO')
         )
 

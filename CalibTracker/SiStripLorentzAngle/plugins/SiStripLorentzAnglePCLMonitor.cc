@@ -87,6 +87,8 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
   edm::Handle<TrajTrackAssociationCollection> trajTrackAssociations;
   iEvent.getByToken(m_association_token, trajTrackAssociations);
 
+  edm::LogInfo("SiStripLorentzAnglePCLMonitor") << "I AM IN EVENT" << iEvent.id() << std::endl;
+
   std::vector<OnTrackCluster> clusters{};
 
   for (const auto& assoc : *trajTrackAssociations) {
@@ -134,6 +136,7 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
                                                    edm::Run const& run,
                                                    edm::EventSetup const& iSetup) {
   ibook.setCurrentFolder(folder_);
+  edm::LogPrint("") << "booking in " << folder_ << std::endl;
 
   // prepare track histograms
   iHists_.h1_["track_pt"] = ibook.book1D("track_pt", "", 2000, 0, 1000);
@@ -192,7 +195,7 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void SiStripLorentzAnglePCLMonitor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<std::string>("folder", "SiStripLorentzAngle");
+  desc.add<std::string>("folder", "AlCaReco/SiStripLorentzAngle");
   desc.add<edm::InputTag>("Tracks", edm::InputTag("SiStripCalCosmics"));
   descriptions.addWithDefaultLabel(desc);
 }
