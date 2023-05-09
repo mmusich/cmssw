@@ -87,6 +87,8 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
   edm::Handle<TrajTrackAssociationCollection> trajTrackAssociations;
   iEvent.getByToken(m_association_token, trajTrackAssociations);
 
+  edm::LogInfo("SiStripLorentzAnglePCLMonitor") << "I AM IN EVENT" << iEvent.id() << std::endl;
+
   std::vector<OnTrackCluster> clusters{};
 
   for (const auto& assoc : *trajTrackAssociations) {
@@ -104,6 +106,8 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
     iHists_.h2_["track_ptxchi2"]->Fill(track->pt(), (track->chi2() / track->ndof()));
     iHists_.h2_["track_ptxeta"]->Fill(track->pt(), track->eta());
     iHists_.h2_["track_etaxchi2"]->Fill(track->eta(), (track->chi2() / track->ndof()));
+
+    edm::LogInfo("SiStripLorentzAnglePCLMonitor") << " track pT()" << track->pt() << " track eta()" << track->eta() << std::endl;
 
     for (const auto& meas : traj->measurements()) {
       const auto& trajState = meas.updatedState();
@@ -131,6 +135,7 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
                                                    edm::Run const& run,
                                                    edm::EventSetup const& iSetup) {
   ibook.setCurrentFolder(folder_);
+  edm::LogPrint("") << "booking in " << folder_ << std::endl;
 
   // prepare track histograms
   iHists_.h1_["track_pt"] = ibook.book1D("track_pt", "", 2000, 0, 1000);
@@ -189,7 +194,7 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void SiStripLorentzAnglePCLMonitor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<std::string>("folder", "SiStripLorentzAngle");
+  desc.add<std::string>("folder", "AlCaReco/SiStripLorentzAngle");
   desc.add<edm::InputTag>("Tracks", edm::InputTag("SiStripCalCosmics"));
   descriptions.addWithDefaultLabel(desc);
 }

@@ -9,7 +9,7 @@ ALCARECOCalCosmicsFilterForSiStripLorentzAngle = hltHighLevel.clone(
     TriggerResultsTag = ("TriggerResults","","RECO")
 )
 # ------------------------------------------------------------------------------
-# This is the sequence for track refitting of the track saved by SiPixelCalSingleMuonLoose
+# This is the sequence for track refitting of the track saved by SiStripCalCosmics
 # to have access to transient objects produced during RECO step and not saved
 
 from Alignment.CommonAlignmentProducer.AlignmentTrackSelector_cfi import *
@@ -39,16 +39,15 @@ ALCARECOSiStripLATrackFilterRefit = cms.Sequence(ALCARECOSiStripLACalibrationTra
 
 # ------------------------------------------------------------------------------
 # This is the module actually doing the calibration
-from CalibTracker.SiPixelLorentzAngle.SiPixelLorentzAnglePCLWorker_cfi import SiPixelLorentzAnglePCLWorker 
-ALCARECOSiSiStripLACalib = SiPixelLorentzAnglePCLWorker.clone(
-    folder = 'AlCaReco/SiPixelLorentzAngle',
-    src = 'ALCARECOSiStripLACalibrationTracksRefit',
-    analysisType = 'MinimalClusterSize'
+from CalibTracker.SiStripLorentzAngle.SiStripLorentzAnglePCLMonitor_cfi import SiStripLorentzAnglePCLMonitor
+ALCARECOSiStripLACalib = SiStripLorentzAnglePCLMonitor.clone(
+    folder = 'AlCaReco/SiStripLorentzAngle',
+    Tracks = 'ALCARECOSiStripLACalibrationTracksRefit'
 )
 # ----------------------------------------------------------------------------
 
 # ****************************************************************************
-# ** Conversion for the SiPixelLorentzAngle DQM dir                         **
+# ** Conversion for the SiStripLorentzAngle DQM dir                         **
 # ****************************************************************************
 MEtoEDMConvertSiStripLorentzAngle = cms.EDProducer("MEtoEDMConverter",
                                                    Name = cms.untracked.string('MEtoEDMConverter'),
@@ -56,12 +55,12 @@ MEtoEDMConvertSiStripLorentzAngle = cms.EDProducer("MEtoEDMConverter",
                                                    # 1 provides basic output
                                                    # 2 provide more detailed output
                                                    Frequency = cms.untracked.int32(50),
-                                                   MEPathToSave = cms.untracked.string('AlCaReco/SiPixelLorentzAngle'))
+                                                   MEPathToSave = cms.untracked.string('AlCaReco/SiStripLorentzAngle'))
 
 # The actual sequence
 seqALCARECOPromptCalibProdSiStripLorentzAngle = cms.Sequence(
     ALCARECOCalCosmicsFilterForSiStripLorentzAngle *
     ALCARECOSiStripLATrackFilterRefit *
-    ALCARECOSiSiStripLACalib *
+    ALCARECOSiStripLACalib *
     MEtoEDMConvertSiStripLorentzAngle 
    )
