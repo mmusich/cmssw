@@ -31,7 +31,10 @@
 #include "DataFormats/TrackerRecHit2D/interface/SiStripMatchedRecHit2D.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit2D.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit1D.h"
-
+#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "RecoLocalTracker/SiStripClusterizer/interface/SiStripClusterInfo.h"
 #include "CalibTracker/SiStripLorentzAngle/interface/SiStripLorentzAngleCalibrationStruct.h"
 //
 // class declaration
@@ -49,11 +52,13 @@ private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
 
   // ------------ member data ------------
+  SiStripClusterInfo m_clusterInfo;
   SiStripLorentzAngleCalibrationHistograms iHists_;
 
   std::string folder_;
   const edm::EDGetTokenT<edm::View<reco::Track>> m_tracks_token;
   const edm::EDGetTokenT<TrajTrackAssociationCollection> m_association_token;
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_tkGeomToken;
 
   struct OnTrackCluster {
     uint32_t det;
@@ -71,9 +76,11 @@ private:
 };
 
 SiStripLorentzAnglePCLMonitor::SiStripLorentzAnglePCLMonitor(const edm::ParameterSet& iConfig)
-    : folder_(iConfig.getParameter<std::string>("folder")),
+    : m_clusterInfo(consumesCollector()),
+      folder_(iConfig.getParameter<std::string>("folder")),
       m_tracks_token(consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("Tracks"))),
-      m_association_token(consumes<TrajTrackAssociationCollection>(iConfig.getParameter<edm::InputTag>("Tracks"))) {}
+      m_association_token(consumes<TrajTrackAssociationCollection>(iConfig.getParameter<edm::InputTag>("Tracks"))),
+      m_tkGeomToken{esConsumes<>()} {}
 //
 // member functions
 //
@@ -81,6 +88,8 @@ SiStripLorentzAnglePCLMonitor::SiStripLorentzAnglePCLMonitor(const edm::Paramete
 // ------------ method called for each event  ------------
 void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
+
+  const auto& tkGeom = iSetup.getData(m_tkGeomToken);
 
   edm::Handle<edm::View<reco::Track>> tracks;
   iEvent.getByToken(m_tracks_token, tracks);
@@ -91,6 +100,7 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
 
   std::vector<OnTrackCluster> clusters{};
 
+  // first collect all the clusters
   for (const auto& assoc : *trajTrackAssociations) {
     const auto traj = assoc.key.get();
     const auto track = assoc.val.get();
@@ -129,6 +139,23 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
         clusters.emplace_back(simple1d->geographicalId().rawId(), simple1d->cluster().get(), traj, track, meas);
       }
     }
+  }
+
+  for (const auto clus : clusters) {
+    uint32_t c_nstrips = clus.cluster->amplitudes().size();
+    m_clusterInfo.setCluster(*clus.cluster, clus.det);
+    float c_variance = m_clusterInfo.variance();
+    const auto& trajState = clus.measurement.updatedState();
+    const auto trackDir = trajState.localDirection();
+    float c_localdirx = trackDir.x();
+    float c_localdiry = trackDir.y();
+    float c_localdirz = trackDir.z();
+    const auto hit = clus.measurement.recHit()->hit();
+    const auto stripDet = dynamic_cast<const StripGeomDetUnit*>(tkGeom.idToDet(hit->geographicalId()));
+    float c_barycenter = stripDet->specificTopology().localPosition(clus.cluster->barycenter()).x();
+    float c_localx = stripDet->toLocal(trajState.globalPosition()).x();
+    float c_rhlocalx = hit->localPosition().x();
+    float c_rhlocalxerr = hit->localPositionError().xx();
   }
 }
 
