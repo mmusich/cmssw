@@ -19,23 +19,34 @@
 #include <string>
 
 // user include files
+#include "CalibTracker/Records/interface/SiStripDependentRecords.h"
+#include "CalibTracker/SiStripCommon/interface/ShallowTools.h"
+#include "CalibTracker/SiStripLorentzAngle/interface/SiStripLorentzAngleCalibrationStruct.h"
+#include "CondFormats/SiStripObjects/interface/SiStripLorentzAngle.h"
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 #include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
+#include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackerRecHit2D/interface/SiStripMatchedRecHit2D.h"
+#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit1D.h"
+#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit2D.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
-#include "DataFormats/TrackerRecHit2D/interface/SiStripMatchedRecHit2D.h"
-#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit2D.h"
-#include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit1D.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "MagneticField/Engine/interface/MagneticField.h"
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "RecoLocalTracker/SiStripClusterizer/interface/SiStripClusterInfo.h"
-#include "CalibTracker/SiStripLorentzAngle/interface/SiStripLorentzAngleCalibrationStruct.h"
+#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
+
+#include "TVector3.h"
+
 //
 // class declaration
 //
@@ -50,6 +61,9 @@ public:
 private:
   void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
   void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void dqmBeginRun(edm::Run const&, edm::EventSetup const&) override;
+
+  std::string moduleLocationType(const uint32_t& mod, const TrackerTopology* tTopo);
 
   // ------------ member data ------------
   SiStripClusterInfo m_clusterInfo;
@@ -59,6 +73,11 @@ private:
   const edm::EDGetTokenT<edm::View<reco::Track>> m_tracks_token;
   const edm::EDGetTokenT<TrajTrackAssociationCollection> m_association_token;
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_tkGeomToken;
+  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoEsToken_;
+
+  const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_tkGeomTokenBR;
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> m_magFieldTokenBR;
+  const edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleDepRcd> m_lorentzAngleTokenBR;
 
   struct OnTrackCluster {
     uint32_t det;
@@ -80,16 +99,74 @@ SiStripLorentzAnglePCLMonitor::SiStripLorentzAnglePCLMonitor(const edm::Paramete
       folder_(iConfig.getParameter<std::string>("folder")),
       m_tracks_token(consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("Tracks"))),
       m_association_token(consumes<TrajTrackAssociationCollection>(iConfig.getParameter<edm::InputTag>("Tracks"))),
-      m_tkGeomToken{esConsumes<>()} {}
+      m_tkGeomToken{esConsumes<>()},
+      topoEsToken_{esConsumes<>()},
+      m_tkGeomTokenBR{esConsumes<edm::Transition::BeginRun>()},
+      m_magFieldTokenBR{esConsumes<edm::Transition::BeginRun>()},
+      m_lorentzAngleTokenBR{esConsumes<edm::Transition::BeginRun>()} {}
 //
 // member functions
 //
+
+void SiStripLorentzAnglePCLMonitor::dqmBeginRun(edm::Run const& run, edm::EventSetup const& iSetup) {
+  const auto& tkGeom = iSetup.getData(m_tkGeomTokenBR);
+  const auto& magField = iSetup.getData(m_magFieldTokenBR);
+  const auto& lorentzAngle = iSetup.getData(m_lorentzAngleTokenBR);
+
+  std::vector<uint32_t> c_rawid;
+  std::vector<float> c_globalZofunitlocalY, c_localB, c_BdotY, c_driftx, c_drifty, c_driftz, c_lorentzAngle;
+
+  auto dets = tkGeom.detsTIB();
+  dets.insert(dets.end(), tkGeom.detsTID().begin(), tkGeom.detsTID().end());
+  dets.insert(dets.end(), tkGeom.detsTOB().begin(), tkGeom.detsTOB().end());
+  dets.insert(dets.end(), tkGeom.detsTEC().begin(), tkGeom.detsTEC().end());
+  for (auto det : dets) {
+    auto detid = det->geographicalId().rawId();
+    const StripGeomDetUnit* stripDet = dynamic_cast<const StripGeomDetUnit*>(tkGeom.idToDet(det->geographicalId()));
+    if (stripDet) {
+      c_rawid.push_back(detid);
+      c_globalZofunitlocalY.push_back(stripDet->toGlobal(LocalVector(0, 1, 0)).z());
+      iHists_.orientation_[detid] = (stripDet->toGlobal(LocalVector(0, 1, 0)).z() < 0 ? -1 : 1);
+      const auto locB = magField.inTesla(stripDet->surface().position());
+      c_localB.push_back(locB.mag());
+      c_BdotY.push_back(stripDet->surface().toLocal(locB).y());
+      const auto drift = shallow::drift(stripDet, magField, lorentzAngle);
+      c_driftx.push_back(drift.x());
+      c_drifty.push_back(drift.y());
+      c_driftz.push_back(drift.z());
+      c_lorentzAngle.push_back(lorentzAngle.getLorentzAngle(detid));
+    }
+  }
+}
+
+std::string SiStripLorentzAnglePCLMonitor::moduleLocationType(const uint32_t& mod, const TrackerTopology* tTopo) {
+  const SiStripDetId detid(mod);
+  std::string subdet = "";
+  unsigned int layer = 0;
+  if (detid.subDetector() == SiStripDetId::TIB) {
+    subdet = "TIB";
+    layer = tTopo->layer(mod);
+  }
+
+  if (detid.subDetector() == SiStripDetId::TOB) {
+    subdet = "TOB";
+    layer = tTopo->layer(mod);
+  }
+
+  std::string type = (detid.stereo() ? "s" : "a");
+  std::string d_l_t = Form("%s_L%d%s", subdet.c_str(), layer, type.c_str());
+
+  if (layer == 0)
+    return subdet;
+  return d_l_t;
+}
 
 // ------------ method called for each event  ------------
 void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
 
   const auto& tkGeom = iSetup.getData(m_tkGeomToken);
+  const TrackerTopology* tTopo = &iSetup.getData(topoEsToken_);
 
   edm::Handle<edm::View<reco::Track>> tracks;
   iEvent.getByToken(m_tracks_token, tracks);
@@ -156,6 +233,54 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
     float c_localx = stripDet->toLocal(trajState.globalPosition()).x();
     float c_rhlocalx = hit->localPosition().x();
     float c_rhlocalxerr = hit->localPositionError().xx();
+
+    uint32_t mod = hit->geographicalId().rawId();
+    std::string locationtype = this->moduleLocationType(mod, tTopo);
+
+    if (locationtype.empty())
+      return;
+
+    //la_[locationtype] = la_db_[mod];
+
+    TVector3 localdir(c_localdirx, c_localdiry, c_localdirz);
+    int sign = iHists_.orientation_[mod];
+    float tantheta = TMath::Tan(localdir.Theta());
+    float cosphi = TMath::Cos(localdir.Phi());
+    float theta = localdir.Theta();
+
+    iHists_.h1_[Form("%s_nstrips", locationtype.c_str())]->Fill(c_nstrips);
+    iHists_.h1_[Form("%s_tanthetatrk", locationtype.c_str())]->Fill(sign * tantheta);
+    iHists_.h1_[Form("%s_cosphitrk", locationtype.c_str())]->Fill(cosphi);
+
+    // nstrips
+    iHists_.h2_[Form("%s_tanthcosphtrk_nstrip", locationtype.c_str())]->Fill(sign * cosphi * tantheta, c_nstrips);
+    iHists_.h2_[Form("%s_thetatrk_nstrip", locationtype.c_str())]->Fill(sign * theta * cosphi, c_nstrips);
+
+    // variance for width == 2
+    if (c_nstrips == 2) {
+      iHists_.h1_[Form("%s_variance_w2", locationtype.c_str())]->Fill(c_variance);
+      iHists_.h2_[Form("%s_tanthcosphtrk_var2", locationtype.c_str())]->Fill(sign * cosphi * tantheta, c_variance);
+      iHists_.h2_[Form("%s_thcosphtrk_var2", locationtype.c_str())]->Fill(sign * cosphi * theta, c_variance);
+      //if ( saveHistosMods_ ) {
+      //iHists_.h2_ct_var2_m_[mod] -> Fill(sign*cosphi*tantheta,variance);
+      //iHists_.h2_t_var2_m_[mod]  -> Fill(sign*cosphi*theta,variance);
+      //}
+    }
+    // variance for width == 3
+    if (c_nstrips == 3) {
+      iHists_.h1_[Form("%s_variance_w3", locationtype.c_str())]->Fill(c_variance);
+      iHists_.h2_[Form("%s_tanthcosphtrk_var3", locationtype.c_str())]->Fill(sign * cosphi * tantheta, c_variance);
+      iHists_.h2_[Form("%s_thcosphtrk_var3", locationtype.c_str())]->Fill(sign * cosphi * theta, c_variance);
+      //if ( saveHistosMods_ ){
+      //iHists_.h2_ct_var3_m_[mod] -> Fill(sign*cosphi*tantheta,variance);
+      //	iHists_.h2_t_var3_m_[mod]  -> Fill(sign*cosphi*theta,variance);
+      //}
+    }
+
+    //if ( saveHistosMods_ ){
+    //  iHists_.h2_ct_w_m_[mod] -> Fill(sign*cosphi*tantheta,nstrips);
+    //  iHists_.h2_t_w_m_[mod]  -> Fill(sign*cosphi*theta,nstrips);
+    // }
   }
 }
 
