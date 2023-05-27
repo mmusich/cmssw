@@ -16,6 +16,7 @@
 //
 //
 
+// system includes
 #include <string>
 
 // user include files
@@ -45,6 +46,7 @@
 #include "RecoLocalTracker/SiStripClusterizer/interface/SiStripClusterInfo.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
 
+// ROOT includes
 #include "TVector3.h"
 
 //
@@ -69,12 +71,13 @@ private:
   SiStripClusterInfo m_clusterInfo;
   SiStripLorentzAngleCalibrationHistograms iHists_;
 
-  std::string folder_;
+  const std::string folder_;
+  const bool saveHistosMods_;
   const edm::EDGetTokenT<edm::View<reco::Track>> m_tracks_token;
   const edm::EDGetTokenT<TrajTrackAssociationCollection> m_association_token;
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_tkGeomToken;
-  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoEsToken_;
 
+  const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> m_topoEsTokenBR;
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> m_tkGeomTokenBR;
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> m_magFieldTokenBR;
   const edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleDepRcd> m_lorentzAngleTokenBR;
@@ -97,10 +100,11 @@ private:
 SiStripLorentzAnglePCLMonitor::SiStripLorentzAnglePCLMonitor(const edm::ParameterSet& iConfig)
     : m_clusterInfo(consumesCollector()),
       folder_(iConfig.getParameter<std::string>("folder")),
+      saveHistosMods_(iConfig.getParameter<bool>("saveHistoMods")),
       m_tracks_token(consumes<edm::View<reco::Track>>(iConfig.getParameter<edm::InputTag>("Tracks"))),
       m_association_token(consumes<TrajTrackAssociationCollection>(iConfig.getParameter<edm::InputTag>("Tracks"))),
       m_tkGeomToken{esConsumes<>()},
-      topoEsToken_{esConsumes<>()},
+      m_topoEsTokenBR{esConsumes<edm::Transition::BeginRun>()},
       m_tkGeomTokenBR{esConsumes<edm::Transition::BeginRun>()},
       m_magFieldTokenBR{esConsumes<edm::Transition::BeginRun>()},
       m_lorentzAngleTokenBR{esConsumes<edm::Transition::BeginRun>()} {}
@@ -112,6 +116,7 @@ void SiStripLorentzAnglePCLMonitor::dqmBeginRun(edm::Run const& run, edm::EventS
   const auto& tkGeom = iSetup.getData(m_tkGeomTokenBR);
   const auto& magField = iSetup.getData(m_magFieldTokenBR);
   const auto& lorentzAngle = iSetup.getData(m_lorentzAngleTokenBR);
+  const TrackerTopology* tTopo = &iSetup.getData(m_topoEsTokenBR);
 
   std::vector<uint32_t> c_rawid;
   std::vector<float> c_globalZofunitlocalY, c_localB, c_BdotY, c_driftx, c_drifty, c_driftz, c_lorentzAngle;
@@ -135,6 +140,8 @@ void SiStripLorentzAnglePCLMonitor::dqmBeginRun(edm::Run const& run, edm::EventS
       c_drifty.push_back(drift.y());
       c_driftz.push_back(drift.z());
       c_lorentzAngle.push_back(lorentzAngle.getLorentzAngle(detid));
+      iHists_.la_db_[detid] = lorentzAngle.getLorentzAngle(detid);
+      iHists_.moduleLocationType_[detid] = this->moduleLocationType(detid, tTopo);
     }
   }
 }
@@ -166,7 +173,6 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
   using namespace edm;
 
   const auto& tkGeom = iSetup.getData(m_tkGeomToken);
-  const TrackerTopology* tTopo = &iSetup.getData(topoEsToken_);
 
   edm::Handle<edm::View<reco::Track>> tracks;
   iEvent.getByToken(m_tracks_token, tracks);
@@ -235,8 +241,8 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
     float c_rhlocalxerr = hit->localPositionError().xx();
 
     uint32_t mod = hit->geographicalId().rawId();
-    std::string locationtype = this->moduleLocationType(mod, tTopo);
 
+    std::string locationtype = iHists_.moduleLocationType_[mod];
     if (locationtype.empty())
       return;
 
@@ -261,26 +267,30 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
       iHists_.h1_[Form("%s_variance_w2", locationtype.c_str())]->Fill(c_variance);
       iHists_.h2_[Form("%s_tanthcosphtrk_var2", locationtype.c_str())]->Fill(sign * cosphi * tantheta, c_variance);
       iHists_.h2_[Form("%s_thcosphtrk_var2", locationtype.c_str())]->Fill(sign * cosphi * theta, c_variance);
-      //if ( saveHistosMods_ ) {
-      //iHists_.h2_ct_var2_m_[mod] -> Fill(sign*cosphi*tantheta,variance);
-      //iHists_.h2_t_var2_m_[mod]  -> Fill(sign*cosphi*theta,variance);
-      //}
+
+      // not in PCL
+      if (saveHistosMods_) {
+        iHists_.h2_ct_var2_m_[mod]->Fill(sign * cosphi * tantheta, c_variance);
+        iHists_.h2_t_var2_m_[mod]->Fill(sign * cosphi * theta, c_variance);
+      }
     }
     // variance for width == 3
     if (c_nstrips == 3) {
       iHists_.h1_[Form("%s_variance_w3", locationtype.c_str())]->Fill(c_variance);
       iHists_.h2_[Form("%s_tanthcosphtrk_var3", locationtype.c_str())]->Fill(sign * cosphi * tantheta, c_variance);
       iHists_.h2_[Form("%s_thcosphtrk_var3", locationtype.c_str())]->Fill(sign * cosphi * theta, c_variance);
-      //if ( saveHistosMods_ ){
-      //iHists_.h2_ct_var3_m_[mod] -> Fill(sign*cosphi*tantheta,variance);
-      //	iHists_.h2_t_var3_m_[mod]  -> Fill(sign*cosphi*theta,variance);
-      //}
-    }
 
-    //if ( saveHistosMods_ ){
-    //  iHists_.h2_ct_w_m_[mod] -> Fill(sign*cosphi*tantheta,nstrips);
-    //  iHists_.h2_t_w_m_[mod]  -> Fill(sign*cosphi*theta,nstrips);
-    // }
+      // not in PCL
+      if (saveHistosMods_) {
+        iHists_.h2_ct_var3_m_[mod]->Fill(sign * cosphi * tantheta, c_variance);
+        iHists_.h2_t_var3_m_[mod]->Fill(sign * cosphi * theta, c_variance);
+      }
+    }
+    // not in PCL
+    if (saveHistosMods_) {
+      iHists_.h2_ct_w_m_[mod]->Fill(sign * cosphi * tantheta, c_nstrips);
+      iHists_.h2_t_w_m_[mod]->Fill(sign * cosphi * theta, c_nstrips);
+    }
   }
 }
 
@@ -309,10 +319,11 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
   iHists_.modtypes_.push_back("s");
   iHists_.modtypes_.push_back("a");
 
-  // prepare modules histograms
+  // prepare type histograms
   for (auto& layers : iHists_.nlayers_) {
     std::string subdet = layers.first;
     for (int l = 1; l <= layers.second; ++l) {
+      ibook.setCurrentFolder(folder_+Form("/%s/L%d",subdet.c_str(),l));
       for (auto& t : iHists_.modtypes_) {
         std::string locationtype = Form("%s_L%d%s", subdet.c_str(), l, t.c_str());
         //std::cout << "preparing histograms for " << locationtype << std::endl;
@@ -342,12 +353,43 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
       }
     }
   }
+
+  // prepare module histograms
+  if (saveHistosMods_) {
+    ibook.setCurrentFolder(folder_+"/modules");
+    for (const auto& [mod, locationType] : iHists_.moduleLocationType_) {
+      // histograms for each module
+      iHists_.h1_[Form("%s_%d_nstrips", locationType.c_str(), mod)] =
+          ibook.book1D(Form("%s_%d_nstrips", locationType.c_str(), mod), "", 10, 0, 10);
+      iHists_.h1_[Form("%s_%d_tanthetatrk", locationType.c_str(), mod)] =
+          ibook.book1D(Form("%s_%d_tanthetatrk", locationType.c_str(), mod), "", 40, -1., 1.);
+      iHists_.h1_[Form("%s_%d_cosphitrk", locationType.c_str(), mod)] =
+          ibook.book1D(Form("%s_%d_cosphitrk", locationType.c_str(), mod), "", 40, -1, 1);
+      iHists_.h1_[Form("%s_%d_variance_w2", locationType.c_str(), mod)] =
+          ibook.book1D(Form("%s_%d_variance_w2", locationType.c_str(), mod), "", 20, 0, 1);
+      iHists_.h1_[Form("%s_%d_variance_w3", locationType.c_str(), mod)] =
+          ibook.book1D(Form("%s_%d_variance_w3", locationType.c_str(), mod), "", 20, 0, 1);
+      iHists_.h2_ct_w_m_[mod] =
+          ibook.book2D(Form("ct_w_m_%s_%d", locationType.c_str(), mod), "", 90, -0.9, 0.9, 10, 0, 10);
+      iHists_.h2_t_w_m_[mod] =
+          ibook.book2D(Form("t_w_m_%s_%d", locationType.c_str(), mod), "", 90, -0.9, 0.9, 10, 0, 10);
+      iHists_.h2_ct_var2_m_[mod] =
+          ibook.book2D(Form("ct_var2_m_%s_%d", locationType.c_str(), mod), "", 90, -0.9, 0.9, 20, 0, 1);
+      iHists_.h2_ct_var3_m_[mod] =
+          ibook.book2D(Form("ct_var3_m_%s_%d", locationType.c_str(), mod), "", 90, -0.9, 0.9, 20, 0, 1);
+      iHists_.h2_t_var2_m_[mod] =
+          ibook.book2D(Form("t_var2_m_%s_%d", locationType.c_str(), mod), "", 90, -0.9, 0.9, 20, 0, 1);
+      iHists_.h2_t_var3_m_[mod] =
+          ibook.book2D(Form("t_var3_m_%s_%d", locationType.c_str(), mod), "", 90, -0.9, 0.9, 20, 0, 1);
+    }
+  }
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void SiStripLorentzAnglePCLMonitor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<std::string>("folder", "AlCaReco/SiStripLorentzAngle");
+  desc.add<bool>("saveHistoMods", false);
   desc.add<edm::InputTag>("Tracks", edm::InputTag("SiStripCalCosmics"));
   descriptions.addWithDefaultLabel(desc);
 }

@@ -20,6 +20,7 @@ public:
 
   std::map<unsigned int, int> orientation_;
   std::map<unsigned int, float> la_db_;
+  std::map<unsigned int, std::string> moduleLocationType_;
 
   // event data
   unsigned int eventnumber_ = 0;
@@ -46,13 +47,13 @@ public:
   std::map<std::string, dqm::reco::MonitorElement*> h1_;
   std::map<std::string, dqm::reco::MonitorElement*> h2_;
 
-  std::map<int, dqm::reco::MonitorElement*> h2_ct_w_m_;
-  std::map<int, dqm::reco::MonitorElement*> h2_ct_var2_m_;
-  std::map<int, dqm::reco::MonitorElement*> h2_ct_var3_m_;
+  std::unordered_map<int, dqm::reco::MonitorElement*> h2_ct_w_m_;
+  std::unordered_map<int, dqm::reco::MonitorElement*> h2_ct_var2_m_;
+  std::unordered_map<int, dqm::reco::MonitorElement*> h2_ct_var3_m_;
 
-  std::map<int, dqm::reco::MonitorElement*> h2_t_w_m_;
-  std::map<int, dqm::reco::MonitorElement*> h2_t_var2_m_;
-  std::map<int, dqm::reco::MonitorElement*> h2_t_var3_m_;
+  std::unordered_map<int, dqm::reco::MonitorElement*> h2_t_w_m_;
+  std::unordered_map<int, dqm::reco::MonitorElement*> h2_t_var2_m_;
+  std::unordered_map<int, dqm::reco::MonitorElement*> h2_t_var3_m_;
 
   std::map<std::string, dqm::reco::MonitorElement*> hp_;
 
