@@ -18,9 +18,9 @@ public:
   std::vector<float>* infolocalb_ = nullptr;
   std::vector<float>* infola_ = nullptr;
 
-  std::map<unsigned int, int> orientation_;
-  std::map<unsigned int, float> la_db_;
-  std::map<unsigned int, std::string> moduleLocationType_;
+  std::map<uint32_t, int> orientation_;
+  std::map<uint32_t, float> la_db_;
+  std::map<uint32_t, std::string> moduleLocationType_;
 
   // event data
   unsigned int eventnumber_ = 0;
@@ -47,13 +47,17 @@ public:
   std::map<std::string, dqm::reco::MonitorElement*> h1_;
   std::map<std::string, dqm::reco::MonitorElement*> h2_;
 
-  std::unordered_map<int, dqm::reco::MonitorElement*> h2_ct_w_m_;
-  std::unordered_map<int, dqm::reco::MonitorElement*> h2_ct_var2_m_;
-  std::unordered_map<int, dqm::reco::MonitorElement*> h2_ct_var3_m_;
+  // These are vectors since std:map::find is expensive
+  // we're going to profi of the dense indexing offered by
+  // SiStripHashedDetId and index the histogram position
+  // with the natural booking order
+  std::vector<dqm::reco::MonitorElement*> h2_ct_w_m_;
+  std::vector<dqm::reco::MonitorElement*> h2_ct_var2_m_;
+  std::vector<dqm::reco::MonitorElement*> h2_ct_var3_m_;
 
-  std::unordered_map<int, dqm::reco::MonitorElement*> h2_t_w_m_;
-  std::unordered_map<int, dqm::reco::MonitorElement*> h2_t_var2_m_;
-  std::unordered_map<int, dqm::reco::MonitorElement*> h2_t_var3_m_;
+  std::vector<dqm::reco::MonitorElement*> h2_t_w_m_;
+  std::vector<dqm::reco::MonitorElement*> h2_t_var2_m_;
+  std::vector<dqm::reco::MonitorElement*> h2_t_var3_m_;
 
   std::map<std::string, dqm::reco::MonitorElement*> hp_;
 
