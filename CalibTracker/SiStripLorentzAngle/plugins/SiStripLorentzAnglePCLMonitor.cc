@@ -124,9 +124,9 @@ void SiStripLorentzAnglePCLMonitor::dqmBeginRun(edm::Run const& run, edm::EventS
   std::vector<float> c_globalZofunitlocalY, c_localB, c_BdotY, c_driftx, c_drifty, c_driftz, c_lorentzAngle;
 
   auto dets = tkGeom.detsTIB();
-  dets.insert(dets.end(), tkGeom.detsTID().begin(), tkGeom.detsTID().end());
+  //dets.insert(dets.end(), tkGeom.detsTID().begin(), tkGeom.detsTID().end());
   dets.insert(dets.end(), tkGeom.detsTOB().begin(), tkGeom.detsTOB().end());
-  dets.insert(dets.end(), tkGeom.detsTEC().begin(), tkGeom.detsTEC().end());
+  //dets.insert(dets.end(), tkGeom.detsTEC().begin(), tkGeom.detsTEC().end());
 
   for (auto det : dets) {
     auto detid = det->geographicalId().rawId();
@@ -162,46 +162,6 @@ void SiStripLorentzAnglePCLMonitor::dqmBeginRun(edm::Run const& run, edm::EventS
   iHists_.h2_t_w_m_.reserve(c_rawid.size());
   iHists_.h2_t_var2_m_.reserve(c_rawid.size());
   iHists_.h2_t_var3_m_.reserve(c_rawid.size());
-
-  //std::cout << "[testSiStripHashedDetId::" << __func__ << "]"
-  //	    << " DetId hash map: " << std::endl
-  //    << m_hash;
-
-  /*
-  SiStripHashedDetId::const_iterator iter = m_hash.begin();
-  for (; iter != m_hash.end(); ++iter) {
-    std::cout << " Index: " << std::dec << std::setw(5) << std::setfill(' ') << iter - m_hash.begin() << "  DetId: " << *iter << " Index from hash map: " <<  m_hash.hashedIndex(static_cast<uint32_t>(*iter)) << " DetId from hash map: " << m_hash.unhashIndex(iter - m_hash.begin()) << std::endl;
-  }
-  */
-
-  // Retrieve hashed indices
-  /*
-  std::vector<uint32_t> hashes;
-  hashes.clear();
-  hashes.reserve(c_rawid.size());
-  for(const auto& mod : c_rawid) {
-    hashes.push_back(m_hash.hashedIndex(mod));
-    //LogDebug("SiStripLorentzAnglePCLMonitor") << "module ID: " << mod << " hash:" << hash;
-    //std::cout  << "module ID: " << mod << " hash:" << m_hash.hashedIndex(mod) << " int: " << int(m_hash.hashedIndex(mod)) << std::endl;
-  }
-  */
-
-  /*
-  std::vector<uint32_t> control_dets;
-  control_dets.reserve(hashes.size());
-  std::vector<uint32_t>::const_iterator ii = hashes.begin();
-  for (; ii != hashes.end(); ++ii) {
-    uint32_t detid = m_hash.unhashIndex(*ii);
-    std::cout << " dedid: " << detid  << " at index " << ii - hashes.begin() << " hash: " << *ii << std::endl;  
-    control_dets.push_back(detid);
-  }
-
-  if(c_rawid!=control_dets){
-    std::cout << "control_dets differs from c_rawid" << std::endl;
-  } else {
-    std::cout << "all is fine with the world" << std::endl;
-  }
-  */
 }
 
 std::string SiStripLorentzAnglePCLMonitor::moduleLocationType(const uint32_t& mod, const TrackerTopology* tTopo) {
@@ -299,11 +259,12 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
     float c_rhlocalxerr = hit->localPositionError().xx();
 
     const uint32_t mod = hit->geographicalId().rawId();
-    const auto& hashedIndex = m_hash.hashedIndex(mod);
 
     std::string locationtype = iHists_.moduleLocationType_[mod];
     if (locationtype.empty())
       return;
+
+    const auto& hashedIndex = m_hash.hashedIndex(mod);
 
     //la_[locationtype] = la_db_[mod];
 
@@ -329,7 +290,6 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
 
       // not in PCL
       if (saveHistosMods_) {
-        //std::cout << "A) I AM GOING TO FILL DetId: " << mod << " index: " << hashedIndex << std::endl;
         iHists_.h2_ct_var2_m_[hashedIndex]->Fill(sign * cosphi * tantheta, c_variance);
         iHists_.h2_t_var2_m_[hashedIndex]->Fill(sign * cosphi * theta, c_variance);
       }
@@ -342,14 +302,12 @@ void SiStripLorentzAnglePCLMonitor::analyze(const edm::Event& iEvent, const edm:
 
       // not in PCL
       if (saveHistosMods_) {
-        //std::cout << "B) I AM GOING TO FILL DetId: " << mod << " index: " << hashedIndex << std::endl;
         iHists_.h2_ct_var3_m_[hashedIndex]->Fill(sign * cosphi * tantheta, c_variance);
         iHists_.h2_t_var3_m_[hashedIndex]->Fill(sign * cosphi * theta, c_variance);
       }
     }
     // not in PCL
     if (saveHistosMods_) {
-      //std::cout << "C) I AM GOING TO FILL DetId: " << mod << " index: " << hashedIndex << std::endl;
       iHists_.h2_ct_w_m_[hashedIndex]->Fill(sign * cosphi * tantheta, c_nstrips);
       iHists_.h2_t_w_m_[hashedIndex]->Fill(sign * cosphi * theta, c_nstrips);
     }
@@ -375,7 +333,7 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
   iHists_.h2_["track_ptxeta"] = ibook.book2D("track_ptxeta_2d", "", 200, 0, 100, 60, -3, 3);
   iHists_.h2_["track_etaxchi2"] = ibook.book2D("track_etaxchi2_2d", "", 60, -3, 3, 100, 0, 5);
 
-  //
+  // fill in the module types
   iHists_.nlayers_["TIB"] = 4;
   iHists_.nlayers_["TOB"] = 6;
   iHists_.modtypes_.push_back("s");
@@ -387,8 +345,10 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
     for (int l = 1; l <= layers.second; ++l) {
       ibook.setCurrentFolder(folder_ + Form("/%s/L%d", subdet.c_str(), l));
       for (auto& t : iHists_.modtypes_) {
+        // do not fill stereo where there aren't
+        if (l > 2 && t == "s")
+          continue;
         std::string locationtype = Form("%s_L%d%s", subdet.c_str(), l, t.c_str());
-        //std::cout << "preparing histograms for " << locationtype << std::endl;
         iHists_.h1_[Form("%s_nstrips", locationtype.c_str())] =
             ibook.book1D(Form("%s_nstrips", locationtype.c_str()), "", 20, 0, 20);
         iHists_.h1_[Form("%s_tanthetatrk", locationtype.c_str())] =
@@ -442,7 +402,6 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
 	continue;
       }
       */
-      //std::cout <<" counter: " << counter << " dealing with index: " << iter - m_hash.begin() << " DetId:" << (*iter) << " location: " << locationType << std::endl;
       iHists_.h2_ct_w_m_.push_back(
           ibook.book2D(Form("ct_w_m_%s_%d", locationType.c_str(), *iter), "", 90, -0.9, 0.9, 10, 0, 10));
       iHists_.h2_t_w_m_.push_back(
@@ -457,7 +416,6 @@ void SiStripLorentzAnglePCLMonitor::bookHistograms(DQMStore::IBooker& ibook,
           ibook.book2D(Form("t_var3_m_%s_%d", locationType.c_str(), *iter), "", 90, -0.9, 0.9, 20, 0, 1));
       counter++;
     }
-    //std::cout << "pushed back " << counter << " times" << " vector size:" << iHists_.h2_ct_var3_m_.size() << std::endl;
   }
 }
 
