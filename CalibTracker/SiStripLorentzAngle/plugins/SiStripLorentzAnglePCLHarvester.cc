@@ -16,6 +16,10 @@
 #include <fmt/format.h>
 #include <fmt/printf.h>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 // user includes
 #include "CalibTracker/SiStripLorentzAngle/interface/SiStripLorentzAngleCalibrationStruct.h"
@@ -38,6 +42,21 @@
 
 // for ROOT fits
 #include "TFitResult.h"
+#include "TF1.h"
+
+namespace siStripLACalibration {
+  double fitFunction(double* x, double* par) {
+    double a = par[0];
+    double thetaL = par[1];
+    double b = par[2];
+
+    double tanThetaL = std::tan(thetaL);
+    double value = a * std::abs(std::tan(x[0]) - tanThetaL) + b;
+
+    //TF1::RejectPoint();  // Reject points outside the fit range
+    return value;
+  }
+}  // namespace siStripLACalibration
 
 //------------------------------------------------------------------------------
 class SiStripLorentzAnglePCLHarvester : public DQMEDHarvester {
@@ -51,12 +70,16 @@ public:
 private:
   void dqmEndJob(DQMStore::IBooker&, DQMStore::IGetter&) override;
   void endRun(const edm::Run&, const edm::EventSetup&) override;
+  std::string getFolder(const std::string& histoName);
 
   // es tokens
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomEsToken_;
   const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoEsTokenBR_, topoEsTokenER_;
   const edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleRcd> siStripLAEsToken_;
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_;
+
+  // member data
+  SiStripLorentzAngleCalibrationHistograms iHists_;
 
   const std::string dqmDir_;
   const std::vector<double> fitRange_;
@@ -125,6 +148,101 @@ void SiStripLorentzAnglePCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQMS
   // go in the right directory
   iGetter.cd();
   iGetter.setCurrentFolder(dqmDir_);
+
+  // fill in the module types
+  iHists_.nlayers_["TIB"] = 4;
+  iHists_.nlayers_["TOB"] = 6;
+  iHists_.modtypes_.push_back("s");
+  iHists_.modtypes_.push_back("a");
+
+  std::vector<std::string> MEtoHarvest = {"tanthcosphtrk_nstrip",
+                                          "thetatrk_nstrip",
+                                          "tanthcosphtrk_var2",
+                                          "tanthcosphtrk_var3",
+                                          "thcosphtrk_var2",
+                                          "thcosphtrk_var3"};
+
+  // prepare the histograms to be harvested
+  for (auto& layers : iHists_.nlayers_) {
+    std::string subdet = layers.first;
+    for (int l = 1; l <= layers.second; ++l) {
+      for (auto& t : iHists_.modtypes_) {
+        // do not fill stereo where there aren't
+        if (l > 2 && t == "s")
+          continue;
+        std::string locationtype = Form("%s_L%d%s", subdet.c_str(), l, t.c_str());
+
+        /*
+	iHists_.h2_[Form("%s_tanthcosphtrk_nstrip", locationtype.c_str())] = iGetter.get(Form("%s_tanthcosphtrk_nstrip", locationtype.c_str()));
+        iHists_.h2_[Form("%s_thetatrk_nstrip", locationtype.c_str())] = iGetter.get(Form("%s_thetatrk_nstrip", locationtype.c_str()));
+        iHists_.h2_[Form("%s_tanthcosphtrk_var2", locationtype.c_str())] = iGetter.get(Form("%s_tanthcosphtrk_var2", locationtype.c_str()));
+        iHists_.h2_[Form("%s_tanthcosphtrk_var3", locationtype.c_str())] = iGetter.get(Form("%s_tanthcosphtrk_var3", locationtype.c_str()));
+        iHists_.h2_[Form("%s_thcosphtrk_var2", locationtype.c_str())] = iGetter.get(Form("%s_thcosphtrk_var2", locationtype.c_str()));
+        iHists_.h2_[Form("%s_thcosphtrk_var3", locationtype.c_str())] = iGetter.get(Form("%s_thcosphtrk_var3", locationtype.c_str()));
+	*/
+
+        for (const auto& toHarvest : MEtoHarvest) {
+          const char* address =
+              Form("%s/%s/L%d/%s_%s", dqmDir_.c_str(), subdet.c_str(), l, locationtype.c_str(), toHarvest.c_str());
+          //std::cout << "harvesting at: " << address << std::endl;
+
+          iHists_.h2_[Form("%s_%s", locationtype.c_str(), toHarvest.c_str())] = iGetter.get(address);
+          if (iHists_.h2_[Form("%s_%s", locationtype.c_str(), toHarvest.c_str())] == nullptr) {
+            std::cout << "could not retrieve: " << Form("%s_%s", locationtype.c_str(), toHarvest.c_str()) << std::endl;
+          }
+        }
+      }
+    }
+  }
+
+  // prepare the profiles
+  for (const auto& ME : iHists_.h2_) {
+    //std::cout << "profiling " << ME.first << std::endl;  //" which is of kind" << ME.second->kind() << std::endl;
+    TProfile* hp = (TProfile*)ME.second->getTH2F()->ProfileX();
+    this->getFolder(ME.first);
+    iBooker.setCurrentFolder(dqmDir_ + "/" + getFolder(ME.first));
+    iHists_.p_[hp->GetName()] = iBooker.bookProfile(hp->GetName(), hp);
+    delete hp;
+  }
+
+  // do the fits
+  for (const auto& prof : iHists_.p_) {
+    //fit only this type of profile
+    if ((prof.first).find("thetatrk_nstrip") != std::string::npos) {
+      // Create the TF1 function
+      TF1* fitFunc = new TF1(
+          "fitFunc", siStripLACalibration ::fitFunction, prof.second->getAxisMin(1), prof.second->getAxisMax(1), 3);
+      //fitFunc->SetParameters(5.-2, -7.e-2, 8.e-2);
+
+      // Fit the function to the data
+      prof.second->getTProfile()->Fit(fitFunc, "F");  // "F" option performs a least-squares fit
+
+      // Get the fit results
+      Double_t a_fit = fitFunc->GetParameter(0);
+      Double_t thetaL_fit = fitFunc->GetParameter(1);
+      Double_t b_fit = fitFunc->GetParameter(2);
+      std::cout << prof.first << " fit result: a=" << a_fit << " theta_L=" << thetaL_fit << " b=" << b_fit << std::endl;
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+std::string SiStripLorentzAnglePCLHarvester::getFolder(const std::string& histoName) {
+  std::vector<std::string> tokens;
+
+  // Create a string stream from the input string
+  std::istringstream iss(histoName);
+
+  std::string token;
+  while (std::getline(iss, token, '_')) {
+    // Add each token to the vector
+    tokens.push_back(token);
+  }
+
+  std::string output = tokens[0] + "/" + tokens[1];
+  output.pop_back();
+
+  return output;
 }
 
 //------------------------------------------------------------------------------

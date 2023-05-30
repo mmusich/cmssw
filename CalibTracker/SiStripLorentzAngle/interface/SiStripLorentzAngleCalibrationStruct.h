@@ -46,6 +46,7 @@ public:
   // histogramming
   std::map<std::string, dqm::reco::MonitorElement*> h1_;
   std::map<std::string, dqm::reco::MonitorElement*> h2_;
+  std::map<std::string, dqm::reco::MonitorElement*> p_;
 
   // These are vectors since std:map::find is expensive
   // we're going to profi of the dense indexing offered by
