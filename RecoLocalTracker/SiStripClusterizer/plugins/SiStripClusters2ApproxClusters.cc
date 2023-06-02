@@ -1,34 +1,32 @@
-
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDProducer.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"
-#include "FWCore/Utilities/interface/ESInputTag.h"
-#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
-#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-#include "DataFormats/SiStripCluster/interface/SiStripApproximateCluster.h"
-#include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
-#include "DataFormats/Common/interface/DetSetVectorNew.h"
-#include "DataFormats/Common/interface/DetSetVector.h"
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "DataFormats/GeometryVector/interface/LocalPoint.h"
-#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
-#include "DataFormats/TrackReco/interface/Track.h"
-#include "DataFormats/TrackReco/interface/TrackBase.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementPoint.h"
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "CalibFormats/SiStripObjects/interface/SiStripDetInfo.h"
 #include "CalibTracker/SiStripCommon/interface/SiStripDetInfoFileReader.h"
-#include "RecoTracker/PixelLowPtUtilities/interface/ClusterShapeHitFilter.h"
-#include "RecoTracker/Record/interface/CkfComponentsRecord.h"
-#include "CondFormats/SiStripObjects/interface/SiStripNoises.h"
 #include "CondFormats/DataRecord/interface/SiStripNoisesRcd.h"
+#include "CondFormats/SiStripObjects/interface/SiStripNoises.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/Common/interface/DetSetVector.h"
+#include "DataFormats/Common/interface/DetSetVectorNew.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/MeasurementPoint.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "DataFormats/GeometryVector/interface/LocalPoint.h"
+#include "DataFormats/SiStripCluster/interface/SiStripApproximateCluster.h"
+#include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackBase.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/Utilities/interface/ESInputTag.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "RecoTracker/PixelLowPtUtilities/interface/ClusterShapeHitFilter.h"
 #include "RecoTracker/PixelLowPtUtilities/interface/SlidingPeakFinder.h"
+#include "RecoTracker/Record/interface/CkfComponentsRecord.h"
 
 #include <vector>
 #include <memory>
@@ -60,6 +58,7 @@ private:
   edm::FileInPath fileInPath;
   SiStripDetInfo detInfo;
 
+  std::string csfLabel_;
   edm::ESGetToken<ClusterShapeHitFilter, CkfComponentsRecord> csfToken_;
 
   edm::ESGetToken<SiStripNoises, SiStripNoisesRcd> stripNoiseToken_;
@@ -80,7 +79,8 @@ SiStripClusters2ApproxClusters::SiStripClusters2ApproxClusters(const edm::Parame
   fileInPath = edm::FileInPath(SiStripDetInfoFileReader::kDefaultFile);
   detInfo = SiStripDetInfoFileReader::read(fileInPath.fullPath());
 
-  csfToken_ = esConsumes(edm::ESInputTag("", "ClusterShapeHitFilter"));
+  csfLabel_ = conf.getParameter<std::string>("clusterShapeHitFilterLabel");
+  csfToken_ = esConsumes(edm::ESInputTag("",csfLabel_));
 
   stripNoiseToken_ = esConsumes();
 
@@ -94,8 +94,13 @@ void SiStripClusters2ApproxClusters::produce(edm::Event& event, edm::EventSetup 
   edm::Handle<reco::BeamSpot> beamSpotHandle;
   event.getByToken(beamSpotToken, beamSpotHandle);  // retrive BeamSpot data
   reco::BeamSpot const* bs = nullptr;
-  if (beamSpotHandle.isValid())
+  if (beamSpotHandle.isValid()){
     bs = &(*beamSpotHandle);
+  } else {
+    edm::LogError("SiStripClusters2ApproxClusters") << "didn't foud a valid beamspot with label " << beamSpot.label()
+						    << " using 0,0,0";
+    bs = new reco::BeamSpot();
+  }
 
   const auto& tkGeom = &iSetup.getData(tkGeomToken_);
   const auto& theFilter = &iSetup.getData(csfToken_);
@@ -155,6 +160,7 @@ void SiStripClusters2ApproxClusters::fillDescriptions(edm::ConfigurationDescript
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("inputClusters", edm::InputTag("siStripClusters"));
   desc.add<unsigned int>("maxSaturatedStrips", 3);
+  desc.add<std::string>("clusterShapeHitFilterLabel","ClusterShapeHitFilter"); // add CSF label
   desc.add<edm::InputTag>("beamSpot", edm::InputTag("offlineBeamSpot"));  // add BeamSpot tag
   descriptions.add("SiStripClusters2ApproxClusters", desc);
 }
