@@ -124,9 +124,9 @@ void SiStripLorentzAnglePCLMonitor::dqmBeginRun(edm::Run const& run, edm::EventS
   std::vector<float> c_globalZofunitlocalY, c_localB, c_BdotY, c_driftx, c_drifty, c_driftz, c_lorentzAngle;
 
   auto dets = tkGeom.detsTIB();
-  //dets.insert(dets.end(), tkGeom.detsTID().begin(), tkGeom.detsTID().end());
+  //dets.insert(dets.end(), tkGeom.detsTID().begin(), tkGeom.detsTID().end()); // no LA in endcaps
   dets.insert(dets.end(), tkGeom.detsTOB().begin(), tkGeom.detsTOB().end());
-  //dets.insert(dets.end(), tkGeom.detsTEC().begin(), tkGeom.detsTEC().end());
+  //dets.insert(dets.end(), tkGeom.detsTEC().begin(), tkGeom.detsTEC().end()); // no LA in endcaps
 
   for (auto det : dets) {
     auto detid = det->geographicalId().rawId();

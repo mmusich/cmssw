@@ -22,23 +22,25 @@
 #include <vector>
 
 // user includes
+#include "CalibTracker/SiStripLorentzAngle/interface/SiStripLorentzAngleCalibrationHelpers.h"
 #include "CalibTracker/SiStripLorentzAngle/interface/SiStripLorentzAngleCalibrationStruct.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "CondFormats/DataRecord/interface/SiStripLorentzAngleRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLorentzAngle.h"
 #include "DQMServices/Core/interface/DQMEDHarvester.h"
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
-#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
-#include "Geometry/Records/interface/IdealGeometryRecord.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 
 // for ROOT fits
 #include "TFitResult.h"
@@ -70,7 +72,7 @@ public:
 private:
   void dqmEndJob(DQMStore::IBooker&, DQMStore::IGetter&) override;
   void endRun(const edm::Run&, const edm::EventSetup&) override;
-  std::string getFolder(const std::string& histoName);
+  std::string getStem(const std::string& histoName, bool isFolder);
 
   // es tokens
   const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> geomEsToken_;
@@ -134,6 +136,20 @@ void SiStripLorentzAnglePCLHarvester::beginRun(const edm::Run& iRun, const edm::
   // ==> at0z = 1.f / (theInverseBzAtOriginInGeV * 2.99792458e-3f)
 
   theMagField_ = 1.f / (magField->inverseBzAtOriginInGeV() * teslaToInverseGeV_);
+
+  auto dets = geom->detsTIB();
+  dets.insert(dets.end(), geom->detsTID().begin(), geom->detsTID().end());
+  dets.insert(dets.end(), geom->detsTOB().begin(), geom->detsTOB().end());
+  dets.insert(dets.end(), geom->detsTEC().begin(), geom->detsTEC().end());
+
+  for (auto det : dets) {
+    auto detid = det->geographicalId().rawId();
+    const StripGeomDetUnit* stripDet = dynamic_cast<const StripGeomDetUnit*>(geom->idToDet(det->geographicalId()));
+    if (stripDet) {
+      iHists_.la_db_[detid] = currentLorentzAngle_->getLorentzAngle(detid);
+      iHists_.moduleLocationType_[detid] = siStripLACalibration::moduleLocationType(detid, tTopo);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -199,11 +215,13 @@ void SiStripLorentzAnglePCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQMS
   for (const auto& ME : iHists_.h2_) {
     //std::cout << "profiling " << ME.first << std::endl;  //" which is of kind" << ME.second->kind() << std::endl;
     TProfile* hp = (TProfile*)ME.second->getTH2F()->ProfileX();
-    this->getFolder(ME.first);
-    iBooker.setCurrentFolder(dqmDir_ + "/" + getFolder(ME.first));
+    //this->getStem(ME.first,/* isFolder =*/ true );
+    iBooker.setCurrentFolder(dqmDir_ + "/" + getStem(ME.first, /* isFolder = */ true));
     iHists_.p_[hp->GetName()] = iBooker.bookProfile(hp->GetName(), hp);
     delete hp;
   }
+
+  std::map<std::string, std::pair<double, double>> LAMap_;
 
   // do the fits
   for (const auto& prof : iHists_.p_) {
@@ -221,15 +239,59 @@ void SiStripLorentzAnglePCLHarvester::dqmEndJob(DQMStore::IBooker& iBooker, DQMS
       Double_t a_fit = fitFunc->GetParameter(0);
       Double_t thetaL_fit = fitFunc->GetParameter(1);
       Double_t b_fit = fitFunc->GetParameter(2);
+
+      Double_t a_fitError = fitFunc->GetParError(0);
+      Double_t thetaL_fitError = fitFunc->GetParError(1);
+      Double_t b_fitError = fitFunc->GetParError(2);
+
       std::cout << prof.first << " fit result: a=" << a_fit << " theta_L=" << thetaL_fit << " b=" << b_fit << std::endl;
+
+      LAMap_[getStem(prof.first, /* isFolder = */ false)] = std::make_pair(thetaL_fit, thetaL_fitError);
     }
+  }
+
+  /*
+  for(const auto& element : LAMap_){
+    std::cout << element.first <<  " thetaLA = " << element.second.first << "+/-" << element.second.second << std::endl;
+  }
+  */
+
+  // now prepare the output LA
+  std::shared_ptr<SiStripLorentzAngle> OutLorentzAngle = std::make_shared<SiStripLorentzAngle>();
+
+  /*
+  iHists_.la_db_[detid] = currentLorentzAngle_.getLorentzAngle(detid);
+  iHists_.moduleLocationType_[detid] = siStripLACalibration::moduleLocationType(detid, tTopo);
+  */
+
+  for (const auto& loc : iHists_.moduleLocationType_) {
+    std::cout << "modId: " << loc.first << " " << loc.second << std::endl;
+    if (!(loc.second).empty()) {
+      OutLorentzAngle->putLorentzAngle(loc.first, std::abs(LAMap_[loc.second].first / theMagField_));
+    } else {
+      OutLorentzAngle->putLorentzAngle(loc.first, iHists_.la_db_[loc.first]);
+    }
+  }
+
+  edm::Service<cond::service::PoolDBOutputService> mydbservice;
+  if (mydbservice.isAvailable()) {
+    try {
+      mydbservice->writeOneIOV(*OutLorentzAngle, mydbservice->currentTime(), recordName_);
+    } catch (const cond::Exception& er) {
+      edm::LogError("SiStripLorentzAngleDB") << er.what();
+    } catch (const std::exception& er) {
+      edm::LogError("SiStripLorentzAngleDB") << "caught std::exception " << er.what();
+    }
+  } else {
+    edm::LogError("SiStripLorentzAngleDB") << "Service is unavailable";
   }
 }
 
 //------------------------------------------------------------------------------
-std::string SiStripLorentzAnglePCLHarvester::getFolder(const std::string& histoName) {
+std::string SiStripLorentzAnglePCLHarvester::getStem(const std::string& histoName, bool isFolder) {
   std::vector<std::string> tokens;
 
+  std::string output{};
   // Create a string stream from the input string
   std::istringstream iss(histoName);
 
@@ -239,9 +301,12 @@ std::string SiStripLorentzAnglePCLHarvester::getFolder(const std::string& histoN
     tokens.push_back(token);
   }
 
-  std::string output = tokens[0] + "/" + tokens[1];
-  output.pop_back();
-
+  if (isFolder) {
+    output = tokens[0] + "/" + tokens[1];
+    output.pop_back();
+  } else {
+    output = tokens[0] + "_" + tokens[1];
+  }
   return output;
 }
 
