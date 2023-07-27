@@ -77,6 +77,8 @@ namespace cms {
     edm::EDGetTokenT<edm::View<TrajectorySeed> > theSeedLabel;
     edm::EDGetTokenT<MeasurementTrackerEvent> theMTELabel;
 
+    edm::InputTag const seedTag_;
+
     edm::InputTag const clustersToSkipTag_;
     bool const skipClusters_;
 
