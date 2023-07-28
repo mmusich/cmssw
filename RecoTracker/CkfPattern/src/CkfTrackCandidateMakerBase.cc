@@ -291,6 +291,7 @@ namespace cms {
           (*outputSeedStopInfos)[j].setCandidatesPerSeed(nCandPerSeed);
           if (theTmpTrajectories.empty()) {
             (*outputSeedStopInfos)[j].setStopReason(SeedStopReason::NO_TRAJECTORY);
+	    if(seedTag_.encode()=="pixelPairStepSeeds") edm::LogPrint("CkfPattern") << "======== theTmpTrajectories is empty: seed " << j << " ========\n";
             return;  // from the lambda!
           }
         }

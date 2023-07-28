@@ -74,13 +74,13 @@ TrajectorySegmentBuilder::TempTrajectoryContainer TrajectorySegmentBuilder::segm
   auto&& measGroups =
       theLayerMeasurements->groupedMeasurements(theLayer, startingState, theFullPropagator, theEstimator);
 
-#ifdef DBG_TSB
+  //#ifdef DBG_TSB
   cout << "TSB: number of measurement groups = " << measGroups.size() << endl;
   //  theDbgFlg = measGroups.size()>1;
   theDbgFlg = true;
-#else
-  theDbgFlg = false;
-#endif
+  //#else
+  //  theDbgFlg = false;
+  //#endif
 
 #ifdef TSB_TRUNCATE
   //  V.I. to me makes things slower...
@@ -118,7 +118,7 @@ TrajectorySegmentBuilder::TempTrajectoryContainer TrajectorySegmentBuilder::segm
 
 #endif
 
-#ifdef DBG_TSB
+  //#ifdef DBG_TSB
   if (theDbgFlg) {
     int ntot(1);
     for (vector<TMG>::const_iterator ig = measGroups.begin(); ig != measGroups.end(); ++ig) {
@@ -164,7 +164,7 @@ TrajectorySegmentBuilder::TempTrajectoryContainer TrajectorySegmentBuilder::segm
     //     }
     //   }
   }
-#endif
+  //#endif
 
   TempTrajectoryContainer candidates = addGroup(startingTrajectory, measGroups.begin(), measGroups.end());
 

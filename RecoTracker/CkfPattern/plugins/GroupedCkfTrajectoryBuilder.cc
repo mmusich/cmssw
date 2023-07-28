@@ -281,9 +281,14 @@ TempTrajectory GroupedCkfTrajectoryBuilder::buildTrajectories(const TrajectorySe
   work_.clear();
   const bool inOut = true;
   nCandPerSeed = groupedLimitedCandidates(seed, startingTraj, regionalCondition, forwardPropagator(seed), inOut, work_);
+
+  edm::LogPrint("CkfPattern") << "buidTrajectories(): before early return " << " ========\n";
+
   if (work_.empty())
     return startingTraj;
 
+  edm::LogPrint("CkfPattern") << "buidTrajectories(): after early return " << " ========\n";
+  
   // cleaning now done here...
   FastTrajectoryCleaner cleaner(theFoundHitBonus, theLostHitPenalty);
   cleaner.clean(work_);
@@ -302,10 +307,10 @@ TempTrajectory GroupedCkfTrajectoryBuilder::buildTrajectories(const TrajectorySe
 
   analyseResult(result);
 
-  LogDebug("CkfPattern") << "GroupedCkfTrajectoryBuilder: returning result of size " << result.size();
+  edm::LogPrint("CkfPattern") << "GroupedCkfTrajectoryBuilder: returning result of size " << result.size();
   statCount.traj(result.size());
 
-#ifdef VI_DEBUG
+  //#ifdef VI_DEBUG
   int kt = 0;
   for (auto const& traj : result) {
     int chit[7] = {};
@@ -339,7 +344,7 @@ TempTrajectory GroupedCkfTrajectoryBuilder::buildTrajectories(const TrajectorySe
       std::cout << c << '/';
     std::cout << std::endl;
   }
-#endif
+  //#endif
 
   return startingTraj;
 }
@@ -361,11 +366,11 @@ unsigned int GroupedCkfTrajectoryBuilder::groupedLimitedCandidates(const Traject
     newCand.clear();
     for (TempTrajectoryContainer::iterator traj = candidates.begin(); traj != candidates.end(); traj++) {
       if (!advanceOneLayer(seed, *traj, regionalCondition, propagator, inOut, newCand, result)) {
-        LogDebug("CkfPattern") << "GCTB: terminating after advanceOneLayer==false";
+	edm::LogPrint("CkfPattern") << "GCTB: terminating after advanceOneLayer==false";
         continue;
       }
 
-      LogDebug("CkfPattern") << "newCand(1): after advanced one layer:\n" << PrintoutHelper::dumpCandidates(newCand);
+      edm::LogPrint("CkfPattern") << "newCand(1): after advanced one layer:\n" << PrintoutHelper::dumpCandidates(newCand);
       // account only new candidates, i.e.
       // - 1 candidate -> 1 candidate, don't increase count
       // - 1 candidate -> 2 candidates, increase count by 1
@@ -381,11 +386,11 @@ unsigned int GroupedCkfTrajectoryBuilder::groupedLimitedCandidates(const Traject
                          GroupedTrajCandLess(theLostHitPenalty, theFoundHitBonus));
         newCand.erase(newCand.begin() + theMaxCand, newCand.end());
       }
-      LogDebug("CkfPattern") << "newCand(2): after removing extra candidates.\n"
+      edm::LogPrint("CkfPattern") << "newCand(2): after removing extra candidates.\n"
                              << PrintoutHelper::dumpCandidates(newCand);
     }
 
-    LogDebug("CkfPattern") << "newCand.size() at end = " << newCand.size();
+    edm::LogPrint("CkfPattern") << "newCand.size() at end = " << newCand.size();
     /*
     if (theIntermediateCleaning) {
       candidates.clear();
@@ -403,7 +408,7 @@ unsigned int GroupedCkfTrajectoryBuilder::groupedLimitedCandidates(const Traject
     }
     candidates.swap(newCand);
 
-    LogDebug("CkfPattern") << "candidates(3): " << result.size() << " candidates after " << nIter++
+    edm::LogPrint("CkfPattern") << "candidates(3): " << result.size() << " candidates after " << nIter++
                            << " groupedCKF iteration: \n"
                            << PrintoutHelper::dumpCandidates(result) << "\n " << candidates.size()
                            << " running candidates are: \n"
@@ -413,7 +418,7 @@ unsigned int GroupedCkfTrajectoryBuilder::groupedLimitedCandidates(const Traject
   return nCands;
 }
 
-#ifdef EDM_ML_DEBUG
+//#ifdef EDM_ML_DEBUG
 std::string whatIsTheNextStep(TempTrajectory const& traj,
                               std::pair<TrajectoryStateOnSurface, std::vector<const DetLayer*> >& stateAndLayers) {
   std::stringstream buffer;
@@ -472,7 +477,7 @@ std::string whatIsTheStateToUse(TrajectoryStateOnSurface& initial,
   //buffer << endl;
   return buffer.str();
 }
-#endif
+//#endif
 
 bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
                                                   TempTrajectory& traj,
@@ -501,9 +506,9 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
   //     return false;
   //   }
 
-#ifdef EDM_ML_DEBUG
-  LogDebug("CkfPattern") << whatIsTheNextStep(traj, stateAndLayers);
-#endif
+  //#ifdef EDM_ML_DEBUG
+  edm::LogPrint("CkfPattern") << whatIsTheNextStep(traj, stateAndLayers);
+  //#endif
 
   bool foundSegments(false);
   bool foundNewCandidates(false);
@@ -570,7 +575,7 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
         }
       } else {  // loopers not requested (why else???)
                 // ------ For cosmics reconstruction
-        LogDebug("CkfPattern") << " self propagating in advanceOneLayer.\n from: \n" << stateToUse;
+	edm::LogPrint("CkfPattern") << " self propagating in advanceOneLayer.\n from: \n" << stateToUse;
         //self navigation case
         // go to a middle point first
         TransverseImpactPointExtrapolator middle;
@@ -579,7 +584,7 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
 
         if (!stateToUse.isValid())
           continue;
-        LogDebug("CkfPattern") << "to: " << stateToUse;
+	edm::LogPrint("CkfPattern") << "to: " << stateToUse;
       }
     }  // last layer...
 
@@ -588,13 +593,13 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
     TrajectorySegmentBuilder layerBuilder(
         &layerMeasurements, **il, *propagator, *theUpdator, *theEstimator, theLockHits, theBestHitOnly, theMaxCand);
 
-#ifdef EDM_ML_DEBUG
-    LogDebug("CkfPattern") << whatIsTheStateToUse(stateAndLayers.first, stateToUse, *il);
-#endif
+    //#ifdef EDM_ML_DEBUG
+    edm::LogPrint("CkfPattern") << whatIsTheStateToUse(stateAndLayers.first, stateToUse, *il);
+    //#endif
 
     auto&& segments = layerBuilder.segments(stateToUse);
 
-    LogDebug("CkfPattern") << "GCTB: number of segments = " << segments.size();
+    edm::LogPrint("CkfPattern") << "GCTB: number of segments = " << segments.size();
 
     if (!segments.empty())
       foundSegments = true;
@@ -626,13 +631,13 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
 
     rejected:;  // http://xkcd.com/292/
       if (toBeRejected) {
-#ifdef VI_DEBUG
+	//#ifdef VI_DEBUG
         cout << "WARNING: neglect candidate because it contains the same hit twice \n";
         cout << "-- discarded track's pt,eta,#found/lost: "
              << traj.lastMeasurement().updatedState().globalMomentum().perp() << " , "
              << traj.lastMeasurement().updatedState().globalMomentum().eta() << " , " << traj.foundHits() << '/'
              << traj.lostHits() << "\n";
-#endif
+	//#endif
         traj.setDPhiCacheForLoopersReconstruction(dPhiCacheForLoopersReconstruction);
         continue;  //Are we sure about this????
       }
@@ -656,7 +661,7 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
       if (toBeContinued(newTraj, inOut)) {
         // Have added one more hit to track candidate
 
-        LogDebug("CkfPattern") << "GCTB: adding updated trajectory to candidates: inOut=" << inOut
+	edm::LogPrint("CkfPattern") << "GCTB: adding updated trajectory to candidates: inOut=" << inOut
                                << " hits=" << newTraj.foundHits();
 
         newTraj.setStopReason(StopReason::NOT_STOPPED);
@@ -665,15 +670,15 @@ bool GroupedCkfTrajectoryBuilder::advanceOneLayer(const TrajectorySeed& seed,
       } else {
         // Have finished building this track. Check if it passes cuts.
 
-        LogDebug("CkfPattern") << "GCTB: adding completed trajectory to results if passes cuts: inOut=" << inOut
-                               << " hits=" << newTraj.foundHits();
+	edm::LogPrint("CkfPattern") << "GCTB: adding completed trajectory to results if passes cuts: inOut=" << inOut
+				    << " hits=" << newTraj.foundHits();
         moveToResult(std::move(newTraj), result, inOut);
       }
     }  // loop over segs
   }    // loop over layers
 
   if (!foundSegments) {
-    LogDebug("CkfPattern") << "GCTB: adding input trajectory to result";
+    edm::LogPrint("CkfPattern") << "GCTB: adding input trajectory to result";
     if (!stateAndLayers.second.empty())
       traj.setStopReason(StopReason::NO_SEGMENTS_FOR_VALID_LAYERS);
     addToResult(traj, result, inOut);
