@@ -164,6 +164,7 @@ vector<TrajectoryMeasurementGroup> LayerMeasurements::groupedMeasurements(const 
     vector<TrajectoryMeasurement> tmpVec;
     for (auto const& det : grp) {
       MeasurementDetWithData mdet = detSystem_.idToDet(det.det()->geographicalId(), data_);
+      std::cout << "mdet:" << mdet.geomDet().geographicalId() << " is active: " << mdet.isActive() << " has bad components" << mdet.hasBadComponents(det.trajectoryState()) <<std::endl;
       if (mdet.isNull()) {
         throw MeasurementDetException("MeasurementDet not found");
       }

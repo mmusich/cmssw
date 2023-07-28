@@ -30,8 +30,10 @@ MeasurementTrackerEventProducer::MeasurementTrackerEventProducer(const edm::Para
 
   std::vector<edm::InputTag> inactiveStripDetectorTags(
       iConfig.getParameter<std::vector<edm::InputTag>>("inactiveStripDetectorLabels"));
-  for (auto& t : inactiveStripDetectorTags)
+  for (auto& t : inactiveStripDetectorTags){
+    std::cout << __PRETTY_FUNCTION__ << t.encode() << std::endl;
     theInactiveStripDetectorLabels.push_back(consumes<DetIdCollection>(t));
+  }
 
   //the measurement tracking is set to skip clusters, the other option is set from outside
   edm::InputTag skip = iConfig.getParameter<edm::InputTag>("skipClusters");
@@ -314,6 +316,8 @@ void MeasurementTrackerEventProducer::updateStrips(const edm::Event& event,
     assert(i != endDet && id == theStDets.id(i));
     theStDets.setActiveThisEvent(i, false);
   }
+
+  std::cout << __PRETTY_FUNCTION__ << " inactiveDetId size:" << rawInactiveDetIds.size() << std::endl;
 
   //=========  actually load cluster =============
   {

@@ -137,7 +137,12 @@ public:
   virtual float weight() const { return 1.; }
 
   Type type() const { return Type(typeMask & m_status); }
-  Type getType() const { return Type(typeMask & m_status); }
+  Type getType() const { 
+    //if(m_id==402668200){
+    std::cout << "det:" << m_id  <<" status:" << m_status << std::endl;
+    // }    
+    return Type(typeMask & m_status); 
+  }
   bool isValid() const { return getType() == valid; }
 
   unsigned int getRTTI() const { return m_status >> rttiShift; }

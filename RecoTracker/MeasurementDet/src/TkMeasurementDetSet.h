@@ -176,7 +176,10 @@ public:
   int find(unsigned int jd, int i = 0) const { return conditions().find(jd, i); }
 
   bool empty(int i) const { return empty_[i]; }
-  bool isActive(int i) const { return activeThisEvent_[i] && conditions().isActiveThisPeriod(i); }
+  bool isActive(int i) const { 
+    std::cout << "isActive: activeThisEvent_["<<i<<"]:" << activeThisEvent_[i] << " conditions.isActiveThisPeriod(i): " << conditions().isActiveThisPeriod(i) << std::endl;
+    return activeThisEvent_[i] && conditions().isActiveThisPeriod(i); 
+  }
 
   void setEmpty(int i) {
     empty_[i] = true;
@@ -342,7 +345,9 @@ public:
   }
 
   bool empty(int i) const { return empty_[i]; }
-  bool isActive(int i) const { return activeThisEvent_[i] && conditions().isActiveThisPeriod(i); }
+  bool isActive(int i) const { 
+    return activeThisEvent_[i] && conditions().isActiveThisPeriod(i); 
+  }
 
   void setEmpty(int i) {
     empty_[i] = true;
