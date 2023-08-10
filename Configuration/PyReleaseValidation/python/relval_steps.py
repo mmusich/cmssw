@@ -584,9 +584,10 @@ steps['RunEGamma2023B']={'INPUT':InputInfo(dataSet='/EGamma1/Run2023B-v1/RAW',la
 steps['RunTau2023B']={'INPUT':InputInfo(dataSet='/Tau/Run2023B-v1/RAW',label='2023B',events=100000,location='STD', ls=Run2023B)}
 steps['RunMuonEG2023B']={'INPUT':InputInfo(dataSet='/MuonEG/Run2023B-v1/RAW',label='2023B',events=100000,location='STD', ls=Run2023B)}
 
-Run2023C={367131: [[1, 149]]}
+#Run2023C={368343: [[1, 10]]}
+Run2023C={368343: [[484, 485]]}
 steps['RunMuon2023C']={'INPUT':InputInfo(dataSet='/Muon0/Run2023C-v1/RAW',label='2023C',events=100000,location='STD', ls=Run2023C)}
-steps['RunZeroBias2023C']={'INPUT':InputInfo(dataSet='/ZeroBias/Run2023C-v1/RAW',label='2023C',events=100000,location='STD', ls=Run2023C)}
+steps['RunZeroBias2023C']={'INPUT':InputInfo(dataSet='/ExpressPhysics/Run2023C-Express-v4/FEVT',label='2023C',events=100000,location='STD', ls=Run2023C)}
 steps['RunBTagMu2023C']={'INPUT':InputInfo(dataSet='/BTagMu/Run2023C-v1/RAW',label='2023C',events=100000,location='STD', ls=Run2023C)}
 steps['RunNoBPTX2023C']={'INPUT':InputInfo(dataSet='/NoBPTX/Run2023C-v1/RAW',label='2023C',events=100000,location='STD', ls=Run2023C)}
 steps['RunHcalNZS2023C']={'INPUT':InputInfo(dataSet='/HcalNZS/Run2023C-v1/RAW',label='2023C',events=100000,location='STD', ls=Run2023C)}
@@ -2911,6 +2912,9 @@ steps['RECONANORUN3_ZB_reHLT_2022']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,PAT,NANO,
 steps['RECOCOSMRUN3_reHLT_2022']=merge([{'--scenario':'cosmics','-s':'RAW2DIGI,L1Reco,RECO,DQM','--datatier':'RECO,DQMIO','--eventcontent':'RECO,DQM'},steps['RECONANORUN3_reHLT_2022']])
 
 steps['RECONANORUN3_reHLT_2023']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,PAT,NANO,DQM:@standardDQM+@miniAODDQM+@nanoAODDQM','--datatier':'RECO,MINIAOD,NANOAOD,DQMIO','--eventcontent':'RECO,MINIAOD,NANOEDMAOD,DQM'},steps['RECODR3_reHLT_2023']])
+
+steps['RECONANORUN3_reHLT_2023noDCS']=merge([{'--customise':' DQM/SiStripMonitorClient/customizeForNoTrackerDCS.removeTrackerDCSChecks'},steps['RECONANORUN3_reHLT_2023']])
+
 steps['RECONANORUN3_reHLT_2023B']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,PAT,NANO,DQM:@standardDQM+@miniAODDQM+@nanoAODDQM','--datatier':'RECO,MINIAOD,NANOAOD,DQMIO','--eventcontent':'RECO,MINIAOD,NANOEDMAOD,DQM'},steps['RECODR3_reHLT_2023B']])
 steps['RECONANORUN3_ZB_reHLT_2023B']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,PAT,NANO,DQM:@rerecoZeroBias+@miniAODDQM+@nanoAODDQM'},steps['RECONANORUN3_reHLT_2023B']])
 steps['RECONANORUN3_ZB_reHLT_2023']=merge([{'-s':'RAW2DIGI,L1Reco,RECO,PAT,NANO,DQM:@rerecoZeroBias+@miniAODDQM+@nanoAODDQM'},steps['RECONANORUN3_reHLT_2023']])
