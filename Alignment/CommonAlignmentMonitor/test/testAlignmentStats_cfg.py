@@ -189,4 +189,5 @@ process.seqALCARECOTkAlMinBiasSkimmed = cms.Sequence(process.myBeamSpot *
                                                      process.OverlapAssoMapCTF *
                                                      process.NewStatsCTF)
 
-process.p2 = cms.Path(process.seqALCARECOTkAlMinBiasSkimmed)
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
+process.p2 = cms.Path(process.seqALCARECOTkAlMinBiasSkimmed, cms.Task(process.SiPixelTemplateStoreESProducer))

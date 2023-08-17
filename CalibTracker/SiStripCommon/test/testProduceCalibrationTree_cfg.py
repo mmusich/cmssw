@@ -143,12 +143,13 @@ process.gainCalibrationTreeAagBunch0T.CompressionSettings = cms.untracked.int32(
 if(options.unitTest):
     alterTriggersForUnitTest(process)
 
-process.TkCalPath_StdBunch   = cms.Path(process.TkCalSeq_StdBunch*process.shallowEventRun*process.EventInfo)
-process.TkCalPath_StdBunch0T = cms.Path(process.TkCalSeq_StdBunch0T*process.shallowEventRun*process.EventInfo)
-process.TkCalPath_IsoMuon    = cms.Path(process.TkCalSeq_IsoMuon*process.shallowEventRun*process.EventInfo)
-process.TkCalPath_IsoMuon0T  = cms.Path(process.TkCalSeq_IsoMuon0T*process.shallowEventRun*process.EventInfo)
-process.TkCalPath_AagBunch   = cms.Path(process.TkCalSeq_AagBunch*process.shallowEventRun*process.EventInfo)
-process.TkCalPath_AagBunch0T = cms.Path(process.TkCalSeq_AagBunch0T*process.shallowEventRun*process.EventInfo)
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
+process.TkCalPath_StdBunch   = cms.Path(process.TkCalSeq_StdBunch*process.shallowEventRun*process.EventInfo, cms.Task(process.SiPixelTemplateStoreESProducer))
+process.TkCalPath_StdBunch0T = cms.Path(process.TkCalSeq_StdBunch0T*process.shallowEventRun*process.EventInfo, cms.Task(process.SiPixelTemplateStoreESProducer))
+process.TkCalPath_IsoMuon    = cms.Path(process.TkCalSeq_IsoMuon*process.shallowEventRun*process.EventInfo, cms.Task(process.SiPixelTemplateStoreESProducer))
+process.TkCalPath_IsoMuon0T  = cms.Path(process.TkCalSeq_IsoMuon0T*process.shallowEventRun*process.EventInfo, cms.Task(process.SiPixelTemplateStoreESProducer))
+process.TkCalPath_AagBunch   = cms.Path(process.TkCalSeq_AagBunch*process.shallowEventRun*process.EventInfo, cms.Task(process.SiPixelTemplateStoreESProducer))
+process.TkCalPath_AagBunch0T = cms.Path(process.TkCalSeq_AagBunch0T*process.shallowEventRun*process.EventInfo, cms.Task(process.SiPixelTemplateStoreESProducer))
 
 process.schedule = cms.Schedule( process.TkCalPath_StdBunch, 
                                  process.TkCalPath_StdBunch0T,

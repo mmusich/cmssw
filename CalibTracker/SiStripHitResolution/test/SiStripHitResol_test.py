@@ -52,4 +52,6 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(OutputRootFile)  
                                    )
 
-process.allPath = cms.Path(process.MeasurementTrackerEvent*process.offlineBeamSpot*process.refitTracks*process.hitresol)
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
+process.allPath = cms.Path(process.MeasurementTrackerEvent*process.offlineBeamSpot*process.refitTracks*process.hitresol,
+                           cms.Task(process.SiPixelTemplateStoreESProducer))

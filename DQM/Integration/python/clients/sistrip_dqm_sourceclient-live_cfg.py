@@ -107,6 +107,8 @@ process.siStripQualityESProducer.ListOfRecordToMerge = cms.VPSet(
    )
 #-------------------------------------------
 
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
+
 #-----------------------
 #  Reconstruction Modules
 #-----------------------
@@ -298,7 +300,8 @@ if (process.runType.getRunType() == process.runType.cosmic_run or process.runTyp
                          process.SiStripSources_LocalReco*
                          process.RecoForDQM_TrkReco_cosmic*
                          process.SiStripSources_TrkReco_cosmic*
-                         process.TrackingClient
+                         process.TrackingClient,
+                         cms.Task(process.SiPixelTemplateStoreESProducer)
                          )
 
 
@@ -416,7 +419,8 @@ if (process.runType.getRunType() == process.runType.pp_run or process.runType.ge
         process.hltHighLevel*
         process.RecoForDQM_TrkReco*
         process.SiStripSources_TrkReco*
-        process.TrackingClient
+        process.TrackingClient,
+        cms.Task(process.SiPixelTemplateStoreESProducer)
         )
 
 #--------------------------------------------------
@@ -509,7 +513,8 @@ if (process.runType.getRunType() == process.runType.hpu_run):
                          process.eventFilter*
                          process.RecoForDQM_TrkReco*
                          process.SiStripSources_TrkReco*
-                         process.TrackingClient
+                         process.TrackingClient,
+                         cms.Task(process.SiPixelTemplateStoreESProducer)
                          )
 
 process.castorDigis.InputLabel = "rawDataCollector"
@@ -665,7 +670,8 @@ if (process.runType.getRunType() == process.runType.hi_run):
         process.hltHighLevel*
         process.RecoForDQM_TrkReco*
         process.SiStripSources_TrkReco*
-        process.TrackingClient
+        process.TrackingClient,
+        cms.Task(process.SiPixelTemplateStoreESProducer)
     )
 
     # append the approximate clusters monitoring for the HI run case

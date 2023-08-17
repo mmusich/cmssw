@@ -89,4 +89,5 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string('histodemo.root'))
 
 ### Finally, put together the sequence
-process.p = cms.Path(process.offlineBeamSpot*process.mytkselector+process.myRefittedTracks+process.SiStripCPEAnalyzer)
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
+process.p = cms.Path(process.offlineBeamSpot*process.mytkselector+process.myRefittedTracks+process.SiStripCPEAnalyzer,cms.Task(process.SiPixelTemplateStoreESProducer))

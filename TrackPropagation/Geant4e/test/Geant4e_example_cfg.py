@@ -35,7 +35,8 @@ process.source = cms.Source("PoolSource",
 process.load("TrackPropagation.Geant4e.geantRefit_cff")
 process.Geant4eTrackRefitter.src = cms.InputTag("generalTracks")
 process.Geant4eTrackRefitter.usePropagatorForPCA = cms.bool(True)
-process.g4RefitPath = cms.Path( process.MeasurementTrackerEvent * process.geant4eTrackRefit )
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
+process.g4RefitPath = cms.Path( process.MeasurementTrackerEvent * process.geant4eTrackRefit, cms.Task(process.SiPixelTemplateStoreESProducer) )
 
 process.out = cms.OutputModule( "PoolOutputModule",
   outputCommands = cms.untracked.vstring(

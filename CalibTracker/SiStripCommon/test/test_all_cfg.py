@@ -39,6 +39,7 @@ process.testTree = cms.EDAnalyzer(
       )
    )
 
+process.load("RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi")
 process.p = cms.Path(
    process.MeasurementTrackerEvent*
    process.tracksRefit*
@@ -56,5 +57,6 @@ process.p = cms.Path(
    process.shallowClusters*
    process.shallowRechitClusters*
    #tree dumping
-   process.testTree
+   process.testTree,
+   cms.Task(process.SiPixelTemplateStoreESProducer)
 )
