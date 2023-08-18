@@ -160,12 +160,12 @@ DiMuonVertexValidation::DiMuonVertexValidation(const edm::ParameterSet& iConfig)
       VtxDist3DSigConfiguration_(iConfig.getParameter<edm::ParameterSet>("VtxDist3DSigConfig")),
       DiMuMassConfiguration_(iConfig.getParameter<edm::ParameterSet>("DiMuMassConfig")),
       ttbESToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
-      tracksToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"))),
       vertexToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))) {
   if (useReco_) {
-    muonsToken_ = mayConsume<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
+    tracksToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
+    muonsToken_ = consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"));
   } else {
-    alcaRecoToken_ = mayConsume<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("muonTracks"));
+    alcaRecoToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("muonTracks"));
   }
 
   usesResource(TFileService::kSharedResource);
