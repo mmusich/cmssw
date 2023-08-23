@@ -7,6 +7,8 @@
 #include <sstream>
 
 // ROOT includes
+#include "TH1.h"
+#include "TROOT.h"
 #include "TString.h"
 #include "TColor.h"
 #include "TCanvas.h"
@@ -15,6 +17,7 @@
 #include "TFile.h"
 #include "TPolyLine.h"
 #include "TStyle.h"
+#include "TGaxis.h"
 
 struct VariableInfo {
   std::string name;
@@ -102,17 +105,38 @@ std::map<int, std::map<std::string, std::vector<double>>> read_TPLfile(const std
 
 class TkAlMap {
 private:
-    std::string GEO_file;
-    std::string tracker;
-    int width;
-    int height;
-    std::string title;
-    bool default_range;
-    bool two_sigma_cap;
-    std::string root_file;
-    bool do_tanh;
-    
-    // ... Other private members ...
+  // ... Other private members ...
+  std::string GEO_file;
+  TCanvas* canvas;
+  std::string tracker;
+  int width;
+  int height;
+  std::string title;
+  bool default_range;
+  bool two_sigma_cap;
+  std::string root_file;
+  bool do_tanh;
+  double image_x1;
+  double image_x2;
+  double image_y1;
+  double image_y2;
+  bool is_cleaned;
+  double max_val;
+  double min_val;
+  int n_color_color_bar;
+  int palette;
+  std::string var;
+  std::string var_name;
+  double var_scale;
+  std::string var_units;
+  double var_min;
+  double var_max;
+  int start_color_idx;
+  double x_scale;
+  double y_scale;
+  TTree* tree;
+  std::map<Long64_t,double> mod_val_dict;
+  std::map<Long64_t,TPolyLine*> TkAlMap_TPL_dict;
 
 public:
   TkAlMap(std::string variable, std::string title, std::string root_file,
@@ -123,6 +147,7 @@ public:
     gStyle->SetLineScalePS(1);
     
     GEO_file = GEO_file;
+    canvas = nullptr;
     tracker = tracker;
     width = height;
     height = height;

@@ -184,7 +184,7 @@ void TkAlMap::set_colorbar_axis() {
     if (two_sigma_cap && !default_range)
         color_bar_axis->SetTitle("{#mu - 2#sigma #leq " + var_name + " #leq #mu + 2#sigma} [" + var_units + "]");
     else if (default_range)
-        color_bar_axis->SetTitle("{" + to_string(min_val) + " #leq " + var_name + " #leq " + to_string(max_val) + "} [" + var_units + "]");
+      color_bar_axis->SetTitle("{" + std::to_string(min_val) + " #leq " + var_name + " #leq " + std::to_string(max_val) + "} [" + var_units + "]");
     else
         color_bar_axis->SetTitle(var_name + " [" + var_units + "]");
     color_bar_axis->SetTitleSize(0.025);
@@ -249,15 +249,15 @@ void TkAlMap::load_tree() {
   TString tree_name = "alignTree";
   TFile *r_file = new TFile(root_file.c_str());
   if (!r_file || r_file->IsZombie()) {
-    cerr << "The file \"" << root_file << "\" could not be opened" << std::endl;
-    throw runtime_error("File open error");
+    std::cerr << "The file \"" << root_file << "\" could not be opened" << std::endl;
+    throw std::runtime_error("File open error");
   }
   
   TTree *tree_tmp = nullptr;
   r_file->GetObject(tree_name, tree_tmp);
   if (!tree_tmp) {
-    cerr << "The tree \"" << tree_name << "\" was not found in file \"" << root_file << "\"" << std::endl;
-    throw runtime_error("Tree not found error");
+    std::cerr << "The tree \"" << tree_name << "\" was not found in file \"" << root_file << "\"" << std::endl;
+    throw std::runtime_error("Tree not found error");
   }
   
   tmp_file_name = Form("%lld_TkAlMapTempFile.root", time(0));
@@ -267,8 +267,8 @@ void TkAlMap::load_tree() {
   is_cleaned = false;
   
   if (!tree) {
-    cerr << "The tree \"" << tree_name << "\" could not be cloned" << std::endl;
-    throw runtime_error("Tree clone error");
+    std::cerr << "The tree \"" << tree_name << "\" could not be cloned" << std::endl;
+    throw std::runtime_error("Tree clone error");
   }
 }
 
@@ -309,14 +309,14 @@ void TkAlMap::load_var() {
 
     mean_val = mean(val_list);
     std_val = StdDev(val_list);
-    min_val = *min_element(val_list.begin(), val_list.end());
-    max_val = *max_element(val_list.begin(), val_list.end());
+    min_val = *std::min_element(val_list.begin(), val_list.end());
+    max_val = *std::max_element(val_list.begin(), val_list.end());
 
     if (two_sigma_cap && !default_range) {
         std::cout << "-- Capping max and min: " << std::endl;
         std::cout << "---- True values   : " << max_val << ", " << min_val << std::endl;
-        min_val = max(min_val, mean_val - 2 * std_val);
-        max_val = min(max_val, mean_val + 2 * std_val);
+        min_val = std::max(min_val, mean_val - 2 * std_val);
+        max_val = std::min(max_val, mean_val + 2 * std_val);
         std::cout << "---- Capped values : " << max_val << ", " << min_val << std::endl;
     }
 
@@ -353,10 +353,10 @@ void TkAlMap::detect_tracker_version() {
     }
 
     if (phase == -1) {
-        throw runtime_error("TkAlMap: unknown tracker detected, is this phase2?");
+      throw std::runtime_error("TkAlMap: unknown tracker detected, is this phase2?");
     }
 
-    std::string phase_str = "phase" + to_string(phase);
+    std::string phase_str = "phase" + std::to_string(phase);
     std::cout << "TkAlMap: " << phase_str << " tracker detected" << std::endl;
 
     if (GEO_file.find(phase_str) == std::string::npos) {
@@ -368,7 +368,7 @@ void TkAlMap::detect_tracker_version() {
 
 void TkAlMap::load_geometry() {
     std::string source_path = getenv("CMSSW_BASE") + "/src/";
-    map<std::string, map<std::string, map<std::string, dynamic>>> var;
+    std::map<std::string, std::map<std::string, std::map<std::string, dynamic>>> var;
 
     if (sys.version_info[0] == 2) {
         // execfile(source_path + self.cfg_path + self.GEO_file, var);
@@ -377,10 +377,10 @@ void TkAlMap::load_geometry() {
         // exec(compile(open(_filename, "rb").read(), _filename, "exec"), var);
     }
 
-    map<std::string, map<std::string, dynamic>> MapStructure = var["TkMap_GEO"];
+    std::map<std::string, std::map<std::string, dynamic>> MapStructure = var["TkMap_GEO"];
 
-    map<std::string, map<std::string, dynamic>> all_modules;
-    map<std::string, map<std::string, dynamic>> all_text;
+    std::map<std::string, std::map<std::string, dynamic>> all_modules;
+    std::map<std::string, std::map<std::string, dynamic>> all_text;
     double x_max = -9999.0;
     double y_max = -9999.0;
     double x_min = 9999.0;
@@ -525,8 +525,8 @@ void TkAlMap::plot_variable_distribution(int nbins, const std::string& out_dir) 
     }
     TCanvas *canvas = new TCanvas(canv_name.c_str(), ("TkAlMap " + this->var + " histogram canvas").c_str(), 800, 800);
 
-    double h_min = min(min(this->val_list), this->mean_val - 2 * this->std_val) - this->std_val;
-    double h_max = max(max(this->val_list), this->mean_val + 2 * this->std_val) + this->std_val;
+    double h_min = std::min(std::min(this->val_list), this->mean_val - 2 * this->std_val) - this->std_val;
+    double h_max = std::max(std::max(this->val_list), this->mean_val + 2 * this->std_val) + this->std_val;
     TH1F *hist = new TH1F((this->var + "_hist").c_str(), "Variable distribution", nbins, h_min, h_max);
     for (double val : this->val_list) {
         hist->Fill(val);
