@@ -1,0 +1,17 @@
+<library file="L1TUtmTriggerMenu_PayloadInspector.cc" name="L1TUtmTriggerMenu_PayloadInspector">
+  <use name="CondCore/Utilities"/>
+  <use name="CondCore/CondDB"/>
+  <use name="CondFormats/L1TObjects"/>
+  <use name="utm"/>
+  <use name="py3-pybind11"/>
+  <use name="python3"/>
+</library>
+
+<library file="L1TGlobalPrescalesVetos_PayloadInspector.cc" name="L1TGlobalPrescalesVetos_PayloadInspector">
+  <use name="CondCore/Utilities"/>
+  <use name="CondCore/CondDB"/>
+  <use name="CondFormats/L1TObjects"/>
+  <use name="CommonTools/Utils"/>
+  <use name="py3-pybind11"/>
+  <use name="python3"/>
+</library>
