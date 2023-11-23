@@ -121,6 +121,10 @@ private:
   DiLeptonHelp::PlotsVsKinematics VtxDist3DSigPlots = DiLeptonHelp::PlotsVsKinematics(DiLeptonHelp::MM);
   DiLeptonHelp::PlotsVsKinematics ZMassPlots = DiLeptonHelp::PlotsVsKinematics(DiLeptonHelp::MM);
 
+  // plots vs region
+  DiLeptonHelp::PlotsVsDiLeptonRegion CosPhi3DInEtaBins = DiLeptonHelp::PlotsVsDiLeptonRegion(1.5);
+  DiLeptonHelp::PlotsVsDiLeptonRegion InvMassInEtaBins = DiLeptonHelp::PlotsVsDiLeptonRegion(1.5);
+
   const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbESToken_;
 
   edm::EDGetTokenT<reco::TrackCollection> tracksToken_;   //used to select what tracks to read from configuration file
@@ -319,6 +323,7 @@ void DiMuonVertexValidation::analyze(const edm::Event& iEvent, const edm::EventS
 
   // fill the z->mm mass plots
   ZMassPlots.fillPlots(track_invMass, tktk_p4);
+  InvMassInEtaBins.fillTH1Plots(track_invMass, tktk_p4);
 
   math::XYZPoint ZpT(ditrack.x(), ditrack.y(), 0);
   math::XYZPoint Zp(ditrack.x(), ditrack.y(), ditrack.z());
@@ -437,8 +442,11 @@ void DiMuonVertexValidation::analyze(const edm::Event& iEvent, const edm::EventS
       // fill the cosphi plots
       CosPhiPlots.fillPlots(cosphi, tktk_p4);
 
-      // fill the VtxDisSig plots
+      // fill the cosphi3D plots
       CosPhi3DPlots.fillPlots(cosphi3D, tktk_p4);
+
+      // fill the cosphi3D plots in eta bins
+      CosPhi3DInEtaBins.fillTH1Plots(cosphi3D, tktk_p4);
     }
   }
 }
@@ -492,6 +500,14 @@ void DiMuonVertexValidation::beginJob() {
 
   TFileDirectory dirInvariantMass = fs->mkdir("InvariantMassPlots");
   ZMassPlots.bookFromPSet(dirInvariantMass, DiMuMassConfiguration_);
+
+  // CosPhi3D in eta bins
+  TFileDirectory dirCosphi3DEta = fs->mkdir("CosPhi3DInEtaBins");
+  CosPhi3DInEtaBins.bookSet(dirCosphi3DEta, hCosPhi3D_);
+
+  // Z-> mm mass in eta bins
+  TFileDirectory dirResMassEta = fs->mkdir("TkTkMassInEtaBins");
+  InvMassInEtaBins.bookSet(dirResMassEta, hTrackInvMass_);
 
   // cut flow
 
