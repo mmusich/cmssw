@@ -74,7 +74,7 @@ else:
 ###################################################################
 ## efault set to 1 for unit tests
 ###################################################################
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(config["validation"].get("maxevents", -1)))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(config["validation"].get("maxevents", 100)))
 
 ###################################################################
 # Bookeeping
@@ -162,7 +162,7 @@ if "conditions" in config["alignment"]:
 process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 import RecoTracker.TrackProducer.TrackRefitters_cff
 process.refittedMuons = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone(
-    src = config["validation"].get("trackcollection", "ALCARECOTkAlDiMuon"), # ALCARECOTkAlDiMuon
+    src = config["validation"].get("muonTrackcollection", "ALCARECOTkAlDiMuon"), # ALCARECOTkAlDiMuon
     TrajectoryInEvent = True,
     NavigationSchool = '',
     TTRHBuilder = config["validation"].get("tthrbuilder", "WithAngleAndTemplate"))
