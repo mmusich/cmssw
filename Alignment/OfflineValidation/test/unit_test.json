@@ -147,6 +147,11 @@
              }
         },
 	"DiMuonV" : {
+            "merge": {
+		"testUnits": {
+                     "singles": ["testUnits"]
+                }
+            },
 	    "single" : {
 		"testUnits" : {
 		    "IOV" : ["1"],

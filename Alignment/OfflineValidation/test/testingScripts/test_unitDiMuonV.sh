@@ -9,3 +9,8 @@ pushd test_yaml/DiMuonV/single/testUnits/unitTestDiMuonVMC/1/
 echo "TESTING Alignment/DiMuonV single configuration standalone..."
 ./cmsRun validation_cfg.py || die "Failure running DiMuonV single configuration standalone" $?
 popd
+
+echo "TESTING PV merge step"
+pushd test_yaml/DiMuonV/merge/testUnits/1/
+./DiMuonVmerge validation.json --verbose || die "Failure running DiMuonV merge step" $?
+popd
