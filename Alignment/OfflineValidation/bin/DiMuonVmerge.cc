@@ -39,19 +39,19 @@ int merge(int argc, char* argv[]) {
   pt::ptree validation = main_tree.get_child("validation");
 
   TString filesAndLabels;
-  for (const auto& childTree : alignments)  {
+  for (const auto& childTree : alignments) {
     // Print node name and its attributes
     std::cout << "Node: " << childTree.first << std::endl;
 
     for (const auto& attr : childTree.second) {
       std::cout << "  Attribute: " << attr.first << " = " << attr.second.data() << std::endl;
     }
- 
+
     //filesAndLabels+=(childTree.second.get<string>("file")+childTree.second.get<string>("title"));
   }
 
   // loopAndPlot(filesAndLabels);
-      
+
   return EXIT_SUCCESS;
 }
 
