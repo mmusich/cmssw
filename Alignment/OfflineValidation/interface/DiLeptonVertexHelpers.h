@@ -162,8 +162,8 @@ namespace DiLeptonHelp {
                                                        "barrel-forward",
                                                        "barrel-backward",
                                                        "forward-forward",
-                                                       "backward,backward",
-                                                       "forward,backward"};
+                                                       "backward-backward",
+                                                       "forward-backward"};
     const float m_etaBoundary;
     bool m_isBooked;
     std::map<etaRegion, TH1F*> m_h1_map;

@@ -202,23 +202,23 @@ process.TFileService = cms.Service("TFileService",
 # Analysis module
 ####################################################################
 from Alignment.OfflineValidation.diMuonVertexValidation_cfi import diMuonVertexValidation
-process.analysis = diMuonVertexValidation.clone(useReco = config["validation"].get("useReco",True),
-                                                vertices = 'offlinePrimaryVerticesFromRefittedTrks')
+process.DiMuonVertexValidation = diMuonVertexValidation.clone(useReco = config["validation"].get("useReco",True),
+                                                              vertices = 'offlinePrimaryVerticesFromRefittedTrks')
 
 ## the two sets of parameters below are mutually exclusive,
 ## depending if RECO or ALCARECO is used
 ## the useReco flag above must be set accordingly
 if (config["validation"].get("useReco",True)):
-    process.analysis.muons  = 'muons'
-    process.analysis.tracks = 'refittedVtxTracks'
+    process.DiMuonVertexValidation.muons  = 'muons'
+    process.DiMuonVertexValidation.tracks = 'refittedVtxTracks'
 else:
-    process.analysis.muonTracks = cms.InputTag('refittedMuons')
+    process.DiMuonVertexValidation.muonTracks = cms.InputTag('refittedMuons')
 
 ####################################################################
 # Path
 ####################################################################
 process.p = cms.Path(process.seqRefitting                            +
                      process.offlinePrimaryVerticesFromRefittedTrks  +
-                     process.analysis)
+                     process.DiMuonVertexValidation)
 
 print("# Done")
