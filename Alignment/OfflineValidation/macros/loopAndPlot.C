@@ -155,7 +155,7 @@ void plotHistograms(std::vector<TH1 *> histos, const std::vector<TString> &label
   float min = (extrema.first > 0) ? (extrema.first) * 0.7 : (extrema.first) * 1.3;
   histos[0]->GetYaxis()->SetRangeUser(min, extrema.second * 1.3);
 
-  TRatioPlot *rp;
+  TRatioPlot *rp{nullptr};
 
   for (unsigned int i = 1; i < histos.size(); i++) {
     if (i == 1) {
@@ -171,10 +171,13 @@ void plotHistograms(std::vector<TH1 *> histos, const std::vector<TString> &label
     }
   }
 
+  if (!rp) {
+    std::cerr << "TRatioPlot could not be initialized, exiting!" << std::endl;
+    return;
+  }
+
   rp->GetUpperPad()->cd();
-  // if( ((TString)(histos[0]->GetName())).Contains("seedCharge") ){
-  //  gPad->SetLogy();
-  // }
+
   // Draw the legend
   TLegend *infoBox = new TLegend(0.65, 0.75, 0.95, 0.90, "");
   infoBox->SetShadowColor(0);  // 0 = transparent

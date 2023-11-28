@@ -195,7 +195,7 @@ process.seqRefitting = cms.Sequence(process.offlineBeamSpot   +
 # Output file
 ####################################################################
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("{}/DiMuonVertexValidation_{}_{}.root".format(config.get("output", os.getcwd()), config["alignment"].get("name", ""), config["validation"].get("IOV", 1.))),
+                                   fileName = cms.string("{}/DiMuonVertexValidation.root".format(config.get("output", os.getcwd()))),
                                    closeFileFast = cms.untracked.bool(True))
 
 ####################################################################

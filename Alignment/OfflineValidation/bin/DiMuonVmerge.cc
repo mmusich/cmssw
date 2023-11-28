@@ -41,16 +41,25 @@ int merge(int argc, char* argv[]) {
   TString filesAndLabels;
   for (const auto& childTree : alignments) {
     // Print node name and its attributes
-    std::cout << "Node: " << childTree.first << std::endl;
+    // std::cout << "Node: " << childTree.first << std::endl;
+    // for (const auto& attr : childTree.second) {
+    //   std::cout << "  Attribute: " << attr.first << " = " << attr.second.data() << std::endl;
+    // }
 
-    for (const auto& attr : childTree.second) {
-      std::cout << "  Attribute: " << attr.first << " = " << attr.second.data() << std::endl;
-    }
-
-    //filesAndLabels+=(childTree.second.get<string>("file")+childTree.second.get<string>("title"));
+    std::cout << childTree.second.get<string>("file") << std::endl;
+    std::cout << childTree.second.get<string>("title") << std::endl;
+    std::string toAdd = childTree.second.get<string>("file") +
+                        "/DiMuonVertexValidation.root=" + childTree.second.get<string>("title") + ",";
+    filesAndLabels += toAdd;
   }
 
-  // loopAndPlot(filesAndLabels);
+  if (filesAndLabels.Length() > 0) {
+    filesAndLabels.Remove(filesAndLabels.Length() - 1);  // Remove the last character
+  }
+
+  std::cout << "filesAndLabels: " << filesAndLabels << std::endl;
+
+  loopAndPlot(filesAndLabels);
 
   return EXIT_SUCCESS;
 }
