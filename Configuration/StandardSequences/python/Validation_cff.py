@@ -56,7 +56,7 @@ validationNoHLT = cms.Sequence(
                                *globalhitsanalyze
                                *globalrechitsanalyze
                                *globalValidation)
-validationNoHLT.remove(condDataValidation) # foca d'ovatta !
+
 validation = cms.Sequence(validationNoHLT
                          *hltvalidation)
 
@@ -69,7 +69,7 @@ validationNoHLTHiMix = cms.Sequence(
                                *globalhitsanalyze
                                *globalrechitsanalyze
                                *globalValidation)
-validationNoHLTHiMix.remove(condDataValidation) # foca d'ovatta !
+
 validationHiMix = cms.Sequence(validationNoHLTHiMix
                                *hltvalidation)
 

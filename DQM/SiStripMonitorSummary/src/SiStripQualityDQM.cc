@@ -14,8 +14,6 @@ SiStripQualityDQM::SiStripQualityDQM(edm::ESGetToken<SiStripQuality, SiStripQual
   }
 }
 
-SiStripQualityDQM::~SiStripQualityDQM() {}
-
 void SiStripQualityDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   getConditionObject(eSetup);
   condObj_->getDetIds(activeDetIds);

@@ -14,8 +14,6 @@ SiStripApvGainsDQM::SiStripApvGainsDQM(edm::ESGetToken<SiStripApvGain, SiStripAp
   }
 }
 
-SiStripApvGainsDQM::~SiStripApvGainsDQM() {}
-
 void SiStripApvGainsDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   getConditionObject(eSetup);
   condObj_->getDetIds(activeDetIds);

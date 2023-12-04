@@ -3,19 +3,20 @@
 
 #include "DQM/SiStripMonitorSummary/interface/SiStripBaseCondObjDQM.h"
 
+#include "CalibTracker/Records/interface/SiStripDependentRecords.h"
 #include "CondFormats/DataRecord/interface/SiStripLorentzAngleRcd.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLorentzAngle.h"
 
-class SiStripLorentzAngleDQM : public SiStripBaseCondObjDQMGet<SiStripLorentzAngle, SiStripLorentzAngleRcd> {
+class SiStripLorentzAngleDQM : public SiStripBaseCondObjDQMGet<SiStripLorentzAngle, SiStripLorentzAngleDepRcd> {
 public:
-  SiStripLorentzAngleDQM(edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleRcd> token,
+  SiStripLorentzAngleDQM(edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleDepRcd> token,
                          edm::RunNumber_t iRun,
                          edm::ParameterSet const &hPSet,
                          edm::ParameterSet const &fPSet,
                          const TrackerTopology *tTopo,
                          const TkDetMap *tkDetMap);
 
-  ~SiStripLorentzAngleDQM() override;
+  ~SiStripLorentzAngleDQM() override = default;
 
   void getActiveDetIds(const edm::EventSetup &eSetup) override;
 

@@ -5,18 +5,19 @@
 
 #include "CondFormats/DataRecord/interface/SiStripCondDataRecords.h"
 #include "CondFormats/SiStripObjects/interface/SiStripBackPlaneCorrection.h"
+#include "CalibTracker/Records/interface/SiStripDependentRecords.h"
 
 class SiStripBackPlaneCorrectionDQM
-    : public SiStripBaseCondObjDQMGet<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionRcd> {
+    : public SiStripBaseCondObjDQMGet<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionDepRcd> {
 public:
-  SiStripBackPlaneCorrectionDQM(edm::ESGetToken<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionRcd> token,
+  SiStripBackPlaneCorrectionDQM(edm::ESGetToken<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionDepRcd> token,
                                 edm::RunNumber_t iRun,
                                 edm::ParameterSet const &hPSet,
                                 edm::ParameterSet const &fPSet,
                                 const TrackerTopology *tTopo,
                                 const TkDetMap *tkDetMap);
 
-  ~SiStripBackPlaneCorrectionDQM() override;
+  ~SiStripBackPlaneCorrectionDQM() override = default;
 
   void getActiveDetIds(const edm::EventSetup &eSetup) override;
 

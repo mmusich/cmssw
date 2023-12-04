@@ -128,9 +128,8 @@ void SiStripBaseCondObjDQM::selectModules(std::vector<uint32_t> &detIds_) {
     std::vector<DetIdSelector> included_subdetsels;
     std::vector<std::string> included_subdets =
         fPSet_.getParameter<std::vector<std::string>>("ModulesToBeIncluded_DetIdSelector");
-    for (std::vector<std::string>::const_iterator wsdps = included_subdets.begin(); wsdps != included_subdets.end();
-         ++wsdps) {
-      included_subdetsels.push_back(DetIdSelector(*wsdps));
+    for (const auto &wsdps : included_subdets) {
+      included_subdetsels.push_back(DetIdSelector(wsdps));
     }
 
     std::vector<uint32_t> modulesToBeIncluded;
@@ -608,9 +607,9 @@ void SiStripBaseCondObjDQM::bookSummaryProfileMEs(SiStripBaseCondObjDQM::ModMEs 
   std::string hSummaryOfProfile_name;
 
   // ---
-  int subdetectorId_ = ((detId_ >> 25) & 0x7);
+  const auto &subdetectorId_ = DetId(detId_).subdetId();
 
-  if (subdetectorId_ < 3 || subdetectorId_ > 6) {
+  if (subdetectorId_ < StripSubdetector::TIB || subdetectorId_ > StripSubdetector::TEC) {
     edm::LogError("SiStripBaseCondObjDQM") << "[SiStripBaseCondObjDQM::bookSummaryProfileMEs] WRONG INPUT : no "
                                               "such subdetector type : "
                                            << subdetectorId_ << " no folder set!" << std::endl;
@@ -671,14 +670,14 @@ void SiStripBaseCondObjDQM::bookSummaryProfileMEs(SiStripBaseCondObjDQM::ModMEs 
       if (SummaryOnStringLevel_On_) {
         // Label with module position instead of detIds:
         char sameLayerDetIds_Name[1024];
-        if (subdetectorId_ == 3) {  // re-abelling for TIB
+        if (subdetectorId_ == StripSubdetector::TIB) {  // re-abelling for TIB
           if (tTopo_->tibIsZPlusSide(sameLayerDetIds_[i])) {
             sprintf(sameLayerDetIds_Name, "%i", tTopo_->tibModule(sameLayerDetIds_[i]));
           } else if (tTopo_->tibIsZMinusSide(sameLayerDetIds_[i])) {
             sprintf(sameLayerDetIds_Name, "%i", -tTopo_->tibModule(sameLayerDetIds_[i]));
           }
           CondObj_ME.SummaryOfProfileDistr->setBinLabel(iBin, sameLayerDetIds_Name);
-        } else if (subdetectorId_ == 5) {  // re-abelling for TOB
+        } else if (subdetectorId_ == StripSubdetector::TEC) {  // re-abelling for TOB
           if (tTopo_->tobIsZPlusSide(sameLayerDetIds_[i])) {
             sprintf(sameLayerDetIds_Name, "%i", tTopo_->tobModule(sameLayerDetIds_[i]));
           } else if (tTopo_->tobIsZMinusSide(sameLayerDetIds_[i])) {
@@ -719,9 +718,9 @@ void SiStripBaseCondObjDQM::bookSummaryCumulMEs(SiStripBaseCondObjDQM::ModMEs &C
   std::string hSummaryOfCumul_name;
 
   // ---
-  int subdetectorId_ = ((detId_ >> 25) & 0x7);
+  const auto &subdetectorId_ = DetId(detId_).subdetId();
 
-  if (subdetectorId_ < 3 || subdetectorId_ > 6) {
+  if (subdetectorId_ < StripSubdetector::TIB || subdetectorId_ > StripSubdetector::TEC) {
     edm::LogError("SiStripBaseCondObjDQM") << "[SiStripBaseCondObjDQM::bookSummaryCumulMEs] WRONG INPUT : no such "
                                               "subdetector type : "
                                            << subdetectorId_ << " no folder set!" << std::endl;
@@ -789,9 +788,9 @@ void SiStripBaseCondObjDQM::bookSummaryMEs(SiStripBaseCondObjDQM::ModMEs &CondOb
   std::string hSummary_name;
 
   // ---
-  int subdetectorId_ = ((detId_ >> 25) & 0x7);
+  const auto &subdetectorId_ = DetId(detId_).subdetId();
 
-  if (subdetectorId_ < 3 || subdetectorId_ > 6) {
+  if (subdetectorId_ < StripSubdetector::TIB || subdetectorId_ > StripSubdetector::TEC) {
     edm::LogError("SiStripBaseCondObjDQM") << "[SiStripBaseCondObjDQM::bookSummaryMEs] WRONG INPUT : no such "
                                               "subdetector type : "
                                            << subdetectorId_ << " no folder set!" << std::endl;
@@ -826,25 +825,23 @@ void SiStripBaseCondObjDQM::bookSummaryMEs(SiStripBaseCondObjDQM::ModMEs &CondOb
 }
 
 std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getLayerNameAndId(const uint32_t &detId_) {
-  int subdetectorId_ = ((detId_ >> 25) & 0x7);
+  const auto &subdetectorId_ = DetId(detId_).subdetId();
   int layerId_ = 0;
 
   std::stringstream layerName;
 
-  if (subdetectorId_ == 3) {  // TIB
-
+  if (subdetectorId_ == StripSubdetector::TIB) {  // TIB
     for (unsigned int i = 1; i < 5; i++) {
       if (tTopo_->tibLayer(detId_) == i) {
         layerName << "TIB__layer__" << i;
         layerId_ = 300 + i;
       }
     }
-
   }
 
-  else if (subdetectorId_ == 4) {  // TIDD
+  else if (subdetectorId_ == StripSubdetector::TID) {  // TID
 
-    if (tTopo_->tidSide(detId_) == 1) {  // TIDD side 1
+    if (tTopo_->tidSide(detId_) == 1) {  // TID side 1
 
       for (unsigned int i = 1; i < 4; i++) {
         if (tTopo_->tidWheel(detId_) == i) {
@@ -852,10 +849,7 @@ std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getLayerNameAndId(const 
           layerId_ = 410 + i;
         }
       }
-
-    }
-
-    else if (tTopo_->tidSide(detId_) == 2) {  // TIDD side 2
+    } else if (tTopo_->tidSide(detId_) == 2) {  // TID side 2
 
       for (unsigned int i = 1; i < 4; i++) {
         if (tTopo_->tidWheel(detId_) == i) {
@@ -864,10 +858,9 @@ std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getLayerNameAndId(const 
         }
       }
     }
-
   }
 
-  else if (subdetectorId_ == 5) {  // TOB
+  else if (subdetectorId_ == StripSubdetector::TOB) {  // TOB
 
     for (unsigned int i = 1; i < 7; i++) {
       if (tTopo_->tobLayer(detId_) == i) {
@@ -875,10 +868,9 @@ std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getLayerNameAndId(const 
         layerId_ = 500 + i;
       }
     }
-
   }
 
-  else if (subdetectorId_ == 6) {  // TEC
+  else if (subdetectorId_ == StripSubdetector::TEC) {  // TEC
 
     if (tTopo_->tecSide(detId_) == 1) {  // TEC side 1
 
@@ -906,12 +898,12 @@ std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getLayerNameAndId(const 
 }
 
 std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getStringNameAndId(const uint32_t &detId_) {
-  int subdetectorId_ = ((detId_ >> 25) & 0x7);
+  const auto &subdetectorId_ = DetId(detId_).subdetId();
   int layerStringId_ = 0;
 
   std::stringstream layerStringName;
 
-  if (subdetectorId_ == 3) {                                                     // TIB
+  if (subdetectorId_ == StripSubdetector::TIB) {                                 // TIB
     if (tTopo_->tibLayer(detId_) == 1 && tTopo_->tibIsInternalString(detId_)) {  // 1st layer int
       for (unsigned int i = 1; i < 27; i++) {
         if (tTopo_->tibString(detId_) == i) {
@@ -971,8 +963,8 @@ std::pair<std::string, uint32_t> SiStripBaseCondObjDQM::getStringNameAndId(const
     }
   }  // TIB
 
-  else if (subdetectorId_ == 5) {         // TOB
-    if (tTopo_->tobLayer(detId_) == 1) {  // 1st layer
+  else if (subdetectorId_ == StripSubdetector::TOB) {  // TOB
+    if (tTopo_->tobLayer(detId_) == 1) {               // 1st layer
       for (unsigned int i = 1; i < 43; i++) {
         if (tTopo_->tobRod(detId_) == i) {
           layerStringName << "TOB_L1_Rod_" << i;

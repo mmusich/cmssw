@@ -17,8 +17,6 @@ SiStripThresholdDQM::SiStripThresholdDQM(edm::ESGetToken<SiStripThreshold, SiStr
   }
 }
 
-SiStripThresholdDQM::~SiStripThresholdDQM() {}
-
 void SiStripThresholdDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   getConditionObject(eSetup);
   condObj_->getDetIds(activeDetIds);

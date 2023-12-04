@@ -17,7 +17,7 @@ public:
                    const TkDetMap* tkDetMap,
                    const SiStripApvGain* gainHandle);
 
-  ~SiStripNoisesDQM() override;
+  ~SiStripNoisesDQM() override = default;
 
   void getActiveDetIds(const edm::EventSetup& eSetup) override;
 

@@ -3,19 +3,17 @@
 #include "DataFormats/TrackerCommon/interface/SiStripSubStructure.h"
 #include "TCanvas.h"
 
-SiStripLorentzAngleDQM::SiStripLorentzAngleDQM(edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleRcd> token,
+SiStripLorentzAngleDQM::SiStripLorentzAngleDQM(edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleDepRcd> token,
                                                edm::RunNumber_t iRun,
                                                edm::ParameterSet const &hPSet,
                                                edm::ParameterSet const &fPSet,
                                                const TrackerTopology *tTopo,
                                                const TkDetMap *tkDetMap)
-    : SiStripBaseCondObjDQMGet<SiStripLorentzAngle, SiStripLorentzAngleRcd>{token, iRun, hPSet, fPSet, tTopo} {
+    : SiStripBaseCondObjDQMGet<SiStripLorentzAngle, SiStripLorentzAngleDepRcd>{token, iRun, hPSet, fPSet, tTopo} {
   if (HistoMaps_On_) {
     Tk_HM_ = std::make_unique<TkHistoMap>(tkDetMap, "SiStrip/Histo_Map", "LA_TkMap", 0.);
   }
 }
-
-SiStripLorentzAngleDQM::~SiStripLorentzAngleDQM() {}
 
 void SiStripLorentzAngleDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   getConditionObject(eSetup);

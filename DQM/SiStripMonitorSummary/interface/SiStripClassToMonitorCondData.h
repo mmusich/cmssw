@@ -102,8 +102,8 @@ private:
   edm::ESGetToken<SiStripApvGain, SiStripApvGainRcd> gainTokenForNoise_;
   edm::ESGetToken<SiStripApvGain, SiStripApvGainRcd> gainToken_;
   edm::ESGetToken<SiStripQuality, SiStripQualityRcd> qualityToken_;
-  edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleRcd> lorentzAngleToken_;
-  edm::ESGetToken<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionRcd> backplaneCorrectionToken_;
+  edm::ESGetToken<SiStripLorentzAngle, SiStripLorentzAngleDepRcd> lorentzAngleToken_;
+  edm::ESGetToken<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionDepRcd> backplaneCorrectionToken_;
   edm::ESGetToken<SiStripThreshold, SiStripThresholdRcd> thresholdToken_;
   edm::ESGetToken<SiStripDetCabling, SiStripDetCablingRcd> detCablingToken_;
 };

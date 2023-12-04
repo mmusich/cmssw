@@ -15,7 +15,7 @@ public:
                     const TrackerTopology *tTopo,
                     const TkDetMap *tkDetMap);
 
-  ~SiStripCablingDQM() override;
+  ~SiStripCablingDQM() override = default;
 
   void fillModMEs(const std::vector<uint32_t> &selectedDetIds) override { ; }
   void fillSummaryMEs(const std::vector<uint32_t> &selectedDetIds) override { ; }

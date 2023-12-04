@@ -15,7 +15,7 @@ public:
                     const TrackerTopology *tTopo,
                     const TkDetMap *tkDetMap);
 
-  ~SiStripQualityDQM() override;
+  ~SiStripQualityDQM() override = default;
 
   void getActiveDetIds(const edm::EventSetup &eSetup) override;
 

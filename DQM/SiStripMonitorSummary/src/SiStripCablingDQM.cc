@@ -15,8 +15,6 @@ SiStripCablingDQM::SiStripCablingDQM(edm::ESGetToken<SiStripDetCabling, SiStripD
   }
 }
 
-SiStripCablingDQM::~SiStripCablingDQM() {}
-
 void SiStripCablingDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   // Get active and total detIds
   getConditionObject(eSetup);

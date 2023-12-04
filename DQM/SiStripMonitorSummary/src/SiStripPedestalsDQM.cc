@@ -13,8 +13,6 @@ SiStripPedestalsDQM::SiStripPedestalsDQM(edm::ESGetToken<SiStripPedestals, SiStr
   }
 }
 
-SiStripPedestalsDQM::~SiStripPedestalsDQM() {}
-
 void SiStripPedestalsDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   getConditionObject(eSetup);
   condObj_->getDetIds(activeDetIds);

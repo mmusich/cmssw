@@ -4,22 +4,18 @@
 
 // -----
 SiStripBackPlaneCorrectionDQM::SiStripBackPlaneCorrectionDQM(
-    edm::ESGetToken<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionRcd> token,
+    edm::ESGetToken<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionDepRcd> token,
     edm::RunNumber_t iRun,
     edm::ParameterSet const &hPSet,
     edm::ParameterSet const &fPSet,
     const TrackerTopology *tTopo,
     const TkDetMap *tkDetMap)
-    : SiStripBaseCondObjDQMGet<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionRcd>{
+    : SiStripBaseCondObjDQMGet<SiStripBackPlaneCorrection, SiStripBackPlaneCorrectionDepRcd>{
           token, iRun, hPSet, fPSet, tTopo} {
   if (HistoMaps_On_) {
     Tk_HM_ = std::make_unique<TkHistoMap>(tkDetMap, "SiStrip/Histo_Map", "BP_TkMap", 0.);
   }
 }
-// -----
-
-// -----
-SiStripBackPlaneCorrectionDQM::~SiStripBackPlaneCorrectionDQM() {}
 // -----
 
 // -----

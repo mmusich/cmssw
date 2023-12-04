@@ -15,8 +15,6 @@ SiStripNoisesDQM::SiStripNoisesDQM(edm::ESGetToken<SiStripNoises, SiStripNoisesR
   }
 }
 
-SiStripNoisesDQM::~SiStripNoisesDQM() {}
-
 void SiStripNoisesDQM::getActiveDetIds(const edm::EventSetup &eSetup) {
   getConditionObject(eSetup);
   condObj_->getDetIds(activeDetIds);
