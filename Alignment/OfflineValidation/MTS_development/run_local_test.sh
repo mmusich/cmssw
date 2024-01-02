@@ -1,3 +1,4 @@
+#!/bin/bash
 # Parse command line options
 plot_only=false
 while getopts "p" opt; do

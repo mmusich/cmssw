@@ -174,13 +174,12 @@ process.AlignmentTrackSelector.minHitsPerSubDet.inPIXEL = 2
 # settings = 100 * algorithm + level
 # level is from 1 (small) to 9 (large compression)
 # algo: 1 (ZLIB), 2 (LMZA)
-# see more about compression & performance: https://root.cern.ch/root/html    534/guides/users-guide/InputOutput.html#compression-and-performance
+# see more about compression & performance: https://root.cern.ch/root/html534/guides/users-guide/InputOutput.html#compression-and-performance
 compressionSettings = 207
 process.cosmicValidation = cms.EDAnalyzer(
   "CosmicSplitterValidation",
   compressionSettings = cms.untracked.int32(compressionSettings),
   ifSplitMuons = cms.bool(False),
-  ifTrackMCTruth = cms.bool(False),
   checkIfGolden = cms.bool(False),
   splitTracks = cms.InputTag("FinalTrackRefitter","","splitter"),
   splitGlobalMuons = cms.InputTag("muons","","splitter"),

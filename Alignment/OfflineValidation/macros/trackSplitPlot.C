@@ -9,7 +9,7 @@ Table Of Contents
 ***********************************/
 
 #include "trackSplitPlot.h"
-#include "Alignment/OfflineValidation/macros/TkAlStyle.cc"
+#include "Alignment/OfflineValidation/interface/TkAlStyle.h"
 
 //===================
 //0. Track Split Plot

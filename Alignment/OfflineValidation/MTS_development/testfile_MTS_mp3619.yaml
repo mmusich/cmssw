@@ -8,7 +8,7 @@ alignment:
   title: mp3619 
   conditions:
     TrackerAlignmentRcd:
-      connect: sqlite_file:/afs/cern.ch/cms/CAF/CMSALCA/ALCA_TRACKERALIGN/MP/MPproduction/mp3619/jobData/jobm/alignments_MP.db
+      connect: /afs/cern.ch/cms/CAF/CMSALCA/ALCA_TRACKERALIGN/MP/MPproduction/mp3619/jobData/jobm/alignments_MP.db
       tag: Alignments
     SiPixelTemplateDBObjectRcd:
       connect: frontier://FrontierProd/CMS_CONDITIONS
