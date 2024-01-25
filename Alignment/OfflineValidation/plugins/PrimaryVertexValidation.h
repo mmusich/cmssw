@@ -195,12 +195,20 @@ private:
   bool debug_;
   bool runControl_;
 
+  // this is needed to steer reading track times
+  // in case of 2D clustering (ZT)
+  bool useTransientTrackTime_;
+
   // force to use beamspot in the vertex fit
   bool forceBeamSpotContraint_;
 
   edm::EDGetTokenT<reco::TrackCollection> theTrackCollectionToken_;
   edm::EDGetTokenT<reco::VertexCollection> theVertexCollectionToken_;
   edm::EDGetTokenT<reco::BeamSpot> theBeamspotToken_;
+
+  // optional (just for 2D clustering)
+  edm::EDGetTokenT<edm::ValueMap<float> > trkTimesToken_;
+  edm::EDGetTokenT<edm::ValueMap<float> > trkTimeResosToken_;
 
   TTree* rootTree_;
 
