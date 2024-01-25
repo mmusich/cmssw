@@ -8,12 +8,21 @@ options.register("isPhase2",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "is the test running with phase-2 geometry")
+options.register("is2DClust",
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "run 2D clustering")
 options.register("maxEvents",
                  -1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "number of events to run")
 options.parseArguments()
+
+
+if ((not options.isPhase2) and options.is2DClust):
+     raise Exception("Cannot run 2D clustering in Phase1")
 
 if (options.isPhase2):
      from Alignment.OfflineValidation.TkAlAllInOneTool.defaultInputFiles_cff import filesDefaultMC_TTbarPhase2RECO
@@ -77,18 +86,22 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.enable = False
 process.MessageLogger.PrimaryVertexValidation=dict()  
 process.MessageLogger.SplitVertexResolution=dict()
-process.MessageLogger.FilterOutLowPt=dict()  
+process.MessageLogger.FilterOutLowPt=dict()
+process.MessageLogger.DAClusterizerinZT_vect=dict()
+process.MessageLogger.DAClusterizerinZ_vect=dict()
 process.MessageLogger.cout = cms.untracked.PSet(
     enable = cms.untracked.bool(True),
     threshold = cms.untracked.string("INFO"),
     default   = cms.untracked.PSet(limit = cms.untracked.int32(0)),                       
     FwkReport = cms.untracked.PSet(limit = cms.untracked.int32(-1),
                                    reportEvery = cms.untracked.int32(1 if (options.isPhase2) else 10)),                                                      
-    PrimaryVertexValidation = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
-    SplitVertexResolution   = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
-    FilterOutLowPt          = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
-    enableStatistics = cms.untracked.bool(True)
-    )
+     PrimaryVertexValidation = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+     SplitVertexResolution   = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+     FilterOutLowPt          = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+     DAClusterizerinZT_vect  = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+     DAClusterizerinZ_vect   = cms.untracked.PSet( limit = cms.untracked.int32(-1)),
+     enableStatistics = cms.untracked.bool(True)
+)
 
 ####################################################################
 # Produce the Transient Track Record in the event
@@ -215,6 +228,25 @@ else:
      process.goodvertexSkim = cms.Sequence(process.primaryVertexFilter + process.noscraping + process.noslowpt)
 
 
+if(options.isPhase2 and options.is2DClust):
+     # KFTrajectoryFitterESProducer
+     #process.load("TrackingTools.TrackRefitter.TracksToTrajectories_cff")
+     #process.load("TrackingTools.TrackFitters.TrackFitters_cff")
+     #process.load("RecoMTD.TrackExtender.PropagatorWithMaterialForMTD_cfi")
+
+     #from RecoMTD.TrackExtender.trackExtenderWithMTD_cfi import trackExtenderWithMTD
+     #process.MyTrackExtenderWithMTD = trackExtenderWithMTD.clone(
+     #     tracksSrc = 'FinalTrackRefitter',
+     #     trjtrkAssSrc = 'FinalTrackRefitter'
+     #)
+
+     from RecoMTD.TrackExtender.trackTimesMapReKeyer_cfi import trackTimesMapReKeyer
+     process.MyTrackTimesMapReKeyer = trackTimesMapReKeyer.clone(
+          src = 'FinalTrackRefitter',
+          times  = cms.InputTag("trackExtenderWithMTD","generalTracktmtd"),
+          resolutions = cms.InputTag("trackExtenderWithMTD","generalTracksigmatmtd")
+     )
+
 if(_theRefitter == RefitType.COMMON):
 
      print("############ testPVValidation_cfg.py: msg%-i: using the common track selection and refit sequence!")
@@ -233,7 +265,10 @@ if(_theRefitter == RefitType.COMMON):
                                                           cosmicTrackSplitting=False,
                                                           use_d0cut=False,
                                                           )
-     
+     if(options.isPhase2 and  options.is2DClust):
+          #process.seqTrackselRefit.insert(8,process.MyTrackExtenderWithMTD)
+          process.seqTrackselRefit.insert(8,process.MyTrackTimesMapReKeyer)
+
 elif (_theRefitter == RefitType.STANDARD):
 
      print("############ testPVValidation_cfg.py: msg%-i: using the standard single refit sequence!")
@@ -266,12 +301,19 @@ elif (_theRefitter == RefitType.STANDARD):
                                              #process.MeasurementTrackerEvent*
                                              process.FinalTrackRefitter)     
 
+     ###################################################################
+     # preprend the filter
+     ###################################################################
+     if(options.isPhase2 and options.is2DClust):
+          #process.seqTrackselRefit.insert(3, process.MyTrackExtenderWithMTD)
+          process.seqTrackselRefit.insert(3,process.MyTrackTimesMapReKeyer)
+
 ####################################################################
 # Output file
 ####################################################################
 process.TFileService = cms.Service("TFileService",
-                                   fileName=cms.string("PVValidation_test_0.root")
-                                  )
+                                   fileName=cms.string("PVValidation_test_{}_{}_0.root".format("Phase2" if options.isPhase2 else "Phase1","2D" if options.is2DClust else "1D"))
+                                   )
 
 ####################################################################
 # Imports of parameters
@@ -286,7 +328,9 @@ FilteringParams = offlinePrimaryVertices.TkFilterParameters.clone(
 
 ## MM 04.05.2017 (use settings as in: https://github.com/cms-sw/cmssw/pull/18330)
 from RecoVertex.PrimaryVertexProducer.OfflinePrimaryVertices_cfi import DA_vectParameters
-DAClusterizationParams = DA_vectParameters.clone()
+DAClusterizationParams = DA_vectParameters.clone(
+     algorithm = 'DA2D_vect' if (options.isPhase2 and options.is2DClust) else 'DA_vect'
+)
 
 GapClusterizationParams = cms.PSet(algorithm   = cms.string('gap'),
                                    TkGapClusParameters = cms.PSet(zSeparation = cms.double(0.2))  # 0.2 cm max separation betw. clusters
@@ -309,6 +353,8 @@ def switchClusterizerParameters(da):
 from prettytable import PrettyTable
 x = PrettyTable()
 x.field_names = ["Parameter","Value"]
+x.add_row(["is Phase2",options.isPhase2])
+x.add_row(["is ZT clust",options.is2DClust])
 x.add_row(["is DA",_isDA])
 x.add_row(["is MC",_isMC])
 x.add_row(["applyBows",_applyBows])
@@ -325,6 +371,7 @@ print(x)
 ####################################################################
 process.PVValidation = cms.EDAnalyzer("PrimaryVertexValidation",
                                       TrackCollectionTag = cms.InputTag("FinalTrackRefitter"),
+                                      #TrackCollectionTag = cms.InputTag("generalTracks"),
                                       VertexCollectionTag = cms.InputTag("offlinePrimaryVertices"),
                                       Debug = cms.bool(False),
                                       storeNtuple = cms.bool(False),
@@ -338,7 +385,11 @@ process.PVValidation = cms.EDAnalyzer("PrimaryVertexValidation",
                                       runControl = cms.untracked.bool(True),
                                       runControlNumber = cms.untracked.vuint32(int(runboundary)),
                                       TkFilterParameters = FilteringParams,
-                                      TkClusParameters = switchClusterizerParameters(_isDA)
+                                      TkClusParameters = switchClusterizerParameters(_isDA),
+                                      TrackTimesLabel = cms.InputTag("MyTrackTimesMapReKeyer","times"),
+                                      TrackTimeResosLabel = cms.InputTag("MyTrackTimesMapReKeyer","resolutions")
+                                      #TrackTimesLabel = cms.InputTag("MyTrackExtenderWithMTD","generalTracktmtd"),
+                                      #TrackTimeResosLabel = cms.InputTag("MyTrackExtenderWithMTD","generalTracksigmatmtd")
                                       )
 
 ####################################################################
@@ -417,10 +468,12 @@ process.PrimaryVertexResolution = cms.EDAnalyzer('SplitVertexResolution',
                                                  runControlNumber = cms.untracked.vuint32(int(runboundary))
                                                  )
 
+process.dump = cms.EDAnalyzer("EventContentAnalyzer")
+
 process.p2 = cms.Path(process.HLTFilter                               +
                       process.seqTrackselRefit                        +
+                      #process.dump                                   +
                       process.offlinePrimaryVerticesFromRefittedTrks  +
                       process.PrimaryVertexResolution                 +
                       process.trackanalysis                           +
-                      process.vertexanalysis
-                      )
+                      process.vertexanalysis)

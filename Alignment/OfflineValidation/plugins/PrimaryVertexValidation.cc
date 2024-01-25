@@ -92,6 +92,7 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
       maxPt_(iConfig.getUntrackedParameter<double>("maxPt", 20.)),
       debug_(iConfig.getParameter<bool>("Debug")),
       runControl_(iConfig.getUntrackedParameter<bool>("runControl", false)),
+      useTransientTrackTime_{false},
       forceBeamSpotContraint_(iConfig.getUntrackedParameter<bool>("forceBeamSpot", false)) {
   // now do what ever initialization is needed
   // initialize phase space boundaries
@@ -125,8 +126,19 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
     theTrackClusterizer_ =
         std::make_unique<DAClusterizerInZ_vect>(iConfig.getParameter<edm::ParameterSet>("TkClusParameters")
                                                     .getParameter<edm::ParameterSet>("TkDAClusParameters"));
+  } else if (clusteringAlgorithm == "DA2D_vect") {
+    edm::LogVerbatim("PrimaryVertexValidation") << "Using 2D (Z-T) clustering!";
+    useTransientTrackTime_ = true;
+    theTrackClusterizer_ =
+        std::make_unique<DAClusterizerInZT_vect>(iConfig.getParameter<edm::ParameterSet>("TkClusParameters")
+                                                     .getParameter<edm::ParameterSet>("TkDAClusParameters"));
   } else {
-    throw VertexException("PrimaryVertexProducerAlgorithm: unknown clustering algorithm: " + clusteringAlgorithm);
+    throw VertexException("PrimaryVertexValidation: unknown clustering algorithm: " + clusteringAlgorithm);
+  }
+
+  if (useTransientTrackTime_) {
+    trkTimesToken_ = consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("TrackTimesLabel"));
+    trkTimeResosToken_ = consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("TrackTimeResosLabel"));
   }
 
   theDetails_.histobins = 500;
@@ -448,11 +460,18 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   // Interface RECO tracks to vertex reconstruction
   //======================================================
 
-  std::vector<TransientTrack> t_tks;
-  for (const auto& track : tracks) {
-    TransientTrack tt = theB_->build(&(track));
-    tt.setBeamSpot(beamSpot);
-    t_tks.push_back(tt);
+  std::vector<reco::TransientTrack> t_tks;
+
+  if (useTransientTrackTime_) {
+    auto const& trackTimeResos = iEvent.get(trkTimeResosToken_);
+    auto const& trackTimes = iEvent.get(trkTimesToken_);
+    t_tks = theB_->build(trackCollectionHandle, beamSpot, trackTimes, trackTimeResos);
+  } else {
+    for (const auto& track : tracks) {
+      TransientTrack tt = theB_->build(&(track));
+      tt.setBeamSpot(beamSpot);
+      t_tks.push_back(tt);
+    }
   }
 
   if (debug_) {
@@ -3692,6 +3711,8 @@ void PrimaryVertexValidation::fillDescriptions(edm::ConfigurationDescriptions& d
   desc.add<edm::InputTag>("TrackCollectionTag", edm::InputTag("ALCARECOTkAlMinBias"));
   desc.add<edm::InputTag>("VertexCollectionTag", edm::InputTag("offlinePrimaryVertices"));
   desc.add<edm::InputTag>("BeamSpotTag", edm::InputTag("offlineBeamSpot"));
+  desc.add<edm::InputTag>("TrackTimeResosLabel", edm::InputTag());  // 4D only
+  desc.add<edm::InputTag>("TrackTimesLabel", edm::InputTag());      // 4D only
 
   // track filtering
   edm::ParameterSetDescription psd0;
