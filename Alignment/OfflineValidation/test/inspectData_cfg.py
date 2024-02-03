@@ -1,3 +1,4 @@
+import math
 import glob
 import FWCore.ParameterSet.Config as cms
 from Alignment.OfflineValidation.TkAlAllInOneTool.defaultInputFiles_cff import filesDefaultData_Comissioning2022_Cosmics_string
@@ -45,7 +46,13 @@ options.register('maxEvents',
 
 options.parseArguments()
 
-process = cms.Process("AlCaRECOAnalysis")
+#from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9
+#process = cms.Process("AlCaRECOAnalysis",Phase2C17I13M9)
+
+from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9  
+process = cms.Process("AlCaRECOAnalysis",Phase2C17I13M9)      
+
+#process = cms.Process("AlCaRECOAnalysis")
 
 ###################################################################
 # Message logger service
@@ -71,7 +78,8 @@ process.MessageLogger.cout = cms.untracked.PSet(
 ###################################################################
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 process.load("Configuration.StandardSequences.Services_cff")
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+#process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+process.load('Configuration.Geometry.GeometryExtended2026D88Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 #process.load("Configuration.StandardSequences.MagneticField_0T_cff")
 process.load("CondCore.CondDB.CondDB_cfi")
@@ -95,7 +103,8 @@ if(options.unitTest):
 else:
     file_list = glob.glob(options.inputData)
     for f in file_list:
-        the_files.append(f.replace("/eos/cms",""))
+        #the_files.append(f.replace("/eos/cms",""))
+        the_files.append(f.replace("./","file:"))
     print(the_files)
     readFiles.extend(the_files)
 
@@ -160,12 +169,13 @@ if(options.unitTest):
 # The analysis module
 ###################################################################
 process.myanalysis = cms.EDAnalyzer("GeneralPurposeTrackAnalyzer",
-                                    TkTag  = cms.InputTag('TrackRefitter1'),
-                                    isCosmics = cms.bool(True))
+                                    #TkTag  = cms.InputTag('TrackRefitter1'),
+                                    TkTag  = cms.InputTag(options.trackCollection),
+                                    isCosmics = cms.bool(False))
 
 process.fastdmr = cms.EDAnalyzer("DMRChecker",
                                  TkTag  = cms.InputTag('TrackRefitter1'),
-                                 isCosmics = cms.bool(True))
+                                 isCosmics = cms.bool(False))
 
 ###################################################################
 # Output name
@@ -173,14 +183,77 @@ process.fastdmr = cms.EDAnalyzer("DMRChecker",
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(options.outFileName))
 
+
+###################################################################
+# TransientTrack from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideTransientTracks
+###################################################################
+process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
+process.load('TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorOpposite_cfi')
+process.load('TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorAlong_cfi')
+process.load('TrackingTools.TrackAssociator.DetIdAssociatorESProducer_cff')
+
+process.DiMuonVertexValidation = cms.EDAnalyzer("DiMuonVertexValidation",
+                                               useReco = cms.bool(False),
+                                               muonTracks = cms.InputTag(options.trackCollection),
+                                               tracks = cms.InputTag(''),
+                                               vertices = cms.InputTag('offlinePrimaryVertices'))
+
+from Alignment.OfflineValidation.diMuonValidation_cfi import diMuonValidation as _diMuonValidation
+process.DiMuonMassValidation = _diMuonValidation.clone(
+    #TkTag = 'refittedMuons',
+    TkTag = options.trackCollection,
+    # mu mu mass
+    Pair_mass_min   = 80.,
+    Pair_mass_max   = 120.,
+    Pair_mass_nbins = 80,
+    Pair_etaminpos  = -2.4,
+    Pair_etamaxpos  = 2.4,
+    Pair_etaminneg  = -2.4,
+    Pair_etamaxneg  = 2.4,
+    # cosTheta CS
+    Variable_CosThetaCS_xmin  = -1.,
+    Variable_CosThetaCS_xmax  =  1.,
+    Variable_CosThetaCS_nbins = 20,
+    # DeltaEta
+    Variable_DeltaEta_xmin  = -4.8,
+    Variable_DeltaEta_xmax  = 4.8,
+    Variable_DeltaEta_nbins = 20,
+    # EtaMinus
+    Variable_EtaMinus_xmin  = -2.4,
+    Variable_EtaMinus_xmax  =  2.4,
+    Variable_EtaMinus_nbins = 12,
+    # EtaPlus
+    Variable_EtaPlus_xmin  = -2.4,
+    Variable_EtaPlus_xmax  =  2.4,
+    Variable_EtaPlus_nbins = 12,
+    # Phi CS
+    Variable_PhiCS_xmin  = -math.pi/2.,
+    Variable_PhiCS_xmax  =  math.pi/2.,
+    Variable_PhiCS_nbins = 20,
+    # Phi Minus
+    Variable_PhiMinus_xmin  = -math.pi,
+    Variable_PhiMinus_xmax  =  math.pi,
+    Variable_PhiMinus_nbins = 16,
+    # Phi Plus
+    Variable_PhiPlus_xmin  = -math.pi,
+    Variable_PhiPlus_xmax  =  math.pi,
+    Variable_PhiPlus_nbins = 16,
+    # mu mu pT
+    Variable_PairPt_xmin  = 0.,
+    Variable_PairPt_xmax  = 100.,
+    Variable_PairPt_nbins = 100)
+
+
 ###################################################################
 # Path
 ###################################################################
 process.p1 = cms.Path(process.offlineBeamSpot
                       #*process.AliMomConstraint  # for 0T
-                      *process.TrackRefitter1
-                      *process.myanalysis
-                      *process.fastdmr)
+                      #*process.TrackRefitter1
+                      * process.myanalysis
+                      * process.DiMuonVertexValidation
+                      * process.DiMuonMassValidation)
+                      #*process.fastdmr)
 
 ###################################################################
 # preprend the filter

@@ -1,0 +1,1 @@
+cmsRun inspectData_cfg.py globalTag=auto:phase2_realistic_T25 inputData=./TkAlZMuMu_fixed.root trackCollection=ALCARECOTkAlZMuMu outFileName=testZMuMu_fixed.root

@@ -154,9 +154,15 @@ public:
         runInfoToken_(esConsumes<edm::Transition::BeginRun>()),
         magFieldToken_(esConsumes<edm::Transition::BeginRun>()),
         topoToken_(esConsumes<edm::Transition::BeginRun>()),
-        latencyToken_(esConsumes<edm::Transition::BeginRun>()),
-        isCosmics_(pset.getParameter<bool>("isCosmics")) {
+        isCosmics_(pset.getParameter<bool>("isCosmics")),
+        doLatencyAnalysis_(pset.getParameter<bool>("doLatencyAnalysis")) {
     usesResource(TFileService::kSharedResource);
+
+    if (doLatencyAnalysis_) {
+      latencyToken_ = esConsumes<edm::Transition::BeginRun>();
+    } else {
+      latencyToken_ = edm::ESGetToken<SiStripLatency, SiStripLatencyRcd>();
+    }
 
     TkTag_ = pset.getParameter<edm::InputTag>("TkTag");
     theTrackCollectionToken_ = consumes<reco::TrackCollection>(TkTag_);
@@ -231,7 +237,8 @@ private:
   const edm::ESGetToken<RunInfo, RunInfoRcd> runInfoToken_;
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magFieldToken_;
   const edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> topoToken_;
-  const edm::ESGetToken<SiStripLatency, SiStripLatencyRcd> latencyToken_;
+  // not const
+  edm::ESGetToken<SiStripLatency, SiStripLatencyRcd> latencyToken_;
 
   const MagneticField *magneticField_;
   const TrackerGeometry *trackerGeometry_;
@@ -469,6 +476,7 @@ private:
   float etaMax_;
 
   const bool isCosmics_;
+  const bool doLatencyAnalysis_;
 
   edm::InputTag TkTag_;
   edm::InputTag TriggerResultsTag_;
@@ -1106,11 +1114,15 @@ private:
     timeMap_[run.run()] = seconds;
 
     //SiStrip Latency
-    const SiStripLatency *apvlat = &setup.getData(latencyToken_);
-    if (apvlat->singleReadOutMode() == 1) {
-      mode = 1;  // peak mode
-    } else if (apvlat->singleReadOutMode() == 0) {
-      mode = -1;  // deco mode
+    if (doLatencyAnalysis_) {
+      const SiStripLatency *apvlat = &setup.getData(latencyToken_);
+      if (apvlat->singleReadOutMode() == 1) {
+        mode = 1;  // peak mode
+      } else if (apvlat->singleReadOutMode() == 0) {
+        mode = -1;  // deco mode
+      }
+    } else {
+      mode = 0.;
     }
 
     conditionsMap_[run.run()].first = mode;
