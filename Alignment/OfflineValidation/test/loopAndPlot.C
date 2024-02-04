@@ -32,12 +32,12 @@ void MakeNiceProfile(TProfile *prof);
 //void MakeNicePlotStyle(TH1 *hist);
 void plot2Histograms(TH1 *h1, TH1 *h2, const TString &label1, const TString &label2);
 void plot2Profiles(TProfile *h1, TProfile *h2, const TString &label1, const TString &label2);
-void recurseOverKeys(TDirectory *target1, const std::vector<TString> &labels,bool isNorm);
+void recurseOverKeys(TDirectory *target1, const std::vector<TString> &labels, bool isNorm);
 void recurseOverKeys(TDirectory *target1, const TString &label1, const TString &label2);
-void plotHistograms(std::vector<TH1 *> histos, const std::vector<TString> &labels, bool isNormalized=false);
+void plotHistograms(std::vector<TH1 *> histos, const std::vector<TString> &labels, bool isNormalized = false);
 
 /************************************************/
-void loopAndPlot(TString namesandlabels, bool doNormalize=false)
+void loopAndPlot(TString namesandlabels, bool doNormalize = false)
 /************************************************/
 {
   std::vector<TString> labels;
@@ -64,7 +64,7 @@ void loopAndPlot(TString namesandlabels, bool doNormalize=false)
 }
 
 /************************************************/
-void recurseOverKeys(TDirectory *target1, const std::vector<TString> &labels,bool isNorm)
+void recurseOverKeys(TDirectory *target1, const std::vector<TString> &labels, bool isNorm)
 /************************************************/
 {
   // Figure out where we are
@@ -143,8 +143,8 @@ void plotHistograms(std::vector<TH1 *> histos, const std::vector<TString> &label
   for (const auto &histo : histos) {
     MakeNicePlotStyle<TH1>(histo);
 
-    if(isNormalized){
-      Double_t scale = 1./histo->Integral();
+    if (isNormalized) {
+      Double_t scale = 1. / histo->Integral();
       histo->Scale(scale);
     }
 
