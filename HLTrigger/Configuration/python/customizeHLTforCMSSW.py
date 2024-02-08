@@ -272,7 +272,7 @@ def customizeHLTfor43774(process):
 
 def customizeHLTforAXO(process):
     for producer in producers_by_type(process, "L1TGlobalProducer"):
-        producer.AXOL1TLModelVersion = cms.string("GTADModel_v3") # cms.string("test")
+        producer.AXOL1TLModelVersion = cms.string("" )#cms.string("GTADModel_v3") # cms.string("test")
     return process
 
 # CMSSW version specific customizations
