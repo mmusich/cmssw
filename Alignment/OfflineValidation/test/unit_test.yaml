@@ -44,6 +44,11 @@ alignments:
         globaltag: auto:phase1_2022_realistic
         style: 2101
         title: unit test
+    unitTestZmumuMC:
+        color: 1
+        globaltag: auto:phase1_2024_realistic
+        style: 2101
+        title: unit test
     PromptNewTemplate:
         name: PromptNewTemplate
         color: 1
@@ -182,6 +187,19 @@ validations:
                 - unitTestDiMuonVMC
                 trackcollection: generalTracks
                 maxevents: 10
+    Zmumu:
+        merge:
+            testSingleZmumu:
+                singles:
+                - tesSingleZmumu
+        single:
+            testSingleZmumu:
+                IOV:
+                - 1
+                alignments:
+                - unitTestZmumuMC
+                trackcollection: ALCARECOTkAlZMuMu
+                maxevents: 100
     MTS:
         merge:
             testSingleMTS:
