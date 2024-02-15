@@ -20,7 +20,7 @@ void FitWithRooFit::fit(
   reinitializeParameters();
 
   std::unique_ptr<RooDataHist> dh = importTH1(histo, xMin, xMax);
-  RooRealVar x(*static_cast<RooRealVar*>(dh->get()->find("x")));
+  RooRealVar x(*static_cast<RooRealVar*>(dh->get()->find("InvMass")));
 
   // Make plot of binned dataset showing Poisson error bars (RooFit default)
   RooPlot* frame = x.frame(RooFit::Title("di-muon mass M(#mu^{+}#mu^{-}) [GeV]"));
