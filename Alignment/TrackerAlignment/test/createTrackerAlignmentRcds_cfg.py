@@ -3,17 +3,20 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("Alignment")
 
 process.load("Configuration.StandardSequences.MagneticField_cff") # B-field map
-process.load("Configuration.Geometry.GeometryRecoDB_cff") # Ideal geometry and interface
+#process.load("Configuration.Geometry.GeometryRecoDB_cff") # Ideal geometry and interface
+process.load("Configuration.Geometry.GeometryExtended2026D110Reco_cff") # Ideal geometry and interface
+process.load('Configuration.Geometry.GeometryExtended2026D110_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff") # Global tag
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.load("Alignment.TrackerAlignment.createIdealTkAlRecords_cfi")
 
 ################################################################################
 # parameters to configure:
-process.GlobalTag = GlobalTag(process.GlobalTag, "auto:phase1_2017_design")
+process.GlobalTag = GlobalTag(process.GlobalTag, "auto:phase2_realistic_T36")
 
-process.createIdealTkAlRecords.alignToGlobalTag = True
-process.createIdealTkAlRecords.skipSubDetectors = cms.untracked.vstring("P1PXB", "P1PXEC")
+process.createIdealTkAlRecords.alignToGlobalTag   = False
+process.createIdealTkAlRecords.createReferenceRcd = False
+#process.createIdealTkAlRecords.skipSubDetectors = cms.untracked.vstring("P1PXB", "P1PXEC")
 ################################################################################
 
 
@@ -40,7 +43,7 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     )
 )
 process.PoolDBOutputService.connect = \
-    ("sqlite_file:tracker_alignment_payloads__pixel_ideal__strips_aligned_to_"+
+    ("sqlite_file:tracker_alignment_payloads_ideal_"+
      usedGlobalTag+("_reference.db"
                     if process.createIdealTkAlRecords.createReferenceRcd
                     else ".db"))
