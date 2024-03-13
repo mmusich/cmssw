@@ -3063,14 +3063,14 @@ upgradeProperties[2026] = {
     '2026D111' : {
         'Geom' : 'Extended2026D111',
         'HLTmenu': '@relval2026',
-        'GT' : 'auto:phase2_realistic_T36',
+        'GT' : 'auto:phase2_realistic_T37',
         'Era' : 'Phase2C22I13M9',
         'ScenToRun' : ['GenSimHLBeamSpot','DigiTrigger','RecoGlobal', 'HARVESTGlobal', 'ALCAPhase2'],
     },
     '2026D112' : {
         'Geom' : 'Extended2026D112',
         'HLTmenu': '@relval2026',
-        'GT' : 'auto:phase2_realistic_T36',
+        'GT' : 'auto:phase2_realistic_T38',
         'Era' : 'Phase2C22I13M9',
         'ScenToRun' : ['GenSimHLBeamSpot','DigiTrigger','RecoGlobal', 'HARVESTGlobal', 'ALCAPhase2'],
     },
