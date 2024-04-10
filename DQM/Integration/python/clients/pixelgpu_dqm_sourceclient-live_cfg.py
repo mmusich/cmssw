@@ -95,8 +95,32 @@ if process.runType.getRunType() == process.runType.hi_run:
     process.siPixelPhase1RawDataErrorComparator.pixelErrorSrcGPU = 'hltSiPixelDigisFromSoAPPOnAA'
     process.siPixelPhase1RawDataErrorComparator.pixelErrorSrcCPU = 'hltSiPixelDigisLegacyPPOnAA'
 else:
-    process.siPixelPhase1RawDataErrorComparator.pixelErrorSrcGPU = 'hltSiPixelDigisFromSoA'
-    process.siPixelPhase1RawDataErrorComparator.pixelErrorSrcCPU = 'hltSiPixelDigisLegacy'
+    process.siPixelRecHitsSoAMonitorSerial.pixelHitsSrc = 'hltSiPixelRecHitsSoASerialSync'
+    process.siPixelRecHitsSoAMonitorSerial.TopFolderName = 'SiPixelHeterogeneous/PixelRecHitsCPU'
+    process.siPixelRecHitsSoAMonitorDevice.pixelHitsSrc = 'hltSiPixelRecHitsSoA'
+    process.siPixelRecHitsSoAMonitorDevice.TopFolderName = 'SiPixelHeterogeneous/PixelRecHitsGPU'
+    process.siPixelPhase1CompareRecHitsSoAAlpaka.pixelHitsSrcHost = 'hltSiPixelRecHitsSoASerialSync'
+    process.siPixelPhase1CompareRecHitsSoAAlpaka.pixelHitsSrcDevice = 'hltSiPixelRecHitsSoA'
+    process.siPixelPhase1CompareRecHitsSoAAlpaka.topFolderName = 'SiPixelHeterogeneous/PixelRecHitsCompareGPUvsCPU'
+    process.siPixelTrackSoAMonitorSerial.pixelTrackSrc = 'hltPixelTracksSoASerialSync'
+    process.siPixelTrackSoAMonitorSerial.topFolderName = 'SiPixelHeterogeneous/PixelTrackCPU'
+    process.siPixelTrackSoAMonitorDevice.pixelTrackSrc = 'hltPixelTracksSoA'
+    process.siPixelTrackSoAMonitorDevice.topFolderName = 'SiPixelHeterogeneous/PixelTrackGPU'
+    process.siPixelPhase1CompareTrackSoAAlpaka.pixelTrackSrcHost = 'hltPixelTracksSoASerialSync'
+    process.siPixelPhase1CompareTrackSoAAlpaka.pixelTrackSrcDevice = 'hltPixelTracksSoA'
+    process.siPixelPhase1CompareTrackSoAAlpaka.topFolderName = 'SiPixelHeterogeneous/PixelTrackCompareGPUvsCPU'
+    process.siPixelVertexSoAMonitorSerial.pixelVertexSrc = 'hltPixelVerticesSoASerialSync'
+    process.siPixelVertexSoAMonitorSerial.beamSpotSrc = 'hltOnlineBeamSpot'
+    process.siPixelVertexSoAMonitorSerial.topFolderName = 'SiPixelHeterogeneous/PixelVertexCPU'
+    process.siPixelVertexSoAMonitorDevice.pixelVertexSrc = 'hltPixelVerticesSoA'
+    process.siPixelVertexSoAMonitorDevice.beamSpotSrc = 'hltOnlineBeamSpot'
+    process.siPixelVertexSoAMonitorDevice.topFolderName = 'SiPixelHeterogeneous/PixelVertexGPU'
+    process.siPixelCompareVertexSoAAlpaka.pixelVertexSrcHost = 'hltPixelVerticesSoASerialSync'
+    process.siPixelCompareVertexSoAAlpaka.pixelVertexSrcDevice = 'hltPixelVerticesSoA'
+    process.siPixelCompareVertexSoAAlpaka.beamSpotSrc = 'hltOnlineBeamSpot'
+    process.siPixelCompareVertexSoAAlpaka.topFolderName = 'SiPixelHeterogeneous/PixelVertexCompareGPUvsCPU'
+    process.siPixelPhase1RawDataErrorComparator.pixelErrorSrcGPU = 'hltSiPixelDigiErrors'
+    process.siPixelPhase1RawDataErrorComparator.pixelErrorSrcCPU = 'hltSiPixelDigiErrorsSerialSync'
 #-------------------------------------
 #       Some Debug
 #-------------------------------------
@@ -106,7 +130,10 @@ process.dumpPath = cms.Path(process.dump)
 #-------------------------------------
 #	Hcal DQM Tasks/Clients Sequences Definition
 #-------------------------------------
-process.tasksPath = cms.Path(process.siPixelPhase1RawDataErrorComparator)
+if process.runType.getRunType() == process.runType.hi_run:
+    process.tasksPath = cms.Path(process.siPixelPhase1RawDataErrorComparator)
+else:
+    process.tasksPath = cms.Path(process.monitorpixelSoACompareSourceAlpaka+process.siPixelPhase1RawDataErrorComparator)
 
 #-------------------------------------
 #	Paths/Sequences Definitions
