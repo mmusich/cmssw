@@ -61,10 +61,17 @@ PFRecHitProducer::~PFRecHitProducer() = default;
 //
 
 void PFRecHitProducer::beginRun(edm::Run const& iRun, const edm::EventSetup& iSetup) {
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   for (const auto& creator : creators_) {
     creator->init(iSetup);
   }
+
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   navigator_->init(iSetup);
+
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 }
 
 // ------------ method called to produce the data  ------------
@@ -73,12 +80,18 @@ void PFRecHitProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   auto out = std::make_unique<reco::PFRecHitCollection>();
   auto cleaned = std::make_unique<reco::PFRecHitCollection>();
 
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   out->reserve(localRA1.upper());
   cleaned->reserve(localRA2.upper());
+
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
   for (const auto& creator : creators_) {
     creator->importRecHits(out, cleaned, iEvent, iSetup);
   }
+
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
   if (out->capacity() > 2 * out->size())
     out->shrink_to_fit();
@@ -88,6 +101,8 @@ void PFRecHitProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   localRA2.update(cleaned->size());
   std::sort(out->begin(), out->end(), sortByDetId);
 
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   //create a refprod here
   edm::RefProd<reco::PFRecHitCollection> refProd = iEvent.getRefBeforePut<reco::PFRecHitCollection>();
 
@@ -95,8 +110,15 @@ void PFRecHitProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
     navigator_->associateNeighbours(pfrechit, out, refProd);
   }
 
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   iEvent.put(std::move(out), "");
+
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   iEvent.put(std::move(cleaned), "Cleaned");
+
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 }
 
 void PFRecHitProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

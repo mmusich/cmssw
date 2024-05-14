@@ -220,6 +220,8 @@ void HLTRecHitInAllL1RegionsProducer<RecHitType>::produce(edm::Event& event, con
   // get the collection geometry:
   auto const& caloGeom = setup.getData(caloGeometryToken_);
 
+  //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
+
   std::vector<RectangularEtaPhiRegion> regions;
   std::for_each(l1RegionData_.begin(),
                 l1RegionData_.end(),
@@ -227,9 +229,13 @@ void HLTRecHitInAllL1RegionsProducer<RecHitType>::produce(edm::Event& event, con
                   input->getEtaPhiRegions(event, setup, regions);
                 });
 
+  //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
+
   for (size_t recHitCollNr = 0; recHitCollNr < recHitTokens_.size(); recHitCollNr++) {
     edm::Handle<RecHitCollectionType> recHits;
     event.getByToken(recHitTokens_[recHitCollNr], recHits);
+
+    //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
 
     if (!(recHits.isValid())) {
       edm::LogError("ProductNotFound") << "could not get a handle on the " << typeid(RecHitCollectionType).name()
@@ -239,13 +245,26 @@ void HLTRecHitInAllL1RegionsProducer<RecHitType>::produce(edm::Event& event, con
 
     auto filteredRecHits = std::make_unique<RecHitCollectionType>();
 
+    //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
+
     if (!recHits->empty()) {
       const CaloSubdetectorGeometry* subDetGeom = caloGeom.getSubdetectorGeometry(recHits->front().id());
       if (!regions.empty()) {
         for (const RecHitType& recHit : *recHits) {
+          //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
+
           auto this_cell = subDetGeom->getGeometry(recHit.id());
+
+          if (this_cell == nullptr)
+            continue;
+
           for (const auto& region : regions) {
+            //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
+
+            //std::cout << __LINE__ << " eta: " << this_cell->etaPos() << " phi: " << this_cell->phiPos() << std::endl;
+
             if (region.inRegion(this_cell->etaPos(), this_cell->phiPos())) {
+              //std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << " " << std::endl;
               filteredRecHits->push_back(recHit);
               break;
             }
@@ -253,7 +272,7 @@ void HLTRecHitInAllL1RegionsProducer<RecHitType>::produce(edm::Event& event, con
         }
       }  //end check of empty regions
     }    //end check of empty rec-hits
-    //   std::cout <<"putting fileter coll in "<<filteredRecHits->size()<<std::endl;
+    //std::cout <<"putting fileter coll in "<<filteredRecHits->size()<<std::endl;
     event.put(std::move(filteredRecHits), productLabels_[recHitCollNr]);
   }  //end loop over all rec hit collections
 }

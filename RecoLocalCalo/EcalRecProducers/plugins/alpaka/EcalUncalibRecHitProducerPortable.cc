@@ -183,7 +183,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // get device collections from event
     auto const& ebDigisDev = event.get(digisTokenEB_);
     auto const& eeDigisDev = event.get(digisTokenEE_);
-
+    
     // get the actual numbers of digis in the collections
     auto const ebDigisSize = static_cast<int>(*ebDigisSizeHostBuf_.data());
     auto const eeDigisSize = static_cast<int>(*eeDigisSizeHostBuf_.data());

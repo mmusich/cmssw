@@ -146,9 +146,29 @@ void EcalRecHitProducer::produce(edm::Event& evt, const edm::EventSetup& es) {
     const auto& eeUncalibRecHits = evt.get(eeUncalibRecHitToken_);
     LogDebug("EcalRecHitDebug") << "total # EE uncalibrated rechits: " << eeUncalibRecHits.size();
 
+    // Loop over uncalib EERecHitCollection
+    for (const auto& eeRecHit : eeUncalibRecHits) {
+      DetId detId = eeRecHit.id();  // Get the DetId
+
+      // Check if the rawId corresponds to 2779096485
+      if (detId.rawId() == 2779096485) {
+        std::cout << "EE Uncalib -DetId: " << detId.rawId() << " - Line: " << __LINE__ << std::endl;
+      }
+    }
+
     // loop over uncalibrated rechits to make calibrated ones
     for (const auto& uncalibRecHit : eeUncalibRecHits) {
       worker_->run(evt, uncalibRecHit, *eeRecHits);
+    }
+  }
+
+  // Loop over EERecHitCollection
+  for (const auto& eeRecHit : *eeRecHits) {
+    DetId detId = eeRecHit.detid();  // Get the DetId
+
+    // Check if the rawId corresponds to 2779096485
+    if (detId.rawId() == 2779096485) {
+      std::cout << "EE -DetId: " << detId.rawId() << " - Line: " << __LINE__ << std::endl;
     }
   }
 
@@ -246,6 +266,16 @@ void EcalRecHitProducer::produce(edm::Event& evt, const edm::EventSetup& es) {
     }
   }
 
+  // Loop over EERecHitCollection
+  for (const auto& eeRecHit : *eeRecHits) {
+    DetId detId = eeRecHit.detid();  // Get the DetId
+
+    // Check if the rawId corresponds to 2779096485
+    if (detId.rawId() == 2779096485) {
+      std::cout << "EE -DetId: " << detId.rawId() << " - Line: " << __LINE__ << std::endl;
+    }
+  }
+
   // without re-sorting, find (used below in cleaning) will lead
   // to undefined results
   ebRecHits->sort();
@@ -260,6 +290,18 @@ void EcalRecHitProducer::produce(edm::Event& evt, const edm::EventSetup& es) {
   // put the collection of reconstructed hits in the event
   LogInfo("EcalRecHitInfo") << "total # EB calibrated rechits: " << ebRecHits->size();
   LogInfo("EcalRecHitInfo") << "total # EE calibrated rechits: " << eeRecHits->size();
+
+  // Loop over EBRecHitCollection
+  for (const auto& ebRecHit : *ebRecHits) {
+    DetId detId = ebRecHit.detid();                           // Get the DetId
+    std::cout << "EB DetId: " << detId.rawId() << std::endl;  // Print the rawId of the DetId
+  }
+
+  // Loop over EERecHitCollection
+  for (const auto& eeRecHit : *eeRecHits) {
+    DetId detId = eeRecHit.detid();                           // Get the DetId
+    std::cout << "EE DetId: " << detId.rawId() << std::endl;  // Print the rawId of the DetId
+  }
 
   evt.put(ebRecHitToken_, std::move(ebRecHits));
   evt.put(eeRecHitToken_, std::move(eeRecHits));

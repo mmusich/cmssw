@@ -802,6 +802,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::ecal::multifit {
       auto* shrSampleValues = alpaka::getDynSharedMem<ScalarType>(acc);
       auto* shrSampleValueErrors = shrSampleValues + elemsPerBlock;
 
+      for (auto i : cms::alpakatools::uniform_elements(acc, 2 * elemsPerBlock)) {
+        shrSampleValues[i] = 0;
+      }
+      alpaka::syncBlockThreads(acc);
+
       for (auto txforward : cms::alpakatools::uniform_elements(acc, nchannels * nsamples)) {
         // go backwards through the loop to have valid values for shared variables when reading from higher element indices in serial execution
         auto tx = nchannels * nsamples - 1 - txforward;

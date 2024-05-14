@@ -172,6 +172,8 @@ void HLTRechitInRegionsProducer<T1>::fillDescriptions(edm::ConfigurationDescript
 
 template <typename T1>
 void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup const& eventSetup) {
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   // get the collection geometry:
   auto const& geometry = eventSetup.getData(caloGeometryToken_);
   const CaloSubdetectorGeometry* geometry_p;
@@ -183,6 +185,8 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
     evt.getByToken(l1TokenIsolated_, emIsolColl);
   }
 
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   std::vector<RectangularEtaPhiRegion> regions;
   if (doIsolated_)
     getEtaPhiRegions(&regions, *emIsolColl, eventSetup, true);
@@ -190,9 +194,13 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
   if (!doIsolated_ or (l1LowerThrIgnoreIsolation_ < 64))
     getEtaPhiRegions(&regions, evt.get(l1TokenNonIsolated_), eventSetup, false);
 
+  std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   if (useUncalib_) {
     edm::Handle<EcalUncalibratedRecHitCollection> urhcH[3];
     for (unsigned int i = 0; i < hitLabels.size(); i++) {
+      std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
       auto uhits = std::make_unique<EcalUncalibratedRecHitCollection>();
 
       evt.getByToken(uncalibHitTokens[i], urhcH[i]);
@@ -202,6 +210,8 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
         return;
       }
       const EcalUncalibratedRecHitCollection* uncalibRecHits = urhcH[i].product();
+
+      std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
       if (!uncalibRecHits->empty()) {
         if ((*uncalibRecHits)[0].id().subdetId() == EcalBarrel) {
@@ -215,6 +225,8 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
           topology = std::make_unique<EcalPreshowerTopology>();
         } else
           throw(std::runtime_error("\n\nProducer encountered invalied ecalhitcollection type.\n\n"));
+
+        std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
         if (!regions.empty()) {
           EcalUncalibratedRecHitCollection::const_iterator it;
@@ -236,6 +248,8 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
     }
 
   } else {
+    std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
     edm::Handle<EcalRecHitCollection> rhcH[3];
     for (unsigned int i = 0; i < hitLabels.size(); i++) {
       auto hits = std::make_unique<EcalRecHitCollection>();
@@ -247,6 +261,8 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
         return;
       }
       const EcalRecHitCollection* recHits = rhcH[i].product();
+
+      std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
       if (!recHits->empty()) {
         if ((*recHits)[0].id().subdetId() == EcalBarrel) {
@@ -260,6 +276,8 @@ void HLTRechitInRegionsProducer<T1>::produce(edm::Event& evt, edm::EventSetup co
           topology = std::make_unique<EcalPreshowerTopology>();
         } else
           throw(std::runtime_error("\n\nProducer encountered invalied ecalhitcollection type.\n\n"));
+
+        std::cout << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
         if (!regions.empty()) {
           EcalRecHitCollection::const_iterator it;
