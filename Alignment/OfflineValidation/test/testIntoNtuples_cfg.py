@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TEST")
+
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #process.GlobalTag.globaltag = "GR_R_53_V16D::All" 
 #process.GlobalTag.globaltag = "START61_V11::All" 
