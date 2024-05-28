@@ -995,20 +995,48 @@ def print_msg(text, line_break = True, log_file = None):
         with open(log_file, "a") as f: f.write(msg+"\n")
     return msg
 
-
 def get_runs(file_name):
     """
     Try to guess the run number from `file_name`. If run could not be
     determined, gets the run numbers from DAS (slow!)
-
+    
     Arguments:
     - `file_name`: name of the considered file
     """
-    try:
-        return [int("".join(file_name.split("/")[-4:-2]))]
-    except ValueError:
-        query = "run file="+file_name+" system=dbs3"
-        return [int(_) for _ in find_key(das_client(query), ["run", "run_number"])]
+    # Define a regular expression pattern to match run numbers
+    run_number_pattern = re.compile(r'\b(\d{6})\b')  # Adjust the regex according to your run number format
+
+    # Try to extract the run number using the regex pattern
+    match = run_number_pattern.search(file_name)
+    if match:
+        try:
+            return [int(match.group(1))]
+        except ValueError:
+            pass  # If for some reason the match is not a valid integer, fall back to DAS query
+
+    # Fall back to querying DAS if run number extraction fails
+    query = f"run file={file_name} system=dbs3"
+    das_result = find_key(das_client(query), ["run", "run_number"])
+    
+    # Ensure das_result is a list
+    if not isinstance(das_result, list):
+        das_result = [das_result]
+
+    return [int(_) for _ in das_result]
+    
+# def get_runs(file_name):
+#     """
+#     Try to guess the run number from `file_name`. If run could not be
+#     determined, gets the run numbers from DAS (slow!)
+
+#     Arguments:
+#     - `file_name`: name of the considered file
+#     """
+#     try:
+#         return [int("".join(file_name.split("/")[-4:-2]))]
+#     except ValueError:
+#         query = "run file="+file_name+" system=dbs3"
+#         return [int(_) for _ in find_key(das_client(query), ["run", "run_number"])]
 
 
 def get_max_run(dataset_name):
