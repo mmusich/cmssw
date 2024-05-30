@@ -3,18 +3,19 @@
  *
  */
 
-#include "EventFilter/RawDataCollector/src/RawDataCollectorByLabel.h"
-#include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
-#include "DataFormats/FEDRawData/interface/FEDRawData.h"
-#include "DataFormats/FEDRawData/interface/FEDNumbering.h"
-
 #include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/Event.h"
+#include "DataFormats/FEDRawData/interface/FEDNumbering.h"
+#include "DataFormats/FEDRawData/interface/FEDRawData.h"
+#include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "DataFormats/Provenance/interface/ProcessHistory.h"
+#include "EventFilter/RawDataCollector/src/RawDataCollectorByLabel.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 #include <iostream>
 
@@ -29,6 +30,13 @@ RawDataCollectorByLabel::RawDataCollectorByLabel(const edm::ParameterSet &pset) 
     inputTokens_.push_back(consumes<FEDRawDataCollection>(*inputTag));
   }
   produces<FEDRawDataCollection>();
+}
+
+void RawDataCollectorByLabel::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<std::vector<InputTag> >("RawCollectionList");
+  desc.addUntracked<int>("verbose", 0);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 RawDataCollectorByLabel::~RawDataCollectorByLabel() {}

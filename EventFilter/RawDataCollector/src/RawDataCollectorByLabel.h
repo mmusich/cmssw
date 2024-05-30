@@ -21,6 +21,8 @@ public:
 
   void produce(edm::Event& e, const edm::EventSetup& c) override;
 
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+
 private:
   typedef std::vector<edm::InputTag>::const_iterator tag_iterator_t;
   typedef std::vector<edm::EDGetTokenT<FEDRawDataCollection> >::const_iterator tok_iterator_t;
