@@ -20,20 +20,23 @@
 //         Created:  Thu May 25 10:17:32 CDT 2006
 //
 
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/GlobalError.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/GlobalError.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 #include "RecoTracker/PixelVertexFinding/interface/DivisiveVertexFinder.h"
+
 #include <memory>
 #include <string>
 #include <cmath>
@@ -42,6 +45,7 @@ class PixelVertexProducer : public edm::stream::EDProducer<> {
 public:
   explicit PixelVertexProducer(const edm::ParameterSet&);
   ~PixelVertexProducer() override;
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   void produce(edm::Event&, const edm::EventSetup&) override;
 
@@ -58,6 +62,32 @@ private:
 
   DivisiveVertexFinder* dvf_;
 };
+
+void PixelVertexProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<int>("Verbosity");
+  desc.add<double>("PtMin");
+  desc.add<bool>("Method2");
+  desc.add<edm::InputTag>("TrackCollection");
+  desc.add<edm::InputTag>("beamSpot");
+  desc.add<std::string>("Finder");
+  desc.add<bool>("UseError");
+  desc.add<bool>("WtAverage");
+  desc.add<double>("ZOffset");
+  desc.add<double>("ZSeparation");
+  desc.add<int>("NTrkMin");
+
+  {
+    edm::ParameterSetDescription PVComparerPSet;
+    PVComparerPSet.add<double>("track_pt_min");
+    PVComparerPSet.add<double>("track_pt_max");
+    PVComparerPSet.add<double>("track_chi2_max");
+    PVComparerPSet.add<double>("track_prob_min");
+    desc.addOptional<edm::ParameterSetDescription>("PVcomparer", PVComparerPSet);
+  }
+
+  descriptions.addWithDefaultLabel(desc);
+}
 
 PixelVertexProducer::PixelVertexProducer(const edm::ParameterSet& conf)
     // 0 silent, 1 chatty, 2 loud

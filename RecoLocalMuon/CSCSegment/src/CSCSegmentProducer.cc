@@ -22,6 +22,12 @@ CSCSegmentProducer::CSCSegmentProducer(const edm::ParameterSet& pas) : iev(0) {
   produces<CSCSegmentCollection>();
 }
 
+void CSCSegmentProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("inputObjects");
+  descriptions.addWithDefaultLabel(desc);
+}
+
 CSCSegmentProducer::~CSCSegmentProducer() {
   LogDebug("CSCSegment|CSC") << "deleting CSCSegmentBuilder after " << iev << " events w/csc data.";
   delete segmentBuilder_;

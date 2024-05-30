@@ -12,6 +12,46 @@ using namespace edm;
 using namespace std;
 using namespace reco;
 
+void GlobalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<bool>("IsHLT");
+  desc.add<edm::InputTag>("metLabel");
+  desc.add<edm::InputTag>("calotowerLabel");
+  desc.add<edm::InputTag>("CSCSegmentLabel");
+  desc.add<edm::InputTag>("CSCRecHitLabel");
+  desc.add<edm::InputTag>("MuonLabel");
+  desc.add<edm::InputTag>("CSCHaloDataLabel");
+  desc.add<edm::InputTag>("EcalHaloDataLabel");
+  desc.add<edm::InputTag>("HcalHaloDataLabel");
+  desc.add<double>("EcalMinMatchingRadiusParam");
+  desc.add<double>("EcalMaxMatchingRadiusParam");
+  desc.add<double>("HcalMinMatchingRadiusParam");
+  desc.add<double>("HcalMaxMatchingRadiusParam");
+  desc.add<double>("CaloTowerEtThresholdParam");
+  desc.add<double>("MaxSegmentTheta");
+  desc.add<double>("rh_et_threshforcscmatching_eb");
+  desc.add<double>("rcalominrsegm_lowthresh_eb");
+  desc.add<double>("rcalominrsegm_highthresh_eb");
+  desc.add<double>("dtcalosegm_thresh_eb");
+  desc.add<double>("dphicalosegm_thresh_eb");
+  desc.add<double>("rh_et_threshforcscmatching_ee");
+  desc.add<double>("rcalominrsegm_lowthresh_ee");
+  desc.add<double>("rcalominrsegm_highthresh_ee");
+  desc.add<double>("dtcalosegm_thresh_ee");
+  desc.add<double>("dphicalosegm_thresh_ee");
+  desc.add<double>("rh_et_threshforcscmatching_hb");
+  desc.add<double>("rcalominrsegm_lowthresh_hb");
+  desc.add<double>("rcalominrsegm_highthresh_hb");
+  desc.add<double>("dtcalosegm_thresh_hb");
+  desc.add<double>("dphicalosegm_thresh_hb");
+  desc.add<double>("rh_et_threshforcscmatching_he");
+  desc.add<double>("rcalominrsegm_lowthresh_he");
+  desc.add<double>("rcalominrsegm_highthresh_he");
+  desc.add<double>("dtcalosegm_thresh_he");
+  desc.add<double>("dphicalosegm_thresh_he");
+  descriptions.addWithDefaultLabel(desc);
+}
+
 GlobalHaloDataProducer::GlobalHaloDataProducer(const edm::ParameterSet& iConfig) {
   ishlt = iConfig.getParameter<bool>("IsHLT");
 

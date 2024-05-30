@@ -71,4 +71,17 @@ void HcalHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   return;
 }
 
-HcalHaloDataProducer::~HcalHaloDataProducer() {}
+void HcalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("EBRecHitLabel");
+  desc.add<edm::InputTag>("EERecHitLabel");
+  desc.add<edm::InputTag>("HBHERecHitLabel");
+  desc.add<edm::InputTag>("HFRecHitLabel");
+  desc.add<edm::InputTag>("HORecHitLabel");
+  desc.add<edm::InputTag>("caloTowerCollName");
+  desc.add<double>("HBRecHitEnergyThresholdParam");
+  desc.add<double>("HERecHitEnergyThresholdParam");
+  desc.add<double>("SumHcalEnergyThresholdParam");
+  desc.add<int>("NHitsHcalThresholdParam");
+  descriptions.addWithDefaultLabel(desc);
+}

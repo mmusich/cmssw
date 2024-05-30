@@ -2,6 +2,8 @@
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -26,8 +28,10 @@
 class JetCoreClusterSplitter : public edm::stream::EDProducer<> {
 public:
   JetCoreClusterSplitter(const edm::ParameterSet& iConfig);
-  ~JetCoreClusterSplitter() override;
+  ~JetCoreClusterSplitter() override = default;
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
+
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
   bool split(const SiPixelCluster& aCluster,
@@ -85,7 +89,23 @@ JetCoreClusterSplitter::JetCoreClusterSplitter(const edm::ParameterSet& iConfig)
   produces<edmNew::DetSetVector<SiPixelCluster>>();
 }
 
-JetCoreClusterSplitter::~JetCoreClusterSplitter() {}
+void JetCoreClusterSplitter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<std::string>("pixelCPE");
+  desc.add<bool>("verbose");
+  desc.add<double>("ptMin");
+  desc.add<double>("deltaRmax");
+  desc.add<double>("chargeFractionMin");
+  desc.add<edm::InputTag>("pixelClusters");
+  desc.add<edm::InputTag>("vertices");
+  desc.add<edm::InputTag>("cores");
+  desc.add<double>("forceXError");
+  desc.add<double>("forceYError");
+  desc.add<double>("fractionalWidth");
+  desc.add<double>("chargePerUnit");
+  desc.add<double>("centralMIPCharge");
+  descriptions.addWithDefaultLabel(desc);
+}
 
 bool SortPixels(const SiPixelCluster::Pixel& i, const SiPixelCluster::Pixel& j) { return (i.adc > j.adc); }
 

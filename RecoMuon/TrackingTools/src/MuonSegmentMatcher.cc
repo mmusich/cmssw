@@ -54,6 +54,15 @@ MuonSegmentMatcher::MuonSegmentMatcher(const edm::ParameterSet& matchParameters,
   rpcRecHitsToken = iC.consumes<RPCRecHitCollection>(RPCHitTags_);
 }
 
+void MuonSegmentMatcher::fillPSetDescription(edm::ParameterSetDescription& desc) {
+  desc.add<edm::InputTag>("DTsegments");
+  desc.add<edm::InputTag>("CSCsegments");
+  desc.add<double>("DTradius");
+  desc.add<bool>("TightMatchDT");
+  desc.add<bool>("TightMatchCSC");
+  desc.add<edm::InputTag>("RPChits");
+}
+
 MuonSegmentMatcher::~MuonSegmentMatcher() {}
 
 // member functions

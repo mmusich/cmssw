@@ -2,12 +2,15 @@
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "RecoTracker/MeasurementDet/interface/MeasurementTrackerEvent.h"
 
 class dso_hidden MaskedMeasurementTrackerEventProducer final : public edm::stream::EDProducer<> {
 public:
   explicit MaskedMeasurementTrackerEventProducer(const edm::ParameterSet &iConfig);
-  ~MaskedMeasurementTrackerEventProducer() override {}
+  ~MaskedMeasurementTrackerEventProducer() override = default;
+  static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
 
 private:
   void produce(edm::Event &, const edm::EventSetup &) override;
@@ -25,6 +28,14 @@ private:
   edm::EDGetTokenT<PixelMask> maskPixels_;
   edm::EDGetTokenT<Phase2OTMask> maskPhase2OTs_;
 };
+
+void MaskedMeasurementTrackerEventProducer::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("src");
+  desc.add<edm::InputTag>("clustersToSkip");
+  desc.add<edm::InputTag>("phase2clustersToSkip");
+  descriptions.addWithDefaultLabel(desc);
+}
 
 MaskedMeasurementTrackerEventProducer::MaskedMeasurementTrackerEventProducer(const edm::ParameterSet &iConfig)
     : src_(consumes<MeasurementTrackerEvent>(iConfig.getParameter<edm::InputTag>("src"))),

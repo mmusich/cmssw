@@ -540,3 +540,16 @@ TrajectorySeed CosmicMuonSeedGenerator::tsosToSeed(const TrajectoryStateOnSurfac
   TrajectorySeed seed(seedTSOS, container, alongMomentum);
   return seed;
 }
+
+void CosmicMuonSeedGenerator::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<bool>("EnableDTMeasurement");
+  desc.add<bool>("EnableCSCMeasurement");
+  desc.add<InputTag>("DTRecSegmentLabel");
+  desc.add<InputTag>("CSCRecSegmentLabel");
+  desc.add<int>("MaxSeeds");
+  desc.add<double>("MaxDTChi2");
+  desc.add<double>("MaxCSCChi2");
+  desc.add<bool>("ForcePointDown");
+  descriptions.addWithDefaultLabel(desc);
+}

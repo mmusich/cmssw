@@ -82,6 +82,50 @@ CSCHaloDataProducer::CSCHaloDataProducer(const edm::ParameterSet& iConfig) : CSC
   produces<CSCHaloData>();
 }
 
+void CSCHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("L1MuGMTReadoutLabel");
+  desc.add<edm::InputTag>("HLTResultLabel");
+  desc.add<std::vector<edm::InputTag> >("HLTBitLabel");
+  desc.add<edm::InputTag>("CSCRecHitLabel");
+  desc.add<edm::InputTag>("HBHErhLabel");
+  desc.add<edm::InputTag>("ECALBrhLabel");
+  desc.add<edm::InputTag>("ECALErhLabel");
+  desc.add<edm::InputTag>("CSCSegmentLabel");
+  desc.add<edm::InputTag>("CosmicMuonLabel");
+  desc.add<edm::InputTag>("MuonLabel");
+  desc.add<edm::InputTag>("SALabel");
+  desc.add<edm::InputTag>("ALCTDigiLabel");
+
+  {
+    edm::ParameterSetDescription matchParametersPSet;
+    MuonSegmentMatcher::fillPSetDescription(matchParametersPSet);
+    desc.add<edm::ParameterSetDescription>("MatchParameters", matchParametersPSet);
+  }
+
+  desc.add<double>("DetaParam");
+  desc.add<double>("DphiParam");
+  desc.add<double>("InnerRMinParam");
+  desc.add<double>("InnerRMaxParam");
+  desc.add<double>("OuterRMinParam");
+  desc.add<double>("OuterRMaxParam");
+  desc.add<double>("NormChi2Param");
+  desc.add<double>("MaxSegmentRDiff");
+  desc.add<double>("MaxSegmentPhiDiff");
+  desc.add<double>("MaxSegmentTheta");
+  desc.add<double>("MaxDtMuonSegment");
+  desc.add<double>("MaxFreeInverseBeta");
+  desc.add<int>("ExpectedBX");
+  desc.add<double>("RecHitTime0");
+  desc.add<double>("RecHitTimeWindow");
+  desc.add<double>("MinOuterMomentumTheta");
+  desc.add<double>("MaxOuterMomentumTheta");
+  desc.add<double>("MatchingDPhiThreshold");
+  desc.add<double>("MatchingDEtaThreshold");
+  desc.add<int>("MatchingDWireThreshold");
+  descriptions.addWithDefaultLabel(desc);
+}
+
 void CSCHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   //Get CSC Geometry
   edm::ESHandle<CSCGeometry> TheCSCGeometry = iSetup.getHandle(cscGeometry_token);
@@ -158,5 +202,3 @@ void CSCHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                                                              iSetup)));
   return;
 }
-
-CSCHaloDataProducer::~CSCHaloDataProducer() {}

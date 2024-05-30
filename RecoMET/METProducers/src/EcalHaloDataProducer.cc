@@ -34,9 +34,6 @@ EcalHaloDataProducer::EcalHaloDataProducer(const edm::ParameterSet& iConfig) : E
   SumEcalEnergyThreshold = (float)iConfig.getParameter<double>("SumEcalEnergyThresholdParam");
   NHitsEcalThreshold = iConfig.getParameter<int>("NHitsEcalThresholdParam");
 
-  RoundnessCut = iConfig.getParameter<double>("RoundnessCutParam");
-  AngleCut = iConfig.getParameter<double>("AngleCutParam");
-
   ebrechit_token_ = consumes<EBRecHitCollection>(IT_EBRecHit);
   eerechit_token_ = consumes<EERecHitCollection>(IT_EERecHit);
   esrechit_token_ = consumes<ESRecHitCollection>(IT_ESRecHit);
@@ -93,4 +90,20 @@ void EcalHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   return;
 }
 
-EcalHaloDataProducer::~EcalHaloDataProducer() {}
+void EcalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("EBRecHitLabel");
+  desc.add<edm::InputTag>("EERecHitLabel");
+  desc.add<edm::InputTag>("ESRecHitLabel");
+  desc.add<edm::InputTag>("HBHERecHitLabel");
+  desc.add<edm::InputTag>("SuperClusterLabel");
+  desc.add<edm::InputTag>("PhotonLabel");
+  desc.add<double>("RoundnessCutParam");
+  desc.add<double>("AngleCutParam");
+  desc.add<double>("EBRecHitEnergyThresholdParam");
+  desc.add<double>("EERecHitEnergyThresholdParam");
+  desc.add<double>("ESRecHitEnergyThresholdParam");
+  desc.add<double>("SumEcalEnergyThresholdParam");
+  desc.add<int>("NHitsEcalThresholdParam");
+  descriptions.addWithDefaultLabel(desc);
+}

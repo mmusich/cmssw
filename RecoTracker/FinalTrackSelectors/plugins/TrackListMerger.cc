@@ -20,10 +20,12 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Utilities/interface/thread_safety_macros.h"
-#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "RecoTracker/FinalTrackSelectors/interface/TrackAlgoPriorityOrder.h"
 #include "RecoTracker/Record/interface/CkfComponentsRecord.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
@@ -36,6 +38,8 @@ public:
   ~TrackListMerger() override = default;
 
   void produce(edm::Event& e, const edm::EventSetup& c) override;
+
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
   void returnEmptyCollections(edm::Event& e);
@@ -224,7 +228,7 @@ TrackListMerger::TrackListMerger(edm::ParameterSet const& conf) {
   priorityToken = esConsumes<TrackAlgoPriorityOrder, CkfComponentsRecord>(edm::ESInputTag("", priorityName_));
 
   if (!qualityStr.empty()) {
-    qualityToSet_ = reco::TrackBase::qualityByName(conf.getParameter<std::string>("newQuality"));
+    qualityToSet_ = reco::TrackBase::qualityByName(qualityStr);
   } else
     qualityToSet_ = reco::TrackBase::undefQuality;
 
@@ -304,6 +308,55 @@ TrackListMerger::TrackListMerger(edm::ParameterSet const& conf) {
     trackProducers_[i] = hasSelector_[i] > 0 ? edTokens(trackProducerTags[i], selectors[i], mvaStores[i])
                                              : edTokens(trackProducerTags[i], mvaStores[i]);
   }
+}
+
+void TrackListMerger::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.addUntracked<bool>("copyExtras", true);
+  desc.add<std::string>("trackAlgoPriorityOrder");
+  desc.add<std::vector<edm::InputTag>>("TrackProducers", {edm::InputTag(""), edm::InputTag("")});
+  desc.add<double>("MaxNormalizedChisq", 1000.0);
+  desc.add<double>("MinPT", 0.05)->setComment("in GeV/c");
+  desc.add<int>("MinFound", 3);
+  desc.add<double>("Epsilon", -0.001);
+  desc.add<double>("ShareFrac", 0.19);
+  desc.add<bool>("allowFirstHitShare", true);
+  desc.add<double>("FoundHitBonus", 5.0);
+  desc.add<double>("LostHitPenalty", 5.0);
+  desc.add<std::vector<double>>("indivShareFrac");
+  desc.add<std::string>("newQuality", "confirmed");
+
+  edm::ParameterSetDescription descSetsToMerge;
+  descSetsToMerge.setComment("ParameterSet specifying sets to merge");
+  edm::ParameterSet ps1;
+  ps1.addParameter<std::vector<int>>("tLists", {0, 1});
+  ps1.addParameter<bool>("pQual", false);
+
+  edm::ParameterSet ps2;
+  ps2.addParameter<std::vector<int>>("tLists", {2, 3});
+  ps2.addParameter<bool>("pQual", true);
+
+  edm::ParameterSet ps3;
+  ps3.addParameter<std::vector<int>>("tLists", {4, 5});
+  ps3.addParameter<bool>("pQual", true);
+
+  edm::ParameterSet ps4;
+  ps4.addParameter<std::vector<int>>("tLists", {2, 3, 4, 5});
+  ps4.addParameter<bool>("pQual", true);
+
+  edm::ParameterSet ps5;
+  ps5.addParameter<std::vector<int>>("tLists", {0, 1, 2, 3, 4, 5});
+  ps5.addParameter<bool>("pQual", true);
+
+  desc.addVPSet("setsToMerge", descSetsToMerge, {ps1, ps2, ps3, ps4, ps5});
+
+  desc.add<std::vector<int>>("hasSelector", {0, 0});
+  desc.add<bool>("copyMVA", true);
+  desc.add<std::vector<edm::InputTag>>("selectedTrackQuals", {edm::InputTag(""), edm::InputTag("")});
+  desc.addOptional<std::vector<edm::InputTag>>("mvaValueTags");
+  desc.add<bool>("writeOnlyTrkQuals", false);
+  desc.addUntracked<bool>("makeReKeyedSeeds", false);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 // Functions that gets called by framework every event

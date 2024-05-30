@@ -43,7 +43,12 @@ SeedCombiner::SeedCombiner(const edm::ParameterSet& cfg) {
   }
 }
 
-SeedCombiner::~SeedCombiner() {}
+void SeedCombiner::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<std::vector<edm::InputTag> >("seedCollections");
+  desc.add<std::vector<edm::InputTag> >("clusterRemovalInfos");
+  descriptions.addWithDefaultLabel(desc);
+}
 
 void SeedCombiner::produce(edm::Event& ev, const edm::EventSetup& es) {
   // Read inputs, and count total seeds

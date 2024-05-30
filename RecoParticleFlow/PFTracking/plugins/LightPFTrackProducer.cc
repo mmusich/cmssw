@@ -3,7 +3,9 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "RecoParticleFlow/PFTracking/interface/PFTrackTransformer.h"
@@ -16,6 +18,8 @@ public:
 
   ///Destructor
   ~LightPFTrackProducer() override;
+
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
   void beginRun(const edm::Run&, const edm::EventSetup&) override;
@@ -50,6 +54,14 @@ LightPFTrackProducer::LightPFTrackProducer(const ParameterSet& iConfig)
 
   useQuality_ = iConfig.getParameter<bool>("UseQuality");
   trackQuality_ = reco::TrackBase::qualityByName(iConfig.getParameter<std::string>("TrackQuality"));
+}
+
+void LightPFTrackProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<vector<InputTag> >("TkColList");
+  desc.add<bool>("UseQuality");
+  desc.add<std::string>("TrackQuality");
+  descriptions.addWithDefaultLabel(desc);
 }
 
 LightPFTrackProducer::~LightPFTrackProducer() { delete pfTransformer_; }
