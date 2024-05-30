@@ -11,16 +11,11 @@ HcalHaloData = cms.EDProducer("HcalHaloDataProducer",
                               HBHERecHitLabel = cms.InputTag("hbhereco"),
                               HORecHitLabel  = cms.InputTag("horeco"),
                               HFRecHitLabel = cms.InputTag("hfreco"),
-
                               caloTowerCollName = cms.InputTag('towerMaker'),
-                              
-                              HcalMinMatchingRadiusParam = cms.double(110.),
-                              HcalMaxMatchingRadiusParam = cms.double(490.),
                               HBRecHitEnergyThresholdParam = cms.double(0.5),
                               HERecHitEnergyThresholdParam = cms.double(0.5),
                               SumHcalEnergyThresholdParam = cms.double(18),
-                              NHitsHcalThresholdParam = cms.int32(4),
-                              
+                              NHitsHcalThresholdParam = cms.int32(4)
                               )
 
 

@@ -7,8 +7,7 @@ from Configuration.ProcessModifiers.alpaka_cff import alpaka
 # legacy pixel rechit producer
 siPixelRecHits = cms.EDProducer("SiPixelRecHitConverter",
     src = cms.InputTag("siPixelClusters"),
-    CPE = cms.string('PixelCPEGeneric'),
-    VerboseLevel = cms.untracked.int32(0)
+    CPE = cms.string('PixelCPEGeneric')
 )
 
 # SwitchProducer wrapping the legacy pixel rechit producer

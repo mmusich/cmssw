@@ -82,6 +82,54 @@ CSCHaloDataProducer::CSCHaloDataProducer(const edm::ParameterSet& iConfig) : CSC
   produces<CSCHaloData>();
 }
 
+void CSCHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("L1MuGMTReadoutLabel", edm::InputTag("gtDigis"));
+  desc.add<edm::InputTag>("HLTResultLabel", edm::InputTag("TriggerResults::HLT"));
+  desc.add<std::vector<edm::InputTag> >("HLTBitLabel",
+                                        {edm::InputTag("HLT_CSCBeamHalo"),
+                                         edm::InputTag("HLT_CSCBeamHaloOverlapRing1"),
+                                         edm::InputTag("HLT_CSCBeamHaloOverlapRing2"),
+                                         edm::InputTag("HLT_CSCBeamHaloRing2or3")});
+  desc.add<edm::InputTag>("CSCRecHitLabel", edm::InputTag("csc2DRecHits"));
+  desc.add<edm::InputTag>("HBHErhLabel", edm::InputTag("hbhereco"));
+  desc.add<edm::InputTag>("ECALBrhLabel", edm::InputTag("ecalRecHit", "EcalRecHitsEB"));
+  desc.add<edm::InputTag>("ECALErhLabel", edm::InputTag("ecalRecHit", "EcalRecHitsEE"));
+  desc.add<edm::InputTag>("CSCSegmentLabel", edm::InputTag("cscSegments"));
+  desc.add<edm::InputTag>("CosmicMuonLabel", edm::InputTag("muonsFromCosmics"));
+  desc.add<edm::InputTag>("MuonLabel", edm::InputTag("muons"));
+  desc.add<edm::InputTag>("SALabel", edm::InputTag("standAloneMuons"));
+  desc.add<edm::InputTag>("ALCTDigiLabel", edm::InputTag("muonCSCDigis", "MuonCSCALCTDigi"));
+
+  {
+    edm::ParameterSetDescription matchParametersPSet;
+    MuonSegmentMatcher::fillPSetDescription(matchParametersPSet);
+    desc.add<edm::ParameterSetDescription>("MatchParameters", matchParametersPSet);
+  }
+
+  desc.add<double>("DetaParam", 0.1);
+  desc.add<double>("DphiParam", 1.00);
+  desc.add<double>("InnerRMinParam", 0.);
+  desc.add<double>("InnerRMaxParam", 99999.);
+  desc.add<double>("OuterRMinParam", 0.);
+  desc.add<double>("OuterRMaxParam", 99999.);
+  desc.add<double>("NormChi2Param", 8.);
+  desc.add<double>("MaxSegmentRDiff", 10.0);
+  desc.add<double>("MaxSegmentPhiDiff", 0.1);
+  desc.add<double>("MaxSegmentTheta", 0.7);
+  desc.add<double>("MaxDtMuonSegment", -10.0);
+  desc.add<double>("MaxFreeInverseBeta", 0.0);
+  desc.add<int>("ExpectedBX", 6);
+  desc.add<double>("RecHitTime0", 0.);
+  desc.add<double>("RecHitTimeWindow", 25.);
+  desc.add<double>("MinOuterMomentumTheta", .10);
+  desc.add<double>("MaxOuterMomentumTheta", 3.0);
+  desc.add<double>("MatchingDPhiThreshold", 0.18);
+  desc.add<double>("MatchingDEtaThreshold", 0.4);
+  desc.add<int>("MatchingDWireThreshold", 5);
+  descriptions.addWithDefaultLabel(desc);
+}
+
 void CSCHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   //Get CSC Geometry
   edm::ESHandle<CSCGeometry> TheCSCGeometry = iSetup.getHandle(cscGeometry_token);
@@ -158,5 +206,3 @@ void CSCHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
                                                              iSetup)));
   return;
 }
-
-CSCHaloDataProducer::~CSCHaloDataProducer() {}

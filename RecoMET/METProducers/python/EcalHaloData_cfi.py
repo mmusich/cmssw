@@ -12,19 +12,16 @@ EcalHaloData= cms.EDProducer("EcalHaloDataProducer",
                              HBHERecHitLabel = cms.InputTag("hbhereco"),
                              # Higher Level Reco
                              SuperClusterLabel = cms.InputTag("correctedHybridSuperClusters"),
-#                             SuperClusterLabel = cms.InputTag("cosmicSuperClusters","CosmicBarrelSuperClusters"),
+                             #SuperClusterLabel = cms.InputTag("cosmicSuperClusters","CosmicBarrelSuperClusters"),
                              PhotonLabel = cms.InputTag(""),
-                             
                              EBRecHitEnergyThresholdParam = cms.double(0.3),
                              EERecHitEnergyThresholdParam = cms.double(0.3),
                              ESRecHitEnergyThresholdParam = cms.double(0.3),
                              SumEcalEnergyThresholdParam = cms.double(10.),
                              NHitsEcalThresholdParam = cms.int32(4),
-
                              # Shower Shape cut parameters (defaults need to be optimized)
                              RoundnessCutParam  = cms.double(0.41),
                              AngleCutParam      = cms.double(0.51),
-                             
                              )
 
 
