@@ -17,7 +17,6 @@
 #include "IOPool/Streamer/interface/FRDFileHeader.h"
 
 using namespace jsoncollector;
-using namespace edm::streamer;
 
 //TODO:get run directory information from DaqDirector
 

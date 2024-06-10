@@ -12,7 +12,7 @@
 
 #include "zlib.h"
 
-namespace edm::streamer {
+namespace edm {
   StreamerOutputModuleBase::StreamerOutputModuleBase(ParameterSet const& ps)
       : one::OutputModuleBase::OutputModuleBase(ps),
         one::OutputModule<one::WatchRuns, one::WatchLuminosityBlocks>(ps),
@@ -29,15 +29,16 @@ namespace edm::streamer {
     auto psetMapHandle = iRun.getHandle(psetToken_);
 
     std::unique_ptr<InitMsgBuilder> init_message =
-        serializeRegistry(OutputModule::processName(),
+        serializeRegistry(*getSerializerBuffer(),
+                          *branchIDLists(),
+                          *thinnedAssociationsHelper(),
+                          OutputModule::processName(),
                           description().moduleLabel(),
                           moduleDescription().mainParameterSetID(),
                           psetMapHandle.isValid() ? psetMapHandle.product() : nullptr);
 
     doOutputHeader(*init_message);
-    lastCallWasBeginRun_ = true;
-
-    clearHeaderBuffer();
+    serializerBuffer_->clearHeaderBuffer();
   }
 
   void StreamerOutputModuleBase::endRun(RunForOutput const&) { stop(); }
@@ -53,13 +54,7 @@ namespace edm::streamer {
   void StreamerOutputModuleBase::write(EventForOutput const& e) {
     Handle<TriggerResults> const& triggerResults = getTriggerResults(trToken_, e);
 
-    if (lastCallWasBeginRun_) {
-      auto msg = serializeEventMetaData(*branchIDLists(), *thinnedAssociationsHelper());
-      doOutputEvent(*msg);
-      lastCallWasBeginRun_ = false;
-    }
-    auto msg = serializeEvent(e, triggerResults, selectorConfig());
-
+    std::unique_ptr<EventMsgBuilder> msg = serializeEvent(*getSerializerBuffer(), e, triggerResults, selectorConfig());
     doOutputEvent(*msg);  // You can't use msg in StreamerOutputModuleBase after this point
   }
 
@@ -76,4 +71,4 @@ namespace edm::streamer {
     desc.addUntracked<edm::InputTag>("psetMap", {"hltPSetMap"})
         ->setComment("Optionally allow the map of ParameterSets to be calculated externally.");
   }
-}  // namespace edm::streamer
+}  // namespace edm

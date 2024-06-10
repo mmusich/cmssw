@@ -10,45 +10,42 @@
 //#include <memory>
 //#include <vector>
 
+class InitMsgBuilder;
+class EventMsgBuilder;
 namespace edm {
   class ParameterSetDescription;
 
   typedef detail::TriggerResultsBasedEventSelector::handle_t Trig;
 
-  namespace streamer {
-    class InitMsgBuilder;
-    class EventMsgBuilder;
+  class StreamerOutputModuleBase : public one::OutputModule<one::WatchRuns, one::WatchLuminosityBlocks>,
+                                   StreamerOutputModuleCommon {
+  public:
+    explicit StreamerOutputModuleBase(ParameterSet const& ps);
+    ~StreamerOutputModuleBase() override;
+    static void fillDescription(ParameterSetDescription& desc);
 
-    class StreamerOutputModuleBase : public one::OutputModule<one::WatchRuns, one::WatchLuminosityBlocks>,
-                                     StreamerOutputModuleCommon {
-    public:
-      explicit StreamerOutputModuleBase(ParameterSet const& ps);
-      ~StreamerOutputModuleBase() override;
-      static void fillDescription(ParameterSetDescription& desc);
+  private:
+    void beginRun(RunForOutput const&) override;
+    void endRun(RunForOutput const&) override;
+    void beginJob() override;
+    void endJob() override;
+    void writeRun(RunForOutput const&) override;
+    void writeLuminosityBlock(LuminosityBlockForOutput const&) override;
+    void write(EventForOutput const& e) override;
 
-    private:
-      void beginRun(RunForOutput const&) override;
-      void endRun(RunForOutput const&) override;
-      void beginJob() override;
-      void endJob() override;
-      void writeRun(RunForOutput const&) override;
-      void writeLuminosityBlock(LuminosityBlockForOutput const&) override;
-      void write(EventForOutput const& e) override;
+    virtual void start() = 0;
+    virtual void stop() = 0;
+    virtual void doOutputHeader(InitMsgBuilder const& init_message) = 0;
+    virtual void doOutputEvent(EventMsgBuilder const& msg) = 0;
 
-      virtual void start() = 0;
-      virtual void stop() = 0;
-      virtual void doOutputHeader(InitMsgBuilder const& init_message) = 0;
-      virtual void doOutputEvent(EventMsgBuilder const& msg) = 0;
+    Trig getTriggerResults(EDGetTokenT<TriggerResults> const& token, EventForOutput const& e) const;
 
-      Trig getTriggerResults(EDGetTokenT<TriggerResults> const& token, EventForOutput const& e) const;
+  private:
+    edm::EDGetTokenT<edm::TriggerResults> trToken_;
+    edm::EDGetTokenT<SendJobHeader::ParameterSetMap> psetToken_;
 
-    private:
-      edm::EDGetTokenT<edm::TriggerResults> trToken_;
-      edm::EDGetTokenT<SendJobHeader::ParameterSetMap> psetToken_;
-      bool lastCallWasBeginRun_ = false;
+  };  //end-of-class-def
 
-    };  //end-of-class-def
-  }     // namespace streamer
 }  // namespace edm
 
 #endif

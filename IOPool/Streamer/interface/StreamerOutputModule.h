@@ -5,7 +5,7 @@
 #include "FWCore/Utilities/interface/propagate_const.h"
 #include "IOPool/Streamer/interface/StreamerOutputModuleBase.h"
 
-namespace edm::streamer {
+namespace edm {
   template <typename Consumer>
   class StreamerOutputModule : public StreamerOutputModuleBase {
     /** Consumers are suppose to provide
@@ -74,6 +74,6 @@ namespace edm::streamer {
     Consumer::fillDescription(desc);
     descriptions.add("streamerOutput", desc);
   }
-}  // namespace edm::streamer
+}  // namespace edm
 
 #endif

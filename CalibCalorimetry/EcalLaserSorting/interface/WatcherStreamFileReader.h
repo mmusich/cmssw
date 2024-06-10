@@ -1,5 +1,5 @@
-#ifndef CalibCalorimetry_EcalLaserSorting_WatcherStreamFileReader_h
-#define CalibCalorimetry_EcalLaserSorting_WatcherStreamFileReader_h
+#ifndef IOPool_Streamer_StreamerFileReader_h
+#define IOPool_Streamer_StreamerFileReader_h
 
 #include "IOPool/Streamer/interface/InitMessage.h"
 #include "IOPool/Streamer/interface/EventMessage.h"
@@ -19,7 +19,7 @@
  * This protection is obviously not full proof, especially to transfer lag.
  */
 
-namespace edm::streamer {
+namespace edm {
   class StreamerInputFile;
 }
 
@@ -28,16 +28,15 @@ public:
   WatcherStreamFileReader(edm::ParameterSet const& pset);
   ~WatcherStreamFileReader();
 
-  const edm::streamer::InitMsgView* getHeader();
-  const edm::streamer::EventMsgView* getNextEvent();
+  const InitMsgView* getHeader();
+  const EventMsgView* getNextEvent();
   const bool newHeader();
 
-  edm::streamer::StreamerInputFile* getInputFile();
+  edm::StreamerInputFile* getInputFile();
 
   void closeFile();
 
 private:
-  void moveJustReadFile();
   /** Directory to look for streamer files
    */
   std::string inputDir_;
@@ -60,7 +59,7 @@ private:
 
   /** Cached input file stream
    */
-  std::unique_ptr<edm::streamer::StreamerInputFile> streamerInputFile_;
+  std::unique_ptr<edm::StreamerInputFile> streamerInputFile_;
 
   std::string fileName_;
 

@@ -1,7 +1,5 @@
 #include "EventFilter//Utilities/interface/DAQSourceModelsScoutingRun3.h"
 
-using namespace edm::streamer;
-
 void DataModeScoutingRun3::makeDirectoryEntries(std::vector<std::string> const& baseDirs,
                                                 std::vector<int> const& numSources,
                                                 std::string const& runDir) {

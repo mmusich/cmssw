@@ -38,13 +38,11 @@ Disclaimer: Most of the code here is randomly written during
 
 #include <iostream>
 
-using namespace edm::streamer;
-
 int readSingleStream(bool verbose) {
   try {
     // ----------- init
     std::string initfilename = "teststreamfile.dat";
-    StreamerInputFile stream_reader(initfilename);
+    edm::StreamerInputFile stream_reader(initfilename);
 
     std::cout << "Trying to Read The Init message from Streamer File: " << initfilename << std::endl;
     InitMsgView const* init = stream_reader.startMessage();
@@ -56,7 +54,7 @@ int readSingleStream(bool verbose) {
 
     // ------- event
 
-    while (StreamerInputFile::Next::kEvent == stream_reader.next()) {
+    while (edm::StreamerInputFile::Next::kEvent == stream_reader.next()) {
       EventMsgView const* eview = stream_reader.currentRecord();
       if (verbose) {
         std::cout << "----------EVENT-----------" << std::endl;
@@ -82,7 +80,7 @@ int readMultipleStreams(bool verbose) {
 
     edm::InputFileCatalog catalog(streamFiles, "");
 
-    StreamerInputFile stream_reader(catalog.fileCatalogItems());
+    edm::StreamerInputFile stream_reader(catalog.fileCatalogItems());
 
     std::cout << "Trying to Read The Init message from Streamer File: "
               << "teststreamfile.dat" << std::endl;
@@ -94,7 +92,7 @@ int readMultipleStreams(bool verbose) {
       dumpInitView(init);
     }
 
-    while (StreamerInputFile::Next::kStop != stream_reader.next()) {
+    while (edm::StreamerInputFile::Next::kStop != stream_reader.next()) {
       if (stream_reader.newHeader()) {
         std::cout << "File Boundary has just been crossed, a new file is read" << std::endl;
         std::cout << "A new INIT Message is available" << std::endl;
@@ -128,7 +126,7 @@ int readInvalidLFN(bool verbose) {
 
     edm::InputFileCatalog catalog(streamFiles, "");
 
-    StreamerInputFile stream_reader(catalog.fileCatalogItems());
+    edm::StreamerInputFile stream_reader(catalog.fileCatalogItems());
 
     std::cout << "Trying to Read The Init message from Streamer File: "
               << "teststreamfile.dat" << std::endl;
@@ -140,7 +138,7 @@ int readInvalidLFN(bool verbose) {
       dumpInitView(init);
     }
 
-    while (StreamerInputFile::Next::kStop != stream_reader.next()) {
+    while (edm::StreamerInputFile::Next::kStop != stream_reader.next()) {
       if (stream_reader.newHeader()) {
         std::cout << "File Boundary has just been crossed, a new file is read" << std::endl;
         std::cout << "A new INIT Message is available" << std::endl;

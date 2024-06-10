@@ -12,8 +12,6 @@
 #include "IOPool/Streamer/interface/FRDEventMessage.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
-using namespace edm::streamer;
-
 /**
  * Constructor for the FRD event message viewer.
  */

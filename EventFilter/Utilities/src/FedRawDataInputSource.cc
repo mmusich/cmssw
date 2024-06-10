@@ -47,7 +47,6 @@
 #include "EventFilter/Utilities/interface/reader.h"
 
 using namespace evf::FastMonState;
-using namespace edm::streamer;
 
 FedRawDataInputSource::FedRawDataInputSource(edm::ParameterSet const& pset, edm::InputSourceDescription const& desc)
     : edm::RawInputSource(pset, desc),
