@@ -1,0 +1,16 @@
+{
+  "data": [
+    "1000",
+    "1001",
+    "0",
+    "run380649_ls0522_streamDQMGPUvsCPU_pid2884173.dat",
+    "19082746",
+    "",
+    "1419519055",
+    "",
+    "DAT",
+    "0"
+  ],
+  "definition": "./run380649/output_2884173.jsd",
+  "source": "lxplus940.cern.ch_2884173"
+}
