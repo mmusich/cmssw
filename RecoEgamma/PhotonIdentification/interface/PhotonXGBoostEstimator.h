@@ -22,7 +22,6 @@ public:
 private:
   std::unique_ptr<pat::XGBooster> booster_;
   int best_ntree_limit_ = -1;
-  std::string config_;
 };
 
 #endif

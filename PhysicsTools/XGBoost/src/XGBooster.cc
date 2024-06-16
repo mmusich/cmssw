@@ -52,6 +52,7 @@ XGBooster::XGBooster(std::string model_file) {
   if (status != 0)
     throw std::runtime_error("Failed to load XGBoost model");
   XGBoosterSetParam(booster_, "nthread", "1");
+  featuresSize_ = 0;
 }
 
 XGBooster::XGBooster(std::string model_file, std::string model_features) : XGBooster(model_file) {
@@ -67,35 +68,22 @@ XGBooster::XGBooster(std::string model_file, std::string model_features) : XGBoo
   for (const auto& feature : features) {
     addFeature(feature);
   }
+  featuresSize_ = 0;
 }
-
-void XGBooster::reset() { std::fill(features_.begin(), features_.end(), std::nan("")); }
 
 void XGBooster::addFeature(std::string name) {
-  features_.push_back(0);
-  feature_name_to_index_[name] = features_.size() - 1;
+  featuresSize_++;
+  feature_name_to_index_[name] = featuresSize_ - 1;
 }
 
-void XGBooster::set(std::string name, float value) { features_.at(feature_name_to_index_[name]) = value; }
-
-float XGBooster::predict(const int iterationEnd) {
+float XGBooster::predict(std::vector<float> const& features, const int iterationEnd) {
   float result(-999.);
 
-  // check if all feature values are set properly
-  for (unsigned int i = 0; i < features_.size(); ++i)
-    if (std::isnan(features_.at(i))) {
-      std::string feature_name;
-      for (const auto& pair : feature_name_to_index_) {
-        if (pair.second == i) {
-          feature_name = pair.first;
-          break;
-        }
-      }
-      throw std::runtime_error("Feature is not set: " + feature_name);
-    }
+  if (featuresSize_ != features.size())
+    throw std::runtime_error("Feature size mismatch");
 
   DMatrixHandle dvalues;
-  XGDMatrixCreateFromMat(&features_[0], 1, features_.size(), 9e99, &dvalues);
+  XGDMatrixCreateFromMat(&features[0], 1, features.size(), 9e99, &dvalues);
 
   bst_ulong out_len = 0;
   const float* score = nullptr;
@@ -125,8 +113,6 @@ float XGBooster::predict(const int iterationEnd) {
   }
 
   XGDMatrixFree(dvalues);
-
-  reset();
 
   return result;
 }

@@ -1,5 +1,4 @@
 #include "RecoEgamma/PhotonIdentification/interface/PhotonXGBoostEstimator.h"
-#include <sstream>
 
 PhotonXGBoostEstimator::PhotonXGBoostEstimator(const edm::FileInPath& weightsFile, int best_ntree_limit) {
   booster_ = std::make_unique<pat::XGBooster>(weightsFile.fullPath());
@@ -27,15 +26,7 @@ float PhotonXGBoostEstimator::computeMva(float rawEnergyIn,
                                          float etaIn,
                                          float hOvrEIn,
                                          float ecalPFIsoIn) const {
-  booster_->set("rawEnergy", rawEnergyIn);
-  booster_->set("r9", r9In);
-  booster_->set("sigmaIEtaIEta", sigmaIEtaIEtaIn);
-  booster_->set("etaWidth", etaWidthIn);
-  booster_->set("phiWidth", phiWidthIn);
-  booster_->set("s4", s4In);
-  booster_->set("eta", etaIn);
-  booster_->set("hOvrE", hOvrEIn);
-  booster_->set("ecalPFIso", ecalPFIsoIn);
-
-  return booster_->predict(best_ntree_limit_);
+  return booster_->predict(
+      {rawEnergyIn, r9In, sigmaIEtaIEtaIn, etaWidthIn, phiWidthIn, s4In, etaIn, hOvrEIn, ecalPFIsoIn},
+      best_ntree_limit_);
 }
