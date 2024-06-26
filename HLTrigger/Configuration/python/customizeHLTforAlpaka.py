@@ -1092,6 +1092,14 @@ def customizeHLTforAlpakaEcalLocalReco(process):
 
 def customizeHLTforAlpakaHcalLocalReco(process):
 
+    ## failsafe for fake menus
+    if not hasattr(process, 'HLTDoLocalHcalSequence'):
+        return process
+
+    ## do not re-apply the customization if the menu is already migrated to alpaka
+    for prod in producers_by_type(process, 'HcalDigisSoAProducer@alpaka'):
+        return process
+
     # EventSetup modules
     process.load('RecoLocalCalo.HcalRecProducers.hcalMahiConditionsESProducer_cfi')
     process.load('RecoLocalCalo.HcalRecProducers.hcalMahiPulseOffsetsESProducer_cfi')
@@ -1099,7 +1107,6 @@ def customizeHLTforAlpakaHcalLocalReco(process):
     process.load('RecoLocalCalo.HcalRecAlgos.hcalRecoParamWithPulseShapeESProducer_cfi')
 
     # the JobConfigurationGPURecord is provided by the hltESSJobConfigurationGPURecord ESSource
-
 
     # convert the HCAL digis to SoA format
     from EventFilter.HcalRawToDigi.hcalDigisSoAProducer_cfi import hcalDigisSoAProducer as _hcalDigisSoAProducer
@@ -1175,6 +1182,16 @@ def customizeHLTforAlpakaHcalLocalReco(process):
       process.hltHfreco +
       process.hltHoreco )
 
+    process.HLTDoCaloSequenceSerialSync = cms.Sequence(
+        process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequenceSerialSync +
+        process.HLTDoLocalHcalSequenceSerialSync +
+        process.hltTowerMakerForAllSerialSync )
+
+    process.HLTDoCaloSequencePFSerialSync = cms.Sequence(
+        process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequenceSerialSync +
+        process.HLTDoLocalHcalSequenceSerialSync +
+        process.hltTowerMakerForAllSerialSync )
+
     # run the HBHE local reconstruction, potentially offloading the MHI step to the device
     process.HLTStoppedHSCPLocalHcalReco = cms.Sequence(
       process.hltHcalDigis +
@@ -1191,38 +1208,27 @@ def customizeHLTforAlpakaHcalLocalReco(process):
       process.hltParticleFlowClusterHBHESerialSync +
       process.hltParticleFlowClusterHCALSerialSync )
 
-    paths_AlCa_PFJet40_CPUOnly_v = [ path for path in process.paths if path.startswith('AlCa_PFJet40_CPUOnly_v') ]
-    if paths_AlCa_PFJet40_CPUOnly_v:
-      pathname = paths_AlCa_PFJet40_CPUOnly_v[0]
-      setattr(process, pathname, cms.Path(
-        process.HLTBeginSequence +
-        process.hltL1sZeroBias +
-        process.hltPreAlCaPFJet40CPUOnly +
-        process.HLTDoLocalHcalSequenceSerialSync +
-        process.HLTAK4CaloJetsSequenceSerialSync +
-        process.hltSingleCaloJet10SerialSync +
-        process.HLTAK4PFJetsSequenceSerialSync +
-        process.hltPFJetsCorrectedMatchedToCaloJets10SerialSync +
-        process.hltSinglePFJet40SerialSync +
-        process.HLTEndSequence )
-      )
-
     # compare the HCAL local reconstruction running on the device and on the host
-    paths_DQM_HcalReconstruction_v = [ path for path in process.paths if path.startswith('DQM_HcalReconstruction_v') ]
-    if paths_DQM_HcalReconstruction_v:
-      pathname = paths_DQM_HcalReconstruction_v[0]
-      setattr(process, pathname, cms.Path(
-        process.HLTBeginSequence +
-        process.hltL1sDQMHcalReconstruction +
-        process.hltPreDQMHcalReconstruction +
-        process.hltBackend +
-        process.hltStatusOnGPUFilter +
-        process.HLTDoLocalHcalSequence +
-        process.HLTDoLocalHcalSequenceSerialSync +
-        process.HLTPFHcalClustering +
-        process.HLTPFHcalClusteringSerialSync +
-        process.HLTEndSequence )
-      )
+    for pathNameMatch in ['DQM_HcalReconstruction_v', 'DQM_HIHcalReconstruction_v']:
+        dqmHcalRecoPathName = None
+        for pathName in process.paths_():
+            if pathName.startswith(pathNameMatch):
+                dqmHcalRecoPath = getattr(process, pathName)
+                dqmHcalRecoPath.insert(dqmHcalRecoPath.index(process.HLTPFHcalClustering), getattr(process, 'HLTDoLocalHcalSequenceSerialSync'))
+                for delmod in ['hltHcalConsumerCPU', 'hltHcalConsumerGPU']:
+                    if hasattr(process, delmod):
+                        process.__delattr__(delmod)
+
+    # modify EventContent of *DQMGPUvsCPU streams
+    for hltOutModMatch in ['hltOutputDQMGPUvsCPU', 'hltOutputHIDQMGPUvsCPU']:
+        if hasattr(process, hltOutModMatch):
+            outMod = getattr(process, hltOutModMatch)
+            outCmds_new = [foo for foo in outMod.outputCommands if 'Hbhe' not in foo]
+            outCmds_new += [
+                'keep *_hltHbhereco_*_*',
+                'keep *_hltHbherecoSerialSync_*_*',
+            ]
+            outMod.outputCommands = outCmds_new[:]
 
     # delete the obsolete modules and tasks
     del process.hcalMahiPulseOffsetsGPUESProducer
@@ -1247,14 +1253,11 @@ def customizeHLTforAlpakaHcalLocalReco(process):
     del process.hltHcalDigisGPU
     del process.hltHbherecoGPU
     del process.hltHbherecoFromGPU
-    del process.hltHcalConsumerCPU
-    del process.hltHcalConsumerGPU
 
     del process.HLTDoLocalHcalTask
     del process.HLTStoppedHSCPLocalHcalRecoTask
 
     return process
-
 
 def customizeHLTforAlpakaStatus(process):
 
