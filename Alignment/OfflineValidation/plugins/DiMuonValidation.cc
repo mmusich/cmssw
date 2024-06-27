@@ -351,19 +351,19 @@ void DiMuonValidation::beginJob() {
                      variables_min_[Variable::PhiMinus],
                      variables_max_[Variable::PhiMinus]);
 
-  // Z-> mm mass in eta bins
+  // X-> mm mass in eta bins
   TFileDirectory dirResMassEta = fs->mkdir("TkTkMassInEtaBins");
   InvMassInEtaBins.bookSet(dirResMassEta, th1f_mass);
 
-  // Z->mm mass vs cos phi Collins-Soper in eta bins
+  // X->mm mass vs cos phi Collins-Soper in eta bins
   TFileDirectory dirResMassVsCosThetaCSInEta = fs->mkdir("TkTkMassVsCosThetaCSInEtaBins");
   InvMassVsCosThetaCSInEtaBins.bookSet(dirResMassVsCosThetaCSInEta, th2d_mass_variables_[Variable::CosThetaCS]);
 
-  // Z->mm mass vs phi minus in eta bins
+  // X->mm mass vs phi minus in eta bins
   TFileDirectory dirResMassVsPhiMinusInEta = fs->mkdir("TkTkMassVsPhiMinusInEtaBins");
   InvMassVsPhiMinusInEtaBins.bookSet(dirResMassVsPhiMinusInEta, th2d_mass_variables_[Variable::PhiMinus]);
 
-  // Z->mm mass vs phi plus in eta bins
+  // X->mm mass vs phi plus in eta bins
   TFileDirectory dirResMassVsPhiPlusInEta = fs->mkdir("TkTkMassVsPhiPlusInEtaBins");
   InvMassVsPhiPlusInEtaBins.bookSet(dirResMassVsPhiPlusInEta, th2d_mass_variables_[Variable::PhiPlus]);
 }
@@ -371,7 +371,7 @@ void DiMuonValidation::beginJob() {
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void DiMuonValidation::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setComment("Validates alignment payloads by evaluating bias in Z->mm mass distributions");
+  desc.setComment("Validates alignment payloads by evaluating bias in X->mm mass distributions");
   desc.addUntracked<int>("compressionSettings", -1);
 
   desc.add<double>("eBeam", 3500.)->setComment("beam energy in GeV");

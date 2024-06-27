@@ -34,21 +34,20 @@ public:
   explicit HIPTwoBodyDecayAnalyzer(const edm::ParameterSet&);
   ~HIPTwoBodyDecayAnalyzer() override;
 
-  edm::EDGetTokenT<reco::TrackCollection> alcareco_trackCollToken_;
-  edm::EDGetTokenT<reco::TrackCollection> refit1_trackCollToken_;
-  edm::EDGetTokenT<reco::TrackCollection> ctf_trackCollToken_;
-  edm::EDGetTokenT<reco::TrackCollection> final_trackCollToken_;
-
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+
+private:
+  // es consumes
+  const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttkbuilderToken_;
+  const edm::EDGetTokenT<reco::TrackCollection> alcareco_trackCollToken_;
+  const edm::EDGetTokenT<reco::TrackCollection> refit1_trackCollToken_;
+  const edm::EDGetTokenT<reco::TrackCollection> ctf_trackCollToken_;
+  const edm::EDGetTokenT<reco::TrackCollection> final_trackCollToken_;
 
   TTree* tree;
   std::vector<std::pair<std::string, float*>> floatBranches;
   std::vector<std::pair<std::string, int*>> intBranches;
   std::vector<std::pair<std::string, short*>> shortBranches;
-
-private:
-  // es consumes
-  const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttkbuilderToken_;
 
   enum BranchType { BranchType_short_t, BranchType_int_t, BranchType_float_t, BranchType_unknown_t };
   void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -86,14 +85,12 @@ private:
 };
 
 HIPTwoBodyDecayAnalyzer::HIPTwoBodyDecayAnalyzer(const edm::ParameterSet& iConfig)
-    : ttkbuilderToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))) {
+    : ttkbuilderToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+      alcareco_trackCollToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("alcarecotracks"))),
+      refit1_trackCollToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("refit1tracks"))),
+      ctf_trackCollToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("refit2tracks"))),
+      final_trackCollToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("finaltracks"))) {
   usesResource(TFileService::kSharedResource);
-
-  alcareco_trackCollToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("alcarecotracks"));
-  refit1_trackCollToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("refit1tracks"));
-  ctf_trackCollToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("refit2tracks"));
-  final_trackCollToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("finaltracks"));
-
   edm::Service<TFileService> fs;
 
   tree = fs->make<TTree>("TestTree", "");
