@@ -2,6 +2,8 @@
 #include <TLatex.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <TStyle.h>
+#include <TGaxis.h>
 #include <string>
 #include <map>
 #include <TH1.h>
@@ -10,7 +12,7 @@
 #include <iostream>
 
 /*--------------------------------------------------------------------*/
-void cmsPrel(const TCanvas* canvas) {
+void cmsPrel(const TCanvas* canvas, float correction = 0.) {
   /*--------------------------------------------------------------------*/
 
   // Create and draw the CMS text
@@ -21,8 +23,8 @@ void cmsPrel(const TCanvas* canvas) {
   latexCMS->Draw();
 
   // Create and draw the Internal (13 TeV) text
-  TLatex* latexInternal =
-      new TLatex(1 - canvas->GetRightMargin(), 1.01 - canvas->GetTopMargin(), "pp collisions (2022) 13.6 TeV");
+  TLatex* latexInternal = new TLatex(
+      1 - canvas->GetRightMargin() - correction, 1.01 - canvas->GetTopMargin(), "pp collisions (2022) 13.6 TeV");
   latexInternal->SetNDC(kTRUE);
   latexInternal->SetTextAlign(31);
   latexInternal->SetTextFont(42);
@@ -249,11 +251,15 @@ void overlayHistograms(const std::vector<std::string>& fileNames,
     // Update the canvas
     c->Update();
     c->SaveAs((histName + "_" + type + ".png").c_str());
+    c->SaveAs((histName + "_" + type + ".pdf").c_str());
+    c->SaveAs((histName + "_" + type + ".eps").c_str());
+    c->SaveAs((histName + "_" + type + ".root").c_str());
   }
 
   //gStyle->SetPalette(kRainbow);
   //gStyle->SetPalette(kWaterMelon);
   gStyle->SetPalette(kTemperatureMap);
+  //gStyle->SetPalette(kViridis);
 
   // Loop over the 2D histograms in the map
   for (const auto& entry : hist2DMap) {
@@ -284,12 +290,31 @@ void overlayHistograms(const std::vector<std::string>& fileNames,
       histList[i]->SetMinimum(extrema.first);
       histList[i]->SetMaximum(extrema.second);
       histList[i]->Draw("COLZ");
-      cmsPrel(current_pad);
+      cmsPrel(current_pad, -0.062);
     }
 
     // Update the canvas
     c->Update();
     c->SaveAs((histName + "_" + type + "_side_by_side.png").c_str());
+    c->SaveAs((histName + "_" + type + "_side_by_side.pdf").c_str());
+    c->SaveAs((histName + "_" + type + "_side_by_side.eps").c_str());
+    c->SaveAs((histName + "_" + type + "_side_by_side.root").c_str());
+
+    for (size_t i = 0; i < histList.size(); ++i) {
+      TCanvas* c2 = new TCanvas((histName + type + labels[i]).c_str(), histName.c_str(), 900, 800);
+      c2->cd();
+      auto current_pad = static_cast<TCanvas*>(gPad);
+      adjustCanvasMargins2D(current_pad);
+      makeNicePlotStyle(histList[i], kWhite, 0);
+      histList[i]->Draw("COLZ");
+      cmsPrel(c2, -0.050);
+      std::string result = labels[i];
+      std::replace(result.begin(), result.end(), ' ', '_');
+      c2->SaveAs((histName + "_" + type + "_" + result + ".png").c_str());
+      c2->SaveAs((histName + "_" + type + "_" + result + ".pdf").c_str());
+      c2->SaveAs((histName + "_" + type + "_" + result + ".eps").c_str());
+      c2->SaveAs((histName + "_" + type + "_" + result + ".root").c_str());
+    }
   }
 }
 

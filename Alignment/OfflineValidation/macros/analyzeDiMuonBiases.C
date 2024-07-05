@@ -274,6 +274,21 @@ void analyzeDiMuonBiases(const char* inputFile, anaKind type) {
   TH1F* hDeltaD0 = new TH1F("hDeltaD0", ";#Deltad_{0} [cm];events", 100, -0.01, 0.01);
   TH1F* hDeltaDz = new TH1F("hDeltaDz", ";#Deltad_{z} [cm];events", 100, -0.1, 0.1);
 
+  TH1F* hDeltaD0Corr = new TH1F("hDeltaD0Corr", ";corrected #Deltad_{0} [cm];events", 100, -0.01, 0.01);
+  TH1F* hDeltaDzCorr = new TH1F("hDeltaDzCorr", ";corrected #Deltad_{z} [cm];events", 100, -0.1, 0.1);
+
+  TH1F* hAbsDeltaD0 = new TH1F("hAbsDeltaD0", ";|#Deltad_{0}| [cm];events", 100, 0., 0.01);
+  TH1F* hAbsDeltaDz = new TH1F("hAbsDeltaDz", ";|#Deltad_{z}| [cm];events", 100, 0., 0.1);
+
+  TH1F* hAbsDeltaD0Corr = new TH1F("hAbsDeltaD0Corr", ";corrected |#Deltad_{0}| [cm];events", 100, 0., 0.01);
+  TH1F* hAbsDeltaDzCorr = new TH1F("hAbsDeltaDzCorr", ";corrected |#Deltad_{z}| [cm];events", 100, 0., 0.1);
+
+  TH1F* hD0 = new TH1F("hD0", ";d_{0}(PV) [cm];events", 100, -0.01, 0.01);
+  TH1F* hDz = new TH1F("hDz", ";d_{z}(PV) [cm];events", 100, -0.1, 0.1);
+
+  TH1F* hD0Corr = new TH1F("hD0Corr", ";corrected d_{0}(PV) [cm];events", 100, -0.01, 0.01);
+  TH1F* hDzCorr = new TH1F("hDzCorr", ";corrected d_{z}(PV) [cm];events", 100, -0.1, 0.1);
+
   TH1F* hPhi = new TH1F("hPhi", ";muon #phi;events", 100, -TMath::Pi(), TMath::Pi());
   TH1F* hCorrection = new TH1F(
       "hCorrection",
@@ -387,6 +402,15 @@ void analyzeDiMuonBiases(const char* inputFile, anaKind type) {
     hDeltaD0->Fill(posTrackD0 - negTrackD0);
     hDeltaDz->Fill(posTrackDz - negTrackDz);
 
+    hAbsDeltaD0->Fill(std::abs(posTrackD0 - negTrackD0));
+    hAbsDeltaDz->Fill(std::abs(posTrackDz - negTrackDz));
+
+    hD0->Fill(posTrackD0);
+    hD0->Fill(negTrackD0);
+
+    hDz->Fill(posTrackDz);
+    hDz->Fill(negTrackDz);
+
     hPt->Fill(posTrackPt);
     hPt->Fill(negTrackPt);
 
@@ -408,6 +432,35 @@ void analyzeDiMuonBiases(const char* inputFile, anaKind type) {
 
     const auto& indexMinus = findEtaPhiBin(hSagitta, negTrackEta, negTrackPhi);
     float deltaMinus = sagittaCorrections[indexMinus];
+
+    float deltaIPplus = IPCorrections[indexPlus];
+    float deltaIPminus = IPCorrections[indexMinus];
+
+    if (type == anaKind::d0_t) {
+      hDeltaD0Corr->Fill((posTrackD0 + deltaIPplus) - (negTrackD0 + deltaIPminus));
+      hDeltaDzCorr->Fill(posTrackDz - negTrackDz);
+
+      hAbsDeltaD0Corr->Fill(std::abs((posTrackD0 + deltaIPplus) - (negTrackD0 + deltaIPminus)));
+      hAbsDeltaDzCorr->Fill(std::abs(posTrackDz - negTrackDz));
+
+      hD0Corr->Fill(posTrackD0 - deltaIPplus);
+      hD0Corr->Fill(negTrackD0 - deltaIPminus);
+
+      hDzCorr->Fill(posTrackDz);
+      hDzCorr->Fill(negTrackDz);
+    } else {
+      hDeltaD0Corr->Fill(posTrackD0 - negTrackD0);
+      hDeltaDzCorr->Fill((posTrackDz + deltaIPplus) - (negTrackDz + deltaIPminus));
+
+      hAbsDeltaD0Corr->Fill(std::abs(posTrackD0 - negTrackD0));
+      hAbsDeltaDzCorr->Fill(std::abs((posTrackDz + deltaIPplus) - (negTrackDz + deltaIPminus)));
+
+      hD0Corr->Fill(posTrackD0);
+      hD0Corr->Fill(negTrackD0);
+
+      hDzCorr->Fill(posTrackDz + deltaIPplus);
+      hDzCorr->Fill(negTrackDz + deltaIPminus);
+    }
 
     TLorentzVector posTrackCorr, negTrackCorr, motherCorr;
     //posTrackCorr.SetPtEtaPhiM(posTrackPt/(1+posTrackPt*deltaPlus), posTrackEta, posTrackPhi, k_muMass);  // assume muon mass for tracks
@@ -490,6 +543,23 @@ void analyzeDiMuonBiases(const char* inputFile, anaKind type) {
 
   hEta->Write();
   hPhi->Write();
+
+  if (type == anaKind::sagitta_t) {
+    hMassCorr->Write();
+    hPtCorr->Write();
+    hPtPlusCorr->Write();
+    hPtMinusCorr->Write();
+    hDeltaMassCorr->Write();
+    hDeltaPtCorr->Write();
+  } else if (type == anaKind::d0_t) {
+    hD0Corr->Write();
+    hDeltaD0Corr->Write();
+    hAbsDeltaD0Corr->Write();
+  } else if (type == anaKind::dz_t) {
+    hDzCorr->Write();
+    hDeltaDzCorr->Write();
+    hAbsDeltaDzCorr->Write();
+  }
 
   if (type == sagitta_t) {
     hMassCorr->Write();
