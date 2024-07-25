@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_0_0/HIon --full --data --type HIon --unprescale --process HLTHIon --globaltag auto:run3_hlt_HIon --input file:RelVal_Raw_HIon_DATA.root
 
-# /dev/CMSSW_14_0_0/HIon/V169 (CMSSW_14_0_11)
+# /dev/CMSSW_14_0_0/HIon/V170 (CMSSW_14_0_11)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -11,7 +11,7 @@ process = cms.Process( "HLTHIon" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_0_0/HIon/V169")
+  tableName = cms.string("/dev/CMSSW_14_0_0/HIon/V170")
 )
 
 process.HLTIter4PSetTrajectoryBuilderIT = cms.PSet( 
