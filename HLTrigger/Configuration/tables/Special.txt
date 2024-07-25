@@ -68,10 +68,8 @@ HLT_HT300_Beamspot_v*         #       CMSHLT-2860
 HLT_HT300_Beamspot_PixelClusters_WP2_v*    #       CMSHLT-2860
 HLT_PixelClusters_WP2_v*      #       CMSHLT-2860
 HLT_PixelClusters_WP1_v*      #       CMSHLT-2860
-HLT_MinimumBias_HF_v*         #       CMSHLT-2860
 HLT_IsoTrackHB_v*             #       CMSHLT-2860
 HLT_IsoTrackHE_v*             #       CMSHLT-2860
-HLT_L1BptxXOR_v*              #       CMSHLT-2860
 HLT_BptxOR_v*                 #       CMSHLT-2860
 HLT_L1SingleMuCosmics_EMTF_v* #       CMSHLT-2860
 HLT_PPSMaxTracksPerArm1_v*    #       CMSHLT-2860
@@ -164,12 +162,6 @@ PhysicsSpecialRandom6Output
 PhysicsSpecialRandom7Output
 PhysicsSpecialRandom8Output
 PhysicsSpecialRandom9Output
-PhysicsSpecialRandom10Output
-PhysicsSpecialRandom11Output
-PhysicsSpecialRandom12Output
-PhysicsSpecialRandom13Output
-PhysicsSpecialRandom14Output
-PhysicsSpecialRandom15Output
 
 PhysicsSpecialZeroBias0Output
 PhysicsSpecialZeroBias1Output
