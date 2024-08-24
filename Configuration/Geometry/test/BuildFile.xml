@@ -1,4 +1,5 @@
 <environment>
+  <test name="validate2026Defaults" command="python3 ${LOCALTOP}/src/Configuration/Geometry/scripts/validate_geometry_default.py"/>
   <test name="test2026Geometry" command="python3 ${LOCALTOP}/src/Configuration/Geometry/scripts/generate2026Geometry.py -t"/>
   <test name="test2021Geometry" command="python3 ${LOCALTOP}/src/Configuration/Geometry/scripts/generate2021Geometry.py -t"/>
 </environment>

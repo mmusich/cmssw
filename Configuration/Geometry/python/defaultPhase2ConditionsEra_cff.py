@@ -18,8 +18,9 @@ def get_era_and_conditions(version_key):
     """
     # Ensure the version key exists in the properties for 2026
     if version_key not in properties[2026]:
-        raise KeyError(f"Version key '{version_key}' not found in properties[2026].")
-
+        raise KeyError(f"Version key '{version_key}' not found in properties[2026]."
+                       f"It must be in the format 2026DXXX")
+    
     # Retrieve the global tag key
     global_tag_key = properties[2026][version_key]['GT']
     print(f"Global tag key from properties: {global_tag_key}")
