@@ -35,9 +35,10 @@ public:
   struct IPMonitoring {
     std::string varname_;
     float pTcut_;
-    dqm::reco::MonitorElement *IP_, *IPErr_;
+    dqm::reco::MonitorElement *IP_, *IPErr_, *IPPull_;
     dqm::reco::MonitorElement *IPVsPhi_, *IPVsEta_;
     dqm::reco::MonitorElement *IPErrVsPhi_, *IPErrVsEta_;
+    dqm::reco::MonitorElement *IPPullVsPhi_, *IPPullVsEta_;
     dqm::reco::MonitorElement *IPVsEtaVsPhi_, *IPErrVsEtaVsPhi_;
 
     void bookIPMonitor(DQMStore::IBooker &, const edm::ParameterSet &);
