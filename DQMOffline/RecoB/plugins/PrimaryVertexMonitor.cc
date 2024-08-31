@@ -216,15 +216,24 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   double VarMin = config.getParameter<double>(fmt::format("D{}Min", varname_));
   double VarMax = config.getParameter<double>(fmt::format("D{}Max", varname_));
 
-  int PhiBin = config.getParameter<int>("PhiBin");
+  PhiBin_ = config.getParameter<int>("PhiBin");
+  PhiMin_ = config.getParameter<double>("PhiMin");
+  PhiMax_ = config.getParameter<double>("PhiMax");
   int PhiBin2D = config.getParameter<int>("PhiBin2D");
-  double PhiMin = config.getParameter<double>("PhiMin");
-  double PhiMax = config.getParameter<double>("PhiMax");
 
-  int EtaBin = config.getParameter<int>("EtaBin");
+  EtaBin_ = config.getParameter<int>("EtaBin");
+  EtaMin_ = config.getParameter<double>("EtaMin");
+  EtaMax_ = config.getParameter<double>("EtaMax");
   int EtaBin2D = config.getParameter<int>("EtaBin2D");
-  double EtaMin = config.getParameter<double>("EtaMin");
-  double EtaMax = config.getParameter<double>("EtaMax");
+
+  // initialize the counters
+  sumPhi_.resize(PhiBin_, 0.0);
+  sumPhiSq_.resize(PhiBin_, 0.0);
+  countPhi_.resize(PhiBin_, 0);
+
+  sumEta_.resize(EtaBin_, 0.0);
+  sumEtaSq_.resize(EtaBin_, 0.0);
+  countEta_.resize(EtaBin_, 0);
 
   // 1D variables
 
@@ -251,9 +260,9 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
 
   IPVsPhi_ = iBooker.bookProfile(fmt::format("d{}VsPhi_pt{}", varname_, pTcut_),
                                  fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} VS track #phi", pTcut_, varname_),
-                                 PhiBin,
-                                 PhiMin,
-                                 PhiMax,
+                                 PhiBin_,
+                                 PhiMin_,
+                                 PhiMax_,
                                  VarBin,
                                  VarMin,
                                  VarMax,
@@ -263,9 +272,9 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
 
   IPVsEta_ = iBooker.bookProfile(fmt::format("d{}VsEta_pt{}", varname_, pTcut_),
                                  fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} VS track #eta", pTcut_, varname_),
-                                 EtaBin,
-                                 EtaMin,
-                                 EtaMax,
+                                 EtaBin_,
+                                 EtaMin_,
+                                 EtaMax_,
                                  VarBin,
                                  VarMin,
                                  VarMax,
@@ -276,9 +285,9 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   IPErrVsPhi_ =
       iBooker.bookProfile(fmt::format("d{}ErrVsPhi_pt{}", varname_, pTcut_),
                           fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} error VS track #phi", pTcut_, varname_),
-                          PhiBin,
-                          PhiMin,
-                          PhiMax,
+                          PhiBin_,
+                          PhiMin_,
+                          PhiMax_,
                           VarBin,
                           0.,
                           (varname_.find("xy") != std::string::npos) ? 100. : 200.,
@@ -289,9 +298,9 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   IPErrVsEta_ =
       iBooker.bookProfile(fmt::format("d{}ErrVsEta_pt{}", varname_, pTcut_),
                           fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} error VS track #eta", pTcut_, varname_),
-                          EtaBin,
-                          EtaMin,
-                          EtaMax,
+                          EtaBin_,
+                          EtaMin_,
+                          EtaMax_,
                           VarBin,
                           0.,
                           (varname_.find("xy") != std::string::npos) ? 100. : 200.,
@@ -302,13 +311,13 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   IPPullVsPhi_ =
       iBooker.bookProfile(fmt::format("d{}PullVsPhi_pt{}", varname_, pTcut_),
                           fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} pull VS track #phi", pTcut_, varname_),
-                          PhiBin,
-                          PhiMin,
-                          PhiMax,
+                          PhiBin_,
+                          PhiMin_,
+                          PhiMax_,
                           VarBin,
                           0.,
                           2.,
-                          "s");
+                          "");
   IPPullVsPhi_->setAxisTitle("PV track (p_{T} > 1 GeV) #phi", 1);
   IPPullVsPhi_->setAxisTitle(
       fmt::format("PV tracks (p_{{T}} > {} GeV) d_{{{}}}/#sigma_{{d_{{{}}}}}", pTcut_, varname_, varname_), 2);
@@ -316,13 +325,13 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   IPPullVsEta_ =
       iBooker.bookProfile(fmt::format("d{}PullVsEta_pt{}", varname_, pTcut_),
                           fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} pull VS track #eta", pTcut_, varname_),
-                          EtaBin,
-                          EtaMin,
-                          EtaMax,
+                          EtaBin_,
+                          EtaMin_,
+                          EtaMax_,
                           VarBin,
                           0.,
                           2.,
-                          "s");
+                          "");
   IPPullVsEta_->setAxisTitle("PV track (p_{T} > 1 GeV) #eta", 1);
   IPPullVsEta_->setAxisTitle(
       fmt::format("PV tracks (p_{{T}} > {} GeV) d_{{{}}}/#sigma_{{d_{{{}}}}}", pTcut_, varname_, varname_), 2);
@@ -333,11 +342,11 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
       fmt::format("d{}VsEtaVsPhi_pt{}", varname_, pTcut_),
       fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} VS track #eta VS track #phi", pTcut_, varname_),
       EtaBin2D,
-      EtaMin,
-      EtaMax,
+      EtaMin_,
+      EtaMax_,
       PhiBin2D,
-      PhiMin,
-      PhiMax,
+      PhiMin_,
+      PhiMax_,
       VarBin,
       VarMin,
       VarMax,
@@ -350,11 +359,11 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
       fmt::format("d{}ErrVsEtaVsPhi_pt{}", varname_, pTcut_),
       fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} error VS track #eta VS track #phi", pTcut_, varname_),
       EtaBin2D,
-      EtaMin,
-      EtaMax,
+      EtaMin_,
+      EtaMax_,
       PhiBin2D,
-      PhiMin,
-      PhiMax,
+      PhiMin_,
+      PhiMax_,
       VarBin,
       0.,
       (varname_.find("xy") != std::string::npos) ? 100. : 200.,
@@ -363,6 +372,36 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   IPErrVsEtaVsPhi_->setAxisTitle("PV track (p_{T} > 1 GeV) #phi", 2);
   IPErrVsEtaVsPhi_->setAxisTitle(fmt::format("PV tracks (p_{{T}} > {} GeV) d_{{{}}} error (#mum)", pTcut_, varname_),
                                  3);
+}
+
+void PrimaryVertexMonitor::IPMonitoring::fillPullPlots(const double& eta, const double& phi, const double& pull) {
+  // Calculate the bin index
+  int phiBinIdx = static_cast<int>((phi - PhiMin_) / (PhiMax_ - PhiMin_) * PhiBin_);
+  int etaBinIdx = static_cast<int>((eta - EtaMin_) / (EtaMax_ - EtaMin_) * EtaBin_);
+
+  // Accumulate sums and counts for phi
+  if (phiBinIdx >= 0 && phiBinIdx < PhiBin_) {
+    sumPhi_[phiBinIdx] += pull;
+    sumPhiSq_[phiBinIdx] += pull * pull;
+    countPhi_[phiBinIdx]++;
+
+    // Compute RMS and update the TProfile
+    double meanPhi = sumPhi_[phiBinIdx] / countPhi_[phiBinIdx];
+    double rmsPhi = std::sqrt((sumPhiSq_[phiBinIdx] / countPhi_[phiBinIdx]) - (meanPhi * meanPhi));
+    IPPullVsPhi_->Fill(PhiMin_ + (phiBinIdx + 0.5) * (PhiMax_ - PhiMin_) / PhiBin_, rmsPhi);
+  }
+
+  // Accumulate sums and counts for eta
+  if (etaBinIdx >= 0 && etaBinIdx < EtaBin_) {
+    sumEta_[etaBinIdx] += pull;
+    sumEtaSq_[etaBinIdx] += pull * pull;
+    countEta_[etaBinIdx]++;
+
+    // Compute RMS and update the TProfile
+    double meanEta = sumEta_[etaBinIdx] / countEta_[etaBinIdx];
+    double rmsEta = std::sqrt((sumEtaSq_[etaBinIdx] / countEta_[etaBinIdx]) - (meanEta * meanEta));
+    IPPullVsEta_->Fill(EtaMin_ + (etaBinIdx + 0.5) * (EtaMax_ - EtaMin_) / EtaBin_, rmsEta);
+  }
 }
 
 void PrimaryVertexMonitor::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -504,8 +543,9 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dxy_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, DxyErr);
 
     dxy_pt1.IPPull_->Fill(Dxy / DxyErr);
-    dxy_pt1.IPPullVsPhi_->Fill(phi, Dxy / DxyErr);
-    dxy_pt1.IPPullVsEta_->Fill(eta, Dxy / DxyErr);
+    dxy_pt1.fillPullPlots(eta, phi, (Dxy / DxyErr));
+    //dxy_pt1.IPPullVsPhi_->Fill(phi, Dxy / DxyErr);
+    //dxy_pt1.IPPullVsEta_->Fill(eta, Dxy / DxyErr);
 
     dz_pt1.IP_->Fill(Dz);
     dz_pt1.IPVsPhi_->Fill(phi, Dz);
@@ -518,8 +558,9 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dz_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, DzErr);
 
     dz_pt1.IPPull_->Fill(Dz / DzErr);
-    dz_pt1.IPPullVsPhi_->Fill(phi, Dz / DzErr);
-    dz_pt1.IPPullVsEta_->Fill(eta, Dz / DzErr);
+    dz_pt1.fillPullPlots(eta, phi, (Dz / DzErr));
+    //dz_pt1.IPPullVsPhi_->Fill(phi, Dz / DzErr);
+    //dz_pt1.IPPullVsEta_->Fill(eta, Dz / DzErr);
 
     if (pt < 10.)
       continue;
@@ -538,8 +579,9 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dxy_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, DxyErr);
 
     dxy_pt10.IPPull_->Fill(Dxy / DxyErr);
-    dxy_pt10.IPPullVsPhi_->Fill(phi, Dxy / DxyErr);
-    dxy_pt10.IPPullVsEta_->Fill(eta, Dxy / DxyErr);
+    dxy_pt10.fillPullPlots(eta, phi, (Dxy / DxyErr));
+    //dxy_pt10.IPPullVsPhi_->Fill(phi, Dxy / DxyErr);
+    //dxy_pt10.IPPullVsEta_->Fill(eta, Dxy / DxyErr);
 
     dz_pt10.IP_->Fill(Dz);
     dz_pt10.IPVsPhi_->Fill(phi, Dz);
@@ -552,8 +594,9 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dz_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, DzErr);
 
     dz_pt10.IPPull_->Fill(Dz / DzErr);
-    dz_pt10.IPPullVsPhi_->Fill(phi, Dz / DzErr);
-    dz_pt10.IPPullVsEta_->Fill(eta, Dz / DzErr);
+    dz_pt10.fillPullPlots(eta, phi, (Dz / DzErr));
+    //dz_pt10.IPPullVsPhi_->Fill(phi, Dz / DzErr);
+    //dz_pt10.IPPullVsEta_->Fill(eta, Dz / DzErr);
   }
   ntracks->Fill(float(nTracks));
   sumpt->Fill(sumPT);
