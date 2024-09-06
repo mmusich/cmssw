@@ -9,9 +9,14 @@ from RecoTracker.TkSeedingLayers.TTRHBuilderWithoutAngle4PixelTriplets_cfi impor
 #TransientTRH builder with template
 from RecoLocalTracker.SiPixelRecHits.pixelCPEFastESProducerPhase1_cfi import *
 from RecoLocalTracker.SiPixelRecHits.pixelCPEFastESProducerPhase2_cfi import *
+from RecoLocalTracker.SiPixelRecHits.pixelCPEFastParamsESProducerAlpakaPhase1_cfi import *
+from RecoLocalTracker.SiPixelRecHits.pixelCPEFastParamsESProducerAlpakaPhase2_cfi import *
+from RecoLocalTracker.SiPixelRecHits.pixelCPEFastParamsESProducerAlpakaHIonPhase1_cfi import *
 from RecoLocalTracker.SiPixelRecHits.PixelCPETemplateReco_cfi import *
 from RecoLocalTracker.SiPixelRecHits.PixelCPEClusterRepair_cfi import *
 from RecoLocalTracker.Phase2TrackerRecHits.Phase2StripCPEESProducer_cfi import *
 from RecoTracker.TransientTrackingRecHit.TTRHBuilderWithTemplate_cfi import *
 
 from RecoLocalTracker.SiPixelRecHits.SiPixelTemplateStoreESProducer_cfi import *
+
+

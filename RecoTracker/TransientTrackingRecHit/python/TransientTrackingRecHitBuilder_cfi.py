@@ -11,6 +11,9 @@ ttrhbwr =  tkTransientTrackingRecHitBuilderESProducer.clone(StripCPE = 'StripCPE
 TTRHBuilderFast = ttrhbwr.clone(ComponentName = 'WithoutAngleFast',
                                 PixelCPE = 'PixelCPEFast')
 
+TTRHBuilderFastParams = ttrhbwr.clone(ComponentName = 'WithoutAngleFastParams',
+                                      PixelCPE = 'PixelCPEFastParams')
+
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
 trackingPhase2PU140.toModify(ttrhbwr, 
                              Phase2StripCPE = 'Phase2StripCPE',
