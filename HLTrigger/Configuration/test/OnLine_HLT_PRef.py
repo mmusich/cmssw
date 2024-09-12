@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_0_0/PRef --full --data --type PRef --unprescale --process HLTPRef --globaltag auto:run3_hlt_PRef --input file:RelVal_Raw_PRef_DATA.root
 
-# /dev/CMSSW_14_0_0/PRef/V174 (CMSSW_14_0_11)
+# /dev/CMSSW_14_0_0/PRef/V175 (CMSSW_14_0_11)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLTPRef" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_0_0/PRef/V174")
+  tableName = cms.string("/dev/CMSSW_14_0_0/PRef/V175")
 )
 
 process.HLTIter4PSetTrajectoryBuilderIT = cms.PSet( 
@@ -11177,8 +11177,8 @@ process.hltParticleFlowSuperClusterECALL1Seeded = cms.EDProducer( "PFECALSuperCl
     thresh_PFClusterES = cms.double( 0.5 ),
     seedThresholdIsET = cms.bool( True ),
     isOOTCollection = cms.bool( False ),
-    barrelRecHits = cms.InputTag( 'ecalRecHit','EcalRecHitsEE' ),
-    endcapRecHits = cms.InputTag( 'ecalRecHit','EcalRecHitsEB' ),
+    barrelRecHits = cms.InputTag( "" ),
+    endcapRecHits = cms.InputTag( "" ),
     PFSuperClusterCollectionEndcapWithPreshower = cms.string( "hltParticleFlowSuperClusterECALEndcapWithPreshower" ),
     dropUnseedable = cms.bool( False ),
     ClusteringType = cms.string( "Mustache" )
