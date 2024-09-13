@@ -657,12 +657,38 @@ void FitPVResiduals(TString namesandlabels,
     timer.Continue();
   }
 
+  // Lambda function to determine the effective number of entries
+  auto getEffectiveEntries = [](TH1 *hist) -> double {
+    if (!hist) {
+      std::cerr << "Invalid histogram pointer!" << std::endl;
+      return 0.;
+    }
+
+    double entries = hist->GetEntries() / hist->GetNbinsX();
+
+    // Check if the histogram was hadded (entries != 1 indicates potential hadding)
+    if (entries != 1) {
+      // If the sum of weights is not equal to effective entries, it suggests that the histogram was weighted
+      if (hist->GetSumOfWeights() != hist->GetEffectiveEntries()) {
+        entries = 1.;  // Assuming overall sum of weights is 1 (lumi-weighted histograms)
+      }
+    }
+
+    if (isDebugMode) {
+      std::cout << "name:" << hist->GetName() << " bins:" << hist->GetNbinsX() << " sumW:" << hist->GetSumOfWeights()
+                << " effective entries:" << hist->GetEffectiveEntries() << " returned entries:" << entries << std::endl;
+    }
+
+    return entries;
+  };
+
   for (Int_t i = 0; i < nFiles_; i++) {
     fins[i]->cd("PVValidation/EventFeatures/");
 
     if (gDirectory->GetListOfKeys()->Contains("etaMax")) {
       gDirectory->GetObject("etaMax", theEtaHistos[i]);
-      theEtaMax_[i] = theEtaHistos[i]->GetBinContent(1) / theEtaHistos[i]->GetEntries();
+      double entries = getEffectiveEntries(theEtaHistos[i]);
+      theEtaMax_[i] = theEtaHistos[i]->GetBinContent(1) / entries;
       std::cout << "File n. " << i << " has theEtaMax[" << i << "] = " << theEtaMax_[i] << std::endl;
     } else {
       theEtaMax_[i] = 2.5;
@@ -671,7 +697,8 @@ void FitPVResiduals(TString namesandlabels,
 
     if (gDirectory->GetListOfKeys()->Contains("nbins")) {
       gDirectory->GetObject("nbins", thebinsHistos[i]);
-      theNBINS[i] = thebinsHistos[i]->GetBinContent(1) / thebinsHistos[i]->GetEntries();
+      double entries = getEffectiveEntries(thebinsHistos[i]);
+      theNBINS[i] = thebinsHistos[i]->GetBinContent(1) / entries;
       std::cout << "File n. " << i << " has theNBINS[" << i << "] = " << theNBINS[i] << std::endl;
     } else {
       theNBINS[i] = 48.;
@@ -680,7 +707,8 @@ void FitPVResiduals(TString namesandlabels,
 
     if (gDirectory->GetListOfKeys()->Contains("nladders")) {
       gDirectory->GetObject("nladders", theLaddersHistos[i]);
-      theLadders[i] = theLaddersHistos[i]->GetBinContent(1) / theLaddersHistos[i]->GetEntries();
+      double entries = getEffectiveEntries(theLaddersHistos[i]);
+      theLadders[i] = theLaddersHistos[i]->GetBinContent(1) / entries;
       std::cout << "File n. " << i << " has theNLadders[" << i << "] = " << theLadders[i] << std::endl;
     } else {
       theLadders[i] = -1.;
@@ -689,7 +717,8 @@ void FitPVResiduals(TString namesandlabels,
 
     if (gDirectory->GetListOfKeys()->Contains("nModZ")) {
       gDirectory->GetObject("nModZ", theModZHistos[i]);
-      theModZ[i] = theModZHistos[i]->GetBinContent(1) / theModZHistos[i]->GetEntries();
+      double entries = getEffectiveEntries(theModZHistos[i]);
+      theModZ[i] = theModZHistos[i]->GetBinContent(1) / entries;
       std::cout << "File n. " << i << " has theNModZ[" << i << "] = " << theModZ[i] << std::endl;
     } else {
       theModZ[i] = -1.;
@@ -698,10 +727,10 @@ void FitPVResiduals(TString namesandlabels,
 
     if (gDirectory->GetListOfKeys()->Contains("pTinfo")) {
       gDirectory->GetObject("pTinfo", thePtInfoHistos[i]);
-      thePTBINS[i] = thePtInfoHistos[i]->GetBinContent(1) * 3. / thePtInfoHistos[i]->GetEntries();
-      ;
-      thePtMin[i] = thePtInfoHistos[i]->GetBinContent(2) * 3. / thePtInfoHistos[i]->GetEntries();
-      thePtMax[i] = thePtInfoHistos[i]->GetBinContent(3) * 3. / thePtInfoHistos[i]->GetEntries();
+      double entries = getEffectiveEntries(thePtInfoHistos[i]);
+      thePTBINS[i] = thePtInfoHistos[i]->GetBinContent(1) / entries;
+      thePtMin[i] = thePtInfoHistos[i]->GetBinContent(2) / entries;
+      thePtMax[i] = thePtInfoHistos[i]->GetBinContent(3) / entries;
       std::cout << "File n. " << i << " has thePTBINS[" << i << "] = " << thePTBINS[i] << " pT min:  " << thePtMin[i]
                 << " pT max: " << thePtMax[i] << std::endl;
     } else {
@@ -727,8 +756,64 @@ void FitPVResiduals(TString namesandlabels,
     gDirectory->GetObject("h_probeRefitVSigXY", dxySigRefit[i]);
     gDirectory->GetObject("h_probeRefitVSigZ", dzSigRefit[i]);
 
-    for (Int_t j = 0; j < theNBINS[i]; j++) {
+    std::cout << "before the loop we are using " << theNBINS[i] << " bins" << std::endl;
+
+    for (Int_t j = 0; j < Int_t(theNBINS[i]); j++) {
       if (stdres) {
+        std::cout << "This is the bin " << j << std::endl;
+
+        // Define full path for the "Abs_Transv_Phi_Residuals" histograms
+        std::string phiResidualsPath = "PVValidation/Abs_Transv_Phi_Residuals/";
+
+        fins[i]->cd(phiResidualsPath.c_str());
+
+        // dxyPhiResiduals
+        std::string dxyPhiName = Form("%shisto_dxy_phi_plot%i", phiResidualsPath.c_str(), j);
+        gDirectory->GetObject(Form("histo_dxy_phi_plot%i", j), dxyPhiResiduals[i][j]);
+        std::cout << dxyPhiName << ": " << (dxyPhiResiduals[i][j] ? "Loaded successfully" : "Null pointer!")
+                  << std::endl;
+
+        // dxPhiResiduals
+        std::string dxPhiName = Form("%shisto_dx_phi_plot%i", phiResidualsPath.c_str(), j);
+        gDirectory->GetObject(Form("histo_dx_phi_plot%i", j), dxPhiResiduals[i][j]);
+        std::cout << dxPhiName << ": " << (dxPhiResiduals[i][j] ? "Loaded successfully" : "Null pointer!") << std::endl;
+
+        // dyPhiResiduals
+        std::string dyPhiName = Form("%shisto_dy_phi_plot%i", phiResidualsPath.c_str(), j);
+        gDirectory->GetObject(Form("histo_dy_phi_plot%i", j), dyPhiResiduals[i][j]);
+        std::cout << dyPhiName << ": " << (dyPhiResiduals[i][j] ? "Loaded successfully" : "Null pointer!") << std::endl;
+
+        // Define full path for the "Abs_Transv_Eta_Residuals" histograms
+        std::string etaResidualsPath = "PVValidation/Abs_Transv_Eta_Residuals/";
+
+        fins[i]->cd(etaResidualsPath.c_str());
+
+        // dxyEtaResiduals
+        std::string dxyEtaName = Form("%shisto_dxy_eta_plot%i", etaResidualsPath.c_str(), j);
+        gDirectory->GetObject(Form("histo_dxy_eta_plot%i", j), dxyEtaResiduals[i][j]);
+        std::cout << dxyEtaName << ": " << (dxyEtaResiduals[i][j] ? "Loaded successfully" : "Null pointer!")
+                  << std::endl;
+
+        // dxEtaResiduals
+        std::string dxEtaName = Form("%shisto_dx_eta_plot%i", etaResidualsPath.c_str(), j);
+        gDirectory->GetObject(Form("histo_dx_eta_plot%i", j), dxEtaResiduals[i][j]);
+        std::cout << dxEtaName << ": " << (dxEtaResiduals[i][j] ? "Loaded successfully" : "Null pointer!") << std::endl;
+
+        // dyEtaResiduals
+        std::string dyEtaName = Form("%shisto_dy_eta_plot%i", etaResidualsPath.c_str(), j);
+        gDirectory->GetObject(Form("histo_dy_eta_plot%i", j), dyEtaResiduals[i][j]);
+        std::cout << dyEtaName << ": " << (dyEtaResiduals[i][j] ? "Loaded successfully" : "Null pointer!") << std::endl;
+
+        // For dzPhiResiduals and dzEtaResiduals, use full path for "Abs_Long_Phi_Residuals" and "Abs_Long_Eta_Residuals"
+        std::string dzPhiName = Form("PVValidation/Abs_Long_Phi_Residuals/histo_dz_phi_plot%i", j);
+        dzPhiResiduals[i][j] = (TH1F *)fins[i]->Get(dzPhiName.c_str());
+        std::cout << dzPhiName << ": " << (dzPhiResiduals[i][j] ? "Loaded successfully" : "Null pointer!") << std::endl;
+
+        std::string dzEtaName = Form("PVValidation/Abs_Long_Eta_Residuals/histo_dz_eta_plot%i", j);
+        dzEtaResiduals[i][j] = (TH1F *)fins[i]->Get(dzEtaName.c_str());
+        std::cout << dzEtaName << ": " << (dzEtaResiduals[i][j] ? "Loaded successfully" : "Null pointer!") << std::endl;
+
+        /*
         // DCA absolute residuals
 
         fins[i]->cd("PVValidation/Abs_Transv_Phi_Residuals/");
@@ -743,6 +828,7 @@ void FitPVResiduals(TString namesandlabels,
 
         dzPhiResiduals[i][j] = (TH1F *)fins[i]->Get(Form("PVValidation/Abs_Long_Phi_Residuals/histo_dz_phi_plot%i", j));
         dzEtaResiduals[i][j] = (TH1F *)fins[i]->Get(Form("PVValidation/Abs_Long_Eta_Residuals/histo_dz_eta_plot%i", j));
+	*/
 
         // DCA normalized residuals
         dxyNormPhiResiduals[i][j] =
@@ -815,7 +901,7 @@ void FitPVResiduals(TString namesandlabels,
 
     // residuals vs pT
 
-    for (Int_t l = 0; l < thePTBINS[i] - 1; l++) {
+    for (Int_t l = 0; l < Int_t(thePTBINS[i] - 1); l++) {
       dxyPtResiduals[i][l] = (TH1F *)fins[i]->Get(Form("PVValidation/Abs_Transv_pT_Residuals/histo_dxy_pT_plot%i", l));
       dzPtResiduals[i][l] = (TH1F *)fins[i]->Get(Form("PVValidation/Abs_Long_pT_Residuals/histo_dz_pT_plot%i", l));
 
@@ -3241,7 +3327,7 @@ std::pair<params::measurement, params::measurement> fitResidualsCB(TH1 *hist)
 void FillTrendPlot(TH1F *trendPlot, TH1F *residualsPlot[100], params::estimator fitPar_, TString var_, Int_t myBins_)
 //*************************************************************
 {
-  //std::cout<<"trendPlot name: "<<trendPlot->GetName()<<std::endl;
+  std::cout << "trendPlot name: " << trendPlot->GetName() << std::endl;
 
   // float phiInterval = (360.)/myBins_;
   float phiInterval = (2 * TMath::Pi() / myBins_);
