@@ -42,7 +42,8 @@ public:
     dqm::reco::MonitorElement *IPVsEtaVsPhi_, *IPErrVsEtaVsPhi_;
 
     void bookIPMonitor(DQMStore::IBooker &, const edm::ParameterSet &);
-    void fillPullPlots(const double &eta, const double &phi, const double &pull);
+    void fillPullInfo(const double &eta, const double &phi, const double &pull);
+    void fillPullPlots();
 
   private:
     // Vectors to store the sums and sums of squares for each bin
@@ -53,6 +54,17 @@ public:
     std::vector<double> sumEta_;
     std::vector<double> sumEtaSq_;
     std::vector<int> countEta_;
+
+    // Function to clear all the vectors
+    void clearCounters() {
+      sumPhi_.clear();
+      sumPhiSq_.clear();
+      countPhi_.clear();
+
+      sumEta_.clear();
+      sumEtaSq_.clear();
+      countEta_.clear();
+    }
 
     int PhiBin_, EtaBin_;
     double PhiMin_, PhiMax_, EtaMin_, EtaMax_;

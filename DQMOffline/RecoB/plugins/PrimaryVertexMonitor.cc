@@ -374,7 +374,7 @@ void PrimaryVertexMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
                                  3);
 }
 
-void PrimaryVertexMonitor::IPMonitoring::fillPullPlots(const double& eta, const double& phi, const double& pull) {
+void PrimaryVertexMonitor::IPMonitoring::fillPullInfo(const double& eta, const double& phi, const double& pull) {
   // Calculate the bin index
   int phiBinIdx = static_cast<int>((phi - PhiMin_) / (PhiMax_ - PhiMin_) * PhiBin_);
   int etaBinIdx = static_cast<int>((eta - EtaMin_) / (EtaMax_ - EtaMin_) * EtaBin_);
@@ -384,11 +384,6 @@ void PrimaryVertexMonitor::IPMonitoring::fillPullPlots(const double& eta, const 
     sumPhi_[phiBinIdx] += pull;
     sumPhiSq_[phiBinIdx] += pull * pull;
     countPhi_[phiBinIdx]++;
-
-    // Compute RMS and update the TProfile
-    double meanPhi = sumPhi_[phiBinIdx] / countPhi_[phiBinIdx];
-    double rmsPhi = std::sqrt((sumPhiSq_[phiBinIdx] / countPhi_[phiBinIdx]) - (meanPhi * meanPhi));
-    IPPullVsPhi_->Fill(PhiMin_ + (phiBinIdx + 0.5) * (PhiMax_ - PhiMin_) / PhiBin_, rmsPhi);
   }
 
   // Accumulate sums and counts for eta
@@ -396,12 +391,24 @@ void PrimaryVertexMonitor::IPMonitoring::fillPullPlots(const double& eta, const 
     sumEta_[etaBinIdx] += pull;
     sumEtaSq_[etaBinIdx] += pull * pull;
     countEta_[etaBinIdx]++;
+  }
+}
 
-    // Compute RMS and update the TProfile
+void PrimaryVertexMonitor::IPMonitoring::fillPullPlots() {
+  // Compute RMS and update the TProfile
+  for (int phiBinIdx = 0; phiBinIdx <= PhiBin_; phiBinIdx++) {
+    double meanPhi = sumPhi_[phiBinIdx] / countPhi_[phiBinIdx];
+    double rmsPhi = std::sqrt((sumPhiSq_[phiBinIdx] / countPhi_[phiBinIdx]) - (meanPhi * meanPhi));
+    IPPullVsPhi_->Fill(PhiMin_ + (phiBinIdx + 0.5) * (PhiMax_ - PhiMin_) / PhiBin_, rmsPhi);
+  }
+
+  // Compute RMS and update the TProfile
+  for (int etaBinIdx = 0; etaBinIdx <= EtaBin_; etaBinIdx++) {
     double meanEta = sumEta_[etaBinIdx] / countEta_[etaBinIdx];
     double rmsEta = std::sqrt((sumEtaSq_[etaBinIdx] / countEta_[etaBinIdx]) - (meanEta * meanEta));
     IPPullVsEta_->Fill(EtaMin_ + (etaBinIdx + 0.5) * (EtaMax_ - EtaMin_) / EtaBin_, rmsEta);
   }
+  clearCounters();
 }
 
 void PrimaryVertexMonitor::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -543,9 +550,7 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dxy_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, DxyErr);
 
     dxy_pt1.IPPull_->Fill(Dxy / DxyErr);
-    dxy_pt1.fillPullPlots(eta, phi, (Dxy / DxyErr));
-    //dxy_pt1.IPPullVsPhi_->Fill(phi, Dxy / DxyErr);
-    //dxy_pt1.IPPullVsEta_->Fill(eta, Dxy / DxyErr);
+    dxy_pt1.fillPullInfo(eta, phi, (Dxy / DxyErr));
 
     dz_pt1.IP_->Fill(Dz);
     dz_pt1.IPVsPhi_->Fill(phi, Dz);
@@ -558,9 +563,7 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dz_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, DzErr);
 
     dz_pt1.IPPull_->Fill(Dz / DzErr);
-    dz_pt1.fillPullPlots(eta, phi, (Dz / DzErr));
-    //dz_pt1.IPPullVsPhi_->Fill(phi, Dz / DzErr);
-    //dz_pt1.IPPullVsEta_->Fill(eta, Dz / DzErr);
+    dz_pt1.fillPullInfo(eta, phi, (Dz / DzErr));
 
     if (pt < 10.)
       continue;
@@ -579,9 +582,7 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dxy_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, DxyErr);
 
     dxy_pt10.IPPull_->Fill(Dxy / DxyErr);
-    dxy_pt10.fillPullPlots(eta, phi, (Dxy / DxyErr));
-    //dxy_pt10.IPPullVsPhi_->Fill(phi, Dxy / DxyErr);
-    //dxy_pt10.IPPullVsEta_->Fill(eta, Dxy / DxyErr);
+    dxy_pt10.fillPullInfo(eta, phi, (Dxy / DxyErr));
 
     dz_pt10.IP_->Fill(Dz);
     dz_pt10.IPVsPhi_->Fill(phi, Dz);
@@ -594,12 +595,18 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
     dz_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, DzErr);
 
     dz_pt10.IPPull_->Fill(Dz / DzErr);
-    dz_pt10.fillPullPlots(eta, phi, (Dz / DzErr));
-    //dz_pt10.IPPullVsPhi_->Fill(phi, Dz / DzErr);
-    //dz_pt10.IPPullVsEta_->Fill(eta, Dz / DzErr);
+    dz_pt10.fillPullInfo(eta, phi, (Dz / DzErr));
+    ;
   }
   ntracks->Fill(float(nTracks));
   sumpt->Fill(sumPT);
+
+  // now fill the pull plots (once per event)
+  dxy_pt1.fillPullPlots();
+  dxy_pt10.fillPullPlots();
+
+  dz_pt1.fillPullPlots();
+  dz_pt10.fillPullPlots();
 }
 
 void PrimaryVertexMonitor::vertexPlots(const Vertex& v, const BeamSpot& beamSpot, int i) {
