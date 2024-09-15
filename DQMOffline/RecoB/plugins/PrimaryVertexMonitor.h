@@ -26,8 +26,9 @@
 class PrimaryVertexMonitor : public DQMEDAnalyzer {
 public:
   explicit PrimaryVertexMonitor(const edm::ParameterSet &pSet);
-
   ~PrimaryVertexMonitor() override = default;
+
+  static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
 
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
   void analyze(const edm::Event &, const edm::EventSetup &) override;

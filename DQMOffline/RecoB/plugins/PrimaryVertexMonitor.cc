@@ -596,7 +596,6 @@ void PrimaryVertexMonitor::pvTracksPlots(const Vertex& v) {
 
     dz_pt10.IPPull_->Fill(Dz / DzErr);
     dz_pt10.fillPullInfo(eta, phi, (Dz / DzErr));
-    ;
   }
   ntracks->Fill(float(nTracks));
   sumpt->Fill(sumPT);
@@ -663,6 +662,37 @@ void PrimaryVertexMonitor::vertexPlots(const Vertex& v, const BeamSpot& beamSpot
       }
     }
   }
+}
+
+void PrimaryVertexMonitor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<std::string>("TopFolderName", "OfflinePV");
+  desc.add<std::string>("AlignmentLabel", "Alignment");
+  desc.add<int>("ndof", 4);
+  desc.add<bool>("useHPforAlignmentPlots", true);
+  desc.add<InputTag>("vertexLabel", edm::InputTag("offlinePrimaryVertices"));
+  desc.add<InputTag>("beamSpotLabel", edm::InputTag("offlineBeamSpot"));
+  desc.add<double>("PUMax", 80.0);
+  desc.add<double>("Xpos", 0.1);
+  desc.add<double>("Ypos", 0.0);
+  desc.add<int>("TkSizeBin", 100);
+  desc.add<double>("TkSizeMin", -0.5);
+  desc.add<double>("TkSizeMax", 499.5);
+  desc.add<int>("DxyBin", 100);
+  desc.add<double>("DxyMin", -5000.0);
+  desc.add<double>("DxyMax", 5000.0);
+  desc.add<int>("DzBin", 100);
+  desc.add<double>("DzMin", -2000.0);
+  desc.add<double>("DzMax", 2000.0);
+  desc.add<int>("PhiBin", 32);
+  desc.add<double>("PhiMin", -M_PI);
+  desc.add<double>("PhiMax", M_PI);
+  desc.add<int>("EtaBin", 26);
+  desc.add<double>("EtaMin", 2.5);
+  desc.add<double>("EtaMax", -2.5);
+  desc.add<int>("PhiBin2D", 12);
+  desc.add<int>("EtaBin2D", 8);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 //define this as a plug-in
