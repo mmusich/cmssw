@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_0_0/HIon --full --data --type HIon --unprescale --process HLTHIon --globaltag auto:run3_hlt_HIon --input file:RelVal_Raw_HIon_DATA.root
 
-# /dev/CMSSW_14_0_0/HIon/V177 (CMSSW_14_0_11)
+# /dev/CMSSW_14_0_0/HIon/V178 (CMSSW_14_0_11)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLTHIon" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_0_0/HIon/V177")
+  tableName = cms.string("/dev/CMSSW_14_0_0/HIon/V178")
 )
 
 process.HLTIter4PSetTrajectoryBuilderIT = cms.PSet( 
@@ -9475,7 +9475,7 @@ process.hltSiPixelTracksSoACompareGPUvsCPUPPOnAA = cms.EDProducer( "SiPixelHIonP
     topFolderName = cms.string( "SiPixelHeterogeneous/PixelTrackCompareDeviceVSHost" ),
     useQualityCut = cms.bool( True ),
     minQuality = cms.string( "loose" ),
-    deltaR2cut = cms.double( 1.0E-4 )
+    deltaR2cut = cms.double( 4.0E-4 )
 )
 process.hltPixelVertexSoAMonitorCPUPPOnAA = cms.EDProducer( "SiPixelMonitorVertexSoAAlpaka",
     pixelVertexSrc = cms.InputTag( "hltPixelVerticesPPOnAASoASerialSync" ),
