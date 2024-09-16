@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_0_0/PRef --full --data --type PRef --unprescale --process HLTPRef --globaltag auto:run3_hlt_PRef --input file:RelVal_Raw_PRef_DATA.root
 
-# /dev/CMSSW_14_0_0/PRef/V175 (CMSSW_14_0_11)
+# /dev/CMSSW_14_0_0/PRef/V177 (CMSSW_14_0_11)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLTPRef" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_0_0/PRef/V175")
+  tableName = cms.string("/dev/CMSSW_14_0_0/PRef/V177")
 )
 
 process.HLTIter4PSetTrajectoryBuilderIT = cms.PSet( 
@@ -3354,7 +3354,7 @@ process.hltESPPFRecHitHCALTopology = cms.ESProducer( "PFRecHitHCALTopologyESProd
   appendToDataLabel = cms.string( "" ),
   alpaka = cms.untracked.PSet(  backend = cms.untracked.string( "" ) )
 )
-process.hltESPPixelCPEFastHIon = cms.ESProducer( "PixelCPEFastESProducerHIonPhase1",
+process.hltESPPixelCPEFastParamsHIonPhase1 = cms.ESProducer( "PixelCPEFastParamsESProducerAlpakaHIonPhase1@alpaka",
   LoadTemplatesFromDB = cms.bool( True ),
   Alpha2Order = cms.bool( True ),
   ClusterProbComputationFlag = cms.int32( 0 ),
@@ -3380,7 +3380,7 @@ process.hltESPPixelCPEFastHIon = cms.ESProducer( "PixelCPEFastESProducerHIonPhas
   EdgeClusterErrorY = cms.double( 85.0 ),
   UseErrorsFromTemplates = cms.bool( True ),
   TruncatePixelCharge = cms.bool( True ),
-  ComponentName = cms.string( "hltESPPixelCPEFastHIon" ),
+  ComponentName = cms.string( "PixelCPEFastParamsHIonPhase1" ),
   MagneticFieldRecord = cms.ESInputTag( "","" ),
   appendToDataLabel = cms.string( "" )
 )
