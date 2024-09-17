@@ -1,0 +1,141 @@
+[hpeterse@lxplus9105 379525]$ ./cmsRun validation_cfg.py config=validation.json
+Saving the output at /eos/cms/store/group/alca_trackeralign/AlignmentValidation/AlignmentValidation/2024_CDE_ReReco_mp3949_splitV_379525/SplitV/single/GT/compare2024/379525/SplitV.root
+Done
+2024-09-16 03:02:38.987225: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+
+
+A fatal system signal has occurred: segmentation violation
+The following is the call stack containing the origin of the signal.
+
+Mon Sep 16 03:02:43 CEST 2024
+Thread 16 (Thread 0x7f0c2be02640 (LWP 947903) "cmsRun"):
+#0  0x00007f0c5e88679a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0c5e891c48 in __new_sem_wait_slow64.constprop.0 () from /lib64/libc.so.6
+#2  0x00007f0c5979cdc6 in XrdCl::JobManager::RunJobs() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#3  0x00007f0c5979ce79 in RunRunnerThread () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 15 (Thread 0x7f0c2c603640 (LWP 947902) "cmsRun"):
+#0  0x00007f0c5e88679a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0c5e891c48 in __new_sem_wait_slow64.constprop.0 () from /lib64/libc.so.6
+#2  0x00007f0c5979cdc6 in XrdCl::JobManager::RunJobs() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#3  0x00007f0c5979ce79 in RunRunnerThread () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 14 (Thread 0x7f0c2ce04640 (LWP 947901) "cmsRun"):
+#0  0x00007f0c5e88679a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0c5e891c48 in __new_sem_wait_slow64.constprop.0 () from /lib64/libc.so.6
+#2  0x00007f0c5979cdc6 in XrdCl::JobManager::RunJobs() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#3  0x00007f0c5979ce79 in RunRunnerThread () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 13 (Thread 0x7f0c2d605640 (LWP 947900) "cmsRun"):
+#0  0x00007f0c5e8d4075 in clock_nanosleep@GLIBC_2.2.5 () from /lib64/libc.so.6
+#1  0x00007f0c5e8d8c87 in nanosleep () from /lib64/libc.so.6
+#2  0x00007f0c59a1fd78 in XrdSysTimer::Wait(int) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59711d5c in XrdCl::TaskManager::RunTasks() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#4  0x00007f0c59711e99 in RunRunnerThread () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdCl.so.3
+#5  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 12 (Thread 0x7f0c2de06640 (LWP 947899) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 11 (Thread 0x7f0c2e607640 (LWP 947898) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 10 (Thread 0x7f0c2ee08640 (LWP 947897) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 9 (Thread 0x7f0c2f609640 (LWP 947896) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 8 (Thread 0x7f0c2fe0a640 (LWP 947895) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 7 (Thread 0x7f0c3060b640 (LWP 947894) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 6 (Thread 0x7f0c30e0c640 (LWP 947893) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 5 (Thread 0x7f0c3160d640 (LWP 947892) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 4 (Thread 0x7f0c31e0e640 (LWP 947891) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 3 (Thread 0x7f0c3260f640 (LWP 947890) "cmsRun"):
+#0  0x00007f0c5e90e21e in epoll_wait () from /lib64/libc.so.6
+#1  0x00007f0c59a1a112 in XrdSys::IOEvents::PollE::Begin(XrdSysSemaphore*, int&, char const**) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#2  0x00007f0c59a1607d in XrdSys::IOEvents::BootStrap::Start(void*) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#3  0x00007f0c59a1f487 in XrdSysThread_Xeq () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libXrdUtils.so.3
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 2 (Thread 0x7f0c32eb5640 (LWP 947800) "cmsRun"):
+#0  0x00007f0c5e8d8a3f in wait4 () from /lib64/libc.so.6
+#1  0x00007f0c5a572177 in edm::service::cmssw_stacktrace_fork() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/pluginFWCoreServicesPlugins.so
+#2  0x00007f0c5a57441a in edm::service::InitRootHandlers::stacktraceHelperThread() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/pluginFWCoreServicesPlugins.so
+#3  0x00007f0c5ecd84d3 in std::execute_native_thread_routine (__p=0x7f0c4ceaabd0) at ../../../../../libstdc++-v3/src/c++11/thread.cc:82
+#4  0x00007f0c5e889c02 in start_thread () from /lib64/libc.so.6
+#5  0x00007f0c5e90ec40 in clone3 () from /lib64/libc.so.6
+Thread 1 (Thread 0x7f0c5f6c8640 (LWP 947722) "cmsRun"):
+#0  0x00007f0c5e9019ff in poll () from /lib64/libc.so.6
+#1  0x00007f0c5a5bf09f in full_read.constprop () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/pluginFWCoreServicesPlugins.so
+#2  0x00007f0c5a5744ec in edm::service::InitRootHandlers::stacktraceFromThread() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/pluginFWCoreServicesPlugins.so
+#3  0x00007f0c5a574670 in sig_dostack_then_abort () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/pluginFWCoreServicesPlugins.so
+#4  <signal handler called>
+#5  0x00007f0c5ff8ba47 in TStreamerInfo::ForceWriteInfo(TFile*, bool) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libRIO.so
+#6  0x00007f0c607642ae in TTree::BuildStreamerInfo(TClass*, void*, bool) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libTree.so
+#7  0x00007f0c60775f72 in TTree::BronchExec(char const*, char const*, void*, bool, int, int) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/external/el9_amd64_gcc12/lib/libTree.so
+#8  0x00007f0bffa4acf5 in SplitVertexResolution::beginJob() () from /afs/cern.ch/cms/CAF/CMSALCA/ALCA_TRACKERALIGN/data/commonValidation/legacy_2024_releases/CMSSW_14_0_14/lib/el9_amd64_gcc12/pluginAlignmentOfflinevalidationPlugins.so
+#9  0x00007f0c60c1d322 in edm::Worker::beginJob() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/libFWCoreFramework.so
+#10 0x00007f0c60c21a59 in edm::WorkerManager::beginJob(edm::ProductRegistry const&, edm::eventsetup::ESRecordsToProductResolverIndices const&, edm::ProcessBlockHelperBase const&) () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/libFWCoreFramework.so
+#11 0x00007f0c60b4079f in edm::EventProcessor::beginJob() () from /cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_14_0_14/lib/el9_amd64_gcc12/libFWCoreFramework.so
+#12 0x000000000040746c in tbb::detail::d1::task_arena_function<main::{lambda()#1}::operator()() const::{lambda()#1}, void>::operator()() const ()
+#13 0x00007f0c5fd8096d in tbb::detail::r1::task_arena_impl::execute (ta=..., d=...) at /data/cmsbld/jenkins/workspace/auto-builds/CMSSW_14_0_3-el9_amd64_gcc12/build/CMSSW_14_0_3-build/BUILD/el9_amd64_gcc12/external/tbb/v2021.9.0-d33db04d4520c6ff791eab900054e986/tbb-v2021.9.0/src/tbb/arena.cpp:688
+#14 0x0000000000408ee2 in main::{lambda()#1}::operator()() const ()
+#15 0x000000000040517c in main ()
+
+Current Modules:
+
+Module: none (crashed)
+
+A fatal system signal has occurred: segmentation violation
+Segmentation fault (core dumped)
+[hpeterse@lxplus9105 379525]$ 

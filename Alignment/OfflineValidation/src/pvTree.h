@@ -1,12 +1,13 @@
 #ifndef Alignment_OfflineValidation_pvTree_h
 #define Alignment_OfflineValidation_pvTree_h
 
+#include "TObject.h"
 #include "TROOT.h"
 #include "TMath.h"
 #include <vector>
 #include <string>
 
-class pvCand {
+class pvCand : public TObject {
 public:
   int nTrks;
   int ipos;
@@ -51,7 +52,7 @@ public:
   ClassDef(pvCand, 1)
 };
 
-class pvEvent {
+class pvEvent : public TObject {
 public:
   int runNumber;
   int luminosityBlockNumber;

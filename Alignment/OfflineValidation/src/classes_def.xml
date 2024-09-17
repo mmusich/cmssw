@@ -1,10 +1,11 @@
 <lcgdict>
   <class name="TkOffTreeVariables"/>
   <class name="EopVariables"/>
-  <class name="pvCand"/>
-  <class name="pvEvent"/>
+  <class name="pvCand" persistent="true"/>
+  <class name="pvEvent" persistent="true"/>
+  <class name="std::vector<pvCand>" />
   <class name="outPVtrends"/>
-  <class name="unrolledHisto"/>
+  <class name="unrolledHisto"/>  
   <class name="std::map<TString, std::vector<double> >"/>
   <class name="std::map<TString, std::vector<unrolledHisto> >"/>
   <class name="SmartSelectionMonitor"/>

@@ -967,7 +967,11 @@ void SplitVertexResolution::beginJob() {
                                         myNVtx_bins_.data());
 
   tree_ = outfile_->make<TTree>("pvTree", "pvTree");
+  std::cout << __FILE__ << "  " << __PRETTY_FUNCTION__ << " - L" << __LINE__ << std::endl;
+
   tree_->Branch("event", &event_, 64000, 2);
+
+  std::cout << __FILE__ << "  " << __PRETTY_FUNCTION__ << " - L" << __LINE__ << std::endl;
 }
 
 //*************************************************************

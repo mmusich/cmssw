@@ -1,0 +1,18 @@
+{
+    "output": "/eos/cms/store/group/alca_trackeralign/AlignmentValidation/AlignmentValidation/2024_CDE_ReReco_mp3949_splitV_379525/SplitV/single/GT/compare2024/379525",
+    "alignment": {
+        "color": 1,
+        "style": 2,
+        "title": "Alignment during data taking",
+        "globaltag": "140X_dataRun3_Prompt_v4"
+    },
+    "validation": {
+        "maxevents": 50000,
+        "trackcollection": "ALCARECOTkAlJetHT",
+        "HLTSelection": false,
+        "triggerBits": "HLT_*HT*",
+        "IOV": 379525,
+        "dataset": "/afs/cern.ch/user/h/hpeterse/commonValidation/alignmentObjects/hpeterse/filelists_2024_rereco_29th_July_validation/JetMET0_Run2024CDE-TkAlJetHT-PromptReco-v12_ALCARECO/JetMET0_Run2024CDE-TkAlJetHT-PromptReco-v12_ALCARECO_since379525.txt",
+        "goodlumi": "/afs/cern.ch/user/h/hpeterse/commonValidation/alignmentObjects/hpeterse/ReReco_2024_CDE/Collisions24_13p6TeV_378981_381594_DCSOnly_TkPx.json"
+    }
+}

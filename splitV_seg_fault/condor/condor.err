@@ -1,0 +1,12 @@
+
+
+A fatal system signal has occurred: segmentation violation
+The following is the call stack containing the origin of the signal.
+
+
+Current Modules:
+
+Module: none (crashed)
+
+A fatal system signal has occurred: segmentation violation
+/pool/condor/dir_3052789/run.sh: line 7:   273 Segmentation fault      (core dumped) ./cmsRun validation_cfg.py config=validation.json
