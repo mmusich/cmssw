@@ -1,23 +1,19 @@
-#include "FWCore/Framework/interface/stream/EDProducer.h"
-
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "DataFormats/SiPixelCluster/interface/SiPixelCluster.h"
 #include "DataFormats/Common/interface/DetSetVectorNew.h"
-
-#include "RecoLocalTracker/ClusterParameterEstimator/interface/PixelClusterParameterEstimator.h"
-#include "RecoLocalTracker/Records/interface/TkPixelCPERecord.h"
-
-#include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
-#include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
+#include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/GeometryVector/interface/VectorUtil.h"
-
+#include "DataFormats/JetReco/interface/Jet.h"
+#include "DataFormats/SiPixelCluster/interface/SiPixelCluster.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/JetReco/interface/Jet.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
+#include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
+#include "RecoLocalTracker/ClusterParameterEstimator/interface/PixelClusterParameterEstimator.h"
+#include "RecoLocalTracker/Records/interface/TkPixelCPERecord.h"
 
 #include <algorithm>
 #include <vector>
@@ -26,7 +22,7 @@
 class JetCoreClusterSplitter : public edm::stream::EDProducer<> {
 public:
   JetCoreClusterSplitter(const edm::ParameterSet& iConfig);
-  ~JetCoreClusterSplitter() override;
+  ~JetCoreClusterSplitter() override = default;
   void produce(edm::Event& iEvent, const edm::EventSetup& iSetup) override;
 
 private:
@@ -50,18 +46,18 @@ private:
   edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> const tTrackingGeom_;
   edm::ESGetToken<PixelClusterParameterEstimator, TkPixelCPERecord> const tCPE_;
 
-  bool verbose;
-  double ptMin_;
-  double deltaR_;
-  double chargeFracMin_;
-  edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> pixelClusters_;
-  edm::EDGetTokenT<reco::VertexCollection> vertices_;
-  edm::EDGetTokenT<edm::View<reco::Candidate>> cores_;
-  double forceXError_;
-  double forceYError_;
-  double fractionalWidth_;
-  double chargePerUnit_;
-  double centralMIPCharge_;
+  const bool verbose;
+  const double ptMin_;
+  const double deltaR_;
+  const double chargeFracMin_;
+  const edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster>> pixelClusters_;
+  const edm::EDGetTokenT<reco::VertexCollection> vertices_;
+  const edm::EDGetTokenT<edm::View<reco::Candidate>> cores_;
+  const double forceXError_;
+  const double forceYError_;
+  const double fractionalWidth_;
+  const double chargePerUnit_;
+  const double centralMIPCharge_;
 };
 
 JetCoreClusterSplitter::JetCoreClusterSplitter(const edm::ParameterSet& iConfig)
@@ -85,9 +81,8 @@ JetCoreClusterSplitter::JetCoreClusterSplitter(const edm::ParameterSet& iConfig)
   produces<edmNew::DetSetVector<SiPixelCluster>>();
 }
 
-JetCoreClusterSplitter::~JetCoreClusterSplitter() {}
 
-bool SortPixels(const SiPixelCluster::Pixel& i, const SiPixelCluster::Pixel& j) { return (i.adc > j.adc); }
+bool sortPixels(const SiPixelCluster::Pixel& i, const SiPixelCluster::Pixel& j) { return (i.adc > j.adc); }
 
 void JetCoreClusterSplitter::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
