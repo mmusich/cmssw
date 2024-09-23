@@ -35,7 +35,10 @@ void SeedingLayersEDProducer::fillDescriptions(edm::ConfigurationDescriptions& d
 
 void SeedingLayersEDProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   auto prod = builder_.hits(iEvent, iSetup);
-  //prod->print();
+  if (moduleDescription().moduleLabel() == "hltFullIter7MixedLayersBPPRef") {
+    //edm::LogError("SeedingLayersEDProducer") << "before calling hits" << std::endl;
+    prod->print();
+  }
 
   iEvent.put(std::move(prod));
 }

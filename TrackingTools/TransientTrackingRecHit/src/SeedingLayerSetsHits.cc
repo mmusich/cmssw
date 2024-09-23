@@ -43,7 +43,7 @@ SeedingLayerSetsHits::Hits SeedingLayerSetsHits::hits(LayerIndex layerIndex) con
 void SeedingLayerSetsHits::print() const {
   std::stringstream ss;
   ss << "SeedingLayerSetsHits with " << numberOfLayersInSet() << " layers in each LayerSets, LayerSets has " << size()
-     << " items\n";
+     << " items ";
   for (LayerSetIndex iLayers = 0; iLayers < size(); ++iLayers) {
     ss << " " << iLayers << ": ";
     SeedingLayerSet layers = operator[](iLayers);
@@ -51,7 +51,8 @@ void SeedingLayerSetsHits::print() const {
       SeedingLayer layer = layers[iLayer];
       ss << layer.name() << " (" << layer.index() << ", nhits " << layer.hits().size() << ") ";
     }
-    ss << "\n";
+    ss << " - ";
   }
-  LogDebug("SeedingLayerSetsHits") << ss.str();
+  ss << "\n";
+  edm::LogPrint("SeedingLayerSetsHits") << ss.str();
 }
