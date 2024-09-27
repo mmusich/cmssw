@@ -264,18 +264,19 @@ def checkHLTfor43774(process):
 # Adding zdc Topology producer
 def customizeHLTfor46062(process):
     """Add topology producer for ZDC"""
-
-    for esprod in esproducers_by_type(process, 'ZdcGeometryFromDBEP'):
-        process.load("Geometry.ForwardGeometry.zdcTopologyEP_cfi")
-        break
+    if not hasattr(process,'zdcTopologyEP'):
+        for esprod in esproducers_by_type(process, 'ZdcGeometryFromDBEP'):
+            process.load("Geometry.ForwardGeometry.zdcTopologyEP_cfi")
+            break
 
     return process
 
 def customizeHLTfor44576(process):
     """Ensure TrackerAdditionalParametersPerDetRcd ESProducer is run when needed"""
-    for esprod in esproducers_by_type(process, 'TrackerGeometricDetESModule'):
-        process.load("Geometry.TrackerGeometryBuilder.TrackerAdditionalParametersPerDet_cfi")
-        break
+    if not hasattr(process,'TrackerAdditionalParametersPerDetESModule'):
+        for esprod in esproducers_by_type(process, 'TrackerGeometricDetESModule'):
+            process.load("Geometry.TrackerGeometryBuilder.TrackerAdditionalParametersPerDet_cfi")
+            break
     return process
 
 def customizeHLTfor45063(process):
@@ -310,18 +311,31 @@ def customizeHLTfor45063(process):
                     prod.mvaScaleStdE = prod.mvaScaleStdEL2
                     
     for prod in producers_by_type(process, 'MuonHLTSeedMVAClassifier'):
-        delattr(prod,"mvaFileBL1")
-        delattr(prod,"mvaFileEL1")
-        delattr(prod,"mvaScaleMeanBL1")
-        delattr(prod,"mvaScaleStdBL1")
-        delattr(prod,"mvaScaleMeanEL1")
-        delattr(prod,"mvaScaleStdEL1")
-        delattr(prod,"mvaFileBL2")
-        delattr(prod,"mvaFileEL2")
-        delattr(prod,"mvaScaleMeanBL2")
-        delattr(prod,"mvaScaleStdBL2")
-        delattr(prod,"mvaScaleMeanEL2")
-        delattr(prod,"mvaScaleStdEL2")       
+        # Check and delete each attribute if it exists
+        if hasattr(prod, "mvaFileBL1"):
+            delattr(prod, "mvaFileBL1")
+        if hasattr(prod, "mvaFileEL1"):
+            delattr(prod, "mvaFileEL1")
+        if hasattr(prod, "mvaScaleMeanBL1"):
+            delattr(prod, "mvaScaleMeanBL1")
+        if hasattr(prod, "mvaScaleStdBL1"):
+            delattr(prod, "mvaScaleStdBL1")
+        if hasattr(prod, "mvaScaleMeanEL1"):
+            delattr(prod, "mvaScaleMeanEL1")
+        if hasattr(prod, "mvaScaleStdEL1"):
+            delattr(prod, "mvaScaleStdEL1")
+        if hasattr(prod, "mvaFileBL2"):
+            delattr(prod, "mvaFileBL2")
+        if hasattr(prod, "mvaFileEL2"):
+            delattr(prod, "mvaFileEL2")
+        if hasattr(prod, "mvaScaleMeanBL2"):
+            delattr(prod, "mvaScaleMeanBL2")
+        if hasattr(prod, "mvaScaleStdBL2"):
+            delattr(prod, "mvaScaleStdBL2")
+        if hasattr(prod, "mvaScaleMeanEL2"):
+            delattr(prod, "mvaScaleMeanEL2")
+        if hasattr(prod, "mvaScaleStdEL2"):
+            delattr(prod, "mvaScaleStdEL2")
                     
     return process
             
