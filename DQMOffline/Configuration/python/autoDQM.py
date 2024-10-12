@@ -97,6 +97,10 @@ autoDQM = { 'DQMMessageLogger': ['DQMMessageLoggerSeq',
                      'PostDQMOffline',
                      'DQMHarvestMuon+DQMCertMuon'],
 
+            'csc' : ['cscMonitor',
+                     'PostDQMOffline',
+                     'DQMNone'],
+
             'hcal': ['DQMOfflineHcal',
                      'PostDQMOffline',
                      'DQMHarvestHcal'],
@@ -170,9 +174,9 @@ autoDQM = { 'DQMMessageLogger': ['DQMMessageLoggerSeq',
 			 'PostDQMOffline',
 			 'HLTMonitoringClientPA'],
 
-            'express': ['@commonSiStripZeroBias+@muon+@hcal+@jetmet+@ecal',
+            'express': ['@commonSiStripZeroBias+@muon+@hcal+@jetmet+@ecal+@csc',
                         'PostDQMOffline',
-                        '@commonSiStripZeroBias+@muon+@hcal+@jetmet+@ecal'],
+                        '@commonSiStripZeroBias+@muon+@hcal+@jetmet+@ecal+@csc'],
 
             'allForPrompt': ['@common+@muon+@L1TMon+@hcal+@jetmet+@ecal+@egamma',
                              'PostDQMOffline',

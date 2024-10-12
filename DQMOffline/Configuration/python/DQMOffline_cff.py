@@ -65,11 +65,13 @@ DQMOfflineTrackerPixel = cms.Sequence( 	siPixelOfflineDQM_source )
 
 DQMOfflineMuonDPG = cms.Sequence( dtSources *
                                   rpcTier0Source *
+                                  cscMonitor *
                                   cscSources )
 
 
 DQMOfflineMuonDPGExpress = cms.Sequence(rpcTier0Source *
                                         cscSources *
+                                        cscMonitor *
                                         gemSources)
 
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
@@ -277,6 +279,7 @@ DQMOfflineLumi = cms.Sequence ( zcounting )
 DQMOfflineMuon = cms.Sequence( dtSources *
                                rpcTier0Source *
                                cscSources *
+                               cscMonitor *
                                muonMonitors
                               )
 

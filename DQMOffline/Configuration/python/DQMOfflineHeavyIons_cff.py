@@ -26,7 +26,7 @@ DQMOfflineHeavyIonsL1T = cms.Sequence( l1TriggerDqmOffline ) # L1 emulator is ru
 
 #DPGs
 DQMOfflineHeavyIonsEcal = cms.Sequence( ecal_dqm_source_offline *
-                                es_dqm_source_offline )
+                                        es_dqm_source_offline )
 
 DQMOfflineHeavyIonsHcal = cms.Sequence( hcalOfflineSourceSequence )
 
@@ -42,8 +42,9 @@ if rpcTier0Source.contains(rpcTnPEfficiencyMonitor):
     rpcTier0Source.remove(rpcTnPEfficiencyMonitor)
 
 DQMOfflineHeavyIonsMuonDPG = cms.Sequence( dtSources *
-                                  rpcTier0Source *
-                                  cscSources )
+                                           rpcTier0Source *
+                                           cscSources *
+                                           cscMonitor)
 
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
 _run3_GEM_DQMOfflineHeavyIonsMuonDPG = DQMOfflineHeavyIonsMuonDPG.copy()
@@ -126,7 +127,7 @@ from DQMOffline.JetMET.jetMETDQMOfflineSourceHI_cff import *
 from DQM.BeamMonitor.AlcaBeamMonitorHeavyIons_cff import *
 from DQM.Physics.DQMPhysics_cff import *
 
-DQMOfflineHeavyIonsMUO = cms.Sequence(muonMonitors)
+DQMOfflineHeavyIonsMUO = cms.Sequence(muonMonitors+cscMonitor)
 
 DQMOfflineHeavyIonsTracking = cms.Sequence( TrackMonDQMTier0_hi )
 
