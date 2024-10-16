@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from datetime import datetime
+from pathlib import Path
 import configparser as ConfigParser
 import json
+import logging
 import optparse
 import os
 import sqlalchemy
@@ -9,6 +11,27 @@ import string
 import subprocess
 import sys
 import CondCore.Utilities.conddblib as conddb
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+##############################################
+def construct_conddb_import_command(db_file, frontier, tag, since):
+##############################################
+    """Constructs the conddb_import command."""
+    return (
+        f'conddb_import -c sqlite_file:{db_file} '
+        f'-f {frontier} '
+        f'-i {tag} -t {tag} -b {since}'
+    )
+
+##############################################
+def reset_db_sync(db_file):
+##############################################
+    """Resets synchronization for the given SQLite file."""
+    logger.info(f"Resetting synchronization for {db_file}")
+    resetSynchonization(db_file)  # Assuming resetSynchonization is defined elsewhere
 
 ##############################################
 def getCommandOutput(command):
@@ -25,6 +48,13 @@ def getCommandOutput(command):
         sys.exit(1)  # This will stop the script immediately with the failure exit code
     print(data)
     return data
+
+##############################################
+def execute_command(command):
+##############################################
+    """Executes a shell command and logs the output."""
+    logger.info(f"Executing command: {command}")
+    getCommandOutput(command)  # Assuming getCommandOutput is defined elsewhere
 
 ##############################################
 def getCerts() -> str:
@@ -171,6 +201,60 @@ def resetSynchonization(db_name):
     conn.close()
 
 ##############################################
+def reset_db_sync(db_file):
+##############################################
+    """Resets synchronization for the given SQLite file."""
+    logger.info(f"Resetting synchronization for {db_file}")
+    resetSynchonization(db_file)  # Assuming resetSynchonization is defined elsewhere
+
+##############################################
+def process_gt_map_elements(myGTMap, session, IOVsToValidate, options, FCSR):
+##############################################
+    current_directory = Path.cwd()  # Using Path for directory management
+
+    for element in myGTMap:
+        Record, Label, Tag = element
+
+        if Record == "SiStripApvGain2Rcd":
+            # Query the database
+            TagIOVs = session.query(IOV.since, IOV.payload_hash, IOV.insertion_time).filter(IOV.tag_name == Tag).all()
+
+            # Sort by 'since' value and get the last entry
+            sorted_TagIOVs = sorted(TagIOVs, key=lambda x: x[0])
+            lastG2Payload = sorted_TagIOVs[-1]
+
+            logger.info(f"Last G2 Prompt payload has IOV since: {lastG2Payload[0]}, "
+                        f"payload hash: {lastG2Payload[1]}, insertion time: {lastG2Payload[2]}")
+            logger.info(f"Current Working Directory: {current_directory}")
+
+            # Import the last G2 prompt payload into the database
+            command = construct_conddb_import_command("toCompare.db", "frontier://FrontierProd/CMS_CONDITIONS", Tag, lastG2Payload[0])
+            execute_command(command)
+
+            # Reset synchronization
+            reset_db_sync("toCompare.db")
+
+            # Validate each IOV
+            for i, validation_tag_since in enumerate(IOVsToValidate):
+                # Determine the correct 'since' value
+                since_value = FCSR + i if validation_tag_since < lastG2Payload[0] else validation_tag_since
+
+                # Print warning if validation IOV is older than the express IOV
+                if validation_tag_since < lastG2Payload[0]:
+                    logger.warning("Validation IOV is older than the last express IOV, using FCSR as 'since'!")
+
+                # Import validation tag
+                command = construct_conddb_import_command("toCompare.db", "frontier://FrontierPrep/CMS_CONDITIONS", options.validationTag, since_value)
+                execute_command(command)
+
+                # Compare the gains
+                compare_command = (
+                    f'${{CMSSW_BASE}}/src/CondCore/SiStripPlugins/scripts/testCompareSiStripG2Gains.sh '
+                    f'{Tag} {lastG2Payload[0]} {since_value} {current_directory}/toCompare.db'
+                )
+                execute_command(compare_command)
+
+##############################################
 if __name__ == "__main__":
 ##############################################
 
@@ -252,58 +336,5 @@ if __name__ == "__main__":
             if(options.since!=1 and int(entry[0])>=int(options.since)):
                 print("Appending to the validation list:",entry[0],entry[1],entry[2])
                 IOVsToValidate.append(entry[0])
-            
-    for element in myGTMap:
-        #print element
-        Record = element[0]
-        Label  = element[1]
-        Tag = element[2]
-        if(Record=="SiStripApvGain2Rcd"):
-            TagIOVs = session.query(IOV.since,IOV.payload_hash,IOV.insertion_time).filter(IOV.tag_name == Tag).all()
-            sorted_TagIOVs = sorted(TagIOVs, key=lambda x: x[0])
-            lastG2Payload = sorted_TagIOVs[-1]
-            print("Last G2 Prompt payload has IOV since:",lastG2Payload[0],"payload hash:",lastG2Payload[1],"insertion time:",lastG2Payload[2])
 
-            # Get and print the current working directory
-            current_directory = os.getcwd()
-            print("Current Working Directory:", current_directory)
-
-            # Construct the conddb_import command using f-strings for better readability
-            command = (
-                f'conddb_import -c sqlite_file:toCompare.db '
-                f'-f frontier://FrontierProd/CMS_CONDITIONS '
-                f'-i {Tag} -t {Tag} -b {lastG2Payload[0]}'
-            )
-            print(command)
-            getCommandOutput(command)
-
-            # set syncrhonization to any
-            resetSynchonization("toCompare.db")
-
-            for i,theValidationTagSince in enumerate(IOVsToValidate):
-
-                # Construct the conddb_import command, modifying the 'since' value if necessary
-                since_value = HLTFCSR + i if theValidationTagSince < lastG2Payload[0] else theValidationTagSince
-                command = (
-                    f'conddb_import -c sqlite_file:toCompare.db '
-                    f'-f frontier://FrontierPrep/CMS_CONDITIONS '
-                    f'-i {options.validationTag} -t {Tag} -b {since_value}'
-                )
-
-                # Print and execute the conddb_import command
-                if theValidationTagSince < lastG2Payload[0]:
-                    print("The last available IOV in the validation tag is older than the current last express IOV, taking Express FCSR (HLT) as a since!")
-
-                print(command)
-                getCommandOutput(command)
-
-                # Construct the testCompareSiStripG2Gains.sh command, adjusting the 'since' value similarly
-                since_value = HLTFCSR + i if theValidationTagSince < lastG2Payload[0] else theValidationTagSince
-                command = (
-                    f'${{CMSSW_BASE}}/src/CondCore/SiStripPlugins/scripts/testCompareSiStripG2Gains.sh '
-                    f'{Tag} {lastG2Payload[0]} {since_value} {current_directory}/toCompare.db'
-                )
-
-                # Print and execute the testCompareSiStripG2Gains.sh command
-                print(command)
-                getCommandOutput(command)
+    process_gt_map_elements(myGTMap, session, IOVsToValidate, options, HLTFCSR)
