@@ -237,11 +237,11 @@ def process_gt_map_elements(myGTMap, session, IOVsToValidate, options, FCSR):
             # Validate each IOV
             for i, validation_tag_since in enumerate(IOVsToValidate):
                 # Determine the correct 'since' value
-                since_value = FCSR + i if validation_tag_since < lastG2Payload[0] else validation_tag_since
+                since_value = HLTFCSR + i if validation_tag_since < lastG2Payload[0] else validation_tag_since
 
                 # Print warning if validation IOV is older than the express IOV
                 if validation_tag_since < lastG2Payload[0]:
-                    logger.warning("Validation IOV is older than the last express IOV, using FCSR as 'since'!")
+                    logger.warning("Validation IOV is older than the last express IOV, using HLT FCSR as 'since'!")
 
                 # Import validation tag
                 command = construct_conddb_import_command("toCompare.db", "frontier://FrontierPrep/CMS_CONDITIONS", options.validationTag, since_value)

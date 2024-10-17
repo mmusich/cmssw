@@ -755,7 +755,8 @@ namespace SiStripCondObjectRepresent {
                                    (units_[payloadType_]).c_str(),
                                    device);
 
-        h_parts[part] = new TH1F(Form("h_%s_%s", payloadType_.c_str(), part.c_str()), globalTitle, nbins, min, max);
+        h_parts[part] = new TH1F(
+            Form("h_%s_%s_%s", plotDescriptor(), payloadType_.c_str(), part.c_str()), globalTitle, nbins, min, max);
         h_parts[part]->SetTitle(""); /* remove the title from display */
         if (plotMode_ == COMPARISON) {
           h_parts2[part] = new TH1F(Form("h2_%s_%s", payloadType_.c_str(), part.c_str()), globalTitle, nbins, min, max);
