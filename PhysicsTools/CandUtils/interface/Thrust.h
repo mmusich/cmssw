@@ -44,10 +44,14 @@ public:
   Thrust(const_iterator begin, const_iterator end) : thrust_(0), axis_(0, 0, 0), pSum_(0), n_(end - begin), p_(n_) {
     if (n_ == 0)
       return;
+
+    // Pre-allocate memory for the vector to avoid multiple reallocations
     std::vector<const reco::Candidate *> cands;
-    for (const_iterator i = begin; i != end; ++i) {
-      cands.push_back(&*i);
-    }
+    cands.reserve(n_);
+
+    // Use std::transform to populate the vector more efficiently
+    std::transform(begin, end, std::back_inserter(cands), [](const reco::Candidate &cand) { return &cand; });
+
     init(cands);
   }
   /// thrust value (in the range [0.5, 1.0])
@@ -71,7 +75,8 @@ private:
   ThetaPhi finalAxis(ThetaPhi) const;
   Vector axis(double theta, double phi) const;
   Vector axis(const ThetaPhi &tp) const { return axis(tp.theta, tp.phi); }
-  void parabola(double &a, double &b, double &c, const Vector &, const Vector &, const Vector &) const;
+  double parabolicFit(double *thr, int index, int indI, int indJ, int nSegsTheta, int nSegsPhi) const;
+  void parabola(double theta, double phi, double epsilon, double &maxChange) const;
   void init(const std::vector<const reco::Candidate *> &);
 };
 

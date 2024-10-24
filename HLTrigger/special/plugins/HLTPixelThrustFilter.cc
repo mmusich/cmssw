@@ -60,9 +60,19 @@ bool HLTPixelThrustFilter::filter(edm::StreamID, edm::Event& event, edm::EventSe
   for (auto DSViter = clusters.begin(); DSViter != clusters.end(); DSViter++) {
     auto const& pgdu = static_cast<const PixelGeomDetUnit*>(trackerGeo.idToDetUnit(DSViter->detId()));
     for (auto const& cluster : *DSViter) {
+      // Convert local position to global position
       auto const& pos = pgdu->surface().toGlobal(pgdu->specificTopology().localPosition({cluster.x(), cluster.y()}));
-      auto const mag = std::sqrt(pos.x() * pos.x() + pos.y() * pos.y());
-      vec.emplace_back(0, reco::Particle::LorentzVector(pos.x() / mag, pos.y() / mag, 0, 0));
+
+      // Instead of calculating mag = sqrt(x^2 + y^2), calculate invMag = 1 / sqrt(x^2 + y^2)
+      double x = pos.x();
+      double y = pos.y();
+      double xy2 = x * x + y * y;
+
+      // Use an approximation for 1/sqrt(x^2 + y^2) (inverse square root)
+      double invMag = 1.0 / std::sqrt(xy2);
+
+      // Create LorentzVector using the normalized position vector (x / mag, y / mag)
+      vec.emplace_back(0, reco::Particle::LorentzVector(x * invMag, y * invMag, 0, 0));
     }
   }
   auto const thrust = Thrust(vec.begin(), vec.end()).thrust();
