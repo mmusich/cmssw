@@ -96,5 +96,6 @@ public:
 private:
   std::string TopFolderName;
   DQMStore* dbe_;
+  std::unordered_map<uint32_t, std::pair<std::string, const char*>> folderTagCache;  // Cache for detid
 };
 #endif

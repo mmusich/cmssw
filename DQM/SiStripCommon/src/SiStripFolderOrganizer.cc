@@ -474,6 +474,14 @@ void SiStripFolderOrganizer::getLayerFolderName(std::stringstream& ss,
 //
 std::pair<const std::string, const char*> SiStripFolderOrganizer::getSubDetFolderAndTag(const uint32_t& detid,
                                                                                         const TrackerTopology* tTopo) {
+  const std::string baseFolder = TopFolderName + SEP MECHANICAL_FOLDER_NAME SEP;
+
+  // Check if folder/tag already exists in cache
+  auto it = folderTagCache.find(detid);
+  if (it != folderTagCache.end()) {
+    return it->second;
+  }
+
   const char* subdet_folder = "";
   const char* tag = "";
   switch (StripSubdetector::SubDetector(StripSubdetector(detid).subdetId())) {
@@ -509,9 +517,12 @@ std::pair<const std::string, const char*> SiStripFolderOrganizer::getSubDetFolde
     }
   }
 
-  std::string folder;
-  folder.reserve(TopFolderName.size() + strlen(SEP MECHANICAL_FOLDER_NAME SEP) + strlen(subdet_folder) + 1);
-  folder = TopFolderName + SEP MECHANICAL_FOLDER_NAME SEP + subdet_folder;
+  // Construct the folder path
+  std::string folder = baseFolder + subdet_folder;
 
-  return std::pair<const std::string, const char*>(folder, tag);
+  // Store result in cache
+  auto result = std::make_pair(folder, tag);
+  folderTagCache[detid] = result;
+
+  return result;
 }
