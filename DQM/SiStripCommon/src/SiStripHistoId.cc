@@ -78,66 +78,42 @@ std::string SiStripHistoId::createHistoLayer(std::string description,
   return local_histo_id;
 }
 
-//std::string SiStripHistoId::getSubdetid(uint32_t id, const TrackerTopology* tTopo, bool flag_ring, bool flag_thickness){
-std::string SiStripHistoId::getSubdetid(uint32_t id, const TrackerTopology *tTopo, bool flag_ring) {
-  const int buf_len = 50;
-  char temp_str[buf_len];
+std::string SiStripHistoId::getSubdetid(uint32_t id, const TrackerTopology* tTopo, bool flag_ring) {
+  std::ostringstream oss;  // Use ostringstream to avoid manual buffer management.
 
   StripSubdetector subdet(id);
   if (subdet.subdetId() == StripSubdetector::TIB) {
-    // ---------------------------  TIB  --------------------------- //
-
-    snprintf(temp_str, buf_len, "TIB__layer__%i", tTopo->tibLayer(id));
+    // TIB
+    oss << "TIB__layer__" << tTopo->tibLayer(id);
   } else if (subdet.subdetId() == StripSubdetector::TID) {
-    // ---------------------------  TID  --------------------------- //
+    // TID
+    const char* side = (tTopo->tidSide(id) == 1) ? "MINUS" : "PLUS";
 
-    const char *side = "";
-    if (tTopo->tidSide(id) == 1)
-      side = "MINUS";
-    else if (tTopo->tidSide(id) == 2)
-      side = "PLUS";
-
-    if (flag_ring)
-      snprintf(temp_str, buf_len, "TID__%s__ring__%i", side, tTopo->tidRing(id));
-    else
-      snprintf(temp_str, buf_len, "TID__%s__wheel__%i", side, tTopo->tidWheel(id));
-
+    if (flag_ring) {
+      oss << "TID__" << side << "__ring__" << tTopo->tidRing(id);
+    } else {
+      oss << "TID__" << side << "__wheel__" << tTopo->tidWheel(id);
+    }
   } else if (subdet.subdetId() == StripSubdetector::TOB) {
-    // ---------------------------  TOB  --------------------------- //
-
-    snprintf(temp_str, buf_len, "TOB__layer__%i", tTopo->tobLayer(id));
+    // TOB
+    oss << "TOB__layer__" << tTopo->tobLayer(id);
   } else if (subdet.subdetId() == StripSubdetector::TEC) {
-    // ---------------------------  TEC  --------------------------- //
+    // TEC
+    const char* side = (tTopo->tecSide(id) == 1) ? "MINUS" : "PLUS";
 
-    const char *side = "";
-    if (tTopo->tecSide(id) == 1)
-      side = "MINUS";
-    else if (tTopo->tecSide(id) == 2)
-      side = "PLUS";
-
-    if (flag_ring)
-      snprintf(temp_str, buf_len, "TEC__%s__ring__%i", side, tTopo->tecRing(id));
-    else {
-      /*
-      if (flag_thickness) {
-	uint32_t ring = tTopo->tecRing(id);
-	if ( ring >= 1 && ring <= 4 )
-	  snprintf(temp_str, buf_len, "TEC__%s__wheel__%i__THIN", side.c_str(), tTopo->tecWheel(id));       
-	else 
-	  snprintf(temp_str, buf_len, "TEC__%s__wheel__%i__THICK", side.c_str(), tTopo->tecWheel(id));       
-      }
-      else
-*/
-      snprintf(temp_str, buf_len, "TEC__%s__wheel__%i", side, tTopo->tecWheel(id));
+    if (flag_ring) {
+      oss << "TEC__" << side << "__ring__" << tTopo->tecRing(id);
+    } else {
+      oss << "TEC__" << side << "__wheel__" << tTopo->tecWheel(id);
     }
   } else {
-    // ---------------------------  ???  --------------------------- //
+    // Invalid subdetector
     edm::LogError("SiStripTkDQM|WrongInput")
-        << "no such subdetector type :" << subdet.subdetId() << " no folder set!" << std::endl;
-    snprintf(temp_str, 0, "%s", "");
+        << "No such subdetector type: " << subdet.subdetId() << " no folder set!" << std::endl;
+    return "";
   }
 
-  return std::string(temp_str);
+  return oss.str();  // Convert the final result into std::string at once.
 }
 
 uint32_t SiStripHistoId::getComponentId(std::string histoid) {
