@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_1_0/HIon --full --data --type HIon --unprescale --process HLTHIon --globaltag auto:run3_hlt_HIon --input file:RelVal_Raw_HIon_DATA.root
 
-# /dev/CMSSW_14_1_0/HIon/V42 (CMSSW_14_1_1)
+# /dev/CMSSW_14_1_0/HIon/V43 (CMSSW_14_1_1)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLTHIon" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_1_0/HIon/V42")
+  tableName = cms.string("/dev/CMSSW_14_1_0/HIon/V43")
 )
 
 process.HLTGroupedCkfTrajectoryBuilderP5 = cms.PSet( 
@@ -13931,7 +13931,7 @@ process.hltPixelTracksSoAMonitorGPUPPOnAA = cms.EDProducer( "SiPixelHIonPhase1Mo
 process.hltPixelTracksSoACompareGPUvsCPUPPOnAA = cms.EDProducer( "SiPixelHIonPhase1CompareTracks",
     pixelTrackReferenceSoA = cms.InputTag( "hltPixelTracksPPOnAASoASerialSync" ),
     pixelTrackTargetSoA = cms.InputTag( "hltPixelTracksPPOnAASoA" ),
-    topFolderName = cms.string( "SiPixelHeterogeneous/PixelTrackCompareDeviceVSHost" ),
+    topFolderName = cms.string( "SiPixelHeterogeneous/PixelTrackCompareGPUvsCPU" ),
     useQualityCut = cms.bool( True ),
     minQuality = cms.string( "loose" ),
     deltaR2cut = cms.double( 4.0E-4 )
@@ -13950,7 +13950,7 @@ process.hltPixelVerticesSoACompareGPUvsCPUPPOnAA = cms.EDProducer( "SiPixelCompa
     pixelVertexReferenceSoA = cms.InputTag( "hltPixelVerticesPPOnAASoASerialSync" ),
     pixelVertexTargetSoA = cms.InputTag( "hltPixelVerticesPPOnAASoA" ),
     beamSpotSrc = cms.InputTag( "hltOnlineBeamSpot" ),
-    topFolderName = cms.string( "SiPixelHeterogeneous/PixelVertexCompareSoADeviceVSHost" ),
+    topFolderName = cms.string( "SiPixelHeterogeneous/PixelVertexCompareGPUvsCPU" ),
     dzCut = cms.double( 1.0 )
 )
 process.hltL1sDQMHIEcalReconstruction = cms.EDFilter( "HLTL1TSeed",
