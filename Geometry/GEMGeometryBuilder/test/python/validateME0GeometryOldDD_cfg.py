@@ -8,7 +8,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
     )
 
-process.load('Configuration.Geometry.GeometryExtended2026D41_cff')
+process.load('Configuration.Geometry.GeometryExtendedRun4D41_cff')
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.load("Geometry.MuonNumbering.muonGeometryConstants_cff")
 process.load("Geometry.GEMGeometryBuilder.me0Geometry_cff")

@@ -3,10 +3,10 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("PROD")
 process.load("SimGeneral.HepPDTESSource.pdt_cfi")
 #process.load("Configuration.Geometry.GeometryExtended2018_cff")
-#process.load("Configuration.Geometry.GeometryExtended2026D35_cff")
-#process.load("Configuration.Geometry.GeometryExtended2026D41_cff")
-#process.load("Configuration.Geometry.GeometryExtended2026D46_cff")
-process.load("Configuration.Geometry.GeometryExtended2026D49_cff")
+#process.load("Configuration.Geometry.GeometryExtendedRun4D35_cff")
+#process.load("Configuration.Geometry.GeometryExtendedRun4D41_cff")
+#process.load("Configuration.Geometry.GeometryExtendedRun4D46_cff")
+process.load("Configuration.Geometry.GeometryExtendedRun4D49_cff")
 process.load('FWCore.MessageService.MessageLogger_cfi')
 
 if hasattr(process,'MessageLogger'):

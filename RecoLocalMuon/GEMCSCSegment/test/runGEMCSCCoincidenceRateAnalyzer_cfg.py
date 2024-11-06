@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-e', '--era', type=str, default='Phase2C17I13M9', help='era')
 parser.add_argument('-t', '--global-tag', type=str, default='auto:phase2_realistic_T21', help='global tag')
-parser.add_argument('-g', '--geometry', type=str, default='GeometryExtended2026D88Reco', help='geometry')
+parser.add_argument('-g', '--geometry', type=str, default='GeometryExtendedRun4D88Reco', help='geometry')
 parser.add_argument('-m', '--max-events', type=int, default=-1, help='max events')
 
 default_data_dir = Path('/eos/cms/store/relval/CMSSW_12_6_0_pre2/RelValSingleMuPt1000/GEN-SIM-RECO/125X_mcRun4_realistic_v2_2026D88noPU-v1/')
