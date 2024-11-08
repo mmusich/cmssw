@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_1_0/HIon --full --data --type HIon --unprescale --process HLTHIon --globaltag auto:run3_hlt_HIon --input file:RelVal_Raw_HIon_DATA.root
 
-# /dev/CMSSW_14_1_0/HIon/V43 (CMSSW_14_1_1)
+# /dev/CMSSW_14_1_0/HIon/V44 (CMSSW_14_1_1)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLTHIon" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_1_0/HIon/V43")
+  tableName = cms.string("/dev/CMSSW_14_1_0/HIon/V44")
 )
 
 process.HLTGroupedCkfTrajectoryBuilderP5 = cms.PSet( 
@@ -4352,6 +4352,7 @@ process.datasets = cms.PSet(
     'HLT_HIMinimumBiasHF1ANDZDC2nOR_v7',
     'HLT_HIMinimumBiasHF1AND_v7' ),
   HIOnlineMonitor = cms.vstring( 'HLT_HICentrality30100_FirstCollisionAfterAbortGap_v14',
+    'HLT_HICentrality50100MinimumBiasHF1AND_Beamspot_v1',
     'HLT_HIEle20Gsf_v14',
     'HLT_HIGEDPhoton40_v14',
     'HLT_HIHcalNZS_v14',
@@ -30203,6 +30204,7 @@ process.hltDatasetHIOnlineMonitor = cms.EDFilter( "TriggerResultsFilter",
     l1tIgnoreMaskAndPrescale = cms.bool( False ),
     throw = cms.bool( True ),
     triggerConditions = cms.vstring( 'HLT_HICentrality30100_FirstCollisionAfterAbortGap_v14 / 0',
+      'HLT_HICentrality50100MinimumBiasHF1AND_Beamspot_v1 / 5',
       'HLT_HIEle20Gsf_v14 / 3',
       'HLT_HIGEDPhoton40_v14 / 3',
       'HLT_HIHcalNZS_v14 / 3',
@@ -30769,7 +30771,9 @@ process.hltOutputHIDQM = cms.OutputModule( "PoolOutputModule",
       'keep *_hltHbhereco_*_*',
       'keep *_hltHfreco_*_*',
       'keep *_hltHoreco_*_*',
+      'keep *_hltMergedTracksPPOnAA_*_*',
       'keep *_hltOnlineBeamSpot_*_*',
+      'keep *_hltSiPixelClustersPPOnAA_*_*',
       'keep *_hltSiStripClusterizerForRawPrime_*_*',
       'keep *_hltSiStripClusters2ApproxClusters_*_*',
       'keep DetIds_hltSiStripRawToDigi_*_*',

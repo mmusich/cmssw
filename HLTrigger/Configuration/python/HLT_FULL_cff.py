@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_1_0/HLT --cff --data --type FULL
 
-# /dev/CMSSW_14_1_0/HLT/V71 (CMSSW_14_1_1)
+# /dev/CMSSW_14_1_0/HLT/V72 (CMSSW_14_1_1)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ fragment = cms.ProcessFragment( "HLT" )
 fragment.load("Configuration.StandardSequences.Accelerators_cff")
 
 fragment.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_1_0/HLT/V71")
+  tableName = cms.string("/dev/CMSSW_14_1_0/HLT/V72")
 )
 
 fragment.HLTGroupedCkfTrajectoryBuilderP5 = cms.PSet( 
@@ -5017,6 +5017,7 @@ fragment.datasets = cms.PSet(
     'HLT_HIMinimumBiasHF1ANDZDC2nOR_v7',
     'HLT_HIMinimumBiasHF1AND_v7' ),
   HIOnlineMonitor = cms.vstring( 'HLT_HICentrality30100_FirstCollisionAfterAbortGap_v14',
+    'HLT_HICentrality50100MinimumBiasHF1AND_Beamspot_v1',
     'HLT_HICsAK4PFJet100Eta1p5_v14',
     'HLT_HIEle20Gsf_v14',
     'HLT_HIGEDPhoton40_v14',
@@ -120727,6 +120728,7 @@ fragment.hltDatasetHIOnlineMonitor = cms.EDFilter( "TriggerResultsFilter",
     l1tIgnoreMaskAndPrescale = cms.bool( False ),
     throw = cms.bool( True ),
     triggerConditions = cms.vstring( 'HLT_HICentrality30100_FirstCollisionAfterAbortGap_v14 / 0',
+      'HLT_HICentrality50100MinimumBiasHF1AND_Beamspot_v1 / 5',
       'HLT_HICsAK4PFJet100Eta1p5_v14 / 3',
       'HLT_HIEle20Gsf_v14 / 3',
       'HLT_HIGEDPhoton40_v14 / 3',

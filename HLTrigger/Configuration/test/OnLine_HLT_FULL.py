@@ -1,6 +1,6 @@
 # hltGetConfiguration /dev/CMSSW_14_1_0/HLT --full --data --type FULL --unprescale --process HLTFULL --globaltag auto:run3_hlt_FULL --input file:RelVal_Raw_FULL_DATA.root
 
-# /dev/CMSSW_14_1_0/HLT/V71 (CMSSW_14_1_1)
+# /dev/CMSSW_14_1_0/HLT/V72 (CMSSW_14_1_1)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLTFULL" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_14_1_0/HLT/V71")
+  tableName = cms.string("/dev/CMSSW_14_1_0/HLT/V72")
 )
 
 process.HLTGroupedCkfTrajectoryBuilderP5 = cms.PSet( 
@@ -5017,6 +5017,7 @@ process.datasets = cms.PSet(
     'HLT_HIMinimumBiasHF1ANDZDC2nOR_v7',
     'HLT_HIMinimumBiasHF1AND_v7' ),
   HIOnlineMonitor = cms.vstring( 'HLT_HICentrality30100_FirstCollisionAfterAbortGap_v14',
+    'HLT_HICentrality50100MinimumBiasHF1AND_Beamspot_v1',
     'HLT_HICsAK4PFJet100Eta1p5_v14',
     'HLT_HIEle20Gsf_v14',
     'HLT_HIGEDPhoton40_v14',
@@ -121379,6 +121380,7 @@ process.hltDatasetHIOnlineMonitor = cms.EDFilter( "TriggerResultsFilter",
     l1tIgnoreMaskAndPrescale = cms.bool( False ),
     throw = cms.bool( True ),
     triggerConditions = cms.vstring( 'HLT_HICentrality30100_FirstCollisionAfterAbortGap_v14 / 0',
+      'HLT_HICentrality50100MinimumBiasHF1AND_Beamspot_v1 / 5',
       'HLT_HICsAK4PFJet100Eta1p5_v14 / 3',
       'HLT_HIEle20Gsf_v14 / 3',
       'HLT_HIGEDPhoton40_v14 / 3',
@@ -124404,7 +124406,9 @@ process.hltOutputHIDQM = cms.OutputModule( "PoolOutputModule",
       'keep *_hltHbhereco_*_*',
       'keep *_hltHfreco_*_*',
       'keep *_hltHoreco_*_*',
+      'keep *_hltMergedTracksPPOnAA_*_*',
       'keep *_hltOnlineBeamSpot_*_*',
+      'keep *_hltSiPixelClustersPPOnAA_*_*',
       'keep *_hltSiStripClusterizerForRawPrime_*_*',
       'keep *_hltSiStripClusters2ApproxClusters_*_*',
       'keep DetIds_hltSiStripRawToDigi_*_*',
