@@ -1,0 +1,10 @@
+/store/data/Run2024E/Muon0/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/9189e844-ce5b-46fe-9b98-84001f8d56bb.root
+/store/data/Run2024E/Muon0/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/d21b542e-80d0-4e26-809f-66f1feaf1673.root
+/store/data/Run2024E/Muon0/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/5fd5c4c2-291f-46e5-b78f-0f2614a052f0.root
+/store/data/Run2024E/Muon0/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/9af7fcd3-509a-4966-b19f-bb571851759c.root
+/store/data/Run2024E/Muon0/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/c9406a9c-ed0b-4fd0-9266-cbb3b3c088bc.root
+/store/data/Run2024E/Muon1/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/4b4d0795-fe94-4429-9924-fb6d0e8b5c76.root
+/store/data/Run2024E/Muon1/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/2b21b158-8555-4b29-b52f-635ae85e5c8f.root
+/store/data/Run2024E/Muon1/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/4d8ed6d6-abb8-4b2d-8c75-74da0683c998.root
+/store/data/Run2024E/Muon1/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/d0307a6e-b1b8-4bd7-a2da-e899b1dfdd1d.root
+/store/data/Run2024E/Muon1/ALCARECO/TkAlDiMuonAndVertex-PromptReco-v2/000/381/384/00000/247b30c1-117a-4004-8373-a0b6046e7e5a.root

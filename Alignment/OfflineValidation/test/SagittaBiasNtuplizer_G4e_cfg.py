@@ -47,12 +47,13 @@ if options.scenario not in valid_scenarios:
     print(valid_scenarios)
     exit(1)
 
-process = cms.Process("SagittaBiasNtuplizer")
+from Configuration.Eras.Era_Run3_2024_cff import Run3_2024
+process = cms.Process("SagittaBiasNtuplizer",Run3_2024)
 
 ###################################################################
-# Set the process to run multi-threaded
+# Set the process to run single-threaded
 ###################################################################
-process.options.numberOfThreads = 8
+process.options.numberOfThreads = 1
 
 ###################################################################
 # Message logger service
@@ -76,6 +77,7 @@ process.MessageLogger.cout = cms.untracked.PSet(
 ###################################################################
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 process.load("Configuration.StandardSequences.Services_cff")
+process.load('Configuration.StandardSequences.GeometrySimDB_cff')
 process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load("CondCore.CondDB.CondDB_cfi")
@@ -94,6 +96,13 @@ process.load('TrackingTools.TrackAssociator.DetIdAssociatorESProducer_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag, '')
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("GeometryFileRcd"),
+             tag = cms.string("141DD4hepV2_Extended2024"),
+             label = cms.untracked.string('Extended'),
+             )
+)
+
 if (options.scenario=='null'):
     print("null scenario, do nothing")
     pass
@@ -150,11 +159,15 @@ process.MuSkimSelector = Alignment.CommonAlignmentProducer.AlignmentTrackSelecto
 ###################################################################
 process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 import RecoTracker.TrackProducer.TrackRefitters_cff
-process.refittedMuons = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone(
-    src = "ALCARECOTkAlDiMuon",
-    TrajectoryInEvent = True,
-    NavigationSchool = '',
-    TTRHBuilder = "WithAngleAndTemplate")
+#process.refittedMuons = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone(
+#    src = "ALCARECOTkAlDiMuon",
+#    TrajectoryInEvent = True,
+#    NavigationSchool = '',
+#    TTRHBuilder = "WithAngleAndTemplate")
+
+process.load("TrackPropagation.Geant4e.geantRefit_cff")
+process.Geant4eTrackRefitter.src = cms.InputTag("ALCARECOTkAlDiMuon")
+process.Geant4eTrackRefitter.usePropagatorForPCA = cms.bool(True)
 
 ###################################################################
 # refitting the vertex tracks
@@ -204,7 +217,7 @@ process.DiMuonVertexValidation = cms.EDAnalyzer("DiMuonVertexValidation",
                                     
 from Alignment.OfflineValidation.diMuonValidation_cfi import diMuonValidation as _diMuonValidation
 process.DiMuonMassValidation = _diMuonValidation.clone(
-    TkTag = 'refittedMuons',
+    TkTag = 'Geant4eTrackRefitter',
     #TkTag = 'TrackRefitter1',
     # mu mu mass
     Pair_mass_min   = 60.,
@@ -251,13 +264,14 @@ process.DiMuonMassValidation = _diMuonValidation.clone(
 # Output name
 ###################################################################
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("ZmmNtuple_MC_GEN-SIM_"+options.scenario+".root"))
+                                   fileName = cms.string("ZmmNtuple_MC_GEN-SIM_"+options.scenario+"_g4e.root"))
 
 ###################################################################
 # Path
 ###################################################################
 process.p1 = cms.Path(process.offlineBeamSpot
-                      * process.refittedMuons
+                      * process.MeasurementTrackerEvent 
+                      * process.geant4eTrackRefit
                       #* process.refittedVtxTracks
                       #* process.refittedTracks
                       #* process.offlinePrimaryVerticesFromRefittedTrks
