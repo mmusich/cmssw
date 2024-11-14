@@ -64,8 +64,9 @@ trackanalysis::trackanalysis(const edm::ParameterSet& iConfig)
 void trackanalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
   for (const auto& track : iEvent.get(tracksToken_)) {
-    edm::LogSystem("trackanalysis") << "track chi2: " << track.normalizedChi2() << " track pT: " << track.pt() << std::endl;
-  }  
+    edm::LogSystem("trackanalysis") << "track chi2: " << track.normalizedChi2() << " track pT: " << track.pt()
+                                    << std::endl;
+  }
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

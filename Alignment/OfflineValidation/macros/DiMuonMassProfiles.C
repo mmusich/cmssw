@@ -24,6 +24,7 @@
 #include "TStyle.h"
 
 // standard includes
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -34,7 +35,7 @@
 #include "Alignment/OfflineValidation/macros/CMS_lumi.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
-bool debugMode_{false};
+bool debugMode_{true};
 Int_t def_markers[9] = {kFullSquare,
                         kFullCircle,
                         kFullTriangleDown,
@@ -184,7 +185,7 @@ void MakeNicePlotStyle(T* hist)
 }
 
 //-----------------------------------------------------------------------------------
-diMuonMassBias::fitOutputs fitBWTimesCB(TH1* hist)
+diMuonMassBias::fitOutputs fitBWTimesCB(TH1* hist, const std::string& label)
 //-----------------------------------------------------------------------------------
 {
   if (hist->GetEntries() < diMuonMassBias::minimumHits) {
@@ -206,8 +207,11 @@ diMuonMassBias::fitOutputs fitBWTimesCB(TH1* hist)
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
 
   Double_t xMean = 91.1876;
-  Double_t xMin = hist->GetXaxis()->GetXmin();
-  Double_t xMax = hist->GetXaxis()->GetXmax();
+  //Double_t xMin = hist->GetXaxis()->GetXmin();
+  //Double_t xMax = hist->GetXaxis()->GetXmax();
+
+  Double_t xMin = 70.0;
+  Double_t xMax = 110.0;
 
   if (debugMode_) {
     std::cout << " fitting range: (" << xMin << "-" << xMax << ")" << std::endl;
@@ -256,7 +260,10 @@ diMuonMassBias::fitOutputs fitBWTimesCB(TH1* hist)
   TString histName = hist->GetName();
 
   if (debugMode_) {
-    c1->Print("fit_debug" + histName + ".pdf");
+    // Replace spaces with underscores in the new string
+    std::string sanitizedLabel{label};  // Copy to a non-const string
+    std::replace(sanitizedLabel.begin(), sanitizedLabel.end(), ' ', '_');
+    c1->Print("fit_debug" + histName + "_" + TString(sanitizedLabel) + ".pdf");
   }
   delete c1;
 
@@ -269,7 +276,8 @@ diMuonMassBias::fitOutputs fitBWTimesCB(TH1* hist)
 //-----------------------------------------------------------------------------------
 void fitAndFillHisto(std::pair<std::string, TH2F*> toHarvest,
                      diMuonMassBias::histoMap& meanHistos_,
-                     diMuonMassBias::histoMap& widthHistos_)
+                     diMuonMassBias::histoMap& widthHistos_,
+                     const std::string& label)
 //-----------------------------------------------------------------------------------
 {
   const auto& key = toHarvest.first;
@@ -293,7 +301,7 @@ void fitAndFillHisto(std::pair<std::string, TH2F*> toHarvest,
     TH1D* Proj = ME->ProjectionX(Form("%s_proj_%i", key.c_str(), bin), bin, bin);
     Proj->SetTitle(Form("%s #in (%.2f,%.2f), bin: %i", Proj->GetTitle(), low_edge, high_edge, bin));
 
-    diMuonMassBias::fitOutputs results = fitBWTimesCB(Proj);
+    diMuonMassBias::fitOutputs results = fitBWTimesCB(Proj, label);
 
     if (results.isInvalid()) {
       std::cout << "the current bin has invalid data" << std::endl;
@@ -432,7 +440,7 @@ void fitAndFillMap(std::pair<std::string, TH3F*> toHarvest,
                             binY,
                             binZ));
 
-      diMuonMassBias::fitOutputs results = fitBWTimesCB(ProjYZ);
+      diMuonMassBias::fitOutputs results = fitBWTimesCB(ProjYZ, "");
 
       if (results.isInvalid()) {
         std::cout << "the current bin has invalid data" << std::endl;
@@ -843,7 +851,7 @@ void DiMuonMassProfiles(TString namesandlabels, const TString& Rlabel = "", cons
     bookMaps(harvestTargets3D, meanMaps, widthMaps, countFiles);
 
     for (const auto& element : harvestTargets) {
-      fitAndFillHisto(element, meanHistos, widthHistos);
+      fitAndFillHisto(element, meanHistos, widthHistos, labels[countFiles].Data());
     }
 
     v_meanHistos.push_back(meanHistos);
