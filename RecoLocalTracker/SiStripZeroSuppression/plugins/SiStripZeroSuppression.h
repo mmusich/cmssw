@@ -9,6 +9,8 @@
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "RecoLocalTracker/SiStripZeroSuppression/interface/SiStripRawProcessingAlgorithms.h"
 #include "DataFormats/SiStripDigi/interface/SiStripProcessedRawDigi.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
 class SiStripDigi;
 class SiStripRawDigi;
@@ -25,7 +27,7 @@ private:
   void putOutputs(edm::Event& evt, const std::string& tagName);
 
   void processRaw(const edm::DetSetVector<SiStripRawDigi>& input, RawType inType);
-  void processHybrid(const edm::DetSetVector<SiStripDigi>& input);
+  void processHybrid(const edm::DetSetVector<SiStripDigi>& input, const edm::EventSetup&);
   void storeExtraOutput(uint32_t, int16_t);
   edm::DetSet<SiStripRawDigi> formatRawDigis(const edm::DetSet<SiStripRawDigi>& rawDigis);
   edm::DetSet<SiStripRawDigi> formatRawDigis(uint32_t detId, const std::vector<int16_t>& rawDigis);
@@ -46,6 +48,8 @@ private:
 
   using rawtoken_t = edm::EDGetTokenT<edm::DetSetVector<SiStripRawDigi>>;
   using zstoken_t = edm::EDGetTokenT<edm::DetSetVector<SiStripDigi>>;
+  edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tkgeomtoken_t;
+
   std::vector<std::tuple<std::string, RawType, rawtoken_t>> rawInputs;
   std::vector<std::tuple<std::string, zstoken_t>> hybridInputs;
 

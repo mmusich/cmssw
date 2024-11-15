@@ -9,6 +9,7 @@
 #include "DataFormats/SiStripDigi/interface/SiStripRawDigi.h"
 #include "RecoLocalTracker/SiStripZeroSuppression/interface/SiStripRawProcessingFactory.h"
 #include "FWCore/Utilities/interface/transform.h"
+#include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
 #include <memory>
 
 SiStripZeroSuppression::SiStripZeroSuppression(edm::ParameterSet const& conf)
@@ -21,6 +22,7 @@ SiStripZeroSuppression::SiStripZeroSuppression(edm::ParameterSet const& conf)
       produceBaselinePoints(conf.getParameter<bool>("produceBaselinePoints")),
       storeInZScollBadAPV(conf.getParameter<bool>("storeInZScollBadAPV")),
       produceHybridFormat(conf.getParameter<bool>("produceHybridFormat")) {
+  tkgeomtoken_t = esConsumes();
   for (const auto& inputTag : conf.getParameter<std::vector<edm::InputTag>>("RawDigiProducersList")) {
     const auto& tagName = inputTag.instance();
     produces<edm::DetSetVector<SiStripDigi>>(tagName);
@@ -95,7 +97,7 @@ void SiStripZeroSuppression::produce(edm::Event& e, const edm::EventSetup& es) {
     edm::Handle<edm::DetSetVector<SiStripDigi>> inDigis;
     e.getByToken(std::get<zstoken_t>(input), inDigis);
     if (!inDigis->empty()) {
-      processHybrid(*inDigis);
+      processHybrid(*inDigis, es);
     }
     putOutputs(e, std::get<std::string>(input));
   }
@@ -147,12 +149,25 @@ inline void SiStripZeroSuppression::processRaw(const edm::DetSetVector<SiStripRa
   }
 }
 
-inline void SiStripZeroSuppression::processHybrid(const edm::DetSetVector<SiStripDigi>& input) {
+inline void SiStripZeroSuppression::processHybrid(const edm::DetSetVector<SiStripDigi>& input,
+                                                  const edm::EventSetup& es) {
+  const auto& tkGeom = &es.getData(tkgeomtoken_t);
+  const auto& tkDets = tkGeom->dets();
+
   for (const auto& inDigis : input) {
     edm::DetSet<SiStripDigi> suppressedDigis(inDigis.id);
 
+    unsigned int detId = inDigis.id;
+
+    uint16_t maxNStrips{0};
+    auto det = std::find_if(tkDets.begin(), tkDets.end(), [detId](auto& elem) -> bool {
+      return (elem->geographicalId().rawId() == detId);
+    });
+    const StripTopology& p = dynamic_cast<const StripGeomDetUnit*>(*det)->specificTopology();
+    maxNStrips = p.nstrips();
+
     uint16_t nAPVflagged = 0;
-    nAPVflagged = algorithms->suppressHybridData(inDigis, suppressedDigis);
+    nAPVflagged = algorithms->suppressHybridData(maxNStrips, inDigis, suppressedDigis);
 
     storeExtraOutput(inDigis.id, nAPVflagged);
     if (!suppressedDigis.empty())
