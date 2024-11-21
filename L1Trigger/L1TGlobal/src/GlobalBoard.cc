@@ -65,6 +65,8 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/MessageLogger/interface/MessageDrop.h"
 
+#include "hls4ml/emulator.h"
+
 // Constructor
 l1t::GlobalBoard::GlobalBoard()
     : m_candL1Mu(new BXVector<const l1t::Muon*>),
@@ -722,25 +724,44 @@ void l1t::GlobalBoard::runGTL(const edm::Event&,
 
         } break;
         case CondAXOL1TL: {
-          AXOL1TLCondition* axol1tlCondition = new AXOL1TLCondition(itCond->second, this);
+          const AXOL1TLTemplate* m_gtAXOL1TLTemplate = static_cast<const AXOL1TLTemplate*>(itCond->second);
 
-          axol1tlCondition->setVerbosity(m_verbosity);
+          if (m_gtAXOL1TLTemplate) {
+	    std::string AXOL1TLmodelversion = "GTADModel_" + m_gtAXOL1TLTemplate->modelVersion();
+	    
+            try {
+	      
+	      hls4mlEmulator::ModelLoader loader(AXOL1TLmodelversion);
+	      const std::shared_ptr<hls4mlEmulator::Model> model = loader.load_model();
 
-          axol1tlCondition->evaluateConditionStoreResult(iBxInEvent);
+	      AXOL1TLCondition* axol1tlCondition = new AXOL1TLCondition(itCond->second, this, model);
 
-          cMapResults[itCond->first] = axol1tlCondition;
+	      axol1tlCondition->setVerbosity(m_verbosity);
 
-          //for optional software-only saving of axol1tl score
-          //m_storedAXOScore < 0.0 ensures only sets once per condition if score not default of -999
-          if (m_saveAXOScore && m_storedAXOScore < 0.0) {
-            m_storedAXOScore = axol1tlCondition->getScore();
-          }
-
-          if (m_verbosity && m_isDebugEnabled) {
-            std::ostringstream myCout;
-            axol1tlCondition->print(myCout);
-
-            edm::LogWarning("L1TGlobal") << "axol1tlCondition " << myCout.str();
+	      axol1tlCondition->evaluateConditionStoreResult(iBxInEvent);
+	      
+	      cMapResults[itCond->first] = axol1tlCondition;
+	      
+	      //for optional software-only saving of axol1tl score
+	      //m_storedAXOScore < 0.0 ensures only sets once per condition if score not default of -999
+	      if (m_saveAXOScore && m_storedAXOScore < 0.0) {
+		m_storedAXOScore = axol1tlCondition->getScore();
+	      }
+	      
+	      if (m_verbosity && m_isDebugEnabled) {
+		std::ostringstream myCout;
+		axol1tlCondition->print(myCout);
+		
+		edm::LogWarning("L1TGlobal") << "axol1tlCondition " << myCout.str();
+	      }	     	      
+            } catch (const std::runtime_error& e) {
+              throw cms::Exception("ModelError")
+                  << " ERROR: failed to load AXOL1TL model version \"" << AXOL1TLmodelversion
+                  << "\" specified in the menu. Model version not found in cms-hls4ml externals.";
+            }
+          } else {
+            throw cms::Exception("InitializationError")
+                << " ERROR: AXOL1TLTemplate is null during AXOL1TLCondition initialization.";
           }
           //delete axol1tlCCondition;
 

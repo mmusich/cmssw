@@ -10,6 +10,7 @@
 // system include files
 #include <iosfwd>
 #include <string>
+#include "hls4ml/emulator.h"
 
 // user include files
 //   base classes
@@ -33,7 +34,7 @@ namespace l1t {
     AXOL1TLCondition();
 
     ///     from base template condition (from event setup usually)
-    AXOL1TLCondition(const GlobalCondition*, const GlobalBoard*);
+    AXOL1TLCondition(const GlobalCondition*, const GlobalBoard*, const std::shared_ptr<hls4mlEmulator::Model>);
 
     // copy constructor
     AXOL1TLCondition(const AXOL1TLCondition&);
@@ -76,6 +77,9 @@ namespace l1t {
 
     ///axo score for possible score saving
     mutable float m_savedscore;
+
+    /// pointer to the model
+    std::shared_ptr<hls4mlEmulator::Model> m_model;
   };
 
 }  // namespace l1t

@@ -19,7 +19,6 @@
 #include <vector>
 #include <algorithm>
 #include "ap_fixed.h"
-#include "hls4ml/emulator.h"
 
 // user include files
 //   base classes
@@ -49,10 +48,13 @@ l1t::AXOL1TLCondition::AXOL1TLCondition() : ConditionEvaluation() {
 }
 
 //     from base template condition (from event setup usually)
-l1t::AXOL1TLCondition::AXOL1TLCondition(const GlobalCondition* axol1tlTemplate, const GlobalBoard* ptrGTB)
+l1t::AXOL1TLCondition::AXOL1TLCondition(const GlobalCondition* axol1tlTemplate,
+                                        const GlobalBoard* ptrGTB,
+                                        const std::shared_ptr<hls4mlEmulator::Model> model)
     : ConditionEvaluation(),
       m_gtAXOL1TLTemplate(static_cast<const AXOL1TLTemplate*>(axol1tlTemplate)),
-      m_gtGTB(ptrGTB) {}
+      m_gtGTB(ptrGTB),
+      m_model(std::move(model)) {}
 
 // copy constructor
 void l1t::AXOL1TLCondition::copy(const l1t::AXOL1TLCondition& cp) {
@@ -64,14 +66,16 @@ void l1t::AXOL1TLCondition::copy(const l1t::AXOL1TLCondition& cp) {
   m_combinationsInCond = cp.getCombinationsInCond();
 
   m_verbosity = cp.m_verbosity;
+
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
+  m_model = cp.m_model;
 }
 
 l1t::AXOL1TLCondition::AXOL1TLCondition(const l1t::AXOL1TLCondition& cp) : ConditionEvaluation() { copy(cp); }
 
 // destructor
-l1t::AXOL1TLCondition::~AXOL1TLCondition() {
-  // empty
-}
+l1t::AXOL1TLCondition::~AXOL1TLCondition() {}
 
 // equal operator
 l1t::AXOL1TLCondition& l1t::AXOL1TLCondition::operator=(const l1t::AXOL1TLCondition& cp) {
@@ -89,24 +93,16 @@ void l1t::AXOL1TLCondition::setuGtB(const GlobalBoard* ptrGTB) { m_gtGTB = ptrGT
 void l1t::AXOL1TLCondition::setScore(const float scoreval) const { m_savedscore = scoreval; }
 
 const bool l1t::AXOL1TLCondition::evaluateCondition(const int bxEval) const {
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
+  if (!m_model) {
+    throw cms::Exception("ModelError") << " ERROR: Model not loaded during evaluateCondition call.";
+  }
+
   bool condResult = false;
   int useBx = bxEval + m_gtAXOL1TLTemplate->condRelativeBx();
 
-  //HLS4ML stuff
-  std::string AXOL1TLmodelversion = "GTADModel_" + m_gtAXOL1TLTemplate->modelVersion();  //loading from menu/template
-
-  //otherwise load model (if possible) and run inference
-  hls4mlEmulator::ModelLoader loader(AXOL1TLmodelversion);
-  std::shared_ptr<hls4mlEmulator::Model> model;
-
-  try {
-    model = loader.load_model();
-  } catch (std::runtime_error& e) {
-    // for stopping with exception if model version cannot be loaded
-    throw cms::Exception("ModelError")
-        << " ERROR: failed to load AXOL1TL model version \"" << AXOL1TLmodelversion
-        << "\" that was specified in menu. Model version not found in cms-hls4ml externals.";
-  }
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
   // //pointers to objects
   const BXVector<const l1t::Muon*>* candMuVec = m_gtGTB->getCandL1Mu();
@@ -146,6 +142,8 @@ const bool l1t::AXOL1TLCondition::evaluateCondition(const int bxEval) const {
   inputtype JetInput[JVecSize];
   inputtype EgammaInput[EGVecSize];
   inputtype EtSumInput[EtSumVecSize];
+
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
   //declare result vectors +score
   resulttype result;
@@ -231,10 +229,20 @@ const bool l1t::AXOL1TLCondition::evaluateCondition(const int bxEval) const {
     ADModelInput[index++] = JetInput[idJ];
   }
 
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
   //now run the inference
-  model->prepare_input(ADModelInput);  //scaling internal here
-  model->predict();
-  model->read_result(&ADModelResult);  // this should be the square sum model result
+  m_model->prepare_input(ADModelInput);  //scaling internal here
+
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
+  m_model->predict();
+
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
+
+  m_model->read_result(&ADModelResult);  // this should be the square sum model result
+
+  edm::LogPrint("") << __PRETTY_FUNCTION__ << " " << __LINE__ << std::endl;
 
   result = ADModelResult.first;
   loss = ADModelResult.second;
