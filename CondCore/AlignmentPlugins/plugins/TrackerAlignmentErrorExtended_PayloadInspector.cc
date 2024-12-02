@@ -331,17 +331,21 @@ namespace {
         : PlotImage<AlignmentErrorsExtended, SINGLE_IOV>("Pixel Map of sqrt(d_{" + getStringFromIndex(i) +
                                                          "}) of APE matrix") {
       label_ = " PixelAlignmentErrorExtendedTrackerMap";
-      payloadString = "Alignment Parameter Error";
+      title_ = "APE " + getStringFromIndex(i) + " component";
+      payloadString_ = "Alignment Parameter Error #sqrt{d_{" + getStringFromIndex(i) + "}}";
     }
 
     bool fill() override {
+      //gStyle->SetPalette(kViridis);
+      gStyle->SetPalette(kTemperatureMap);
+
       auto tag = PlotBase::getTag<0>();
       auto iov = tag.iovs.front();
       std::string IOVsince = std::to_string(std::get<0>(iov));
 
       std::shared_ptr<AlignmentErrorsExtended> payload = fetchPayload(std::get<1>(iov));
 
-      Phase1PixelSummaryMap fullMap("", fmt::sprintf("%s", payloadString), fmt::sprintf("%s [#mum]", payloadString));
+      Phase1PixelSummaryMap fullMap("", fmt::sprintf("%s", title_), fmt::sprintf("%s [#mum]", payloadString_));
       fullMap.createTrackerBaseMap();
 
       std::vector<AlignTransformErrorExtended> alignErrors = payload->m_alignError;
@@ -388,7 +392,8 @@ namespace {
     }
 
   protected:
-    std::string payloadString;
+    std::string title_;
+    std::string payloadString_;
     std::string label_;
   };
 
