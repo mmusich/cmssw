@@ -30,9 +30,8 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include "CLHEP/Vector/ThreeVector.h"
-
 #include <vector>
+#include <vdt/sincos.h>
 
 // Constructor
 Phase2L2MuonSeedCreator::Phase2L2MuonSeedCreator(const edm::ParameterSet& pset)
@@ -111,9 +110,17 @@ void Phase2L2MuonSeedCreator::produce(edm::Event& iEvent, const edm::EventSetup&
       continue;
     }
     float eta = l1TkMuRef->phEta();
-    float theta = 2 * std::atan(std::exp(-eta));
     float phi = l1TkMuRef->phPhi();
     int charge = l1TkMuRef->phCharge();
+
+    float expNegEta = std::exp(-eta);
+    float tanThetaOver2 = expNegEta;                                           // tan(theta/2) = exp(-eta)
+    float sinTheta = 2 * tanThetaOver2 / (1 + tanThetaOver2 * tanThetaOver2);  // sin(theta)
+    float cosTheta = (1 - tanThetaOver2 * tanThetaOver2) / (1 + tanThetaOver2 * tanThetaOver2);  // cos(theta)
+
+    // Precompute trig values for phi
+    double cosPhi, sinPhi;
+    vdt::fast_sincos(phi, sinPhi, cosPhi);  // Use efficient sincos if available
 
     LogDebug(metname) << "L1TKMu pT: " << pt << ", eta: " << eta << ", phi: " << phi;
     Type muonType = overlap;
@@ -321,11 +328,6 @@ void Phase2L2MuonSeedCreator::produce(edm::Event& iEvent, const edm::EventSetup&
       service_->update(iSetup);
       const DetLayer* detLayer = nullptr;
       float radius = 0.;
-
-      CLHEP::Hep3Vector vec(0., 1., 0.);
-      vec.setTheta(theta);
-      vec.setPhi(phi);
-
       DetId propagateToId;
 
       edm::OwnVector<TrackingRecHit> container;
@@ -337,7 +339,7 @@ void Phase2L2MuonSeedCreator::produce(edm::Event& iEvent, const edm::EventSetup&
         detLayer = service_->detLayerGeometry()->idToLayer(propagateToId);
         const BoundSurface* sur = &(detLayer->surface());
         const BoundCylinder* bc = dynamic_cast<const BoundCylinder*>(sur);
-        radius = std::abs(bc->radius() / sin(theta));
+        radius = std::abs(bc->radius() / sinTheta);
 
         // Propagate matched segments to the seed and try to extrapolate in unmatched chambers
         std::vector<int> matchedStations;
@@ -366,7 +368,7 @@ void Phase2L2MuonSeedCreator::produce(edm::Event& iEvent, const edm::EventSetup&
         // ME2
         propagateToId = eta > 0 ? CSCDetId(1, 2, 0, 0, 0) : CSCDetId(2, 2, 0, 0, 0);
         detLayer = service_->detLayerGeometry()->idToLayer(propagateToId);
-        radius = std::abs(detLayer->position().z() / cos(theta));
+        radius = std::abs(detLayer->position().z() / cosTheta);
 
         // Fill seed with matched segment(s)
         for (auto& [detId, matchingPair] : matchesInEndcap) {
@@ -374,10 +376,9 @@ void Phase2L2MuonSeedCreator::produce(edm::Event& iEvent, const edm::EventSetup&
           container.push_back(cscSegments[matchingPair.first]);
         }
       }
-      vec.setMag(radius);
-      // Get Global point and direction
-      GlobalPoint pos(vec.x(), vec.y(), vec.z());
-      GlobalVector mom(pt * cos(phi), pt * sin(phi), pt * cos(theta) / sin(theta));
+
+      GlobalPoint pos(radius * cosPhi * sinTheta, radius * sinPhi * sinTheta, radius * cosTheta);
+      GlobalVector mom(pt * cosPhi, pt * sinPhi, pt * cosTheta / sinTheta);
 
       GlobalTrajectoryParameters param(pos, mom, charge, &*magneticField_);
 
@@ -407,8 +408,7 @@ void Phase2L2MuonSeedCreator::produce(edm::Event& iEvent, const edm::EventSetup&
         // Propagation to MB2 failed, fallback to ME2 (might be an overlap edge case)
         LogDebug(metname) << "Warning: detsWithStates collection is empty for a barrel collection. Falling back to ME2";
         // Get ME2 DetLayer
-        DetId fallback_id;
-        theta < Geom::pi() / 2. ? fallback_id = CSCDetId(1, 2, 0, 0, 0) : fallback_id = CSCDetId(2, 2, 0, 0, 0);
+        DetId fallback_id = (eta > 0) ? CSCDetId(1, 2, 0, 0, 0) : CSCDetId(2, 2, 0, 0, 0);
         const DetLayer* ME2DetLayer = service_->detLayerGeometry()->idToLayer(fallback_id);
         // Trajectory state on ME2 DetLayer
         tsos = service_->propagator(propagatorName_)->propagate(state, ME2DetLayer->surface());
