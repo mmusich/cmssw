@@ -14,7 +14,9 @@ using namespace reco;
 
 void GlobalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<bool>("IsHLT");
+  desc.add<bool>("IsHLT", false);
+
+  // Higher Level Reco
   desc.add<edm::InputTag>("metLabel", edm::InputTag("caloMet"));
   desc.add<edm::InputTag>("calotowerLabel", edm::InputTag("towerMaker"));
   desc.add<edm::InputTag>("CSCSegmentLabel", edm::InputTag("cscSegments"));
@@ -28,6 +30,8 @@ void GlobalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& de
   desc.add<double>("HcalMinMatchingRadiusParam", 110.);
   desc.add<double>("HcalMaxMatchingRadiusParam", 490.);
   desc.add<double>("CaloTowerEtThresholdParam", 0.3);
+
+  // Parameters for CSC-calo matching
   desc.add<double>("MaxSegmentTheta", 0.7);
   desc.add<double>("rh_et_threshforcscmatching_eb", 10.);
   desc.add<double>("rcalominrsegm_lowthresh_eb", -30.);

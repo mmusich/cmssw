@@ -92,18 +92,21 @@ void EcalHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
 void EcalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
+  // RecHit level
   desc.add<edm::InputTag>("EBRecHitLabel", edm::InputTag("ecalRecHit", "EcalRecHitsEB"));
   desc.add<edm::InputTag>("EERecHitLabel", edm::InputTag("ecalRecHit", "EcalRecHitsEE"));
   desc.add<edm::InputTag>("ESRecHitLabel", edm::InputTag("ecalPreshowerRecHit", "EcalRecHitsES"));
+  // Higher level Reco
   desc.add<edm::InputTag>("HBHERecHitLabel", edm::InputTag("hbhereco"));
   desc.add<edm::InputTag>("SuperClusterLabel", edm::InputTag("correctedHybridSuperClusters"));
   desc.add<edm::InputTag>("PhotonLabel", edm::InputTag(""));
-  desc.add<double>("RoundnessCutParam", 0.41);
-  desc.add<double>("AngleCutParam", 0.51);
   desc.add<double>("EBRecHitEnergyThresholdParam", 0.3);
   desc.add<double>("EERecHitEnergyThresholdParam", 0.3);
   desc.add<double>("ESRecHitEnergyThresholdParam", 0.3);
   desc.add<double>("SumEcalEnergyThresholdParam", 10);
   desc.add<int>("NHitsEcalThresholdParam", 4);
+  // Shower Shape cut parameters (defaults need to be optimized)
+  desc.add<double>("RoundnessCutParam", 0.41);
+  desc.add<double>("AngleCutParam", 0.51);
   descriptions.addWithDefaultLabel(desc);
 }

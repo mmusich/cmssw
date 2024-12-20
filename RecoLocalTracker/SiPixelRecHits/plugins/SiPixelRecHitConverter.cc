@@ -258,15 +258,15 @@ namespace cms {
                                        << " SiPixelClusters into SiPixelRecHits, in " << numberOfDetUnits
                                        << " DetUnits.";
   }
-
-  void SiPixelRecHitConverter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-    edm::ParameterSetDescription desc;
-    desc.add<edm::InputTag>("src", edm::InputTag("siPixelClusters"));
-    desc.add<std::string>("CPE", "PixelCPEGeneric");
-    descriptions.addWithDefaultLabel(desc);
-  }
 }  // end of namespace cms
 
 using cms::SiPixelRecHitConverter;
+
+void SiPixelRecHitConverter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<edm::InputTag>("src", edm::InputTag("siPixelClusters"));
+  desc.add<std::string>("CPE", "PixelCPEGeneric");
+  descriptions.addWithDefaultLabel(desc);
+}
 
 DEFINE_FWK_MODULE(SiPixelRecHitConverter);

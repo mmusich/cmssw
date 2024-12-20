@@ -73,6 +73,7 @@ void HcalHaloDataProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
 void HcalHaloDataProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
+  // RecHit Level
   desc.add<edm::InputTag>("EBRecHitLabel", edm::InputTag("ecalRecHit", "EcalRecHitsEB"));
   desc.add<edm::InputTag>("EERecHitLabel", edm::InputTag("ecalRecHit", "EcalRecHitsEE"));
   desc.add<edm::InputTag>("HBHERecHitLabel", edm::InputTag("hbhereco"));

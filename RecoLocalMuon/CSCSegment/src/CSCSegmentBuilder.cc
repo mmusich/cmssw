@@ -104,7 +104,7 @@ void CSCSegmentBuilder::setGeometry(const CSCGeometry* geom) { geom_ = geom; }
 
 void CSCSegmentBuilder::fillPSetDescription(edm::ParameterSetDescription& desc) {
   /// Top-level parameters
-  desc.add<int>("algo_type", 1);
+  desc.add<int>("algo_type", 5)->setComment("Choice of the building algo: 1 SK, 2 TC, 3 DF, 4 ST, 5 RU, ...");
 
   // Define the nested PSet for individual configurations
   edm::ParameterSetDescription algoPSet;

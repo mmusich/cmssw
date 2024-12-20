@@ -24,7 +24,7 @@ CSCSegmentProducer::CSCSegmentProducer(const edm::ParameterSet& pas) : iev(0) {
 
 void CSCSegmentProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("inputObjects", edm::InputTag("csc2DRecHits"));
+  desc.add<edm::InputTag>("inputObjects", edm::InputTag("csc2DRecHits"))->setComment("define input");
   CSCSegmentBuilder::fillPSetDescription(desc);
   descriptions.addWithDefaultLabel(desc);
 }
