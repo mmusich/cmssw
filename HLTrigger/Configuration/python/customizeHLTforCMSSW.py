@@ -127,6 +127,23 @@ def customizeHLTfor47079(process):
                     
     return process
 
+def customizeHLTforXXXXX(process):
+    """Remove unneeded parameters from the HLT menu"""
+
+    for prod in producers_by_type(process, 'TrackProducer'):
+        if hasattr(prod, 'alias'):
+            delattr(prod, 'alias')
+
+        if hasattr(prod, 'useSimpleMF') and not getattr(prod, 'useSimpleMF'):
+            if hasattr(prod, 'SimpleMagneticField'):
+                delattr(prod, 'SimpleMagneticField')
+
+    for prod in producers_by_type(process, 'GsfTrackProducer'):
+        if hasattr(prod, 'producer'):
+            delattr(prod, 'producer')
+
+    return process
+
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
@@ -138,6 +155,6 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
     process = customizeHLTfor46935(process)
     process = customizeHLTfor47017(process)
     process = customizeHLTfor47079(process)
+    process = customizeHLTforXXXXX(process)
 
     return process
-

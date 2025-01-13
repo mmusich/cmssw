@@ -6,7 +6,7 @@ from Configuration.ProcessModifiers.trackingParabolicMf_cff import trackingParab
 
 TrackProducerIterativeDefault = RecoTracker.TrackProducer.TrackProducer_cfi.TrackProducer.clone(
     useSimpleMF = True,
-    SimpleMagneticField = 'ParabolicMf',
+    SimpleMagneticField = cms.string('ParabolicMf'), # cms type needed because by default useSimpleMF is false
     Propagator = 'PropagatorWithMaterialParabolicMf',
     TTRHBuilder = 'WithAngleAndTemplateWithoutProbQ'
 )
