@@ -7,11 +7,16 @@
 #include "TrackingTools/TrajectoryCleaning/interface/TrajectoryCleaner.h"
 
 #include "TrackingTools/TrajectoryCleaning/interface/TrajectoryCleanerFactory.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/PluginDescription.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 class TrajectoryCleanerESProducer : public edm::ESProducer {
 public:
   TrajectoryCleanerESProducer(const edm::ParameterSet&);
-  ~TrajectoryCleanerESProducer() override;
+  ~TrajectoryCleanerESProducer() override = default;
+
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   typedef std::unique_ptr<TrajectoryCleaner> ReturnType;
 
@@ -31,7 +36,16 @@ TrajectoryCleanerESProducer::TrajectoryCleanerESProducer(const edm::ParameterSet
   setWhatProduced(this, theComponentName);
 }
 
-TrajectoryCleanerESProducer::~TrajectoryCleanerESProducer() {}
+void TrajectoryCleanerESProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  edm::ParameterSetDescription desc;
+  desc.add<std::string>("ComponentName", "TrajectoryCleanerBySharedHits");
+  desc.add<std::string>("ComponentType", "TrajectoryCleanerBySharedHits");
+  desc.addOptional<double>("fractionShared", 0.19);
+  desc.addOptional<double>("ValidHitBonus", 5.0);
+  desc.addOptional<double>("MissingHitPenalty", 20.0);
+  desc.addOptional<bool>("allowSharedFirstHit", true);
+  descriptions.addDefault(desc);
+}
 
 // ------------ method called to produce the data  ------------
 TrajectoryCleanerESProducer::ReturnType TrajectoryCleanerESProducer::produce(const TrackingComponentsRecord& iRecord) {
