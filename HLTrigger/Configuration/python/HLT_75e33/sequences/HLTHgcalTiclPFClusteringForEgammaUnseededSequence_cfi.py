@@ -18,6 +18,7 @@ from ..modules.hltHgcalSoARecHitsProducer_cfi import *
 from ..modules.hltHgcalSoARecHitsLayerClustersProducer_cfi import *
 from ..modules.hltHgcalSoALayerClustersProducer_cfi import *
 from ..modules.hltHgcalLayerClustersFromSoAProducer_cfi import *
+from ..modules.hltTiclEGammaSuperClusterProducerUnseeded_cfi import *
 from ..modules.hltTiclTracksterLinks_cfi import *
 
 _HgcalLocalRecoUnseededSequence = cms.Sequence(hltHgcalDigis+hltHGCalUncalibRecHit+hltHGCalRecHit+hltParticleFlowRecHitHGC+hltHgcalLayerClustersEE+hltHgcalLayerClustersHSci+hltHgcalLayerClustersHSi+hltHgcalMergeLayerClusters)
@@ -67,20 +68,12 @@ hltTiclTracksterLinksSuperclusteringMustacheUnseeded = hltTiclTracksterLinks.clo
     tracksters_collections = [cms.InputTag("hltTiclTrackstersCLUE3DHigh")], # to be changed to ticlTrackstersCLUE3DEM once separate CLUE3D iterations are introduced
 )
 
-from RecoHGCal.TICL.ticlEGammaSuperClusterProducer_cfi import ticlEGammaSuperClusterProducer
-hltTiclEGammaSuperClusterProducerUnseeded = ticlEGammaSuperClusterProducer.clone()
-
 from Configuration.ProcessModifiers.ticl_superclustering_dnn_cff import ticl_superclustering_dnn
 ticl_superclustering_dnn.toReplaceWith(_SuperclusteringUnseededSequence, 
                                        cms.Sequence(
                                                     hltTiclTracksterLinksSuperclusteringDNNUnseeded
                                                     + hltTiclEGammaSuperClusterProducerUnseeded
                                        )
-)
-ticl_superclustering_dnn.toModify(hltTiclEGammaSuperClusterProducerUnseeded,  
-                                  ticlSuperClusters=cms.InputTag("hltTiclTracksterLinksSuperclusteringDNNUnseeded"),
-                                  ticlTrackstersEM=cms.InputTag("hltTiclTrackstersCLUE3DHigh"),
-                                  layerClusters=cms.InputTag("hltHgcalMergeLayerClusters")
 )
 
 # Ticl mustache
@@ -92,8 +85,8 @@ ticl_superclustering_mustache_ticl.toReplaceWith(_SuperclusteringUnseededSequenc
                                                  )
 )
 ticl_superclustering_mustache_ticl.toModify(hltTiclEGammaSuperClusterProducerUnseeded, 
-                                            ticlSuperClusters=cms.InputTag("hltTiclTracksterLinksSuperclusteringMustacheUnseeded"),
-                                            ticlTrackstersEM=cms.InputTag("hltTiclTrackstersCLUE3DHigh"),
-                                            layerClusters=cms.InputTag("hltHgcalMergeLayerClusters"),
-                                            enableRegression=cms.bool(False)
+                                            ticlSuperClusters = cms.InputTag("hltTiclTracksterLinksSuperclusteringMustacheUnseeded"),
+                                            ticlTrackstersEM = cms.InputTag("hltTiclTrackstersCLUE3DHigh"),
+                                            layerClusters = cms.InputTag("hltHgcalMergeLayerClusters"),
+                                            enableRegression = cms.bool(False)
 )
