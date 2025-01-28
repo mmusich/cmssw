@@ -45,7 +45,7 @@ public:
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     edm::ParameterSetDescription desc;
-    desc.add<edm::InputTag>("src");
+    desc.add<edm::InputTag>("src", edm::InputTag(""));
     //Base::fillPSetDescription(desc);
     Selector::fillPSetDescription(desc);
     descriptions.addWithDefaultLabel(desc);

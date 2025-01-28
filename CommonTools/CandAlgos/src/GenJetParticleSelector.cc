@@ -1,6 +1,7 @@
 #include "CommonTools/CandAlgos/interface/GenJetParticleSelector.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "SimGeneral/HepPDTRecord/interface/PdtEntry.h"
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -45,6 +46,8 @@ GenJetParticleSelector::GenJetParticleSelector(const ParameterSet& cfg, edm::Con
     throw cms::Exception("ConfigError", "not allowed to have both stableOnly and partons true at the same time\n");
   }
 }
+
+void GenJetParticleSelector::fillPSetDescription(edm::ParameterSetDescription& desc) { desc.add<bool>("stableOnly"); }
 
 bool GenJetParticleSelector::operator()(const reco::Candidate& p) {
   int status = p.status();

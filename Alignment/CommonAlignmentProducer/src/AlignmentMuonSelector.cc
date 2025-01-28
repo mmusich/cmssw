@@ -53,6 +53,34 @@ AlignmentMuonSelector::AlignmentMuonSelector(const edm::ParameterSet& cfg)
         << "apply Mass Pair filter minMassPair=" << minMassPair << " maxMassPair=" << maxMassPair;
 }
 
+void AlignmentMuonSelector::fillPSetDescription(edm::ParameterSetDescription& desc) {
+  desc.add<bool>("applyBasicCuts");
+  desc.add<bool>("applyNHighestPt");
+  desc.add<bool>("applyMultiplicityFilter");
+  desc.add<bool>("applyMassPairFilter");
+  desc.add<int>("nHighestPt");
+  desc.add<int>("minMultiplicity");
+  desc.add<double>("pMin");
+  desc.add<double>("pMax");
+  desc.add<double>("ptMin");
+  desc.add<double>("ptMax");
+  desc.add<double>("etaMin");
+  desc.add<double>("etaMax");
+  desc.add<double>("phiMin");
+  desc.add<double>("phiMax");
+  desc.add<double>("nHitMinSA");
+  desc.add<double>("nHitMaxSA");
+  desc.add<double>("chi2nMaxSA");
+  desc.add<double>("nHitMinGB");
+  desc.add<double>("nHitMaxGB");
+  desc.add<double>("chi2nMaxGB");
+  desc.add<double>("nHitMinTO");
+  desc.add<double>("nHitMaxTO");
+  desc.add<double>("chi2nMaxTO");
+  desc.add<double>("minMassPair");
+  desc.add<double>("maxMassPair");
+}
+
 // destructor -----------------------------------------------------------------
 
 AlignmentMuonSelector::~AlignmentMuonSelector() {}

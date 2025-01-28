@@ -1,15 +1,15 @@
-#ifndef HitPixelLayersTrackSelection_h
-#define HitPixelLayersTrackSelection_h
+#ifndef Validation_RecoHI_HitPixelLayersTrackSelection_h
+#define Validation_RecoHI_HitPixelLayersTrackSelection_h
 
+#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingParticleFwd.h"
-
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/Framework/interface/ConsumesCollector.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
-#include "Geometry/Records/interface/TrackerTopologyRcd.h"
 
 /**
  Selector to select only tracking particles that leave hits in three pixel layers
@@ -44,6 +44,21 @@ public:
         tpStatusBased_(iConfig.getParameter<bool>("tpStatusBased")),
         pdgId_(iConfig.getParameter<std::vector<int> >("pdgId")),
         tTopoToken_(iC.esConsumes()) {}
+
+  static void fillPSetDescription(edm::ParameterSetDescription& desc) {
+    desc.add<bool>("tripletSeedOnly");
+    desc.add<double>("ptMin");
+    desc.add<double>("minRapidity");
+    desc.add<double>("maxRapidity");
+    desc.add<double>("tip");
+    desc.add<double>("lip");
+    desc.add<int>("minHit");
+    desc.add<bool>("signalOnly");
+    desc.add<bool>("chargedOnly");
+    desc.add<bool>("primaryOnly");
+    desc.add<bool>("tpStatusBased");
+    desc.add<std::vector<int> >("pdgId");
+  }
 
   // select object from a collection and
   // possibly event content

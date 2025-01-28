@@ -12,6 +12,8 @@ namespace reco {
       static PdgIdExcluder make(const edm::ParameterSet& cfg, edm::ConsumesCollector& iC) {
         return PdgIdExcluder(cfg.getParameter<std::vector<int> >("pdgId"));
       }
+
+      static void fillPSetDescription(edm::ParameterSetDescription& desc) { desc.add<std::vector<int> >("pdgId", {}); }
     };
 
   }  // namespace modules

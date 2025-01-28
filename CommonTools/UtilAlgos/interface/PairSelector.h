@@ -3,6 +3,7 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "CommonTools/UtilAlgos/interface/ParameterAdapter.h"
 #include "CommonTools/Utils/interface/PairSelector.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 namespace reco {
   namespace modules {
@@ -14,6 +15,11 @@ namespace reco {
       }
       static PairSelector<S1, S2> make(const edm::ParameterSet& cfg, edm::ConsumesCollector& iC) {
         return PairSelector<S1, S2>(modules::make<S1>(cfg, iC), modules::make<S2>(cfg, iC));
+      }
+
+      static void fillPSetDescription(edm::ParameterSetDescription& desc) {
+        //S1::fillPSetDescription(desc);
+        //S2::fillPSetDescription(desc);
       }
     };
 

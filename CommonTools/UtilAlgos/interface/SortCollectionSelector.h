@@ -56,6 +56,8 @@ public:
       addRef_(selected_, c, v[i].second);
   }
 
+  static void fillPSetDescription(edm::ParameterSetDescription &desc) { desc.add<unsigned int>("maxNumber", 1); }
+
 private:
   struct PairComparator {
     PairComparator(const Comparator &cmp) : cmp_(cmp) {}

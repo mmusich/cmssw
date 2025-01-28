@@ -12,6 +12,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "CommonTools/ParticleFlow/interface/PFCandidateSelectorDefinition.h"
@@ -30,6 +31,15 @@ namespace pf2pat {
           d0SigCut_(cfg.getParameter<double>("d0SigCut")),
           dzSigCut_(cfg.getParameter<double>("dzSigCut")),
           dtSigCut_(cfg.getParameter<double>("dtSigCut")) {}
+
+    static void fillPSetDescription(edm::ParameterSetDescription &desc) {
+      desc.add<double>("d0Cut");
+      desc.add<double>("dzCut");
+      desc.add<double>("dtCut");
+      desc.add<double>("d0SigCut");
+      desc.add<double>("dzSigCut");
+      desc.add<double>("dtSigCut");
+    }
 
     void select(const HandleToCollection &hc, const edm::Event &e, const edm::EventSetup &s) {
       selected_.clear();

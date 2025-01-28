@@ -45,6 +45,12 @@ void VertexClassifier::newEvent(edm::Event const &event, edm::EventSetup const &
   genPrimaryVertices();
 }
 
+void VertexClassifier::fillPSetDescription(edm::ParameterSetDescription &desc) {
+  desc.addUntracked<edm::InputTag>("hepMC");
+  desc.addUntracked<double>("longLivedDecayLength");
+  desc.addUntracked<double>("vertexClusteringDistance");
+}
+
 VertexClassifier const &VertexClassifier::evaluate(reco::VertexBaseRef const &vertex) {
   // Initializing the category vector
   reset();

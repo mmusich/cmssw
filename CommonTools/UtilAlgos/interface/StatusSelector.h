@@ -12,6 +12,8 @@ namespace reco {
       static StatusSelector make(const edm::ParameterSet& cfg, edm::ConsumesCollector& iC) {
         return StatusSelector(cfg.getParameter<std::vector<int> >("status"));
       }
+
+      static void fillPSetDescription(edm::ParameterSetDescription& desc) { desc.add<std::vector<int> >("status", {}); }
     };
 
   }  // namespace modules

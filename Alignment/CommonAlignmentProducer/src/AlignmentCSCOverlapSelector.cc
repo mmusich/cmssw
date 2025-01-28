@@ -23,6 +23,11 @@ AlignmentCSCOverlapSelector::AlignmentCSCOverlapSelector(const edm::ParameterSet
   }
 }
 
+void AlignmentCSCOverlapSelector::fillPSetDescription(edm::ParameterSetDescription &desc) {
+  desc.add<int>("station");
+  desc.add<unsigned int>("minHitsPerChamber");
+}
+
 // destructor -----------------------------------------------------------------
 
 AlignmentCSCOverlapSelector::~AlignmentCSCOverlapSelector() {}

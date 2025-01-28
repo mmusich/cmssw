@@ -74,6 +74,17 @@ public:
         globalTrackingGeomToken_(iC.esConsumes()),
         theMFToken_(iC.esConsumes()) {}
 
+  static void fillPSetDescription(edm::ParameterSetDescription& desc) {
+    desc.add<double>("ptMin", 0.9);
+    desc.add<double>("minRapidity", -2.4);
+    desc.add<double>("maxRapidity", 2.4);
+    desc.add<double>("tip", 100.0);
+    desc.add<double>("lip", 100.0);
+    desc.add<int>("minHit", 0);
+    desc.add<bool>("chargedOnly", true);
+    desc.add<std::vector<int> >("pdgId", {});
+  }
+
   void select(const edm::Handle<collection>& c, const edm::Event& event, const edm::EventSetup& setup) {
     selected_.clear();
     edm::Handle<reco::BeamSpot> beamSpot;

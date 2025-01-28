@@ -7,6 +7,7 @@
  */
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 class GenParticleCustomSelector {
 public:
@@ -123,6 +124,20 @@ namespace reco {
                                          cfg.getParameter<bool>("invertRapidityCut"),
                                          cfg.getParameter<double>("minPhi"),
                                          cfg.getParameter<double>("maxPhi"));
+      }
+
+      static void fillPSetDescription(edm::ParameterSetDescription& desc) {
+        desc.add<double>("ptMin");
+        desc.add<double>("minRapidity");
+        desc.add<double>("maxRapidity");
+        desc.add<double>("tip");
+        desc.add<double>("lip");
+        desc.add<bool>("chargedOnly");
+        desc.add<int>("status");
+        desc.add<std::vector<int> >("pdgId", {});
+        desc.add<bool>("invertRapidityCut");
+        desc.add<double>("minPhi");
+        desc.add<double>("maxPhi");
       }
     };
 

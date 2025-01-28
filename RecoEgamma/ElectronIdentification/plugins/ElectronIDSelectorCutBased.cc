@@ -16,6 +16,12 @@ ElectronIDSelectorCutBased::ElectronIDSelectorCutBased(const edm::ParameterSet& 
   }
 }
 
+void ElectronIDSelectorCutBased::fillPSetDescription(edm::ParameterSetDescription& desc) {
+  desc.add<std::string>("algorithm", "");
+  // FIXME
+  // ElectronIDAlgo::fillPSetDescription(desc);
+}
+
 ElectronIDSelectorCutBased::~ElectronIDSelectorCutBased() { delete electronIDAlgo_; }
 
 void ElectronIDSelectorCutBased::newEvent(const edm::Event& e, const edm::EventSetup& es) {
