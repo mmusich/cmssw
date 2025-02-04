@@ -147,6 +147,7 @@ fragment.load("HLTrigger/Configuration/HLT_75e33/paths/L1T_TkIsoEle28_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/L1T_TkIsoEm22TkIsoEm12_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/L1T_TkIsoEm36_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/L1T_TripleTkMuon_5_3_3_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/paths/DST_PFScouting_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/psets/CkfBaseTrajectoryFilter_block_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/psets/ckfBaseTrajectoryFilterP5_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/psets/CkfTrajectoryBuilder_cfi")
@@ -393,6 +394,8 @@ fragment.schedule = cms.Schedule(*[
     #fragment.L1T_DoubleNNTau52,
     #fragment.L1T_SingleNNTau150,
 
+    fragment.DST_PFScouting,
+    
     fragment.HLTriggerFinalPath,
     fragment.HLTAnalyzerEndpath,
 ])
