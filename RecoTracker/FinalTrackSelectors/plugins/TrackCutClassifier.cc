@@ -160,7 +160,8 @@ namespace {
   }
 
   struct Cuts {
-    Cuts(const edm::ParameterSet& cfg, edm::ConsumesCollector) {
+    Cuts(const edm::ParameterSet& cfg, edm::ConsumesCollector)
+        : moduleLabel(cfg.getParameter<std::string>("module_label")) {
       isHLT = cfg.getParameter<bool>("isHLT");
       fillArrayF(minNdof, cfg, "minNdof");
       fillArrayF(maxChi2, cfg, "maxChi2");
@@ -200,53 +201,94 @@ namespace {
       // minimum number of hits for by-passing the other checks
       if (minHits4pass[0] < std::numeric_limits<int>::max()) {
         ret = std::min(ret, cut(nHits(trk), minHits4pass, std::greater_equal<int>()));
-        if (ret == 1.f)
+        std::cout << moduleLabel << " After minHits4pass check, ret: " << ret << std::endl;
+        if (ret == 1.f) {
+          std::cout << moduleLabel << " "
+                    << "Passed minHits4pass cut" << std::endl;
           return ret;
+        } else {
+          std::cout << moduleLabel << " "
+                    << "Failed minHits4pass cut" << std::endl;
+        }
       }
 
       if (maxRelPtErr[2] < std::numeric_limits<float>::max()) {
         ret = std::min(ret, cut(relPtErr(trk), maxRelPtErr, std::less_equal<float>()));
-        if (ret == -1.f)
+        std::cout << moduleLabel << " After maxRelPtErr check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxRelPtErr cut" << std::endl;
           return ret;
+        }
       }
 
       ret = std::min(ret, cut(float(trk.ndof()), minNdof, std::greater_equal<float>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After minNdof check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed minNdof cut" << std::endl;
         return ret;
+      }
 
       auto nLayers = trk.hitPattern().trackerLayersWithMeasurement();
       ret = std::min(ret, cut(nLayers, minLayers, std::greater_equal<int>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After minLayers check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed minLayers cut" << std::endl;
         return ret;
+      }
 
       ret = std::min(ret, cut(chi2n(trk) / float(nLayers), maxChi2n, std::less_equal<float>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After maxChi2n check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed maxChi2n cut" << std::endl;
         return ret;
+      }
 
       ret = std::min(ret, cut(chi2n(trk), maxChi2, std::less_equal<float>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After maxChi2 check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed maxChi2 cut" << std::endl;
         return ret;
+      }
 
       ret = std::min(ret, cut(n3DLayers(trk, isHLT), min3DLayers, std::greater_equal<int>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After min3DLayers check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed min3DLayers cut" << std::endl;
         return ret;
+      }
 
       ret = std::min(ret, cut(nHits(trk), minHits, std::greater_equal<int>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After minHits check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed minHits cut" << std::endl;
         return ret;
+      }
 
       ret = std::min(ret, cut(nPixelHits(trk), minPixelHits, std::greater_equal<int>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After minPixelHits check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed minPixelHits cut" << std::endl;
         return ret;
+      }
 
       ret = std::min(ret, cut(lostLayers(trk), maxLostLayers, std::less_equal<int>()));
-      if (ret == -1.f)
+      std::cout << moduleLabel << " After maxLostLayers check, ret: " << ret << std::endl;
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed maxLostLayers cut" << std::endl;
         return ret;
+      }
 
       // original dz and dr cut
       if (maxDz[2] < std::numeric_limits<float>::max() || maxDr[2] < std::numeric_limits<float>::max()) {
-        // if not primaryVertices are reconstructed, check compatibility w.r.t. beam spot
-        // min number of tracks [2 (=default) for offline, 3 for HLT]
         Point bestVertex = getBestVertex(trk, vertices, minNVtxTrk);
         float maxDzcut[3];
         std::copy(std::begin(maxDz), std::end(maxDz), std::begin(maxDzcut));
@@ -255,18 +297,25 @@ namespace {
           std::copy(std::begin(maxDzWrtBS), std::end(maxDzWrtBS), std::begin(maxDzcut));
         }
         ret = std::min(ret, cut(dr(trk, bestVertex), maxDr, std::less<float>()));
-        if (ret == -1.f)
+        std::cout << moduleLabel << " After maxDr check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxDr cut" << std::endl;
           return ret;
+        }
 
         ret = std::min(ret, cut(dz(trk, bestVertex), maxDzcut, std::less<float>()));
-        if (ret == -1.f)
+        std::cout << moduleLabel << " After maxDz check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxDz cut" << std::endl;
           return ret;
+        }
       }
 
       // parametrized dz and dr cut by using PV error
       if (dzWPVerr_par[2] < std::numeric_limits<float>::max() || drWPVerr_par[2] < std::numeric_limits<float>::max()) {
         Point bestVertexError(-1., -1., -1.);
-        // min number of tracks [2 (=default) for offline, 3 for HLT]
         Point bestVertex = getBestVertex_withError(trk, vertices, bestVertexError, minNVtxTrk);
 
         float maxDz_par[3];
@@ -275,12 +324,20 @@ namespace {
         drCut_wPVerror_par(trk, nLayers, drWPVerr_par, dr_exp, bestVertexError, maxDr_par);
 
         ret = std::min(ret, cut(dr(trk, bestVertex), maxDr_par, std::less<float>()));
-        if (ret == -1.f)
+        std::cout << moduleLabel << " After maxDrWPVPar check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxDrWPV_par cut" << std::endl;
           return ret;
+        }
 
-        ret = std::min(ret, cut(dz(trk, bestVertex), maxDr_par, std::less<float>()));
-        if (ret == -1.f)
+        ret = std::min(ret, cut(dz(trk, bestVertex), maxDz_par, std::less<float>()));
+        std::cout << moduleLabel << " After maxDzWPPar check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxDzWPV_par cut" << std::endl;
           return ret;
+        }
       }
 
       // parametrized dz and dr cut by using their error
@@ -295,7 +352,6 @@ namespace {
         std::copy(std::begin(maxDz_par1), std::end(maxDz_par1), std::begin(maxDz_par));
         std::copy(std::begin(maxDr_par1), std::end(maxDr_par1), std::begin(maxDr_par));
 
-        // parametrized dz and dr cut by using d0 and z0 resolution
         if (dz_par2[2] < std::numeric_limits<float>::max() || dr_par2[2] < std::numeric_limits<float>::max()) {
           float maxDz_par2[3];
           float maxDr_par2[3];
@@ -310,21 +366,41 @@ namespace {
           }
         }
 
-        Point bestVertex = getBestVertex(trk, vertices, minNVtxTrk);  // min number of tracks 3 @HLT
+        Point bestVertex = getBestVertex(trk, vertices, minNVtxTrk);
         if (bestVertex.z() < -99998.) {
+	  std::cout << " WARNING: using beamspot!!!!" << std::endl;
           bestVertex = beamSpot.position();
         }
 
         ret = std::min(ret, cut(dz(trk, bestVertex), maxDz_par, std::less<float>()));
-        if (ret == -1.f)
-          return ret;
-        ret = std::min(ret, cut(dr(trk, bestVertex), maxDr_par, std::less<float>()));
-        if (ret == -1.f)
-          return ret;
-      }
-      if (ret == -1.f)
-        return ret;
 
+	if(ret != 1.f){
+	  std::cout << moduleLabel << " dz(trk, bestVertex): " << dz(trk, bestVertex) << " cut(dz(trk, bestVertex): " << cut(dz(trk, bestVertex), maxDz_par, std::less<float>())
+		    << ", maxDz_par: [" << maxDz_par[0] << ", "
+		    << maxDz_par[1] << ", " << maxDz_par[2] << "], ret: " << ret << std::endl;
+	}
+        std::cout << moduleLabel << " After maxDzPar check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxDz_par1/maxDz_par2 cut" << std::endl;
+          return ret;
+        }
+        ret = std::min(ret, cut(dr(trk, bestVertex), maxDr_par, std::less<float>()));
+        std::cout << moduleLabel << " After maxDrPar check, ret: " << ret << std::endl;
+        if (ret == -1.f) {
+          std::cout << moduleLabel << " "
+                    << "Failed maxDr_par1/maxDr_par2 cut" << std::endl;
+          return ret;
+        }
+      }
+      if (ret == -1.f) {
+        std::cout << moduleLabel << " "
+                  << "Failed final cut" << std::endl;
+        return ret;
+      }
+
+      std::cout << moduleLabel << " "
+                << "Passed all cuts, ret: " << ret << std::endl;
       return ret;
     }
 
@@ -396,6 +472,7 @@ namespace {
                                        std::numeric_limits<float>::max(),
                                        std::numeric_limits<float>::max()});  // par = 3.
       desc.add<edm::ParameterSetDescription>("dr_par", dr_par);
+      desc.add<std::string>("module_label", "");
     }
 
     bool isHLT;
@@ -423,6 +500,8 @@ namespace {
     float d0err[3];
     float d0err_par[3];
     float drWPVerr_par[3];
+
+    std::string moduleLabel;
   };
 
   using TrackCutClassifier = TrackMVAClassifier<Cuts>;

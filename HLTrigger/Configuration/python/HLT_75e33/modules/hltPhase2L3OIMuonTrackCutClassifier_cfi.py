@@ -4,6 +4,7 @@ hltPhase2L3OIMuonTrackCutClassifier = cms.EDProducer("TrackCutClassifier",
     beamspot = cms.InputTag("hltOnlineBeamSpot"),
     ignoreVertices = cms.bool(True),
     mva = cms.PSet(
+        module_label = cms.string("hltPhase2L3OIMuonTrackCutClassifier"),
         dr_par = cms.PSet(
             d0err = cms.vdouble(0.003, 0.003, 3.40282346639e+38),
             d0err_par = cms.vdouble(0.001, 0.001, 3.40282346639e+38),

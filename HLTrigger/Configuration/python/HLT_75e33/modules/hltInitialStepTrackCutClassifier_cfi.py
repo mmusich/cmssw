@@ -4,6 +4,7 @@ hltInitialStepTrackCutClassifier = cms.EDProducer("TrackCutClassifier",
     beamspot = cms.InputTag("hltOnlineBeamSpot"),
     ignoreVertices = cms.bool(False),
     mva = cms.PSet(
+        module_label = cms.string("hltInitialStepTrackCutClassifier"),
         dr_par = cms.PSet(
             d0err = cms.vdouble(0.003, 0.003, 0.003),
             d0err_par = cms.vdouble(0.001, 0.001, 0.001),

@@ -25,6 +25,7 @@ TrackMVAClassifierBase::TrackMVAClassifierBase(const edm::ParameterSet& cfg)
       vertices_(mayConsume<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertices"))),
       ignoreVertices_(cfg.getParameter<bool>("ignoreVertices")) {
   auto const& qv = cfg.getParameter<std::vector<double>>("qualityCuts");
+  alias_ = cfg.getParameter<std::string>("@module_label");
   assert(qv.size() == 3);
   std::copy(std::begin(qv), std::end(qv), std::begin(qualityCuts));
 
@@ -72,10 +73,16 @@ void TrackMVAClassifierBase::produce(edm::Event& evt, const edm::EventSetup& es)
       // If the MVA value is known to be unreliable, force into generalTracks collection
       (*mvas)[k] = std::max(output.first, float(qualityCuts[0] + 0.001));
     }
+
     float mva = (*mvas)[k];
-    (*quals)[k++] = (mva > qualityCuts[0]) << reco::TrackBase::loose |
-                    (mva > qualityCuts[1]) << reco::TrackBase::tight |
-                    (mva > qualityCuts[2]) << reco::TrackBase::highPurity;
+    unsigned char qualityMask = (mva > qualityCuts[0]) << reco::TrackBase::loose |
+                                (mva > qualityCuts[1]) << reco::TrackBase::tight |
+                                (mva > qualityCuts[2]) << reco::TrackBase::highPurity;
+    (*quals)[k++] = qualityMask;
+
+    // Print MVA score and quality information
+    std::cout << alias_ << " Track " << k - 1 << " MVA score: " << mva
+              << ", highPurity: " << ((qualityMask & (1 << reco::TrackBase::highPurity)) != 0) << std::endl;
   }
 
   evt.put(std::move(mvas), "MVAValues");

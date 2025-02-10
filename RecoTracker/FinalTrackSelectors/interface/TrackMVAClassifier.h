@@ -50,11 +50,11 @@ private:
   edm::EDGetTokenT<reco::VertexCollection> vertices_;
 
   bool ignoreVertices_;
-
   // MVA
 
   // qualitycuts (loose, tight, hp)
   float qualityCuts[3];
+  std::string alias_;
 };
 
 namespace trackMVAClassifierImpl {

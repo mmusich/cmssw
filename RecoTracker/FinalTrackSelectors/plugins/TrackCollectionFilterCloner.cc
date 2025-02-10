@@ -50,6 +50,7 @@ namespace {
     const edm::EDGetTokenT<QualityMaskCollection> originalQualValsToken_;
 
     const reco::TrackBase::TrackQuality minQuality_;
+    const std::string alias_;
   };
 }  // namespace
 
@@ -82,7 +83,8 @@ namespace {
         originalMVAValsToken_(consumes<MVACollection>(iConfig.getParameter<edm::InputTag>("originalMVAVals"))),
         originalQualValsToken_(
             consumes<QualityMaskCollection>(iConfig.getParameter<edm::InputTag>("originalQualVals"))),
-        minQuality_(reco::TrackBase::qualityByName(iConfig.getParameter<std::string>("minQuality"))) {
+        minQuality_(reco::TrackBase::qualityByName(iConfig.getParameter<std::string>("minQuality"))),
+        alias_(iConfig.getParameter<std::string>("@module_label")) {
     produces<MVACollection>("MVAValues");
     produces<QualityMaskCollection>("QualityMasks");
   }
@@ -117,8 +119,11 @@ namespace {
 
     auto k = 0U;
     for (auto j = 0U; j < nTracks; ++j) {
-      if (!(qualMask & (*originalQualStore)[j]))
+      if (!(qualMask & (*originalQualStore)[j])) {
+        std::cout << alias_ << " Track " << j << " did not pass minimum quality: " << (int)(*originalQualStore)[j]
+                  << std::endl;
         continue;
+      }
 
       selId.push_back(j);
       pmvas->push_back((*originalMVAStore)[j]);
