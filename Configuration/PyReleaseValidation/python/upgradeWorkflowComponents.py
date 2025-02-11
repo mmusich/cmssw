@@ -3205,6 +3205,7 @@ upgradeFragments = OrderedDict([
     ('SingleMuPt100_Eta2p85_cfi', UpgradeFragment(Kby(9,100),'SingleMuPt100')),
     ('SingleMuPt1000_Eta2p85_cfi', UpgradeFragment(Kby(9,100),'SingleMuPt1000')),
     ('FourMuExtendedPt_1_200_pythia8_cfi', UpgradeFragment(Kby(10,100),'FourMuExtendedPt1_200')),
+    ('FourMuPt15Eto0_0p4_cfi', UpgradeFragment(Kby(10,100),'FourMuPt15Eto0_0p4')),
     ('TenMuExtendedE_0_200_pythia8_cfi', UpgradeFragment(Kby(10,100),'TenMuExtendedE_0_200')),
     ('DoubleElectronPt10Extended_pythia8_cfi', UpgradeFragment(Kby(9,100),'SingleElPt10Extended')),
     ('DoubleElectronPt35Extended_pythia8_cfi', UpgradeFragment(Kby(9,100),'SingleElPt35Extended')),
