@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltBTagPFPuppiDeepFlavour0p935DoubleEta2p4 = cms.EDFilter("HLTPFJetTag",
+from HLTrigger.btau.HLTPFJetTag import HLTPFJetTag as _HLTPFJetTag
+
+hltBTagPFPuppiDeepFlavour0p935DoubleEta2p4 = _HLTPFJetTag(
     JetTags = cms.InputTag("hltPfDeepFlavourJetTagsModEta2p4","probb"),
     Jets = cms.InputTag("hltPFPuppiJetForBtagEta2p4"),
     MatchJetsByDeltaR = cms.bool(True),

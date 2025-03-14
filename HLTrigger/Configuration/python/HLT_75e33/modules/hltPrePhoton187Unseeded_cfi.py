@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPrePhoton187Unseeded = cms.EDFilter("HLTPrescaler",
+from HLTrigger.HLTcore.HLTPrescaler import HLTPrescaler as _HLTPrescaler
+
+hltPrePhoton187Unseeded = _HLTPrescaler(
     L1GtReadoutRecordTag = cms.InputTag("hltGtStage2Digis"),
     offset = cms.uint32(0)
 )

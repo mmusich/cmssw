@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEle5WPTightHgcalIsoUnseededFilter = cms.EDFilter("HLTEgammaGenericQuadraticEtaFilter",
+from HLTrigger.Egamma.HLTEgammaGenericQuadraticEtaFilter import HLTEgammaGenericQuadraticEtaFilter as _HLTEgammaGenericQuadraticEtaFilter
+
+hltEle5WPTightHgcalIsoUnseededFilter = _HLTEgammaGenericQuadraticEtaFilter(
     absEtaLowEdges = cms.vdouble(0.0, 1.0, 1.479, 2.0),
     candTag = cms.InputTag("hltEle5WPTightEcalIsoUnseededFilter"),
     doRhoCorrection = cms.bool(False),

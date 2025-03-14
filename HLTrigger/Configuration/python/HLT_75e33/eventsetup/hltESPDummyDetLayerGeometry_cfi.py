@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPDummyDetLayerGeometry = cms.ESProducer("DetLayerGeometryESProducer",
+from TrackingTools.RecoGeometry.DetLayerGeometryESProducer import DetLayerGeometryESProducer as _DetLayerGeometryESProducer
+
+hltESPDummyDetLayerGeometry = _DetLayerGeometryESProducer(
     ComponentName = cms.string('hltESPDummyDetLayerGeometry')
 )

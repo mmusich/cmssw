@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPChi2ChargeMeasurementEstimator9 = cms.ESProducer("Chi2ChargeMeasurementEstimatorESProducer",
+from RecoTracker.MeasurementDet.Chi2ChargeMeasurementEstimatorESProducer import Chi2ChargeMeasurementEstimatorESProducer as _Chi2ChargeMeasurementEstimatorESProducer
+
+hltESPChi2ChargeMeasurementEstimator9 = _Chi2ChargeMeasurementEstimatorESProducer(
     ComponentName = cms.string('hltESPChi2ChargeMeasurementEstimator9'),
     MaxChi2 = cms.double(9.0),
     MaxDisplacement = cms.double(0.5),

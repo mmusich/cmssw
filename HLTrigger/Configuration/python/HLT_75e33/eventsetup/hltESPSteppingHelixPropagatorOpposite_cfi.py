@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPSteppingHelixPropagatorOpposite = cms.ESProducer("SteppingHelixPropagatorESProducer",
+from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorESProducer import SteppingHelixPropagatorESProducer as _SteppingHelixPropagatorESProducer
+
+hltESPSteppingHelixPropagatorOpposite = _SteppingHelixPropagatorESProducer(
     ApplyRadX0Correction = cms.bool(True),
     AssumeNoMaterial = cms.bool(False),
     ComponentName = cms.string('hltESPSteppingHelixPropagatorOpposite'),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPTTRHBuilderPixelOnly = cms.ESProducer("TkTransientTrackingRecHitBuilderESProducer",
+from RecoTracker.TransientTrackingRecHit.TkTransientTrackingRecHitBuilderESProducer import TkTransientTrackingRecHitBuilderESProducer as _TkTransientTrackingRecHitBuilderESProducer
+
+hltESPTTRHBuilderPixelOnly = _TkTransientTrackingRecHitBuilderESProducer(
     ComponentName = cms.string('hltESPTTRHBuilderPixelOnly'),
     ComputeCoarseLocalPositionFromDisk = cms.bool(False),
     Matcher = cms.string('StandardMatcher'),

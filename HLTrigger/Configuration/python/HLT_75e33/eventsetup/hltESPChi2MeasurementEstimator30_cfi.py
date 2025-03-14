@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPChi2MeasurementEstimator30 = cms.ESProducer("Chi2MeasurementEstimatorESProducer",
+from TrackingTools.KalmanUpdators.Chi2MeasurementEstimatorESProducer import Chi2MeasurementEstimatorESProducer as _Chi2MeasurementEstimatorESProducer
+
+hltESPChi2MeasurementEstimator30 = _Chi2MeasurementEstimatorESProducer(
     ComponentName = cms.string('hltESPChi2MeasurementEstimator30'),
     MaxChi2 = cms.double(30.0),
     MaxDisplacement = cms.double(100.0),

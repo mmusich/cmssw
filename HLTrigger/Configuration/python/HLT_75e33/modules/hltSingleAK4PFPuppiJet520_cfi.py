@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltSingleAK4PFPuppiJet520 = cms.EDFilter("HLT1PFJet",
+from HLTrigger.HLTfilters.HLT1PFJet import HLT1PFJet as _HLT1PFJet
+
+hltSingleAK4PFPuppiJet520 = _HLT1PFJet(
     MaxEta = cms.double(5.0),
     MaxMass = cms.double(-1.0),
     MinE = cms.double(-1.0),

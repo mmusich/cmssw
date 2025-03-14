@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltBoolEnd = cms.EDFilter("HLTBool",
+from HLTrigger.HLTfilters.HLTBool import HLTBool as _HLTBool
+
+hltBoolEnd = _HLTBool(
     result = cms.bool(True)
 )

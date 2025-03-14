@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltBTagPFPuppiDeepCSV0p31Eta2p4TripleEta2p4 = cms.EDFilter("HLTPFJetTag",
+from HLTrigger.btau.HLTPFJetTag import HLTPFJetTag as _HLTPFJetTag
+
+hltBTagPFPuppiDeepCSV0p31Eta2p4TripleEta2p4 = _HLTPFJetTag(
     JetTags = cms.InputTag("hltDeepCombinedSecondaryVertexBJetTagsPFPuppiModEta2p4","probb"),
     Jets = cms.InputTag("hltPFPuppiJetForBtagEta2p4"),
     MaxTag = cms.double(999999.0),

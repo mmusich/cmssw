@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEG108EtUnseededFilter = cms.EDFilter("HLTEgammaEtFilter",
+from HLTrigger.Egamma.HLTEgammaEtFilter import HLTEgammaEtFilter as _HLTEgammaEtFilter
+
+hltEG108EtUnseededFilter = _HLTEgammaEtFilter(
     etcutEB = cms.double(108.0),
     etcutEE = cms.double(9999999.0),
     inputTag = cms.InputTag("hltEgammaCandidatesWrapperUnseeded"),

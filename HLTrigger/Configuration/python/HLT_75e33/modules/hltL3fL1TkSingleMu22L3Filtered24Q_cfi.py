@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL3fL1TkSingleMu22L3Filtered24Q = cms.EDFilter("HLTMuonTrkL1TkMuFilter",
+from HLTrigger.Muon.HLTMuonTrkL1TkMuFilter import HLTMuonTrkL1TkMuFilter as _HLTMuonTrkL1TkMuFilter
+
+hltL3fL1TkSingleMu22L3Filtered24Q = _HLTMuonTrkL1TkMuFilter(
     inputCandCollection = cms.InputTag("hltPhase2L3MuonCandidates"),
     inputMuonCollection = cms.InputTag("hltPhase2L3Muons"),
     maxAbsEta = cms.double(1e+99),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsSelectedPFTausTrackPt1MediumChargedIsolation = cms.EDFilter("PFTauSelector",
+from RecoTauTag.RecoTau.PFTauSelector import PFTauSelector as _PFTauSelector
+
+hltHpsSelectedPFTausTrackPt1MediumChargedIsolation = _PFTauSelector(
     cut = cms.string('pt > 0'),
     discriminatorContainers = cms.VPSet(),
     discriminators = cms.VPSet(cms.PSet(

@@ -1,7 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 def _addProcessTTRHBuilderWithoutRefit(process):
-    process.hltESPTTRHBuilderWithoutRefit = cms.ESProducer("TkTransientTrackingRecHitBuilderESProducer",
+    from RecoTracker.TransientTrackingRecHit.TkTransientTrackingRecHitBuilderESProducer import TkTransientTrackingRecHitBuilderESProducer as _TkTransientTrackingRecHitBuilderESProducer
+
+    hltESPTTRHBuilderWithoutRefit = _TkTransientTrackingRecHitBuilderESProducer(
         ComponentName = cms.string('hltESPTTRHBuilderWithoutRefit'),
         ComputeCoarseLocalPositionFromDisk = cms.bool(False),
         Matcher = cms.string('Fake'),

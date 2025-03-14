@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPKFUpdator = cms.ESProducer("KFUpdatorESProducer",
+from TrackingTools.KalmanUpdators.KFUpdatorESProducer import KFUpdatorESProducer as _KFUpdatorESProducer
+
+hltESPKFUpdator = _KFUpdatorESProducer(
     ComponentName = cms.string('hltESPKFUpdator')
 )

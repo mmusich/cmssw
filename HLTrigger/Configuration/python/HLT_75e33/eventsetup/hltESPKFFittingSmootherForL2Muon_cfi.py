@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPKFFittingSmootherForL2Muon = cms.ESProducer("KFFittingSmootherESProducer",
+from TrackingTools.TrackFitters.KFFittingSmootherESProducer import KFFittingSmootherESProducer as _KFFittingSmootherESProducer
+
+hltESPKFFittingSmootherForL2Muon = _KFFittingSmootherESProducer(
     BreakTrajWith2ConsecutiveMissing = cms.bool(False),
     ComponentName = cms.string('hltESPKFFittingSmootherForL2Muon'),
     EstimateCut = cms.double(-1.0),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsSelectedPFTausMediumDitauWPDeepTau = cms.EDFilter("PFTauSelector",
+from RecoTauTag.RecoTau.PFTauSelector import PFTauSelector as _PFTauSelector
+
+hltHpsSelectedPFTausMediumDitauWPDeepTau = _PFTauSelector(
     cut = cms.string('pt > 35 && abs(eta) < 2.1'),
     discriminatorContainers = cms.VPSet(cms.PSet(
         discriminator = cms.InputTag("hltHpsPFTauDeepTauProducer","VSjet"),
