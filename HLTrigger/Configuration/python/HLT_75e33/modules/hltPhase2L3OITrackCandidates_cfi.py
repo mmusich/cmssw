@@ -3,22 +3,22 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.CkfPattern.CkfTrackCandidateMaker import CkfTrackCandidateMaker as _CkfTrackCandidateMaker
 
 hltPhase2L3OITrackCandidates = _CkfTrackCandidateMaker(
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
-    TrajectoryBuilderPSet = cms.PSet(
+    TrajectoryBuilderPSet = dict(
         refToPSet_ = cms.string('HLTPSetMuonCkfTrajectoryBuilder')
     ),
     TrajectoryCleaner = cms.string('muonSeededTrajectoryCleanerBySharedHits'),
-    TransientInitialStateEstimatorParameters = cms.PSet(
-        numberMeasurementsForFit = cms.int32(4),
+    TransientInitialStateEstimatorParameters = dict(
+        numberMeasurementsForFit = 4,
         propagatorAlongTISE = cms.string('PropagatorWithMaterial'),
         propagatorOppositeTISE = cms.string('PropagatorWithMaterialOpposite')
     ),
-    cleanTrajectoryAfterInOut = cms.bool(False),
-    doSeedingRegionRebuilding = cms.bool(False),
-    maxNSeeds = cms.uint32(500000),
-    maxSeedsBeforeCleaning = cms.uint32(5000),
-    src = cms.InputTag("hltPhase2L3OISeedsFromL2Muons"),
-    useHitsSplitting = cms.bool(False)
+    cleanTrajectoryAfterInOut = False,
+    doSeedingRegionRebuilding = False,
+    maxNSeeds = 500000,
+    maxSeedsBeforeCleaning = 5000,
+    src = ("hltPhase2L3OISeedsFromL2Muons"),
+    useHitsSplitting = False
 )

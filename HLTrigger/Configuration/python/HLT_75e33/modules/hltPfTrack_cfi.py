@@ -3,12 +3,12 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFTracking.PFTrackProducer import PFTrackProducer as _PFTrackProducer
 
 hltPfTrack = _PFTrackProducer(
-    GsfTrackModuleLabel = cms.InputTag("electronGsfTracks"),
-    GsfTracksInEvents = cms.bool(False),
-    MuColl = cms.InputTag("hltPhase2L3Muons"),
-    PrimaryVertexLabel = cms.InputTag("hltOfflinePrimaryVertices"),
-    TkColList = cms.VInputTag(cms.InputTag("hltGeneralTracks")),
+    GsfTrackModuleLabel = ("electronGsfTracks"),
+    GsfTracksInEvents = False,
+    MuColl = ("hltPhase2L3Muons"),
+    PrimaryVertexLabel = ("hltOfflinePrimaryVertices"),
+    TkColList = cms.VInputTag(("hltGeneralTracks")),
     TrackQuality = cms.string('highPurity'),
-    TrajInEvents = cms.bool(False),
-    UseQuality = cms.bool(True)
+    TrajInEvents = False,
+    UseQuality = True
 )

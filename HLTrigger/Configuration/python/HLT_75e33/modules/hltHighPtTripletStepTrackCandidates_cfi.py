@@ -3,26 +3,26 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.CkfPattern.CkfTrackCandidateMaker import CkfTrackCandidateMaker as _CkfTrackCandidateMaker
 
 hltHighPtTripletStepTrackCandidates = _CkfTrackCandidateMaker(
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"), 
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"), 
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
-    TrajectoryBuilderPSet = cms.PSet(
+    TrajectoryBuilderPSet = dict(
         refToPSet_ = cms.string('highPtTripletStepTrajectoryBuilder')
     ),
     TrajectoryCleaner = cms.string('highPtTripletStepTrajectoryCleanerBySharedHits'),
-    TransientInitialStateEstimatorParameters = cms.PSet(
-        numberMeasurementsForFit = cms.int32(4),
+    TransientInitialStateEstimatorParameters = dict(
+        numberMeasurementsForFit = 4,
         propagatorAlongTISE = cms.string('PropagatorWithMaterialParabolicMf'),
         propagatorOppositeTISE = cms.string('PropagatorWithMaterialParabolicMfOpposite')
     ),
-    cleanTrajectoryAfterInOut = cms.bool(True),
-    doSeedingRegionRebuilding = cms.bool(True),
-    maxNSeeds = cms.uint32(100000),
-    maxSeedsBeforeCleaning = cms.uint32(1000),
-    numHitsForSeedCleaner = cms.int32(50),
-    onlyPixelHitsForSeedCleaner = cms.bool(True),
-    phase2clustersToSkip = cms.InputTag("hltHighPtTripletStepClusters"),
-    reverseTrajectories = cms.bool(False),
-    src = cms.InputTag("hltHighPtTripletStepSeeds"),
-    useHitsSplitting = cms.bool(False)
+    cleanTrajectoryAfterInOut = True,
+    doSeedingRegionRebuilding = True,
+    maxNSeeds = 100000,
+    maxSeedsBeforeCleaning = 1000,
+    numHitsForSeedCleaner = 50,
+    onlyPixelHitsForSeedCleaner = True,
+    phase2clustersToSkip = ("hltHighPtTripletStepClusters"),
+    reverseTrajectories = False,
+    src = ("hltHighPtTripletStepSeeds"),
+    useHitsSplitting = False
 )

@@ -3,47 +3,46 @@ import FWCore.ParameterSet.Config as cms
 from RecoMuon.L2MuonSeedGenerator.L2MuonSeedGeneratorFromL1TkMu import L2MuonSeedGeneratorFromL1TkMu as _L2MuonSeedGeneratorFromL1TkMu
 
 hltL2MuonSeedsFromL1TkMuon = _L2MuonSeedGeneratorFromL1TkMu(
-    EtaMatchingBins = cms.vdouble(0.0, 2.5),
-    InputObjects = cms.InputTag("l1tTkMuonsGmt"),
-    L1MaxEta = cms.double(2.5),
-    L1MinPt = cms.double(0.0),
-    MatchDR = cms.vdouble(0.3),
-    MinPL1Tk = cms.double(3.5),
-    MinPtL1TkBarrel = cms.double(3.5),
-    OfflineSeedLabel = cms.untracked.InputTag("hltL2OfflineMuonSeeds"),
-    Propagator = cms.string('SteppingHelixPropagatorAny'),
-    ServiceParameters = cms.PSet(
-        Propagators = cms.untracked.vstring('SteppingHelixPropagatorAny'),
-        RPCLayers = cms.bool(True),
-        UseMuonNavigation = cms.untracked.bool(True)
+    EtaMatchingBins = [0.0, 2.5],
+    InputObjects = ("l1tTkMuonsGmt"),
+    L1MaxEta = 2.5,
+    L1MinPt = 0.0,
+    MatchDR = [0.3],
+    MinPL1Tk = 3.5,
+    MinPtL1TkBarrel = 3.5,
+    OfflineSeedLabel = ("hltL2OfflineMuonSeeds"),
+    Propagator = 'SteppingHelixPropagatorAny',
+    ServiceParameters = dict(
+        Propagators = ['SteppingHelixPropagatorAny'],
+        RPCLayers = True,
+        UseMuonNavigation = True
     ),
-    SetMinPtBarrelTo = cms.double(3.5),
-    SetMinPtEndcapTo = cms.double(1.0),
-    UseOfflineSeed = cms.untracked.bool(True),
-    UseUnassociatedL1 = cms.bool(False)
+    SetMinPtBarrelTo = 3.5,
+    SetMinPtEndcapTo = 1.0,
+    UseOfflineSeed = True,
+    UseUnassociatedL1 = False
 )
 
-from RecoMuon.L2MuonSeedGenerator.L2MuonSeedGeneratorFromL1TkMu import L2MuonSeedGeneratorFromL1TkMu as _L2MuonSeedGeneratorFromL1TkMu
-
-phase2HltL2MuonSeedsFromL1TkMuon = _L2MuonSeedGeneratorFromL1TkMu(
-    inputObjects = cms.InputTag('l1tTkMuonsGmt'),
-    cscRecSegmentLabel = cms.InputTag('hltCscSegments'),
-    dtRecSegmentLabel = cms.InputTag('hltDt4DSegments'),
-    minPL1Tk = cms.double(3.5),
-    maxPL1Tk = cms.double(200),
-    stubMatchDPhi = cms.double(0.05),
-    stubMatchDTheta = cms.double(0.1),
-    extrapolationWindowClose = cms.double(0.2),
-    extrapolationWindowFar = cms.double(0.1),
-    maximumEtaBarrel = cms.double(0.7),
-    maximumEtaOverlap = cms.double(1.3),
-    propagator = cms.string('SteppingHelixPropagatorAny'),
-    serviceParameters = cms.PSet(
-        Propagators = cms.untracked.vstring('SteppingHelixPropagatorAny'),
-        RPCLayers = cms.bool(True),
-        UseMuonNavigation = cms.untracked.bool(True)
+from RecoMuon.L2MuonSeedGenerator.Phase2L2MuonSeedCreator import Phase2L2MuonSeedCreator as _Phase2L2MuonSeedCreator
+phase2HltL2MuonSeedsFromL1TkMuon = _Phase2L2MuonSeedCreator(
+    inputObjects = ('l1tTkMuonsGmt'),
+    cscRecSegmentLabel = ('hltCscSegments'),
+    dtRecSegmentLabel = ('hltDt4DSegments'),
+    minPL1Tk = 3.5,
+    maxPL1Tk = 200,
+    stubMatchDPhi = 0.05,
+    stubMatchDTheta = 0.1,
+    extrapolationWindowClose = 0.2,
+    extrapolationWindowFar = 0.1,
+    maximumEtaBarrel = 0.7,
+    maximumEtaOverlap = 1.3,
+    propagator = 'SteppingHelixPropagatorAny',
+    serviceParameters = dict(
+        Propagators = ['SteppingHelixPropagatorAny'],
+        RPCLayers = True,
+        UseMuonNavigation = True
     ),
-    estimatorMaxChi2 = cms.double(1000.0)
+    estimatorMaxChi2 = 1000.0
 )   
 
 from Configuration.ProcessModifiers.phase2L2AndL3Muons_cff import phase2L2AndL3Muons

@@ -3,41 +3,41 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkSeedingLayers.SeedingLayersEDProducer import SeedingLayersEDProducer as _SeedingLayersEDProducer
 
 hltPhase2L3MuonHighPtTripletStepSeedLayers = _SeedingLayersEDProducer(
-    BPix = cms.PSet(
+    BPix = dict(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('WithTrackAngle'),
         skipClusters = cms.InputTag("hltPhase2L3MuonHighPtTripletStepClusters")
     ),
-    FPix = cms.PSet(
+    FPix = dict(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('WithTrackAngle'),
         skipClusters = cms.InputTag("hltPhase2L3MuonHighPtTripletStepClusters")
     ),
-    MTEC = cms.PSet(
+    MTEC = dict(
 
     ),
-    MTIB = cms.PSet(
+    MTIB = dict(
 
     ),
-    MTID = cms.PSet(
+    MTID = dict(
 
     ),
-    MTOB = cms.PSet(
+    MTOB = dict(
 
     ),
-    TEC = cms.PSet(
+    TEC = dict(
 
     ),
-    TIB = cms.PSet(
+    TIB = dict(
 
     ),
-    TID = cms.PSet(
+    TID = dict(
 
     ),
-    TOB = cms.PSet(
+    TOB = dict(
 
     ),
-    layerList = cms.vstring(
+    layerList = [
         'BPix1+BPix2+BPix3',
         'BPix2+BPix3+BPix4',
         'BPix1+BPix3+BPix4',
@@ -64,6 +64,6 @@ hltPhase2L3MuonHighPtTripletStepSeedLayers = _SeedingLayersEDProducer(
         'FPix5_neg+FPix6_neg+FPix7_neg',
         'FPix6_pos+FPix7_pos+FPix8_pos',
         'FPix6_neg+FPix7_neg+FPix8_neg'
-    ),
+    ],
     mightGet = cms.optional.untracked.vstring
 )

@@ -4,5 +4,5 @@ from CommonTools.RecoAlgos.PFClusterRefCandidateProducer import PFClusterRefCand
 
 hltPfClusterRefsForJetsECAL = _PFClusterRefCandidateProducer(
     particleType = cms.string('pi+'),
-    src = cms.InputTag("hltParticleFlowClusterECAL")
+    src = ("hltParticleFlowClusterECAL")
 )

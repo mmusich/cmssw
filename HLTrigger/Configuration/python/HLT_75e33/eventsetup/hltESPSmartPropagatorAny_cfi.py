@@ -4,7 +4,7 @@ from TrackingTools.Producers.SmartPropagatorESProducer import SmartPropagatorESP
 
 hltESPSmartPropagatorAny = _SmartPropagatorESProducer(
     ComponentName = cms.string('hltESPSmartPropagatorAny'),
-    Epsilon = cms.double(5.0),
+    Epsilon = 5.0,
     MuonPropagator = cms.string('SteppingHelixPropagatorAny'),
     PropagationDirection = cms.string('alongMomentum'),
     TrackerPropagator = cms.string('PropagatorWithMaterial')

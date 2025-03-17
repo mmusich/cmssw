@@ -4,5 +4,5 @@ from JetMETCorrections.Modules.CorrectedPFJetProducer import CorrectedPFJetProdu
 
 hltAK4PFJetsCorrected = _CorrectedPFJetProducer(
     correctors = cms.VInputTag("hltAK4PFJetCorrector"),
-    src = cms.InputTag("hltAK4PFJets")
+    src = ("hltAK4PFJets")
 )

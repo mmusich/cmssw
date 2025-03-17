@@ -20,6 +20,6 @@ hltPfDeepFlavourJetTags = _DeepFlavourONNXJetTagsProducer(
     ),
     mightGet = cms.optional.untracked.vstring,
     model_path = cms.FileInPath('RecoBTag/Combined/data/DeepFlavourV02_PhaseII/DeepJet_retraining_phase2_new_inputs.onnx'),
-    output_names = cms.vstring(),
-    src = cms.InputTag("hltPfDeepFlavourTagInfos")
+    output_names = [],
+    src = ("hltPfDeepFlavourTagInfos")
 )

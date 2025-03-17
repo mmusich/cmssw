@@ -3,39 +3,39 @@ import FWCore.ParameterSet.Config as cms
 from CommonTools.RecoAlgos.RecoChargedRefCandidatePrimaryVertexSorter import RecoChargedRefCandidatePrimaryVertexSorter as _RecoChargedRefCandidatePrimaryVertexSorter
 
 hltOfflinePrimaryVertices = _RecoChargedRefCandidatePrimaryVertexSorter(
-    assignment = cms.PSet(
-        DzCutForChargedFromPUVtxs = cms.double(0.2),
-        EtaMinUseDz = cms.double(-1),
-        NumOfPUVtxsForCharged = cms.uint32(0),
-        OnlyUseFirstDz = cms.bool(False),
-        PtMaxCharged = cms.double(-1),
-        maxDistanceToJetAxis = cms.double(0.07),
-        maxDtSigForPrimaryAssignment = cms.double(4.0),
-        maxDxyForJetAxisAssigment = cms.double(0.1),
-        maxDxyForNotReconstructedPrimary = cms.double(0.01),
-        maxDxySigForNotReconstructedPrimary = cms.double(2),
-        maxDzErrorForPrimaryAssignment = cms.double(0.05),
-        maxDzForJetAxisAssigment = cms.double(0.1),
-        maxDzForPrimaryAssignment = cms.double(0.1),
-        maxDzSigForPrimaryAssignment = cms.double(5.0),
-        maxJetDeltaR = cms.double(0.5),
-        minJetPt = cms.double(25),
-        preferHighRanked = cms.bool(False),
-        useTiming = cms.bool(False),
-        useVertexFit = cms.bool(True)
+    assignment = dict(
+        DzCutForChargedFromPUVtxs = 0.2,
+        EtaMinUseDz = -1,
+        NumOfPUVtxsForCharged = 0,
+        OnlyUseFirstDz = False,
+        PtMaxCharged = -1,
+        maxDistanceToJetAxis = 0.07,
+        maxDtSigForPrimaryAssignment = 4.0,
+        maxDxyForJetAxisAssigment = 0.1,
+        maxDxyForNotReconstructedPrimary = 0.01,
+        maxDxySigForNotReconstructedPrimary = 2,
+        maxDzErrorForPrimaryAssignment = 0.05,
+        maxDzForJetAxisAssigment = 0.1,
+        maxDzForPrimaryAssignment = 0.1,
+        maxDzSigForPrimaryAssignment = 5.0,
+        maxJetDeltaR = 0.5,
+        minJetPt = 25,
+        preferHighRanked = False,
+        useTiming = False,
+        useVertexFit = True
     ),
-    jets = cms.InputTag("hltAk4CaloJetsForTrk"),
-    particles = cms.InputTag("hltTrackRefsForJetsBeforeSorting"),
-    produceAssociationToOriginalVertices = cms.bool(False),
-    produceNoPileUpCollection = cms.bool(False),
-    producePileUpCollection = cms.bool(False),
-    produceSortedVertices = cms.bool(True),
-    qualityForPrimary = cms.int32(3),
-    sorting = cms.PSet(
+    jets = ("hltAk4CaloJetsForTrk"),
+    particles = ("hltTrackRefsForJetsBeforeSorting"),
+    produceAssociationToOriginalVertices = False,
+    produceNoPileUpCollection = False,
+    producePileUpCollection = False,
+    produceSortedVertices = True,
+    qualityForPrimary = 3,
+    sorting = dict(
 
     ),
-    trackTimeResoTag = cms.InputTag(""),
-    trackTimeTag = cms.InputTag(""),
-    usePVMET = cms.bool(True),
-    vertices = cms.InputTag("hltUnsortedOfflinePrimaryVertices")
+    trackTimeResoTag = (""),
+    trackTimeTag = (""),
+    usePVMET = True,
+    vertices = ("hltUnsortedOfflinePrimaryVertices")
 )

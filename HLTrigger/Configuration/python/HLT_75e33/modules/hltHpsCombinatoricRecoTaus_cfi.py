@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.RecoTauProducer import RecoTauProducer as _RecoTauProducer
 
 hltHpsCombinatoricRecoTaus = _RecoTauProducer(
-    buildNullTaus = cms.bool(False),
+    buildNullTaus = False,
     builders = cms.VPSet(cms.PSet(
         decayModes = cms.VPSet(
             cms.PSet(

@@ -3,14 +3,14 @@ import FWCore.ParameterSet.Config as cms
 from HLTrigger.HLTfilters.HLT1PFJet import HLT1PFJet as _HLT1PFJet
 
 hltDoublePFPuppiJets128MaxEta2p4 = _HLT1PFJet(
-    MaxEta = cms.double(2.4),
-    MaxMass = cms.double(-1.0),
-    MinE = cms.double(-1.0),
-    MinEta = cms.double(-2.4),
-    MinMass = cms.double(-1.0),
-    MinN = cms.int32(2),
-    MinPt = cms.double(128.0),
-    inputTag = cms.InputTag("hltAK4PFPuppiJetsCorrected"),
-    saveTags = cms.bool(True),
-    triggerType = cms.int32(86)
+    MaxEta = 2.4,
+    MaxMass = -1.0,
+    MinE = -1.0,
+    MinEta = -2.4,
+    MinMass = -1.0,
+    MinN = 2,
+    MinPt = 128.0,
+    inputTag = ("hltAK4PFPuppiJetsCorrected"),
+    saveTags = True,
+    triggerType = 86
 )

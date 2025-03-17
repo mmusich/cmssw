@@ -3,24 +3,24 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFClusterProducer import PFClusterProducer as _PFClusterProducer
 
 hltParticleFlowClusterHBHE = _PFClusterProducer(
-    energyCorrector = cms.PSet(
+    energyCorrector = dict(
 
     ),
-    initialClusteringStep = cms.PSet(
-        algoName = cms.string('Basic2DGenericTopoClusterizer'),
-        thresholdsByDetector = cms.VPSet(
-            cms.PSet(
+    initialClusteringStep = dict(
+        algoName = 'Basic2DGenericTopoClusterizer',
+        thresholdsByDetector = [
+            dict(
                 depths = cms.vint32(1, 2, 3, 4),
-                detector = cms.string('HCAL_BARREL1'),
+                detector = 'HCAL_BARREL1',
                 gatheringThreshold = cms.vdouble(0.1, 0.2, 0.3, 0.3),
                 gatheringThresholdPt = cms.vdouble(0.0, 0.0, 0.0, 0.0)
             ),
-            cms.PSet(
+            dict(
                 depths = cms.vint32(
                     1, 2, 3, 4, 5,
                     6, 7
                 ),
-                detector = cms.string('HCAL_ENDCAP'),
+                detector = 'HCAL_ENDCAP',
                 gatheringThreshold = cms.vdouble(
                     0.1, 0.2, 0.2, 0.2, 0.2,
                     0.2, 0.2
@@ -30,129 +30,129 @@ hltParticleFlowClusterHBHE = _PFClusterProducer(
                     0.0, 0.0
                 )
             )
-        ),
-        useCornerCells = cms.bool(True)
+        ],
+        useCornerCells = True
     ),
-    pfClusterBuilder = cms.PSet(
-        algoName = cms.string('Basic2DGenericPFlowClusterizer'),
-        allCellsPositionCalc = cms.PSet(
-            algoName = cms.string('Basic2DGenericPFlowPositionCalc'),
-            logWeightDenominatorByDetector = cms.VPSet(
-                cms.PSet(
+    pfClusterBuilder = dict(
+        algoName = 'Basic2DGenericPFlowClusterizer',
+        allCellsPositionCalc = dict(
+            algoName = 'Basic2DGenericPFlowPositionCalc',
+            logWeightDenominatorByDetector = [
+                dict(
                     depths = cms.vint32(1, 2, 3, 4),
-                    detector = cms.string('HCAL_BARREL1'),
+                    detector = 'HCAL_BARREL1',
                     logWeightDenominator = cms.vdouble(0.1, 0.2, 0.3, 0.3)
                 ),
-                cms.PSet(
+                dict(
                     depths = cms.vint32(
                         1, 2, 3, 4, 5,
                         6, 7
                     ),
-                    detector = cms.string('HCAL_ENDCAP'),
+                    detector = 'HCAL_ENDCAP',
                     logWeightDenominator = cms.vdouble(
                         0.1, 0.2, 0.2, 0.2, 0.2,
                         0.2, 0.2
                     )
                 )
-            ),
-            minAllowedNormalization = cms.double(1e-09),
-            minFractionInCalc = cms.double(1e-09),
-            posCalcNCrystals = cms.int32(-1)
+            ],
+            minAllowedNormalization = 1e-09,
+            minFractionInCalc = 1e-09,
+            posCalcNCrystals = -1
         ),
-        clusterTimeResFromSeed = cms.bool(False),
-        excludeOtherSeeds = cms.bool(True),
-        maxIterations = cms.uint32(5),
-        maxNSigmaTime = cms.double(10.0),
-        minChi2Prob = cms.double(0.0),
-        minFracTot = cms.double(1e-20),
-        minFractionToKeep = cms.double(1e-07),
-        positionCalc = cms.PSet(
-            algoName = cms.string('Basic2DGenericPFlowPositionCalc'),
-            logWeightDenominatorByDetector = cms.VPSet(
-                cms.PSet(
+        clusterTimeResFromSeed = False,
+        excludeOtherSeeds = True,
+        maxIterations = 5,
+        maxNSigmaTime = 10.0,
+        minChi2Prob = 0.0,
+        minFracTot = 1e-20,
+        minFractionToKeep = 1e-07,
+        positionCalc = dict(
+            algoName = 'Basic2DGenericPFlowPositionCalc',
+            logWeightDenominatorByDetector = [
+                dict(
                     depths = cms.vint32(1, 2, 3, 4),
-                    detector = cms.string('HCAL_BARREL1'),
+                    detector = 'HCAL_BARREL1',
                     logWeightDenominator = cms.vdouble(0.1, 0.2, 0.3, 0.3)
                 ),
-                cms.PSet(
+                dict(
                     depths = cms.vint32(
                         1, 2, 3, 4, 5,
                         6, 7
                     ),
-                    detector = cms.string('HCAL_ENDCAP'),
+                    detector = 'HCAL_ENDCAP',
                     logWeightDenominator = cms.vdouble(
                         0.1, 0.2, 0.2, 0.2, 0.2,
                         0.2, 0.2
                     )
                 )
-            ),
-            minAllowedNormalization = cms.double(1e-09),
-            minFractionInCalc = cms.double(1e-09),
-            posCalcNCrystals = cms.int32(5)
+            ],
+            minAllowedNormalization = 1e-09,
+            minFractionInCalc = 1e-09,
+            posCalcNCrystals = 5
         ),
-        recHitEnergyNorms = cms.VPSet(
-            cms.PSet(
+        recHitEnergyNorms = [
+            dict(
                 depths = cms.vint32(1, 2, 3, 4),
-                detector = cms.string('HCAL_BARREL1'),
+                detector = 'HCAL_BARREL1',
                 recHitEnergyNorm = cms.vdouble(0.1, 0.2, 0.3, 0.3)
             ),
-            cms.PSet(
+            dict(
                 depths = cms.vint32(
                     1, 2, 3, 4, 5,
                     6, 7
                 ),
-                detector = cms.string('HCAL_ENDCAP'),
+                detector = 'HCAL_ENDCAP',
                 recHitEnergyNorm = cms.vdouble(
                     0.1, 0.2, 0.2, 0.2, 0.2,
                     0.2, 0.2
                 )
             )
+        ],
+        showerSigma = 10.0,
+        stoppingTolerance = 1e-08,
+        timeResolutionCalcBarrel = dict(
+            constantTerm = 2.82,
+            constantTermLowE = 4.24,
+            corrTermLowE = 0.0,
+            noiseTerm = 21.86,
+            noiseTermLowE = 8,
+            threshHighE = 15.0,
+            threshLowE = 6.0
         ),
-        showerSigma = cms.double(10.0),
-        stoppingTolerance = cms.double(1e-08),
-        timeResolutionCalcBarrel = cms.PSet(
-            constantTerm = cms.double(2.82),
-            constantTermLowE = cms.double(4.24),
-            corrTermLowE = cms.double(0.0),
-            noiseTerm = cms.double(21.86),
-            noiseTermLowE = cms.double(8),
-            threshHighE = cms.double(15.0),
-            threshLowE = cms.double(6.0)
+        timeResolutionCalcEndcap = dict(
+            constantTerm = 2.82,
+            constantTermLowE = 4.24,
+            corrTermLowE = 0.0,
+            noiseTerm = 21.86,
+            noiseTermLowE = 8,
+            threshHighE = 15.0,
+            threshLowE = 6.0
         ),
-        timeResolutionCalcEndcap = cms.PSet(
-            constantTerm = cms.double(2.82),
-            constantTermLowE = cms.double(4.24),
-            corrTermLowE = cms.double(0.0),
-            noiseTerm = cms.double(21.86),
-            noiseTermLowE = cms.double(8),
-            threshHighE = cms.double(15.0),
-            threshLowE = cms.double(6.0)
-        ),
-        timeSigmaEB = cms.double(10.0),
-        timeSigmaEE = cms.double(10.0)
+        timeSigmaEB = 10.0,
+        timeSigmaEE = 10.0
     ),
-    positionReCalc = cms.PSet(
+    positionReCalc = dict(
 
     ),
-    recHitCleaners = cms.VPSet(),
-    recHitsSource = cms.InputTag("hltParticleFlowRecHitHBHE"),
-    seedCleaners = cms.VPSet(),
-    seedFinder = cms.PSet(
-        algoName = cms.string('LocalMaximumSeedFinder'),
-        nNeighbours = cms.int32(4),
-        thresholdsByDetector = cms.VPSet(
-            cms.PSet(
+    recHitCleaners = [],
+    recHitsSource = ("hltParticleFlowRecHitHBHE"),
+    seedCleaners = [],
+    seedFinder = dict(
+        algoName = 'LocalMaximumSeedFinder',
+        nNeighbours = 4,
+        thresholdsByDetector = [
+            dict(
                 depths = cms.vint32(1, 2, 3, 4),
-                detector = cms.string('HCAL_BARREL1'),
+                detector = 'HCAL_BARREL1',
                 seedingThreshold = cms.vdouble(0.125, 0.25, 0.35, 0.35),
                 seedingThresholdPt = cms.vdouble(0.0, 0.0, 0.0, 0.0)
             ),
-            cms.PSet(
+            dict(
                 depths = cms.vint32(
                     1, 2, 3, 4, 5,
                     6, 7
                 ),
-                detector = cms.string('HCAL_ENDCAP'),
+                detector = 'HCAL_ENDCAP',
                 seedingThreshold = cms.vdouble(
                     0.1375, 0.275, 0.275, 0.275, 0.275,
                     0.275, 0.275
@@ -162,7 +162,7 @@ hltParticleFlowClusterHBHE = _PFClusterProducer(
                     0.0, 0.0
                 )
             )
-        )
+        ]
     ),
-    usePFThresholdsFromDB = cms.bool(True)
+    usePFThresholdsFromDB = True
 )

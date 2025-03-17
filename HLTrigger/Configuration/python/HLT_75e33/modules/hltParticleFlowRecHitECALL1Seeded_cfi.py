@@ -3,51 +3,51 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFRecHitProducer import PFRecHitProducer as _PFRecHitProducer
 
 hltParticleFlowRecHitECALL1Seeded = _PFRecHitProducer(
-    navigator = cms.PSet(
-        barrel = cms.PSet(
+    navigator = dict(
+        barrel = dict(
 
         ),
-        endcap = cms.PSet(
+        endcap = dict(
 
         ),
-        name = cms.string('PFRecHitECALNavigator')
+        name = 'PFRecHitECALNavigator'
     ),
-    producers = cms.VPSet(
-        cms.PSet(
-            name = cms.string('PFEBRecHitCreator'),
-            qualityTests = cms.VPSet(
-                cms.PSet(
-                    applySelectionsToAllCrystals = cms.bool(True),
-                    name = cms.string('PFRecHitQTestDBThreshold')
+    producers = [
+        dict(
+            name = 'PFEBRecHitCreator',
+            qualityTests = [
+                dict(
+                    applySelectionsToAllCrystals = True,
+                    name = 'PFRecHitQTestDBThreshold'
                 ),
-                cms.PSet(
-                    cleaningThreshold = cms.double(2.0),
-                    name = cms.string('PFRecHitQTestECAL'),
-                    skipTTRecoveredHits = cms.bool(True),
-                    timingCleaning = cms.bool(True),
-                    topologicalCleaning = cms.bool(True)
+                dict(
+                    cleaningThreshold = 2.0,
+                    name = 'PFRecHitQTestECAL',
+                    skipTTRecoveredHits = True,
+                    timingCleaning = True,
+                    topologicalCleaning = True
                 )
-            ),
-            srFlags = cms.InputTag(""),
-            src = cms.InputTag("hltRechitInRegionsECAL","EcalRecHitsEB")
+            ],
+            srFlags = (""),
+            src = ("hltRechitInRegionsECAL","EcalRecHitsEB")
         ),
-        cms.PSet(
-            name = cms.string('PFEERecHitCreator'),
-            qualityTests = cms.VPSet(
-                cms.PSet(
-                    applySelectionsToAllCrystals = cms.bool(True),
-                    name = cms.string('PFRecHitQTestDBThreshold')
+        dict(
+            name = 'PFEERecHitCreator',
+            qualityTests = [
+                dict(
+                    applySelectionsToAllCrystals = True,
+                    name = 'PFRecHitQTestDBThreshold'
                 ),
-                cms.PSet(
-                    cleaningThreshold = cms.double(2.0),
-                    name = cms.string('PFRecHitQTestECAL'),
-                    skipTTRecoveredHits = cms.bool(True),
-                    timingCleaning = cms.bool(True),
-                    topologicalCleaning = cms.bool(True)
+                dict(
+                    cleaningThreshold = 2.0,
+                    name = 'PFRecHitQTestECAL',
+                    skipTTRecoveredHits = True,
+                    timingCleaning = True,
+                    topologicalCleaning = True
                 )
-            ),
-            srFlags = cms.InputTag(""),
-            src = cms.InputTag("hltRechitInRegionsECAL","EcalRecHitsEE")
+            ],
+            srFlags = (""),
+            src = ("hltRechitInRegionsECAL","EcalRecHitsEE")
         )
-    )
+    ]
 )

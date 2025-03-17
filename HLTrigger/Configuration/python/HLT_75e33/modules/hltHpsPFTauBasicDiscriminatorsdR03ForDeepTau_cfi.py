@@ -3,118 +3,118 @@ import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.PFRecoTauDiscriminationByIsolationContainer import PFRecoTauDiscriminationByIsolationContainer as _PFRecoTauDiscriminationByIsolationContainer
 
 hltHpsPFTauBasicDiscriminatorsdR03ForDeepTau = _PFRecoTauDiscriminationByIsolationContainer(
-    IDWPdefinitions = cms.VPSet(),
-    IDdefinitions = cms.VPSet(
-        cms.PSet(
-            ApplyDiscriminationByTrackerIsolation = cms.bool(True),
-            IDname = cms.string('ChargedIsoPtSum'),
-            storeRawSumPt = cms.bool(True)
+    IDWPdefinitions = [],
+    IDdefinitions = [
+        dict(
+            ApplyDiscriminationByTrackerIsolation = True,
+            IDname = 'ChargedIsoPtSum',
+            storeRawSumPt = True
         ),
-        cms.PSet(
-            ApplyDiscriminationByECALIsolation = cms.bool(True),
-            IDname = cms.string('NeutralIsoPtSum'),
-            storeRawSumPt = cms.bool(True)
+        dict(
+            ApplyDiscriminationByECALIsolation = True,
+            IDname = 'NeutralIsoPtSum',
+            storeRawSumPt = True
         ),
-        cms.PSet(
-            ApplyDiscriminationByWeightedECALIsolation = cms.bool(True),
-            IDname = cms.string('NeutralIsoPtSumWeight'),
-            UseAllPFCandsForWeights = cms.bool(True),
-            storeRawSumPt = cms.bool(True)
+        dict(
+            ApplyDiscriminationByWeightedECALIsolation = True,
+            IDname = 'NeutralIsoPtSumWeight',
+            UseAllPFCandsForWeights = True,
+            storeRawSumPt = True
         ),
-        cms.PSet(
-            IDname = cms.string('TauFootprintCorrection'),
-            storeRawFootprintCorrection = cms.bool(True)
+        dict(
+            IDname = 'TauFootprintCorrection',
+            storeRawFootprintCorrection = True
         ),
-        cms.PSet(
-            IDname = cms.string('PhotonPtSumOutsideSignalCone'),
-            storeRawPhotonSumPt_outsideSignalCone = cms.bool(True)
+        dict(
+            IDname = 'PhotonPtSumOutsideSignalCone',
+            storeRawPhotonSumPt_outsideSignalCone = True
         ),
-        cms.PSet(
-            IDname = cms.string('PUcorrPtSum'),
-            applyDeltaBetaCorrection = cms.bool(True),
-            storeRawPUsumPt = cms.bool(True)
+        dict(
+            IDname = 'PUcorrPtSum',
+            applyDeltaBetaCorrection = True,
+            storeRawPUsumPt = True
         )
-    ),
-    PFTauProducer = cms.InputTag("hltHpsPFTauProducer"),
+    ],
+    PFTauProducer = ("hltHpsPFTauProducer"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')
     ),
-    WeightECALIsolation = cms.double(1.0),
-    applyFootprintCorrection = cms.bool(False),
-    applyRhoCorrection = cms.bool(False),
-    customOuterCone = cms.double(0.3),
-    deltaBetaFactor = cms.string('0.2000'),
-    deltaBetaPUTrackPtCutOverride = cms.bool(True),
-    deltaBetaPUTrackPtCutOverride_val = cms.double(0.5),
-    footprintCorrections = cms.VPSet(
-        cms.PSet(
-            offset = cms.string('0.0'),
-            selection = cms.string('decayMode() = 0')
+    WeightECALIsolation = 1.0,
+    applyFootprintCorrection = False,
+    applyRhoCorrection = False,
+    customOuterCone = 0.3,
+    deltaBetaFactor = '0.2000',
+    deltaBetaPUTrackPtCutOverride = True,
+    deltaBetaPUTrackPtCutOverride_val = 0.5,
+    footprintCorrections = [
+        dict(
+            offset = '0.0',
+            selection = 'decayMode() = 0'
         ),
-        cms.PSet(
-            offset = cms.string('0.0'),
-            selection = cms.string('decayMode() = 1 || decayMode() = 2')
+        dict(
+            offset = '0.0',
+            selection = 'decayMode() = 1 || decayMode() = 2'
         ),
-        cms.PSet(
-            offset = cms.string('2.7'),
-            selection = cms.string('decayMode() = 5')
+        dict(
+            offset = '2.7',
+            selection = 'decayMode() = 5'
         ),
-        cms.PSet(
-            offset = cms.string('0.0'),
-            selection = cms.string('decayMode() = 6')
+        dict(
+            offset = '0.0',
+            selection = 'decayMode() = 6'
         ),
-        cms.PSet(
-            offset = cms.string('max(2.0, 0.22*pt() - 2.0)'),
-            selection = cms.string('decayMode() = 10')
+        dict(
+            offset = 'max(2.0, 0.22*pt() - 2.0)',
+            selection = 'decayMode() = 10'
+        )
+    ],
+    isoConeSizeForDeltaBeta = 0.8,
+    minTauPtForNoIso = -99.0,
+    particleFlowSrc = ("hltParticleFlowTmp"),
+    qualityCuts = dict(
+        isolationQualityCuts = dict(
+            maxDeltaZ = 0.2,
+            maxDeltaZToLeadTrack = -1.0,
+            maxTrackChi2 = 100.0,
+            maxTransverseImpactParameter = 0.03,
+            minGammaEt = 1.5,
+            minTrackHits = 8,
+            minTrackPixelHits = 0,
+            minTrackPt = 1.0,
+            minTrackVertexWeight = -1.0,
+            useTracksInsteadOfPFHadrons = False
+        ),
+        leadingTrkOrPFCandOption = 'leadPFCand',
+        primaryVertexSrc = ("hltPhase2PixelVertices"),
+        pvFindingAlgo = 'closestInDeltaZ',
+        recoverLeadingTrk = False,
+        signalQualityCuts = dict(
+            maxDeltaZ = 0.4,
+            maxDeltaZToLeadTrack = -1.0,
+            maxTrackChi2 = 100.0,
+            maxTransverseImpactParameter = 0.1,
+            minGammaEt = 1.0,
+            minNeutralHadronEt = 30.0,
+            minTrackHits = 3,
+            minTrackPixelHits = 0,
+            minTrackPt = 0.5,
+            minTrackVertexWeight = -1.0,
+            useTracksInsteadOfPFHadrons = False
+        ),
+        vertexTrackFiltering = False,
+        vxAssocQualityCuts = dict(
+            maxTrackChi2 = 100.0,
+            maxTransverseImpactParameter = 0.1,
+            minGammaEt = 1.0,
+            minTrackHits = 3,
+            minTrackPixelHits = 0,
+            minTrackPt = 0.5,
+            minTrackVertexWeight = -1.0
         )
     ),
-    isoConeSizeForDeltaBeta = cms.double(0.8),
-    minTauPtForNoIso = cms.double(-99.0),
-    particleFlowSrc = cms.InputTag("hltParticleFlowTmp"),
-    qualityCuts = cms.PSet(
-        isolationQualityCuts = cms.PSet(
-            maxDeltaZ = cms.double(0.2),
-            maxDeltaZToLeadTrack = cms.double(-1.0),
-            maxTrackChi2 = cms.double(100.0),
-            maxTransverseImpactParameter = cms.double(0.03),
-            minGammaEt = cms.double(1.5),
-            minTrackHits = cms.uint32(8),
-            minTrackPixelHits = cms.uint32(0),
-            minTrackPt = cms.double(1.0),
-            minTrackVertexWeight = cms.double(-1.0),
-            useTracksInsteadOfPFHadrons = cms.bool(False)
-        ),
-        leadingTrkOrPFCandOption = cms.string('leadPFCand'),
-        primaryVertexSrc = cms.InputTag("hltPhase2PixelVertices"),
-        pvFindingAlgo = cms.string('closestInDeltaZ'),
-        recoverLeadingTrk = cms.bool(False),
-        signalQualityCuts = cms.PSet(
-            maxDeltaZ = cms.double(0.4),
-            maxDeltaZToLeadTrack = cms.double(-1.0),
-            maxTrackChi2 = cms.double(100.0),
-            maxTransverseImpactParameter = cms.double(0.1),
-            minGammaEt = cms.double(1.0),
-            minNeutralHadronEt = cms.double(30.0),
-            minTrackHits = cms.uint32(3),
-            minTrackPixelHits = cms.uint32(0),
-            minTrackPt = cms.double(0.5),
-            minTrackVertexWeight = cms.double(-1.0),
-            useTracksInsteadOfPFHadrons = cms.bool(False)
-        ),
-        vertexTrackFiltering = cms.bool(False),
-        vxAssocQualityCuts = cms.PSet(
-            maxTrackChi2 = cms.double(100.0),
-            maxTransverseImpactParameter = cms.double(0.1),
-            minGammaEt = cms.double(1.0),
-            minTrackHits = cms.uint32(3),
-            minTrackPixelHits = cms.uint32(0),
-            minTrackPt = cms.double(0.5),
-            minTrackVertexWeight = cms.double(-1.0)
-        )
-    ),
-    rhoConeSize = cms.double(0.5),
-    rhoProducer = cms.InputTag("hltFixedGridRhoFastjetAll"),
-    rhoUEOffsetCorrection = cms.double(1.0),
-    verbosity = cms.int32(0),
-    vertexSrc = cms.InputTag("hltPhase2PixelVertices")
+    rhoConeSize = 0.5,
+    rhoProducer = ("hltFixedGridRhoFastjetAll"),
+    rhoUEOffsetCorrection = 1.0,
+    verbosity = 0,
+    vertexSrc = ("hltPhase2PixelVertices")
 )

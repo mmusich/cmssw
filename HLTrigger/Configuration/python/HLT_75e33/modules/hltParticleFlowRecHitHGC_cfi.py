@@ -3,48 +3,48 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFRecHitProducer import PFRecHitProducer as _PFRecHitProducer
 
 hltParticleFlowRecHitHGC = _PFRecHitProducer(
-    navigator = cms.PSet(
-        hgcee = cms.PSet(
-            name = cms.string('PFRecHitHGCEENavigator'),
-            topologySource = cms.string('HGCalEESensitive')
+    navigator = dict(
+        hgcee = dict(
+            name = 'PFRecHitHGCEENavigator',
+            topologySource = 'HGCalEESensitive'
         ),
-        hgcheb = cms.PSet(
-            name = cms.string('PFRecHitHGCHENavigator'),
-            topologySource = cms.string('HGCalHEScintillatorSensitive')
+        hgcheb = dict(
+            name = 'PFRecHitHGCHENavigator',
+            topologySource = 'HGCalHEScintillatorSensitive'
         ),
-        hgchef = cms.PSet(
-            name = cms.string('PFRecHitHGCHENavigator'),
-            topologySource = cms.string('HGCalHESiliconSensitive')
+        hgchef = dict(
+            name = 'PFRecHitHGCHENavigator',
+            topologySource = 'HGCalHESiliconSensitive'
         ),
-        name = cms.string('PFRecHitHGCNavigator')
+        name = 'PFRecHitHGCNavigator'
     ),
-    producers = cms.VPSet(
-        cms.PSet(
-            geometryInstance = cms.string('HGCalEESensitive'),
-            name = cms.string('PFHGCalEERecHitCreator'),
-            qualityTests = cms.VPSet(cms.PSet(
-                name = cms.string('PFRecHitQTestHGCalThresholdSNR'),
-                thresholdSNR = cms.double(5.0)
-            )),
-            src = cms.InputTag("hltHGCalRecHit","HGCEERecHits")
+    producers = [
+        dict(
+            geometryInstance = 'HGCalEESensitive',
+            name = 'PFHGCalEERecHitCreator',
+            qualityTests = [dict(
+                name = 'PFRecHitQTestHGCalThresholdSNR',
+                thresholdSNR = 5.0
+            )],
+            src = ("hltHGCalRecHit","HGCEERecHits")
         ),
-        cms.PSet(
-            geometryInstance = cms.string('HGCalHESiliconSensitive'),
-            name = cms.string('PFHGCalHSiRecHitCreator'),
-            qualityTests = cms.VPSet(cms.PSet(
-                name = cms.string('PFRecHitQTestHGCalThresholdSNR'),
-                thresholdSNR = cms.double(5.0)
-            )),
-            src = cms.InputTag("hltHGCalRecHit","HGCHEFRecHits")
+        dict(
+            geometryInstance = 'HGCalHESiliconSensitive',
+            name = 'PFHGCalHSiRecHitCreator',
+            qualityTests = [dict(
+                name = 'PFRecHitQTestHGCalThresholdSNR',
+                thresholdSNR = 5.0
+            )],
+            src = ("hltHGCalRecHit","HGCHEFRecHits")
         ),
-        cms.PSet(
-            geometryInstance = cms.string(''),
-            name = cms.string('PFHGCalHScRecHitCreator'),
-            qualityTests = cms.VPSet(cms.PSet(
-                name = cms.string('PFRecHitQTestHGCalThresholdSNR'),
-                thresholdSNR = cms.double(5.0)
-            )),
-            src = cms.InputTag("hltHGCalRecHit","HGCHEBRecHits")
+        dict(
+            geometryInstance = '',
+            name = 'PFHGCalHScRecHitCreator',
+            qualityTests = [dict(
+                name = 'PFRecHitQTestHGCalThresholdSNR',
+                thresholdSNR = 5.0
+            )],
+            src = ("hltHGCalRecHit","HGCHEBRecHits")
         )
-    )
+    ]
 )

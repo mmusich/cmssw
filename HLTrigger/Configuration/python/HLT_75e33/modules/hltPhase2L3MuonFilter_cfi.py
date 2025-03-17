@@ -3,18 +3,18 @@ import FWCore.ParameterSet.Config as cms
 from RecoMuon.L3TrackFinder.Phase2HLTMuonSelectorForL3 import Phase2HLTMuonSelectorForL3 as _Phase2HLTMuonSelectorForL3
 
 hltPhase2L3MuonFilter = _Phase2HLTMuonSelectorForL3(
-    l1TkMuons = cms.InputTag("l1tTkMuonsGmt"),
-    l2MuonsUpdVtx = cms.InputTag("hltL2MuonsFromL1TkMuon:UpdatedAtVtx"),
-    l3Tracks = cms.InputTag("hltIter2Phase2L3FromL1TkMuonMerged"),
-    IOFirst = cms.bool(True),
-    matchingDr = cms.double(0.02),
-    applyL3Filters = cms.bool(True),
-    MinNhits = cms.int32(1),
-    MaxNormalizedChi2 = cms.double(5.0),
-    MinNhitsMuons = cms.int32(0),
-    MinNhitsPixel = cms.int32(1),
-    MinNhitsTracker = cms.int32(6),
-    MaxPtDifference = cms.double(999.0),
+    l1TkMuons = ("l1tTkMuonsGmt"),
+    l2MuonsUpdVtx = ("hltL2MuonsFromL1TkMuon:UpdatedAtVtx"),
+    l3Tracks = ("hltIter2Phase2L3FromL1TkMuonMerged"),
+    IOFirst = True,
+    matchingDr = 0.02,
+    applyL3Filters = True,
+    MinNhits = 1,
+    MaxNormalizedChi2 = 5.0,
+    MinNhitsMuons = 0,
+    MinNhitsPixel = 1,
+    MinNhitsTracker = 6,
+    MaxPtDifference = 999.0,
 )
 
 from Configuration.ProcessModifiers.phase2L2AndL3Muons_cff import phase2L2AndL3Muons

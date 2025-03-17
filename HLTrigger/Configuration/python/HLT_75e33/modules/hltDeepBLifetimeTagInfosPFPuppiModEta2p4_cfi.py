@@ -3,20 +3,20 @@ import FWCore.ParameterSet.Config as cms
 from RecoBTag.ImpactParameter.CandIPProducer import CandIPProducer as _CandIPProducer
 
 hltDeepBLifetimeTagInfosPFPuppiModEta2p4 = _CandIPProducer(
-    candidates = cms.InputTag("hltParticleFlowTmp"),
-    computeGhostTrack = cms.bool(True),
-    computeProbabilities = cms.bool(True),
-    ghostTrackPriorDeltaR = cms.double(0.03),
-    jetDirectionUsingGhostTrack = cms.bool(False),
-    jetDirectionUsingTracks = cms.bool(False),
-    jets = cms.InputTag("hltPFPuppiJetForBtagEta2p4"),
-    maxDeltaR = cms.double(0.4),
-    maximumChiSquared = cms.double(5.0),
-    maximumLongitudinalImpactParameter = cms.double(17.0),
-    maximumTransverseImpactParameter = cms.double(0.2),
-    minimumNumberOfHits = cms.int32(3),
-    minimumNumberOfPixelHits = cms.int32(2),
-    minimumTransverseMomentum = cms.double(1.0),
-    primaryVertex = cms.InputTag("hltOfflinePrimaryVertices"),
-    useTrackQuality = cms.bool(False)
+    candidates = ("hltParticleFlowTmp"),
+    computeGhostTrack = True,
+    computeProbabilities = True,
+    ghostTrackPriorDeltaR = 0.03,
+    jetDirectionUsingGhostTrack = False,
+    jetDirectionUsingTracks = False,
+    jets = ("hltPFPuppiJetForBtagEta2p4"),
+    maxDeltaR = 0.4,
+    maximumChiSquared = 5.0,
+    maximumLongitudinalImpactParameter = 17.0,
+    maximumTransverseImpactParameter = 0.2,
+    minimumNumberOfHits = 3,
+    minimumNumberOfPixelHits = 2,
+    minimumTransverseMomentum = 1.0,
+    primaryVertex = ("hltOfflinePrimaryVertices"),
+    useTrackQuality = False
 )

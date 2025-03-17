@@ -3,25 +3,25 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkTrackingRegions.CandidateSeededTrackingRegionsEDProducer import CandidateSeededTrackingRegionsEDProducer as _CandidateSeededTrackingRegionsEDProducer
 
 hltPhase2L3FromL1TkMuonPixelTracksTrackingRegions = _CandidateSeededTrackingRegionsEDProducer(
-    RegionPSet = cms.PSet(
-        beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-        deltaEta = cms.double(0.035),
-        deltaPhi = cms.double(0.02),
-        input = cms.InputTag("l1tTkMuonsGmt"),
-        maxNRegions = cms.int32(10000),
-        maxNVertices = cms.int32(1),
-        measurementTrackerName = cms.InputTag(""),
+    RegionPSet = dict(
+        beamSpot = ("hltOnlineBeamSpot"),
+        deltaEta = 0.035,
+        deltaPhi = 0.02,
+        input = ("l1tTkMuonsGmt"),
+        maxNRegions = 10000,
+        maxNVertices = 1,
+        measurementTrackerName = (""),
         mode = cms.string('BeamSpotSigma'),
-        nSigmaZBeamSpot = cms.double(4.0),
-        nSigmaZVertex = cms.double(3.0),
-        originRadius = cms.double(0.2),
-        precise = cms.bool(True),
-        ptMin = cms.double(2.0),
-        searchOpt = cms.bool(False),
-        vertexCollection = cms.InputTag("notUsed"),
+        nSigmaZBeamSpot = 4.0,
+        nSigmaZVertex = 3.0,
+        originRadius = 0.2,
+        precise = True,
+        ptMin = 2.0,
+        searchOpt = False,
+        vertexCollection = ("notUsed"),
         whereToUseMeasurementTracker = cms.string('Never'),
-        zErrorBeamSpot = cms.double(24.2),
-        zErrorVetex = cms.double(0.2)
+        zErrorBeamSpot = 24.2,
+        zErrorVetex = 0.2
     )
 )
 

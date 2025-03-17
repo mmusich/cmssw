@@ -11,10 +11,10 @@ hltHgcalTrackCollection = _HGCalTrackCollectionProducer(
         3, 3, 3, 3, 3,
         32700
     ),
-    hgcalGeometryNames = cms.PSet(
+    hgcalGeometryNames = dict(
         HGC_ECAL = cms.string('HGCalEESensitive')
     ),
-    src = cms.InputTag("hltPfTrack"),
+    src = ("hltPfTrack"),
     trackQuality = cms.string('highPurity'),
-    useIterativeTracking = cms.bool(True)
+    useIterativeTracking = True
 )

@@ -3,15 +3,15 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkSeedGenerator.SeedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer import SeedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer as _SeedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer
 
 hltIter2Phase2L3FromL1TkMuonPixelSeeds = _SeedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer(
-    MinOneOverPtError = cms.double(1.0),
-    OriginTransverseErrorMultiplier = cms.double(1.0),
-    SeedComparitorPSet = cms.PSet(
+    MinOneOverPtError = 1.0,
+    OriginTransverseErrorMultiplier = 1.0,
+    SeedComparitorPSet = dict(
         ComponentName = cms.string('none')
     ),
-    SeedMomentumForBOFF = cms.double(5.0),
+    SeedMomentumForBOFF = 5.0,
     TTRHBuilder = cms.string('WithTrackAngle'),
-    forceKinematicWithRegionDirection = cms.bool(False),
+    forceKinematicWithRegionDirection = False,
     magneticField = cms.string('ParabolicMf'),
     propagator = cms.string('PropagatorWithMaterialParabolicMf'),
-    seedingHitSets = cms.InputTag("hltIter2Phase2L3FromL1TkMuonPixelHitTriplets")
+    seedingHitSets = ("hltIter2Phase2L3FromL1TkMuonPixelHitTriplets")
 )

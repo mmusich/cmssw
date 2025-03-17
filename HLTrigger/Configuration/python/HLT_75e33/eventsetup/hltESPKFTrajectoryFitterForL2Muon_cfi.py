@@ -9,5 +9,5 @@ hltESPKFTrajectoryFitterForL2Muon = _KFTrajectoryFitterESProducer(
     RecoGeometry = cms.string('hltESPDummyDetLayerGeometry'),
     Updator = cms.string('hltESPKFUpdator'),
     appendToDataLabel = cms.string(''),
-    minHits = cms.int32(3)
+    minHits = 3
 )

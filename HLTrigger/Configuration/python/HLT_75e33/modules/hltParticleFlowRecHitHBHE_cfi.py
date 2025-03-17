@@ -3,42 +3,42 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFRecHitProducer import PFRecHitProducer as _PFRecHitProducer
 
 hltParticleFlowRecHitHBHE = _PFRecHitProducer(
-    navigator = cms.PSet(
-        hcalEnums = cms.vint32(1, 2),
-        name = cms.string('PFRecHitHCALDenseIdNavigator')
+    navigator = dict(
+        hcalEnums = [1, 2],
+        name = 'PFRecHitHCALDenseIdNavigator'
     ),
-    producers = cms.VPSet(cms.PSet(
-        name = cms.string('PFHBHERecHitCreator'),
-        qualityTests = cms.VPSet(
-            cms.PSet(
-                cuts = cms.VPSet(
-                    cms.PSet(
-                        depth = cms.vint32(1, 2, 3, 4),
-                        detectorEnum = cms.int32(1),
-                        threshold = cms.vdouble(0.1, 0.2, 0.3, 0.3)
+    producers = [dict(
+        name = 'PFHBHERecHitCreator',
+        qualityTests = [
+            dict(
+                cuts = [
+                    dict(
+                        depth = [1, 2, 3, 4],
+                        detectorEnum = 1,
+                        threshold = [0.1, 0.2, 0.3, 0.3]
                     ),
-                    cms.PSet(
-                        depth = cms.vint32(
+                    dict(
+                        depth = [
                             1, 2, 3, 4, 5,
                             6, 7
-                        ),
-                        detectorEnum = cms.int32(2),
-                        threshold = cms.vdouble(
+                        ],
+                        detectorEnum = 2,
+                        threshold = [
                             0.1, 0.2, 0.2, 0.2, 0.2,
                             0.2, 0.2
-                        )
+                        ]
                     )
-                ),
-                name = cms.string('PFRecHitQTestHCALThresholdVsDepth'),
-                usePFThresholdsFromDB = cms.bool(True)
+                ],
+                name = 'PFRecHitQTestHCALThresholdVsDepth',
+                usePFThresholdsFromDB = True
             ),
-            cms.PSet(
-                cleaningThresholds = cms.vdouble(0.0),
-                flags = cms.vstring('Standard'),
-                maxSeverities = cms.vint32(11),
-                name = cms.string('PFRecHitQTestHCALChannel')
+            dict(
+                cleaningThresholds = [0.0],
+                flags = ['Standard'],
+                maxSeverities = [11],
+                name = 'PFRecHitQTestHCALChannel'
             )
-        ),
-        src = cms.InputTag("hltHbhereco")
-    ))
+        ],
+        src = ("hltHbhereco")
+    )]
 )

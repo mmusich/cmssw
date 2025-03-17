@@ -3,41 +3,41 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkSeedingLayers.SeedingLayersEDProducer import SeedingLayersEDProducer as _SeedingLayersEDProducer
 
 hltPixelLayerPairsL1Seeded = _SeedingLayersEDProducer(
-    BPix = cms.PSet(
+    BPix = dict(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('TTRHBuilderWithoutAngle4PixelTriplets'),
         skipClusters = cms.InputTag("hltElePixelHitTripletsClusterRemoverL1Seeded")
     ),
-    FPix = cms.PSet(
+    FPix = dict(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('TTRHBuilderWithoutAngle4PixelTriplets'),
         skipClusters = cms.InputTag("hltElePixelHitTripletsClusterRemoverL1Seeded")
     ),
-    MTEC = cms.PSet(
+    MTEC = dict(
 
     ),
-    MTIB = cms.PSet(
+    MTIB = dict(
 
     ),
-    MTID = cms.PSet(
+    MTID = dict(
 
     ),
-    MTOB = cms.PSet(
+    MTOB = dict(
 
     ),
-    TEC = cms.PSet(
+    TEC = dict(
 
     ),
-    TIB = cms.PSet(
+    TIB = dict(
 
     ),
-    TID = cms.PSet(
+    TID = dict(
 
     ),
-    TOB = cms.PSet(
+    TOB = dict(
 
     ),
-    layerList = cms.vstring(
+    layerList = [
         'BPix1+BPix2',
         'BPix1+BPix3',
         'BPix1+BPix4',
@@ -74,5 +74,5 @@ hltPixelLayerPairsL1Seeded = _SeedingLayersEDProducer(
         'BPix4+FPix1_neg',
         'BPix4+FPix2_neg',
         'BPix4+FPix3_neg'
-    )
+    ]
 )

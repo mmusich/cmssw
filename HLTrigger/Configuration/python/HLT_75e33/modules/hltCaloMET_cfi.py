@@ -4,8 +4,8 @@ from RecoMET.METProducers.CaloMETProducer import CaloMETProducer as _CaloMETProd
 
 hltCaloMET = _CaloMETProducer(
     alias = cms.string('RawCaloMET'),
-    calculateSignificance = cms.bool(False),
-    globalThreshold = cms.double(0.3),
-    noHF = cms.bool(False),
-    src = cms.InputTag("hltTowerMaker")
+    calculateSignificance = False,
+    globalThreshold = 0.3,
+    noHF = False,
+    src = ("hltTowerMaker")
 )

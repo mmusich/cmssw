@@ -3,14 +3,14 @@ import FWCore.ParameterSet.Config as cms
 from HLTrigger.HLTfilters.HLT1PFTau import HLT1PFTau as _HLT1PFTau
 
 hltHpsPFTau27LooseTauWPDeepTau = _HLT1PFTau(
-    MaxEta = cms.double(2.1),
-    MaxMass = cms.double(-1.0),
-    MinE = cms.double(-1.0),
-    MinEta = cms.double(-1.0),
-    MinMass = cms.double(-1.0),
-    MinN = cms.int32(1),
-    MinPt = cms.double(27.0),
-    inputTag = cms.InputTag("hltHpsSelectedPFTauLooseTauWPDeepTau"),
-    saveTags = cms.bool(True),
-    triggerType = cms.int32(84)
+    MaxEta = 2.1,
+    MaxMass = -1.0,
+    MinE = -1.0,
+    MinEta = -1.0,
+    MinMass = -1.0,
+    MinN = 1,
+    MinPt = 27.0,
+    inputTag = ("hltHpsSelectedPFTauLooseTauWPDeepTau"),
+    saveTags = True,
+    triggerType = 84
 )

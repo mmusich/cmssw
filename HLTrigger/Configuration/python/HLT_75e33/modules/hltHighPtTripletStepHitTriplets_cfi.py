@@ -3,23 +3,23 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.PixelSeeding.CAHitTripletEDProducer import CAHitTripletEDProducer as _CAHitTripletEDProducer
 
 hltHighPtTripletStepHitTriplets = _CAHitTripletEDProducer(
-    CAHardPtCut = cms.double(0.5),
-    CAPhiCut = cms.double(0.06),
-    CAThetaCut = cms.double(0.003),
-    SeedComparitorPSet = cms.PSet(
-        ComponentName = cms.string('LowPtClusterShapeSeedComparitor'),
+    CAHardPtCut = 0.5,
+    CAPhiCut = 0.06,
+    CAThetaCut = 0.003,
+    SeedComparitorPSet = dict(
+        ComponentName = cms.string("LowPtClusterShapeSeedComparitor"),
         clusterShapeCacheSrc = cms.InputTag("hltSiPixelClusterShapeCache"),
-        clusterShapeHitFilter = cms.string('ClusterShapeHitFilter')
+        clusterShapeHitFilter = cms.string("ClusterShapeHitFilter")
     ),
-    doublets = cms.InputTag("hltHighPtTripletStepHitDoublets"),
-    extraHitRPhitolerance = cms.double(0.032),
-    maxChi2 = cms.PSet(
-        enabled = cms.bool(True),
-        pt1 = cms.double(0.8),
-        pt2 = cms.double(8),
-        value1 = cms.double(100),
-        value2 = cms.double(6)
+    doublets = ("hltHighPtTripletStepHitDoublets"),
+    extraHitRPhitolerance = 0.032,
+    maxChi2 = dict(
+        enabled = True,
+        pt1 = 0.8,
+        pt2 = 8,
+        value1 = 100,
+        value2 = 6
     ),
     mightGet = cms.optional.untracked.vstring,
-    useBendingCorrection = cms.bool(True)
+    useBendingCorrection = True
 )

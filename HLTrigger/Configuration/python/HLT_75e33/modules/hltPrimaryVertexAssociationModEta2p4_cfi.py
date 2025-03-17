@@ -3,37 +3,37 @@ import FWCore.ParameterSet.Config as cms
 from CommonTools.RecoAlgos.PFCandidatePrimaryVertexSorter import PFCandidatePrimaryVertexSorter as _PFCandidatePrimaryVertexSorter
 
 hltPrimaryVertexAssociationModEta2p4 = _PFCandidatePrimaryVertexSorter(
-    assignment = cms.PSet(
-        DzCutForChargedFromPUVtxs = cms.double(0.2),
-        EtaMinUseDz = cms.double(-1),
-        NumOfPUVtxsForCharged = cms.uint32(0),
-        OnlyUseFirstDz = cms.bool(False),
-        PtMaxCharged = cms.double(-1),
-        maxDistanceToJetAxis = cms.double(0.07),
-        maxDtSigForPrimaryAssignment = cms.double(3.0),
-        maxDxyForJetAxisAssigment = cms.double(0.1),
-        maxDxyForNotReconstructedPrimary = cms.double(0.01),
-        maxDxySigForNotReconstructedPrimary = cms.double(2),
-        maxDzErrorForPrimaryAssignment = cms.double(0.05),
-        maxDzForJetAxisAssigment = cms.double(0.1),
-        maxDzForPrimaryAssignment = cms.double(0.1),
-        maxDzSigForPrimaryAssignment = cms.double(5.0),
-        maxJetDeltaR = cms.double(0.5),
-        minJetPt = cms.double(25),
-        preferHighRanked = cms.bool(False),
-        useTiming = cms.bool(False),
-        useVertexFit = cms.bool(True)
+    assignment = dict(
+        DzCutForChargedFromPUVtxs = 0.2,
+        EtaMinUseDz = -1,
+        NumOfPUVtxsForCharged = 0,
+        OnlyUseFirstDz = False,
+        PtMaxCharged = -1,
+        maxDistanceToJetAxis = 0.07,
+        maxDtSigForPrimaryAssignment = 3.0,
+        maxDxyForJetAxisAssigment = 0.1,
+        maxDxyForNotReconstructedPrimary = 0.01,
+        maxDxySigForNotReconstructedPrimary = 2,
+        maxDzErrorForPrimaryAssignment = 0.05,
+        maxDzForJetAxisAssigment = 0.1,
+        maxDzForPrimaryAssignment = 0.1,
+        maxDzSigForPrimaryAssignment = 5.0,
+        maxJetDeltaR = 0.5,
+        minJetPt = 25,
+        preferHighRanked = False,
+        useTiming = False,
+        useVertexFit = True
     ),
-    jets = cms.InputTag("hltPFPuppiJetForBtagEta2p4"),
-    particles = cms.InputTag("hltParticleFlowTmp"),
-    produceAssociationToOriginalVertices = cms.bool(True),
-    produceNoPileUpCollection = cms.bool(False),
-    producePileUpCollection = cms.bool(False),
-    produceSortedVertices = cms.bool(False),
-    qualityForPrimary = cms.int32(2),
-    sorting = cms.PSet(
+    jets = ("hltPFPuppiJetForBtagEta2p4"),
+    particles = ("hltParticleFlowTmp"),
+    produceAssociationToOriginalVertices = True,
+    produceNoPileUpCollection = False,
+    producePileUpCollection = False,
+    produceSortedVertices = False,
+    qualityForPrimary = 2,
+    sorting = dict(
 
     ),
-    usePVMET = cms.bool(True),
-    vertices = cms.InputTag("hltOfflinePrimaryVertices")
+    usePVMET = True,
+    vertices = ("hltOfflinePrimaryVertices")
 )

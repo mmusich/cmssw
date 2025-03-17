@@ -3,18 +3,18 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkSeedGenerator.SeedGeneratorFromProtoTracksEDProducer import SeedGeneratorFromProtoTracksEDProducer as _SeedGeneratorFromProtoTracksEDProducer
 
 hltInitialStepSeeds = _SeedGeneratorFromProtoTracksEDProducer(
-    InputCollection = cms.InputTag("hltPhase2PixelTracks"),
-    InputVertexCollection = cms.InputTag(""),
-    SeedCreatorPSet = cms.PSet(
+    InputCollection = ("hltPhase2PixelTracks"),
+    InputVertexCollection = (""),
+    SeedCreatorPSet = dict(
         refToPSet_ = cms.string('seedFromProtoTracks')
     ),
     TTRHBuilder = cms.string('WithTrackAngle'),
-    originHalfLength = cms.double(0.3),
-    originRadius = cms.double(0.1),
-    useEventsWithNoVertex = cms.bool(True),
-    usePV = cms.bool(False),
-    useProtoTrackKinematics = cms.bool(False),
-    includeFourthHit = cms.bool(False)
+    originHalfLength = 0.3,
+    originRadius = 0.1,
+    useEventsWithNoVertex = True,
+    usePV = False,
+    useProtoTrackKinematics = False,
+    includeFourthHit = False
 )
 
 from Configuration.ProcessModifiers.trackingLST_cff import trackingLST

@@ -3,15 +3,15 @@ import FWCore.ParameterSet.Config as cms
 from HLTrigger.HLTfilters.L1TPFTauFilter import L1TPFTauFilter as _L1TPFTauFilter
 
 hltL1SingleNNTau150 = _L1TPFTauFilter(
-    MaxEta = cms.double(2.172),
-    MinEta = cms.double(-2.172),
-    MinN = cms.int32(1),
-    MinPt = cms.double(150.0),
-    PassLooseNN = cms.int32(0),
-    Scalings = cms.PSet(
-        barrel = cms.vdouble(-9.54135, 1.73403, 0),
-        endcap = cms.vdouble(-36.157, 3.83749, 0)
+    MaxEta = 2.172,
+    MinEta = -2.172,
+    MinN = 1,
+    MinPt = 150.0,
+    PassLooseNN = 0,
+    Scalings = dict(
+        barrel = [-9.54135, 1.73403, 0],
+        endcap = [-36.157, 3.83749, 0]
     ),
-    inputTag = cms.InputTag("l1tNNTauProducerPuppi","L1PFTausNN"),
-    saveTags = cms.bool(True)
+    inputTag = ("l1tNNTauProducerPuppi","L1PFTausNN"),
+    saveTags = True
 )

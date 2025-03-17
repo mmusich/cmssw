@@ -150,7 +150,7 @@ hltEgammaPixelMatchVarsUnseeded = _EgammaHLTPixelMatchVarProducer(
             )
         )
     ),
-    pixelSeedsProducer = cms.InputTag("hltEgammaElectronPixelSeedsUnseeded"),
-    productsToWrite = cms.int32(0),
-    recoEcalCandidateProducer = cms.InputTag("hltEgammaCandidatesUnseeded")
+    pixelSeedsProducer = ("hltEgammaElectronPixelSeedsUnseeded"),
+    productsToWrite = 0,
+    recoEcalCandidateProducer = ("hltEgammaCandidatesUnseeded")
 )

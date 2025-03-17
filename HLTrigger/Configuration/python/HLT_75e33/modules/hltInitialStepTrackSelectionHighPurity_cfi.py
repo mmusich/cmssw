@@ -6,7 +6,7 @@ hltInitialStepTrackSelectionHighPurity = _TrackCollectionFilterCloner(
     copyExtras = cms.untracked.bool(True),
     copyTrajectories = cms.untracked.bool(False),
     minQuality = cms.string('highPurity'),
-    originalMVAVals = cms.InputTag("hltInitialStepTrackCutClassifier","MVAValues"),
-    originalQualVals = cms.InputTag("hltInitialStepTrackCutClassifier","QualityMasks"),
-    originalSource = cms.InputTag("hltInitialStepTracks")
+    originalMVAVals = ("hltInitialStepTrackCutClassifier","MVAValues"),
+    originalQualVals = ("hltInitialStepTrackCutClassifier","QualityMasks"),
+    originalSource = ("hltInitialStepTracks")
 )

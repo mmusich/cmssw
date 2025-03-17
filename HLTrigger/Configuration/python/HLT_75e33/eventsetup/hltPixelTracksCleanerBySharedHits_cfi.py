@@ -5,5 +5,5 @@ from RecoTracker.PixelTrackFitting.PixelTrackCleanerBySharedHitsESProducer impor
 hltPixelTracksCleanerBySharedHits = _PixelTrackCleanerBySharedHitsESProducer(
     ComponentName = cms.string('hltPixelTracksCleanerBySharedHits'),
     appendToDataLabel = cms.string(''),
-    useQuadrupletAlgo = cms.bool(False)
+    useQuadrupletAlgo = False
 )

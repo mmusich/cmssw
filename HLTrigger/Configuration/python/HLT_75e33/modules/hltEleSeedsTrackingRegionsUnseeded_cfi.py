@@ -3,22 +3,22 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaElectronProducers.TrackingRegionsFromSuperClustersEDProducer import TrackingRegionsFromSuperClustersEDProducer as _TrackingRegionsFromSuperClustersEDProducer
 
 hltEleSeedsTrackingRegionsUnseeded = _TrackingRegionsFromSuperClustersEDProducer(
-    RegionPSet = cms.PSet(
-        beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-        defaultZ = cms.double(0.0),
-        deltaEtaRegion = cms.double(0.1),
-        deltaPhiRegion = cms.double(0.4),
-        measurementTrackerEvent = cms.InputTag(""),
-        minBSDeltaZ = cms.double(0.0),
-        nrSigmaForBSDeltaZ = cms.double(4.0),
-        originHalfLength = cms.double(12.5),
-        originRadius = cms.double(0.2),
-        precise = cms.bool(True),
-        ptMin = cms.double(1.5),
+    RegionPSet = dict(
+        beamSpot = ("hltOnlineBeamSpot"),
+        defaultZ = 0.0,
+        deltaEtaRegion = 0.1,
+        deltaPhiRegion = 0.4,
+        measurementTrackerEvent = (""),
+        minBSDeltaZ = 0.0,
+        nrSigmaForBSDeltaZ = 4.0,
+        originHalfLength = 12.5,
+        originRadius = 0.2,
+        precise = True,
+        ptMin = 1.5,
         superClusters = cms.VInputTag("hltEgammaSuperClustersToPixelMatchUnseeded"),
-        useZInBeamspot = cms.bool(False),
-        useZInVertex = cms.bool(False),
-        vertices = cms.InputTag(""),
+        useZInBeamspot = False,
+        useZInVertex = False,
+        vertices = (""),
         whereToUseMeasTracker = cms.string('kNever')
     )
 )

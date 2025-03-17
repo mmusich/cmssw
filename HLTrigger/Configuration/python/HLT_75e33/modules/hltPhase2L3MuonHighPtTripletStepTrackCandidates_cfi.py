@@ -3,26 +3,26 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.CkfPattern.CkfTrackCandidateMaker import CkfTrackCandidateMaker as _CkfTrackCandidateMaker
 
 hltPhase2L3MuonHighPtTripletStepTrackCandidates = _CkfTrackCandidateMaker(
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
-    TrajectoryBuilderPSet = cms.PSet(
+    TrajectoryBuilderPSet = dict(
         refToPSet_ = cms.string('hltPhase2L3MuonHighPtTripletStepTrajectoryBuilder')
     ),
     TrajectoryCleaner = cms.string('hltPhase2L3MuonHighPtTripletStepTrajectoryCleanerBySharedHits'),
-    TransientInitialStateEstimatorParameters = cms.PSet(
-        numberMeasurementsForFit = cms.int32(4),
+    TransientInitialStateEstimatorParameters = dict(
+        numberMeasurementsForFit = 4,
         propagatorAlongTISE = cms.string('PropagatorWithMaterial'),
         propagatorOppositeTISE = cms.string('PropagatorWithMaterialOpposite')
     ),
-    cleanTrajectoryAfterInOut = cms.bool(True),
-    doSeedingRegionRebuilding = cms.bool(True),
-    maxNSeeds = cms.uint32(100000),
-    maxSeedsBeforeCleaning = cms.uint32(1000),
-    numHitsForSeedCleaner = cms.int32(50),
-    onlyPixelHitsForSeedCleaner = cms.bool(True),
-    phase2clustersToSkip = cms.InputTag("hltPhase2L3MuonHighPtTripletStepClusters"),
-    reverseTrajectories = cms.bool(False),
-    src = cms.InputTag("hltPhase2L3MuonHighPtTripletStepSeeds"),
-    useHitsSplitting = cms.bool(False)
+    cleanTrajectoryAfterInOut = True,
+    doSeedingRegionRebuilding = True,
+    maxNSeeds = 100000,
+    maxSeedsBeforeCleaning = 1000,
+    numHitsForSeedCleaner = 50,
+    onlyPixelHitsForSeedCleaner = True,
+    phase2clustersToSkip = ("hltPhase2L3MuonHighPtTripletStepClusters"),
+    reverseTrajectories = False,
+    src = ("hltPhase2L3MuonHighPtTripletStepSeeds"),
+    useHitsSplitting = False
 )

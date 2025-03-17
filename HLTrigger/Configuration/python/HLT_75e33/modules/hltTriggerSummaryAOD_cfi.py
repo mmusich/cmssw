@@ -7,7 +7,7 @@ hltTriggerSummaryAOD = _TriggerSummaryProducerAOD(
         'hlt*',
         'l1t*'
     ),
-    moduleLabelPatternsToSkip = cms.vstring(),
+    moduleLabelPatternsToSkip = [],
     processName = cms.string('*'),
-    throw = cms.bool(False)
+    throw = False
 )

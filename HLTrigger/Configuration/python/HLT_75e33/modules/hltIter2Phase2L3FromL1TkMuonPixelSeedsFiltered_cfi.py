@@ -3,12 +3,12 @@ import FWCore.ParameterSet.Config as cms
 from RecoMuon.TrackerSeedGenerator.MuonHLTSeedMVAClassifierPhase2 import MuonHLTSeedMVAClassifierPhase2 as _MuonHLTSeedMVAClassifierPhase2
 
 hltIter2Phase2L3FromL1TkMuonPixelSeedsFiltered = _MuonHLTSeedMVAClassifierPhase2(
-    L1TkMu = cms.InputTag("l1tTkMuonsGmt"),
-    baseScore = cms.double(0.5),
-    doSort = cms.bool(True),
-    etaEdge = cms.double(1.2),
-    mvaCut_B = cms.double(0.0),
-    mvaCut_E = cms.double(0.0),
+    L1TkMu = ("l1tTkMuonsGmt"),
+    baseScore = 0.5,
+    doSort = True,
+    etaEdge = 1.2,
+    mvaCut_B = 0.0,
+    mvaCut_E = 0.0,
     mvaFile_B_0 = cms.FileInPath('RecoMuon/TrackerSeedGenerator/data/xgb_Phase2_Iter2FromL1_barrel_v0.xml'),
     mvaFile_E_0 = cms.FileInPath('RecoMuon/TrackerSeedGenerator/data/xgb_Phase2_Iter2FromL1_endcap_v0.xml'),
     mvaScaleMean_B = cms.vdouble(
@@ -31,9 +31,9 @@ hltIter2Phase2L3FromL1TkMuonPixelSeedsFiltered = _MuonHLTSeedMVAClassifierPhase2
         0.33052121398064654, 0.05589386786541949, 0.08806273533388546, 0.3254586902665612, 0.3293354496231377,
         0.3179899794578072
     ),
-    nSeedsMax_B = cms.int32(20),
-    nSeedsMax_E = cms.int32(20),
-    src = cms.InputTag("hltIter2Phase2L3FromL1TkMuonPixelSeeds")
+    nSeedsMax_B = 20,
+    nSeedsMax_E = 20,
+    src = ("hltIter2Phase2L3FromL1TkMuonPixelSeeds")
 )
 
 from Configuration.ProcessModifiers.phase2L2AndL3Muons_cff import phase2L2AndL3Muons

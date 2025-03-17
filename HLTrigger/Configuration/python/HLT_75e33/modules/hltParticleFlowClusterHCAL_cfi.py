@@ -3,42 +3,42 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFMultiDepthClusterProducer import PFMultiDepthClusterProducer as _PFMultiDepthClusterProducer
 
 hltParticleFlowClusterHCAL = _PFMultiDepthClusterProducer(
-    clustersSource = cms.InputTag("hltParticleFlowClusterHBHE"),
-    energyCorrector = cms.PSet(
+    clustersSource = ("hltParticleFlowClusterHBHE"),
+    energyCorrector = dict(
 
     ),
-    pfClusterBuilder = cms.PSet(
-        algoName = cms.string('PFMultiDepthClusterizer'),
-        allCellsPositionCalc = cms.PSet(
-            algoName = cms.string('Basic2DGenericPFlowPositionCalc'),
-            logWeightDenominatorByDetector = cms.VPSet(
-                cms.PSet(
-                    depths = cms.vint32(1, 2, 3, 4),
-                    detector = cms.string('HCAL_BARREL1'),
-                    logWeightDenominator = cms.vdouble(0.1, 0.2, 0.3, 0.3)
+    pfClusterBuilder = dict(
+        algoName = 'PFMultiDepthClusterizer',
+        allCellsPositionCalc = dict(
+            algoName = 'Basic2DGenericPFlowPositionCalc',
+            logWeightDenominatorByDetector = [
+                dict(
+                    depths = [1, 2, 3, 4],
+                    detector = 'HCAL_BARREL1',
+                    logWeightDenominator = [0.1, 0.2, 0.3, 0.3]
                 ),
-                cms.PSet(
+                dict(
                     depths = cms.vint32(
                         1, 2, 3, 4, 5,
                         6, 7
                     ),
-                    detector = cms.string('HCAL_ENDCAP'),
+                    detector = 'HCAL_ENDCAP',
                     logWeightDenominator = cms.vdouble(
                         0.1, 0.2, 0.2, 0.2, 0.2,
                         0.2, 0.2
                     )
                 )
-            ),
-            minAllowedNormalization = cms.double(1e-09),
-            minFractionInCalc = cms.double(1e-09),
-            posCalcNCrystals = cms.int32(-1)
+            ],
+            minAllowedNormalization = 1e-09,
+            minFractionInCalc = 1e-09,
+            posCalcNCrystals = -1
         ),
-        minFractionToKeep = cms.double(1e-07),
-        nSigmaEta = cms.double(2.0),
-        nSigmaPhi = cms.double(2.0)
+        minFractionToKeep = 1e-07,
+        nSigmaEta = 2.0,
+        nSigmaPhi = 2.0
     ),
-    positionReCalc = cms.PSet(
+    positionReCalc = dict(
 
     ),
-    usePFThresholdsFromDB = cms.bool(True)
+    usePFThresholdsFromDB = True
 )

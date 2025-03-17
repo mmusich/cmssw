@@ -5,7 +5,7 @@ def _addProcessTTRHBuilderWithoutRefit(process):
 
     hltESPTTRHBuilderWithoutRefit = _TkTransientTrackingRecHitBuilderESProducer(
         ComponentName = cms.string('hltESPTTRHBuilderWithoutRefit'),
-        ComputeCoarseLocalPositionFromDisk = cms.bool(False),
+        ComputeCoarseLocalPositionFromDisk = False,
         Matcher = cms.string('Fake'),
         Phase2StripCPE = cms.string(''),
         PixelCPE = cms.string('Fake'),

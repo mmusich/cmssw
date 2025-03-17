@@ -3,35 +3,35 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFClusterProducer import PFClusterProducer as _PFClusterProducer
 
 hltParticleFlowClusterHGCalFromTICLL1Seeded = _PFClusterProducer(
-    energyCorrector = cms.PSet(
+    energyCorrector = dict(
 
     ),
-    initialClusteringStep = cms.PSet(
-        algoName = cms.string('PFClusterFromHGCalTrackster'),
-        clusterSrc = cms.InputTag("hltHgcalMergeLayerClustersL1Seeded"),
-        filterByTracksterIteration = cms.bool(False),
-        filterByTracksterPID = cms.bool(True),
-        filter_on_categories = cms.vint32(0, 1),
-        filter_on_iterations = cms.vint32(0, 1),
-        pid_threshold = cms.double(0.8),
-        thresholdsByDetector = cms.VPSet(),
-        tracksterSrc = cms.InputTag("hltTiclTrackstersCLUE3DHighL1Seeded")
+    initialClusteringStep = dict(
+        algoName = 'PFClusterFromHGCalTrackster',
+        clusterSrc = ("hltHgcalMergeLayerClustersL1Seeded"),
+        filterByTracksterIteration = False,
+        filterByTracksterPID = True,
+        filter_on_categories = [0, 1],
+        filter_on_iterations = [0, 1],
+        pid_threshold = 0.8,
+        thresholdsByDetector = [],
+        tracksterSrc = ("hltTiclTrackstersCLUE3DHighL1Seeded")
     ),
-    pfClusterBuilder = cms.PSet(
+    pfClusterBuilder = dict(
 
     ),
-    positionReCalc = cms.PSet(
-        algoName = cms.string('Cluster3DPCACalculator'),
-        minFractionInCalc = cms.double(1e-09),
-        updateTiming = cms.bool(False)
+    positionReCalc = dict(
+        algoName = 'Cluster3DPCACalculator',
+        minFractionInCalc = 1e-09,
+        updateTiming = False
     ),
-    recHitCleaners = cms.VPSet(),
-    recHitsSource = cms.InputTag("hltParticleFlowRecHitHGCL1Seeded"),
-    seedCleaners = cms.VPSet(),
-    seedFinder = cms.PSet(
-        algoName = cms.string('PassThruSeedFinder'),
-        nNeighbours = cms.int32(8),
-        thresholdsByDetector = cms.VPSet()
+    recHitCleaners = [],
+    recHitsSource = ("hltParticleFlowRecHitHGCL1Seeded"),
+    seedCleaners = [],
+    seedFinder = dict(
+        algoName = 'PassThruSeedFinder',
+        nNeighbours = 8,
+        thresholdsByDetector = []
     ),
-    usePFThresholdsFromDB = cms.bool(False)
+    usePFThresholdsFromDB = False
 )

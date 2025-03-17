@@ -4,5 +4,5 @@ from CommonTools.RecoAlgos.ChargedRefCandidateProducer import ChargedRefCandidat
 
 hltTrackRefsForJetsBeforeSorting = _ChargedRefCandidateProducer(
     particleType = cms.string('pi+'),
-    src = cms.InputTag("hltTrackWithVertexRefSelectorBeforeSorting")
+    src = ("hltTrackWithVertexRefSelectorBeforeSorting")
 )

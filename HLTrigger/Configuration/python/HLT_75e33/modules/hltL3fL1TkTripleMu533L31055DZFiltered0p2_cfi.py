@@ -3,16 +3,16 @@ import FWCore.ParameterSet.Config as cms
 from HLTrigger.HLTfilters.HLT2MuonMuonDZ import HLT2MuonMuonDZ as _HLT2MuonMuonDZ
 
 hltL3fL1TkTripleMu533L31055DZFiltered0p2 = _HLT2MuonMuonDZ(
-    MaxDZ = cms.double(0.2),
-    MinDR = cms.double(0.001),
-    MinN = cms.int32(3),
-    MinPixHitsForDZ = cms.int32(1),
-    checkSC = cms.bool(False),
-    inputTag1 = cms.InputTag("hltL3fL1TkTripleMu533PreFiltered555"),
-    inputTag2 = cms.InputTag("hltL3fL1TkTripleMu533PreFiltered555"),
+    MaxDZ = 0.2,
+    MinDR = 0.001,
+    MinN = 3,
+    MinPixHitsForDZ = 1,
+    checkSC = False,
+    inputTag1 = ("hltL3fL1TkTripleMu533PreFiltered555"),
+    inputTag2 = ("hltL3fL1TkTripleMu533PreFiltered555"),
     originTag1 = cms.VInputTag("hltPhase2L3MuonCandidates"),
     originTag2 = cms.VInputTag("hltPhase2L3MuonCandidates"),
-    saveTags = cms.bool(True),
-    triggerType1 = cms.int32(83),
-    triggerType2 = cms.int32(83)
+    saveTags = True,
+    triggerType1 = 83,
+    triggerType2 = 83
 )

@@ -4,7 +4,7 @@ from RecoParticleFlow.PFClusterProducer.PFClusterTimeAssigner import PFClusterTi
 
 hltParticleFlowTimeAssignerECAL = _PFClusterTimeAssigner(
     mightGet = cms.optional.untracked.vstring,
-    src = cms.InputTag("hltParticleFlowClusterECALUncorrected"),
-    timeResoSrc = cms.InputTag("hltEcalBarrelClusterFastTimer","PerfectResolutionModelResolution"),
-    timeSrc = cms.InputTag("hltEcalBarrelClusterFastTimer","PerfectResolutionModel")
+    src = ("hltParticleFlowClusterECALUncorrected"),
+    timeResoSrc = ("hltEcalBarrelClusterFastTimer","PerfectResolutionModelResolution"),
+    timeSrc = ("hltEcalBarrelClusterFastTimer","PerfectResolutionModel")
 )

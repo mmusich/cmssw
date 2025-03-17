@@ -4,6 +4,6 @@ from RecoTracker.FinalTrackSelectors.TrackAlgoPriorityOrderESProducer import Tra
 
 hltESPTrackAlgoPriorityOrder = _TrackAlgoPriorityOrderESProducer(
     ComponentName = cms.string('hltESPTrackAlgoPriorityOrder'),
-    algoOrder = cms.vstring(),
+    algoOrder = [],
     appendToDataLabel = cms.string('')
 )

@@ -3,119 +3,119 @@ import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.PFRecoTauChargedHadronProducer import PFRecoTauChargedHadronProducer as _PFRecoTauChargedHadronProducer
 
 hltHpsTauPFJetsRecoTauChargedHadronsWithNeutrals = _PFRecoTauChargedHadronProducer(
-    builders = cms.VPSet(
-        cms.PSet(
-            chargedHadronCandidatesParticleIds = cms.vint32(1, 2, 3),
-            dRmergeNeutralHadronWrtChargedHadron = cms.double(0.005),
-            dRmergeNeutralHadronWrtElectron = cms.double(0.05),
-            dRmergeNeutralHadronWrtNeutralHadron = cms.double(0.01),
-            dRmergeNeutralHadronWrtOther = cms.double(0.005),
-            dRmergePhotonWrtChargedHadron = cms.double(0.005),
-            dRmergePhotonWrtElectron = cms.double(0.005),
-            dRmergePhotonWrtNeutralHadron = cms.double(0.01),
-            dRmergePhotonWrtOther = cms.double(0.005),
-            maxUnmatchedBlockElementsNeutralHadron = cms.int32(1),
-            maxUnmatchedBlockElementsPhoton = cms.int32(1),
-            minBlockElementMatchesNeutralHadron = cms.int32(2),
-            minBlockElementMatchesPhoton = cms.int32(2),
-            minMergeChargedHadronPt = cms.double(100.0),
-            minMergeGammaEt = cms.double(0.0),
-            minMergeNeutralHadronEt = cms.double(0.0),
-            name = cms.string('chargedPFCandidates'),
-            plugin = cms.string('PFRecoTauChargedHadronFromPFCandidatePlugin'),
-            qualityCuts = cms.PSet(
-                primaryVertexSrc = cms.InputTag("hltPhase2PixelVertices"),
-                pvFindingAlgo = cms.string('closestInDeltaZ'),
-                recoverLeadingTrk = cms.bool(False),
-                signalQualityCuts = cms.PSet(
-                    maxDeltaZ = cms.double(0.2),
-                    maxTrackChi2 = cms.double(1000.0),
-                    maxTransverseImpactParameter = cms.double(0.2),
-                    minGammaEt = cms.double(0.5),
-                    minNeutralHadronEt = cms.double(30.0),
-                    minTrackHits = cms.uint32(3),
-                    minTrackPixelHits = cms.uint32(0),
-                    minTrackPt = cms.double(0.0),
-                    useTracksInsteadOfPFHadrons = cms.bool(False)
+    builders = [
+        dict(
+            chargedHadronCandidatesParticleIds = [1, 2, 3],
+            dRmergeNeutralHadronWrtChargedHadron = 0.005,
+            dRmergeNeutralHadronWrtElectron = 0.05,
+            dRmergeNeutralHadronWrtNeutralHadron = 0.01,
+            dRmergeNeutralHadronWrtOther = 0.005,
+            dRmergePhotonWrtChargedHadron = 0.005,
+            dRmergePhotonWrtElectron = 0.005,
+            dRmergePhotonWrtNeutralHadron = 0.01,
+            dRmergePhotonWrtOther = 0.005,
+            maxUnmatchedBlockElementsNeutralHadron = 1,
+            maxUnmatchedBlockElementsPhoton = 1,
+            minBlockElementMatchesNeutralHadron = 2,
+            minBlockElementMatchesPhoton = 2,
+            minMergeChargedHadronPt = 100.0,
+            minMergeGammaEt = 0.0,
+            minMergeNeutralHadronEt = 0.0,
+            name = 'chargedPFCandidates',
+            plugin = 'PFRecoTauChargedHadronFromPFCandidatePlugin',
+            qualityCuts = dict(
+                primaryVertexSrc = ("hltPhase2PixelVertices"),
+                pvFindingAlgo = 'closestInDeltaZ',
+                recoverLeadingTrk = False,
+                signalQualityCuts = dict(
+                    maxDeltaZ = 0.2,
+                    maxTrackChi2 = 1000.0,
+                    maxTransverseImpactParameter = 0.2,
+                    minGammaEt = 0.5,
+                    minNeutralHadronEt = 30.0,
+                    minTrackHits = 3,
+                    minTrackPixelHits = 0,
+                    minTrackPt = 0.0,
+                    useTracksInsteadOfPFHadrons = False
                 ),
-                vertexTrackFiltering = cms.bool(False),
-                vxAssocQualityCuts = cms.PSet(
-                    maxTrackChi2 = cms.double(1000.0),
-                    maxTransverseImpactParameter = cms.double(0.2),
-                    minGammaEt = cms.double(0.5),
-                    minTrackHits = cms.uint32(3),
-                    minTrackPixelHits = cms.uint32(0),
-                    minTrackPt = cms.double(0.0),
-                    useTracksInsteadOfPFHadrons = cms.bool(False)
+                vertexTrackFiltering = False,
+                vxAssocQualityCuts = dict(
+                    maxTrackChi2 = 1000.0,
+                    maxTransverseImpactParameter = 0.2,
+                    minGammaEt = 0.5,
+                    minTrackHits = 3,
+                    minTrackPixelHits = 0,
+                    minTrackPt = 0.0,
+                    useTracksInsteadOfPFHadrons = False
                 )
             )
         ),
-        cms.PSet(
-            chargedHadronCandidatesParticleIds = cms.vint32(5),
-            dRmergeNeutralHadronWrtChargedHadron = cms.double(0.005),
-            dRmergeNeutralHadronWrtElectron = cms.double(0.05),
-            dRmergeNeutralHadronWrtNeutralHadron = cms.double(0.01),
-            dRmergeNeutralHadronWrtOther = cms.double(0.005),
-            dRmergePhotonWrtChargedHadron = cms.double(0.005),
-            dRmergePhotonWrtElectron = cms.double(0.005),
-            dRmergePhotonWrtNeutralHadron = cms.double(0.01),
-            dRmergePhotonWrtOther = cms.double(0.005),
-            maxUnmatchedBlockElementsNeutralHadron = cms.int32(1),
-            maxUnmatchedBlockElementsPhoton = cms.int32(1),
-            minBlockElementMatchesNeutralHadron = cms.int32(2),
-            minBlockElementMatchesPhoton = cms.int32(2),
-            minMergeChargedHadronPt = cms.double(0.0),
-            minMergeGammaEt = cms.double(0.0),
-            minMergeNeutralHadronEt = cms.double(0.0),
-            name = cms.string('PFNeutralHadrons'),
-            plugin = cms.string('PFRecoTauChargedHadronFromPFCandidatePlugin'),
-            qualityCuts = cms.PSet(
-                primaryVertexSrc = cms.InputTag("hltPhase2PixelVertices"),
-                pvFindingAlgo = cms.string('closestInDeltaZ'),
-                recoverLeadingTrk = cms.bool(False),
-                signalQualityCuts = cms.PSet(
-                    maxDeltaZ = cms.double(0.2),
-                    maxTrackChi2 = cms.double(1000.0),
-                    maxTransverseImpactParameter = cms.double(0.2),
-                    minGammaEt = cms.double(0.5),
-                    minNeutralHadronEt = cms.double(30.0),
-                    minTrackHits = cms.uint32(3),
-                    minTrackPixelHits = cms.uint32(0),
-                    minTrackPt = cms.double(0.0),
-                    useTracksInsteadOfPFHadrons = cms.bool(False)
+        dict(
+            chargedHadronCandidatesParticleIds = [5],
+            dRmergeNeutralHadronWrtChargedHadron = 0.005,
+            dRmergeNeutralHadronWrtElectron = 0.05,
+            dRmergeNeutralHadronWrtNeutralHadron = 0.01,
+            dRmergeNeutralHadronWrtOther = 0.005,
+            dRmergePhotonWrtChargedHadron = 0.005,
+            dRmergePhotonWrtElectron = 0.005,
+            dRmergePhotonWrtNeutralHadron = 0.01,
+            dRmergePhotonWrtOther = 0.005,
+            maxUnmatchedBlockElementsNeutralHadron = 1,
+            maxUnmatchedBlockElementsPhoton = 1,
+            minBlockElementMatchesNeutralHadron = 2,
+            minBlockElementMatchesPhoton = 2,
+            minMergeChargedHadronPt = 0.0,
+            minMergeGammaEt = 0.0,
+            minMergeNeutralHadronEt = 0.0,
+            name = 'PFNeutralHadrons',
+            plugin = 'PFRecoTauChargedHadronFromPFCandidatePlugin',
+            qualityCuts = dict(
+                primaryVertexSrc = ("hltPhase2PixelVertices"),
+                pvFindingAlgo = 'closestInDeltaZ',
+                recoverLeadingTrk = False,
+                signalQualityCuts = dict(
+                    maxDeltaZ = 0.2,
+                    maxTrackChi2 = 1000.0,
+                    maxTransverseImpactParameter = 0.2,
+                    minGammaEt = 0.5,
+                    minNeutralHadronEt = 30.0,
+                    minTrackHits = 3,
+                    minTrackPixelHits = 0,
+                    minTrackPt = 0.0,
+                    useTracksInsteadOfPFHadrons = False
                 ),
-                vertexTrackFiltering = cms.bool(False),
-                vxAssocQualityCuts = cms.PSet(
-                    maxTrackChi2 = cms.double(1000.0),
-                    maxTransverseImpactParameter = cms.double(0.2),
-                    minGammaEt = cms.double(0.5),
-                    minTrackHits = cms.uint32(3),
-                    minTrackPixelHits = cms.uint32(0),
-                    minTrackPt = cms.double(0.0),
-                    useTracksInsteadOfPFHadrons = cms.bool(False)
+                vertexTrackFiltering = False,
+                vxAssocQualityCuts = dict(
+                    maxTrackChi2 = 1000.0,
+                    maxTransverseImpactParameter = 0.2,
+                    minGammaEt = 0.5,
+                    minTrackHits = 3,
+                    minTrackPixelHits = 0,
+                    minTrackPt = 0.0,
+                    useTracksInsteadOfPFHadrons = False
                 )
             )
         )
-    ),
-    jetSrc = cms.InputTag("hltAK4PFJets"),
-    maxJetAbsEta = cms.double(99.0),
-    minJetPt = cms.double(-1.0),
-    outputSelection = cms.string('pt > 0.5'),
-    ranking = cms.VPSet(
-        cms.PSet(
-            name = cms.string('ChargedPFCandidate'),
-            plugin = cms.string('PFRecoTauChargedHadronStringQuality'),
-            selection = cms.string("algoIs(\'kChargedPFCandidate\')"),
-            selectionFailValue = cms.double(1000.0),
-            selectionPassFunction = cms.string('-pt')
+    ],
+    jetSrc = ("hltAK4PFJets"),
+    maxJetAbsEta = 99.0,
+    minJetPt = -1.0,
+    outputSelection = 'pt > 0.5',
+    ranking = [
+        dict(
+            name = 'ChargedPFCandidate',
+            plugin = 'PFRecoTauChargedHadronStringQuality',
+            selection = "algoIs(\'kChargedPFCandidate\')",
+            selectionFailValue = 1000.0,
+            selectionPassFunction = '-pt'
         ),
-        cms.PSet(
-            name = cms.string('ChargedPFCandidate'),
-            plugin = cms.string('PFRecoTauChargedHadronStringQuality'),
-            selection = cms.string("algoIs(\'kPFNeutralHadron\')"),
-            selectionFailValue = cms.double(1000.0),
-            selectionPassFunction = cms.string('-pt')
+        dict(
+            name = 'ChargedPFCandidate',
+            plugin = 'PFRecoTauChargedHadronStringQuality',
+            selection = "algoIs(\'kPFNeutralHadron\')",
+            selectionFailValue = 1000.0,
+            selectionPassFunction = '-pt'
         )
-    ),
-    verbosity = cms.int32(0)
+    ],
+    verbosity = 0
 )

@@ -3,36 +3,36 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkSeedingLayers.SeedingLayersEDProducer import SeedingLayersEDProducer as _SeedingLayersEDProducer
 
 hltPixelLayerTriplets = _SeedingLayersEDProducer(
-    BPix = cms.PSet(
+    BPix = dict(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('TTRHBuilderWithoutAngle4PixelTriplets')
     ),
-    FPix = cms.PSet(
+    FPix = dict(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('TTRHBuilderWithoutAngle4PixelTriplets')
     ),
-    MTEC = cms.PSet(
+    MTEC = dict(
 
     ),
-    MTIB = cms.PSet(
+    MTIB = dict(
 
     ),
-    MTID = cms.PSet(
+    MTID = dict(
 
     ),
-    MTOB = cms.PSet(
+    MTOB = dict(
 
     ),
-    TEC = cms.PSet(
+    TEC = dict(
 
     ),
-    TIB = cms.PSet(
+    TIB = dict(
 
     ),
-    TID = cms.PSet(
+    TID = dict(
 
     ),
-    TOB = cms.PSet(
+    TOB = dict(
 
     ),
     layerList = cms.vstring(

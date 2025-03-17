@@ -4,6 +4,6 @@ from RecoParticleFlow.PFClusterProducer.PFBadHcalPseudoClusterProducer import PF
 
 hltParticleFlowBadHcalPseudoCluster = _PFBadHcalPseudoClusterProducer(
     debug = cms.untracked.bool(False),
-    enable = cms.bool(False),
+    enable = False,
     mightGet = cms.optional.untracked.vstring
 )

@@ -3,28 +3,28 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.FinalTrackSelectors.TrackListMerger import TrackListMerger as _TrackListMerger
 
 hltGeneralTracks = _TrackListMerger(
-    Epsilon = cms.double(-0.001),
-    FoundHitBonus = cms.double(5.0),
-    LostHitPenalty = cms.double(5.0),
-    MaxNormalizedChisq = cms.double(1000.0),
-    MinFound = cms.int32(3),
-    MinPT = cms.double(0.9),
-    ShareFrac = cms.double(0.19),
-    TrackProducers = cms.VInputTag("hltInitialStepTrackSelectionHighPurity", "hltHighPtTripletStepTrackSelectionHighPurity"),
-    allowFirstHitShare = cms.bool(True),
+    Epsilon = -0.001,
+    FoundHitBonus = 5.0,
+    LostHitPenalty = 5.0,
+    MaxNormalizedChisq = 1000.0,
+    MinFound = 3,
+    MinPT = 0.9,
+    ShareFrac = 0.19,
+    TrackProducers = ["hltInitialStepTrackSelectionHighPurity", "hltHighPtTripletStepTrackSelectionHighPurity"],
+    allowFirstHitShare = True,
     copyExtras = cms.untracked.bool(True),
-    copyMVA = cms.bool(False),
-    hasSelector = cms.vint32(0, 0),
-    indivShareFrac = cms.vdouble(1.0, 1.0),
+    copyMVA = False,
+    hasSelector = [0, 0],
+    indivShareFrac = [1.0, 1.0],
     makeReKeyedSeeds = cms.untracked.bool(False),
-    newQuality = cms.string('confirmed'),
-    selectedTrackQuals = cms.VInputTag(cms.InputTag("hltInitialStepTrackSelectionHighPurity"), cms.InputTag("hltHighPtTripletStepTrackSelectionHighPurity")),
-    setsToMerge = cms.VPSet(cms.PSet(
-        pQual = cms.bool(True),
-        tLists = cms.vint32(0, 1)
-    )),
+    newQuality = 'confirmed',
+    selectedTrackQuals = ["hltInitialStepTrackSelectionHighPurity", "hltHighPtTripletStepTrackSelectionHighPurity"],
+    setsToMerge = [dict(
+        pQual = True,
+        tLists = [0, 1]
+    )],
     trackAlgoPriorityOrder = cms.string('trackAlgoPriorityOrder'),
-    writeOnlyTrkQuals = cms.bool(False)
+    writeOnlyTrkQuals = False
 )
 
 _hltGeneralTracksSingleIterPatatrack = hltGeneralTracks.clone(
@@ -32,9 +32,9 @@ _hltGeneralTracksSingleIterPatatrack = hltGeneralTracks.clone(
     hasSelector = [0],
     indivShareFrac = [1.0],
     selectedTrackQuals = ["hltInitialStepTrackSelectionHighPurity"],
-    setsToMerge = [cms.PSet(
-        pQual = cms.bool(True),
-        tLists = cms.vint32(0)
+    setsToMerge = [dict(
+        pQual = True,
+        tLists = [0]
     )]
 )
 
@@ -46,9 +46,9 @@ _hltGeneralTracksLST = hltGeneralTracks.clone(
     hasSelector = [0,0,0,0],
     indivShareFrac = [0.1,0.1,0.1,0.1],
     selectedTrackQuals = ["hltInitialStepTrackSelectionHighPuritypTTCLST", "hltInitialStepTrackSelectionHighPuritypLSTCLST", "hltInitialStepTracksT5TCLST", "hltHighPtTripletStepTrackSelectionHighPurity"],
-    setsToMerge = [cms.PSet(
-        pQual = cms.bool(True),
-        tLists = cms.vint32(0,1,2,3)
+    setsToMerge = [dict(
+        pQual = True,
+        tLists = [0,1,2,3]
     )]
 )
 
@@ -60,9 +60,9 @@ _hltGeneralTracksLSTSingleIterPatatrack = hltGeneralTracks.clone(
     hasSelector = [0,0,0],
     indivShareFrac = [0.1,0.1,0.1],
     selectedTrackQuals = ["hltInitialStepTrackSelectionHighPuritypTTCLST", "hltInitialStepTrackSelectionHighPuritypLSTCLST", "hltInitialStepTracksT5TCLST"],
-    setsToMerge = [cms.PSet(
-        pQual = cms.bool(True),
-        tLists = cms.vint32(0,1,2)
+    setsToMerge = [dict(
+        pQual = True,
+        tLists = [0,1,2]
     )]
 )
 
@@ -73,9 +73,9 @@ _hltGeneralTracksLSTSeeding = hltGeneralTracks.clone(
             hasSelector = [0,0,0],
             indivShareFrac = [0.1,0.1,0.1],
             selectedTrackQuals = ["hltInitialStepTrackSelectionHighPuritypTTCLST", "hltInitialStepTracksT5TCLST", "hltHighPtTripletStepTrackSelectionHighPuritypLSTCLST"],
-            setsToMerge = [cms.PSet(
-               pQual = cms.bool(True),
-               tLists = cms.vint32(0,1,2)
+            setsToMerge = [dict(
+               pQual = True,
+               tLists = [0,1,2]
             )]
     )
 

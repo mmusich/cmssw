@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.EgammaHLTPixelMatchVarProducer import EgammaHLTPixelMatchVarProducer as _EgammaHLTPixelMatchVarProducer
 
 hltEgammaPixelMatchVarsL1Seeded = _EgammaHLTPixelMatchVarProducer(
-    dPhi1SParams = cms.PSet(
+ dPhi1SParams = cms.PSet(
         bins = cms.VPSet(
             cms.PSet(
                 binType = cms.string('AbsEtaClus'),
@@ -150,7 +150,7 @@ hltEgammaPixelMatchVarsL1Seeded = _EgammaHLTPixelMatchVarProducer(
             )
         )
     ),
-    pixelSeedsProducer = cms.InputTag("hltEgammaElectronPixelSeedsL1Seeded"),
-    productsToWrite = cms.int32(0),
-    recoEcalCandidateProducer = cms.InputTag("hltEgammaCandidatesL1Seeded")
+    pixelSeedsProducer = ("hltEgammaElectronPixelSeedsL1Seeded"),
+    productsToWrite = 0,
+    recoEcalCandidateProducer = ("hltEgammaCandidatesL1Seeded")
 )

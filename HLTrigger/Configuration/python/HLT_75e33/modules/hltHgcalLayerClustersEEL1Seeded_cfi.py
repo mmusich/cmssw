@@ -6,8 +6,8 @@ from RecoLocalCalo.HGCalRecProducers.HGCalLayerClusterProducer import HGCalLayer
 hltHgcalLayerClustersEEL1Seeded = _HGCalLayerClusterProducer(
     detector = cms.string('EE'),
     mightGet = cms.optional.untracked.vstring,
-    nHitsTime = cms.uint32(3),
-    plugin = cms.PSet(
+    nHitsTime = 3,
+    plugin = dict(
         dEdXweights = HGCAL_reco_constants.dEdXweights,
         deltac = cms.vdouble(
             1.3,
@@ -15,12 +15,12 @@ hltHgcalLayerClustersEEL1Seeded = _HGCalLayerClusterProducer(
             1.3,
             0.0315
         ),
-        deltasi_index_regemfac = cms.int32(3),
-        dependSensor = cms.bool(True),
-        ecut = cms.double(3),
+        deltasi_index_regemfac = 3,
+        dependSensor = True,
+        ecut = 3,
         fcPerEle = HGCAL_reco_constants.fcPerEle,
         fcPerMip = HGCAL_reco_constants.fcPerMip,
-        kappa = cms.double(9),
+        kappa = 9,
         maxNumberOfThickIndices = HGCAL_reco_constants.maxNumberOfThickIndices,
         noiseMip = HGCAL_reco_constants.noiseMip,
         noises = HGCAL_reco_constants.noises,
@@ -29,10 +29,10 @@ hltHgcalLayerClustersEEL1Seeded = _HGCalLayerClusterProducer(
         thicknessCorrection = HGCAL_reco_constants.thicknessCorrection,
         thresholdW0 = HGCAL_reco_constants.thresholdW0,
         type = cms.string('SiCLUE'),
-        use2x2 = cms.bool(True),
+        use2x2 = True,
         verbosity = cms.untracked.uint32(3)
     ),
-    recHits = cms.InputTag("hltRechitInRegionsHGCAL","HGCEERecHits"),
+    recHits = ("hltRechitInRegionsHGCAL","HGCEERecHits"),
     timeClname = cms.string('timeLayerCluster')
 )
 

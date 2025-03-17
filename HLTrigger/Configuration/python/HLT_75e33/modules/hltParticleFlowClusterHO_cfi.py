@@ -3,79 +3,79 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFClusterProducer import PFClusterProducer as _PFClusterProducer
 
 hltParticleFlowClusterHO = _PFClusterProducer(
-    energyCorrector = cms.PSet(
+    energyCorrector = dict(
 
     ),
-    initialClusteringStep = cms.PSet(
+    initialClusteringStep = dict(
         algoName = cms.string('Basic2DGenericTopoClusterizer'),
-        thresholdsByDetector = cms.VPSet(
-            cms.PSet(
+        thresholdsByDetector = [
+            dict(
                 detector = cms.string('HCAL_BARREL2_RING0'),
-                gatheringThreshold = cms.double(0.05),
-                gatheringThresholdPt = cms.double(0.0)
+                gatheringThreshold = 0.05,
+                gatheringThresholdPt = 0.0
             ),
-            cms.PSet(
+            dict(
                 detector = cms.string('HCAL_BARREL2_RING1'),
-                gatheringThreshold = cms.double(0.05),
-                gatheringThresholdPt = cms.double(0.0)
+                gatheringThreshold = 0.05,
+                gatheringThresholdPt = 0.0
             )
-        ),
-        useCornerCells = cms.bool(True)
+        ],
+        useCornerCells = True
     ),
-    pfClusterBuilder = cms.PSet(
+    pfClusterBuilder = dict(
         algoName = cms.string('Basic2DGenericPFlowClusterizer'),
-        allCellsPositionCalc = cms.PSet(
+        allCellsPositionCalc = dict(
             algoName = cms.string('Basic2DGenericPFlowPositionCalc'),
-            logWeightDenominator = cms.double(0.05),
-            minAllowedNormalization = cms.double(1e-09),
-            minFractionInCalc = cms.double(1e-09),
-            posCalcNCrystals = cms.int32(-1)
+            logWeightDenominator = 0.05,
+            minAllowedNormalization = 1e-09,
+            minFractionInCalc = 1e-09,
+            posCalcNCrystals = -1
         ),
-        excludeOtherSeeds = cms.bool(True),
-        maxIterations = cms.uint32(50),
-        minFracTot = cms.double(1e-20),
-        minFractionToKeep = cms.double(1e-07),
-        positionCalc = cms.PSet(
+        excludeOtherSeeds = True,
+        maxIterations = 50,
+        minFracTot = 1e-20,
+        minFractionToKeep = 1e-07,
+        positionCalc = dict(
             algoName = cms.string('Basic2DGenericPFlowPositionCalc'),
-            logWeightDenominator = cms.double(0.05),
-            minAllowedNormalization = cms.double(1e-09),
-            minFractionInCalc = cms.double(1e-09),
-            posCalcNCrystals = cms.int32(5)
+            logWeightDenominator = 0.05,
+            minAllowedNormalization = 1e-09,
+            minFractionInCalc = 1e-09,
+            posCalcNCrystals = 5
         ),
-        recHitEnergyNorms = cms.VPSet(
-            cms.PSet(
+        recHitEnergyNorms = [
+            dict(
                 detector = cms.string('HCAL_BARREL2_RING0'),
-                recHitEnergyNorm = cms.double(0.05)
+                recHitEnergyNorm = 0.05
             ),
-            cms.PSet(
+            dict(
                 detector = cms.string('HCAL_BARREL2_RING1'),
-                recHitEnergyNorm = cms.double(0.05)
+                recHitEnergyNorm = 0.05
             )
-        ),
-        showerSigma = cms.double(10.0),
-        stoppingTolerance = cms.double(1e-08)
+        ],
+        showerSigma = 10.0,
+        stoppingTolerance = 1e-08
     ),
-    positionReCalc = cms.PSet(
+    positionReCalc = dict(
 
     ),
-    recHitCleaners = cms.VPSet(),
-    recHitsSource = cms.InputTag("hltParticleFlowRecHitHO"),
-    seedCleaners = cms.VPSet(),
-    seedFinder = cms.PSet(
+    recHitCleaners = [],
+    recHitsSource = ("hltParticleFlowRecHitHO"),
+    seedCleaners = [],
+    seedFinder = dict(
         algoName = cms.string('LocalMaximumSeedFinder'),
-        nNeighbours = cms.int32(4),
-        thresholdsByDetector = cms.VPSet(
-            cms.PSet(
+        nNeighbours = 4,
+        thresholdsByDetector = [
+            dict(
                 detector = cms.string('HCAL_BARREL2_RING0'),
-                seedingThreshold = cms.double(0.08),
-                seedingThresholdPt = cms.double(0.0)
+                seedingThreshold = 0.08,
+                seedingThresholdPt = 0.0
             ),
-            cms.PSet(
+            dict(
                 detector = cms.string('HCAL_BARREL2_RING1'),
-                seedingThreshold = cms.double(0.08),
-                seedingThresholdPt = cms.double(0.0)
+                seedingThreshold = 0.08,
+                seedingThresholdPt = 0.0
             )
-        )
+        ]
     ),
-    usePFThresholdsFromDB = cms.bool(False)
+    usePFThresholdsFromDB = False
 )

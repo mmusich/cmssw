@@ -3,19 +3,19 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.EgammaHLTEcalPFClusterIsolationProducer import EgammaHLTEcalPFClusterIsolationProducer as _EgammaHLTEcalPFClusterIsolationProducer
 
 hltEgammaEcalPFClusterIsoL1Seeded = _EgammaHLTEcalPFClusterIsolationProducer(
-    absEtaLowEdges = cms.vdouble(0.0, 1.479),
-    doRhoCorrection = cms.bool(False),
-    drMax = cms.double(0.2),
-    drVetoBarrel = cms.double(0.0),
-    drVetoEndcap = cms.double(0.0),
-    effectiveAreas = cms.vdouble(0.29, 0.21),
-    energyBarrel = cms.double(0.0),
-    energyEndcap = cms.double(0.0),
-    etaStripBarrel = cms.double(0.0),
-    etaStripEndcap = cms.double(0.0),
-    pfClusterProducer = cms.InputTag("hltParticleFlowClusterECALL1Seeded"),
-    recoEcalCandidateProducer = cms.InputTag("hltEgammaCandidatesL1Seeded"),
-    rhoMax = cms.double(99999999.0),
-    rhoProducer = cms.InputTag("hltFixedGridRhoFastjetAllCaloForEGamma"),
-    rhoScale = cms.double(1.0)
+    absEtaLowEdges = [0.0, 1.479],
+    doRhoCorrection = False,
+    drMax = 0.2,
+    drVetoBarrel = 0.0,
+    drVetoEndcap = 0.0,
+    effectiveAreas = [0.29, 0.21],
+    energyBarrel = 0.0,
+    energyEndcap = 0.0,
+    etaStripBarrel = 0.0,
+    etaStripEndcap = 0.0,
+    pfClusterProducer = ("hltParticleFlowClusterECALL1Seeded"),
+    recoEcalCandidateProducer = ("hltEgammaCandidatesL1Seeded"),
+    rhoMax = 99999999.0,
+    rhoProducer = ("hltFixedGridRhoFastjetAllCaloForEGamma"),
+    rhoScale = 1.0
 )
