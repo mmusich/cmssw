@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFPuppi = cms.EDProducer("PuppiProducer",
+from CommonTools.PileupAlgos.PuppiProducer import PuppiProducer as _PuppiProducer
+
+hltPFPuppi = _PuppiProducer(
     DeltaZCut = cms.double(0.1),
     DeltaZCutForChargedFromPUVtxs = cms.double(0.2),
     EtaMaxCharged = cms.double(99999.0),

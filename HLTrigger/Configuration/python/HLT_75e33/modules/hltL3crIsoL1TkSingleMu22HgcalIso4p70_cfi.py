@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL3crIsoL1TkSingleMu22HgcalIso4p70 = cms.EDFilter("HLTMuonGenericFilter",
+from HLTrigger.Egamma.HLTMuonGenericFilter import HLTMuonGenericFilter as _HLTMuonGenericFilter
+
+hltL3crIsoL1TkSingleMu22HgcalIso4p70 = _HLTMuonGenericFilter(
     absEtaLowEdges = cms.vdouble(0.0, 1.479),
     candTag = cms.InputTag("hltL3crIsoL1TkSingleMu22HcalIso0p40"),
     doRhoCorrection = cms.bool(False),

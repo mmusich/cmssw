@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaCandidatesUnseeded = cms.EDProducer("EgammaHLTRecoEcalCandidateProducers",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTRecoEcalCandidateProducers import EgammaHLTRecoEcalCandidateProducers as _EgammaHLTRecoEcalCandidateProducers
+
+hltEgammaCandidatesUnseeded = _EgammaHLTRecoEcalCandidateProducers(
     recoEcalCandidateCollection = cms.string(''),
     scHybridBarrelProducer = cms.InputTag("hltParticleFlowSuperClusterECALUnseeded","particleFlowSuperClusterECALBarrel"),
     scIslandEndcapProducer = cms.InputTag("hltParticleFlowSuperClusterHGCalFromTICLUnseeded")

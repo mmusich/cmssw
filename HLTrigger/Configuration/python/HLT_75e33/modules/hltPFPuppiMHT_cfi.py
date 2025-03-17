@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFPuppiMHT = cms.EDProducer("HLTHtMhtProducer",
+from HLTrigger.JetMET.HLTHtMhtProducer import HLTHtMhtProducer as _HLTHtMhtProducer
+
+hltPFPuppiMHT = _HLTHtMhtProducer(
     excludePFMuons = cms.bool(False),
     jetsLabel = cms.InputTag("hltAK4PFPuppiJetsCorrected"),
     maxEtaJetHt = cms.double(5.0),

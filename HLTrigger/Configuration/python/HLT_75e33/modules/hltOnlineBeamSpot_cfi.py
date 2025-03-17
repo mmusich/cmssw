@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltOnlineBeamSpot = cms.EDProducer("BeamSpotOnlineProducer",
+from RecoVertex.BeamSpotProducer.BeamSpotOnlineProducer import BeamSpotOnlineProducer as _BeamSpotOnlineProducer
+
+hltOnlineBeamSpot = _BeamSpotOnlineProducer(
     changeToCMSCoordinates = cms.bool(False),
     gtEvmLabel = cms.InputTag(""),
     maxRadius = cms.double(2.0),

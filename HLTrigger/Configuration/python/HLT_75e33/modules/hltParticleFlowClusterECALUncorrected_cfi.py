@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowClusterECALUncorrected = cms.EDProducer("PFClusterProducer",
+from RecoParticleFlow.PFClusterProducer.PFClusterProducer import PFClusterProducer as _PFClusterProducer
+
+hltParticleFlowClusterECALUncorrected = _PFClusterProducer(
     energyCorrector = cms.PSet(
 
     ),

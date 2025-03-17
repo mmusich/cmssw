@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL2MuonsFromL1TkMuon = cms.EDProducer("L2MuonProducer",
+from RecoMuon.L2MuonProducer.L2MuonProducer import L2MuonProducer as _L2MuonProducer
+
+hltL2MuonsFromL1TkMuon = _L2MuonProducer(
     DoSeedRefit = cms.bool(False),
     InputObjects = cms.InputTag("hltL2MuonSeedsFromL1TkMuon"),
     L2TrajBuilderParameters = cms.PSet(

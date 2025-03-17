@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonHighPtTripletStepHitDoublets = cms.EDProducer("HitPairEDProducer",
+from RecoTracker.TkHitPairs.HitPairEDProducer import HitPairEDProducer as _HitPairEDProducer
+
+hltPhase2L3MuonHighPtTripletStepHitDoublets = _HitPairEDProducer(
     clusterCheck = cms.InputTag("hltTrackerClusterCheck"),
     layerPairs = cms.vuint32(0, 1),
     maxElement = cms.uint32(50000000),

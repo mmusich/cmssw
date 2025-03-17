@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltInitialStepTrackSelectionHighPurity = cms.EDProducer("TrackCollectionFilterCloner",
+from RecoTracker.FinalTrackSelectors.TrackCollectionFilterCloner import TrackCollectionFilterCloner as _TrackCollectionFilterCloner
+
+hltInitialStepTrackSelectionHighPurity = _TrackCollectionFilterCloner(
     copyExtras = cms.untracked.bool(True),
     copyTrajectories = cms.untracked.bool(False),
     minQuality = cms.string('highPurity'),

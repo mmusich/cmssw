@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltAK8PFPuppiJetCorrector = cms.EDProducer("ChainedJetCorrectorProducer",
+from JetMETCorrections.Modules.ChainedJetCorrectorProducer import ChainedJetCorrectorProducer as _ChainedJetCorrectorProducer
+
+hltAK8PFPuppiJetCorrector = _ChainedJetCorrectorProducer(
     correctors = cms.VInputTag("hltAK8PFPuppiJetCorrectorL1", "hltAK8PFPuppiJetCorrectorL2", "hltAK8PFPuppiJetCorrectorL3")
 )

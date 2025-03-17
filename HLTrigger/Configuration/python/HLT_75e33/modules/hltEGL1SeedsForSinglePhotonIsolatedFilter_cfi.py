@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEGL1SeedsForSinglePhotonIsolatedFilter = cms.EDFilter("PathStatusFilter",
+from FWCore.Modules.PathStatusFilter import PathStatusFilter as _PathStatusFilter
+
+hltEGL1SeedsForSinglePhotonIsolatedFilter = _PathStatusFilter(
     logicalExpression = cms.string('pSingleEGEle51 or pSingleIsoTkPho36')
 )

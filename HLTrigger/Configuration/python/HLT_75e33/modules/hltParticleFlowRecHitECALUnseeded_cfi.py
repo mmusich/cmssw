@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowRecHitECALUnseeded = cms.EDProducer("PFRecHitProducer",
+from RecoParticleFlow.PFClusterProducer.PFRecHitProducer import PFRecHitProducer as _PFRecHitProducer
+
+hltParticleFlowRecHitECALUnseeded = _PFRecHitProducer(
     navigator = cms.PSet(
         barrel = cms.PSet(
 

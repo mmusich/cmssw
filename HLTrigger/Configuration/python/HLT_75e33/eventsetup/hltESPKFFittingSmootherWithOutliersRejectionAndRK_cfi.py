@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPKFFittingSmootherWithOutliersRejectionAndRK = cms.ESProducer("KFFittingSmootherESProducer",
+from TrackingTools.TrackFitters.KFFittingSmootherESProducer import KFFittingSmootherESProducer as _KFFittingSmootherESProducer
+
+hltESPKFFittingSmootherWithOutliersRejectionAndRK = _KFFittingSmootherESProducer(
     BreakTrajWith2ConsecutiveMissing = cms.bool(True),
     ComponentName = cms.string('hltESPKFFittingSmootherWithOutliersRejectionAndRK'),
     EstimateCut = cms.double(20.0),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltIter2Phase2L3FromL1TkMuonClustersRefRemoval = cms.EDProducer("TrackClusterRemoverPhase2",
+from RecoLocalTracker.SubCollectionProducers.TrackClusterRemoverPhase2 import TrackClusterRemoverPhase2 as _TrackClusterRemoverPhase2
+
+hltIter2Phase2L3FromL1TkMuonClustersRefRemoval = _TrackClusterRemoverPhase2(
     TrackQuality = cms.string('highPurity'),
     maxChi2 = cms.double(16.0),
     minNumberOfLayersWithMeasBeforeFiltering = cms.int32(0),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaElectronPixelSeedsL1Seeded = cms.EDProducer("ElectronNHitSeedProducer",
+from RecoEgamma.EgammaElectronProducers.ElectronNHitSeedProducer import ElectronNHitSeedProducer as _ElectronNHitSeedProducer
+
+hltEgammaElectronPixelSeedsL1Seeded = _ElectronNHitSeedProducer(
     beamSpot = cms.InputTag("hltOnlineBeamSpot"),
     initialSeeds = cms.InputTag("hltElePixelSeedsCombinedL1Seeded"),
     matcherConfig = cms.PSet(

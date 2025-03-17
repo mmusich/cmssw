@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonTracks = cms.EDProducer("HLTMuonTrackSelector",
+from HLTrigger.Muon.HLTMuonTrackSelector import HLTMuonTrackSelector as _HLTMuonTrackSelector
+
+hltPhase2L3MuonTracks = _HLTMuonTrackSelector(
     copyExtras = cms.untracked.bool(True),
     copyMVA = cms.bool(False),
     copyTrajectories = cms.untracked.bool(False),

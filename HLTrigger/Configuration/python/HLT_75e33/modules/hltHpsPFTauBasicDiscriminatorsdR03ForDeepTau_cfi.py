@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauBasicDiscriminatorsdR03ForDeepTau = cms.EDProducer("PFRecoTauDiscriminationByIsolationContainer",
+from RecoTauTag.RecoTau.PFRecoTauDiscriminationByIsolationContainer import PFRecoTauDiscriminationByIsolationContainer as _PFRecoTauDiscriminationByIsolationContainer
+
+hltHpsPFTauBasicDiscriminatorsdR03ForDeepTau = _PFRecoTauDiscriminationByIsolationContainer(
     IDWPdefinitions = cms.VPSet(),
     IDdefinitions = cms.VPSet(
         cms.PSet(

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDeepCombinedSecondaryVertexBJetTagsPFPuppi = cms.EDProducer("DeepFlavourJetTagsProducer",
+from RecoBTag.Combined.DeepFlavourJetTagsProducer import DeepFlavourJetTagsProducer as _DeepFlavourJetTagsProducer
+
+hltDeepCombinedSecondaryVertexBJetTagsPFPuppi = _DeepFlavourJetTagsProducer(
     NNConfig = cms.FileInPath('RecoBTag/Combined/data/DeepCSV_PhaseII.json'),
     checkSVForDefaults = cms.bool(True),
     meanPadding = cms.bool(True),

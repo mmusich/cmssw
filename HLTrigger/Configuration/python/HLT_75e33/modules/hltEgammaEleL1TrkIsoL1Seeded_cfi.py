@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaEleL1TrkIsoL1Seeded = cms.EDProducer("EgammaHLTEleL1TrackIsolProducer",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTEleL1TrackIsolProducer import EgammaHLTEleL1TrackIsolProducer as _EgammaHLTEleL1TrackIsolProducer
+
+hltEgammaEleL1TrkIsoL1Seeded = _EgammaHLTEleL1TrackIsolProducer(
     ecalCands = cms.InputTag("hltEgammaCandidatesL1Seeded"),
     eles = cms.InputTag("hltEgammaGsfElectronsL1Seeded"),
     isolCfg = cms.PSet(

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3FromL1TkMuonPixelTracksTrackingRegions = cms.EDProducer("CandidateSeededTrackingRegionsEDProducer",
+from RecoTracker.TkTrackingRegions.CandidateSeededTrackingRegionsEDProducer import CandidateSeededTrackingRegionsEDProducer as _CandidateSeededTrackingRegionsEDProducer
+
+hltPhase2L3FromL1TkMuonPixelTracksTrackingRegions = _CandidateSeededTrackingRegionsEDProducer(
     RegionPSet = cms.PSet(
         beamSpot = cms.InputTag("hltOnlineBeamSpot"),
         deltaEta = cms.double(0.035),

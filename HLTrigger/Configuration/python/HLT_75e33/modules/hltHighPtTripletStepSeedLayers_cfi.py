@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHighPtTripletStepSeedLayers = cms.EDProducer("SeedingLayersEDProducer",
+from RecoTracker.TkSeedingLayers.SeedingLayersEDProducer import SeedingLayersEDProducer as _SeedingLayersEDProducer
+
+hltHighPtTripletStepSeedLayers = _SeedingLayersEDProducer(
     BPix = cms.PSet(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('WithTrackAngle'),

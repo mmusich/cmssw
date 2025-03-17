@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPfTrack = cms.EDProducer("PFTrackProducer",
+from RecoParticleFlow.PFTracking.PFTrackProducer import PFTrackProducer as _PFTrackProducer
+
+hltPfTrack = _PFTrackProducer(
     GsfTrackModuleLabel = cms.InputTag("electronGsfTracks"),
     GsfTracksInEvents = cms.bool(False),
     MuColl = cms.InputTag("hltPhase2L3Muons"),

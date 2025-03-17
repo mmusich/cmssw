@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3Muons = cms.EDProducer("MuonIDFilterProducerForHLT",
+from RecoMuon.MuonIdentification.MuonIDFilterProducerForHLT import MuonIDFilterProducerForHLT as _MuonIDFilterProducerForHLT
+
+hltPhase2L3Muons = _MuonIDFilterProducerForHLT(
     allowedTypeMask = cms.uint32(0),
     applyTriggerIdLoose = cms.bool(True),
     inputMuonCollection = cms.InputTag("hltPhase2L3MuonsNoID"),

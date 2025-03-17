@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTiclTrackstersMerge = cms.EDProducer("TrackstersMergeProducer",
+from RecoHGCal.TICL.TrackstersMergeProducer import TrackstersMergeProducer as _TrackstersMergeProducer
+
+hltTiclTrackstersMerge = _TrackstersMergeProducer(
     cosangle_align = cms.double(0.9945),
     detector = cms.string('HGCAL'),
     e_over_h_threshold = cms.double(1),

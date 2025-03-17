@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltOfflinePrimaryVertices = cms.EDProducer("RecoChargedRefCandidatePrimaryVertexSorter",
+from CommonTools.RecoAlgos.RecoChargedRefCandidatePrimaryVertexSorter import RecoChargedRefCandidatePrimaryVertexSorter as _RecoChargedRefCandidatePrimaryVertexSorter
+
+hltOfflinePrimaryVertices = _RecoChargedRefCandidatePrimaryVertexSorter(
     assignment = cms.PSet(
         DzCutForChargedFromPUVtxs = cms.double(0.2),
         EtaMinUseDz = cms.double(-1),

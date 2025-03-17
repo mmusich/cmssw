@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL1SingleMuFiltered5 = cms.EDFilter("L1TTkMuonFilter",
+from HLTrigger.HLTfilters.L1TTkMuonFilter import L1TTkMuonFilter as _L1TTkMuonFilter
+
+hltL1SingleMuFiltered5 = _L1TTkMuonFilter(
     MaxEta = cms.double(2.4),
     MinEta = cms.double(-2.4),
     MinN = cms.int32(1),

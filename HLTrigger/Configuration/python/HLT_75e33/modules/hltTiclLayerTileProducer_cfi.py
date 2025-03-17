@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTiclLayerTileProducer = cms.EDProducer("TICLLayerTileProducer",
+from RecoHGCal.TICL.TICLLayerTileProducer import TICLLayerTileProducer as _TICLLayerTileProducer
+
+hltTiclLayerTileProducer = _TICLLayerTileProducer(
     detector = cms.string('HGCAL'),
     layer_HFNose_clusters = cms.InputTag("hgcalLayerClustersHFNose"),
     layer_clusters = cms.InputTag("hltHgcalMergeLayerClusters"),

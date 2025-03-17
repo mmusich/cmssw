@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowSuperClusterHGCalFromTICLL1Seeded = cms.EDProducer("PFECALSuperClusterProducer",
+from RecoEcal.EgammaClusterProducers.PFECALSuperClusterProducer import PFECALSuperClusterProducer as _PFECALSuperClusterProducer
+
+hltParticleFlowSuperClusterHGCalFromTICLL1Seeded = _PFECALSuperClusterProducer(
     BeamSpot = cms.InputTag("hltOnlineBeamSpot"),
     ClusteringType = cms.string('Mustache'),
     ESAssociation = cms.InputTag("hltParticleFlowClusterECALL1Seeded"),

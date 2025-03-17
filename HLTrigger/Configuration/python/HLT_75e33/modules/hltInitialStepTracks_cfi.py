@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltInitialStepTracks = cms.EDProducer("TrackProducer",
+from RecoTracker.TrackProducer.TrackProducer import TrackProducer as _TrackProducer
+
+hltInitialStepTracks = _TrackProducer(
     AlgorithmName = cms.string('initialStep'),
     Fitter = cms.string('FlexibleKFFittingSmoother'),
     GeometricInnerState = cms.bool(False),

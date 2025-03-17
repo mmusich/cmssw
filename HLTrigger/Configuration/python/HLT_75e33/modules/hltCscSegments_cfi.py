@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltCscSegments = cms.EDProducer("CSCSegmentProducer",
+from RecoLocalMuon.CSCSegment.CSCSegmentProducer import CSCSegmentProducer as _CSCSegmentProducer
+
+hltCscSegments = _CSCSegmentProducer(
     algo_psets = cms.VPSet(
         cms.PSet(
             algo_name = cms.string('CSCSegAlgoSK'),

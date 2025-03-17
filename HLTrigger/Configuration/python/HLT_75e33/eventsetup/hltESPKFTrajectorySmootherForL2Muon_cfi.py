@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPKFTrajectorySmootherForL2Muon = cms.ESProducer("KFTrajectorySmootherESProducer",
+from TrackingTools.TrackFitters.KFTrajectorySmootherESProducer import KFTrajectorySmootherESProducer as _KFTrajectorySmootherESProducer
+
+hltESPKFTrajectorySmootherForL2Muon = _KFTrajectorySmootherESProducer(
     ComponentName = cms.string('hltESPKFTrajectorySmootherForL2Muon'),
     Estimator = cms.string('hltESPChi2MeasurementEstimator30'),
     Propagator = cms.string('hltESPFastSteppingHelixPropagatorOpposite'),

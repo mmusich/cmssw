@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDiEle2312IsoBestGsfNLayerITL1SeededFilter = cms.EDFilter("HLTEgammaGenericFilter",
+from HLTrigger.Egamma.HLTEgammaGenericFilter import HLTEgammaGenericFilter as _HLTEgammaGenericFilter
+
+hltDiEle2312IsoBestGsfNLayerITL1SeededFilter = _HLTEgammaGenericFilter(
     absEtaLowEdges = cms.vdouble(0.0, 1.479),
     candTag = cms.InputTag("hltDiEle2312IsoGsfDphiL1SeededFilter"),
     doRhoCorrection = cms.bool(False),

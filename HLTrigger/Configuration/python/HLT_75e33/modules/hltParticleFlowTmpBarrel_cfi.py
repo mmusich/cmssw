@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowTmpBarrel = cms.EDProducer("PFProducer",
+from RecoParticleFlow.PFProducer.PFProducer import PFProducer as _PFProducer
+
+hltParticleFlowTmpBarrel = _PFProducer(
     GedElectronValueMap = cms.InputTag("gedGsfElectronValueMapsTmp"),
     GedPhotonValueMap = cms.InputTag("gedPhotonsTmp","valMapPFEgammaCandToPhoton"),
     PFEGammaCandidates = cms.InputTag("particleFlowEGamma"),

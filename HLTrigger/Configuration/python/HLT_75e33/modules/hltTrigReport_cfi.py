@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTrigReport = cms.EDAnalyzer("HLTrigReport",
+from HLTrigger.HLTanalyzers.HLTrigReport import HLTrigReport as _HLTrigReport
+
+hltTrigReport = _HLTrigReport(
     HLTriggerResults = cms.InputTag("TriggerResults","","HLTX"),
     ReferencePath = cms.untracked.string('HLTriggerFinalPath'),
     ReferenceRate = cms.untracked.double(100.0),

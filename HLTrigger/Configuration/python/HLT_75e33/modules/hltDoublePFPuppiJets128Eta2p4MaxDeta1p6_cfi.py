@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDoublePFPuppiJets128Eta2p4MaxDeta1p6 = cms.EDFilter("HLT2PFJetPFJet",
+from HLTrigger.HLTfilters.HLT2PFJetPFJet import HLT2PFJetPFJet as _HLT2PFJetPFJet
+
+hltDoublePFPuppiJets128Eta2p4MaxDeta1p6 = _HLT2PFJetPFJet(
     MaxDelR = cms.double(1000.0),
     MaxDeta = cms.double(1.6),
     MaxDphi = cms.double(10000000.0),

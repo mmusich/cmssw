@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltElePixelSeedsCombinedL1Seeded = cms.EDProducer("SeedCombiner",
+from RecoTracker.TkSeedGenerator.SeedCombiner import SeedCombiner as _SeedCombiner
+
+hltElePixelSeedsCombinedL1Seeded = _SeedCombiner(
     seedCollections = cms.VInputTag("hltElePixelSeedsDoubletsL1Seeded", "hltElePixelSeedsTripletsL1Seeded")
 )

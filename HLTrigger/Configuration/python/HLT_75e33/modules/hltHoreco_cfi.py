@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHoreco = cms.EDProducer("HcalHitReconstructor",
+from RecoLocalCalo.HcalRecProducers.HcalHitReconstructor import HcalHitReconstructor as _HcalHitReconstructor
+
+hltHoreco = _HcalHitReconstructor(
     HFInWindowStat = cms.PSet(),
     PETstat = cms.PSet(),
     S8S1stat = cms.PSet(),

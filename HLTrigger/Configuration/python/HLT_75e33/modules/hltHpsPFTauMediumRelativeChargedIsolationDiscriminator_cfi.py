@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauMediumRelativeChargedIsolationDiscriminator = cms.EDProducer("PFRecoTauDiscriminationByIsolation",
+from RecoTauTag.RecoTau.PFRecoTauDiscriminationByIsolation import PFRecoTauDiscriminationByIsolation as _PFRecoTauDiscriminationByIsolation
+
+hltHpsPFTauMediumRelativeChargedIsolationDiscriminator = _PFRecoTauDiscriminationByIsolation(
     ApplyDiscriminationByECALIsolation = cms.bool(False),
     ApplyDiscriminationByTrackerIsolation = cms.bool(True),
     ApplyDiscriminationByWeightedECALIsolation = cms.bool(False),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaPixelMatchVarsL1Seeded = cms.EDProducer("EgammaHLTPixelMatchVarProducer",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTPixelMatchVarProducer import EgammaHLTPixelMatchVarProducer as _EgammaHLTPixelMatchVarProducer
+
+hltEgammaPixelMatchVarsL1Seeded = _EgammaHLTPixelMatchVarProducer(
     dPhi1SParams = cms.PSet(
         bins = cms.VPSet(
             cms.PSet(

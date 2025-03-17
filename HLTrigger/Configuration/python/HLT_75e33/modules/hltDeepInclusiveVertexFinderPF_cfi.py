@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDeepInclusiveVertexFinderPF = cms.EDProducer("InclusiveCandidateVertexFinder",
+from RecoVertex.AdaptiveVertexFinder.InclusiveCandidateVertexFinder import InclusiveCandidateVertexFinder as _InclusiveCandidateVertexFinder
+
+hltDeepInclusiveVertexFinderPF = _InclusiveCandidateVertexFinder(
     beamSpot = cms.InputTag("hltOnlineBeamSpot"),
     clusterizer = cms.PSet(
         clusterMaxDistance = cms.double(0.05),

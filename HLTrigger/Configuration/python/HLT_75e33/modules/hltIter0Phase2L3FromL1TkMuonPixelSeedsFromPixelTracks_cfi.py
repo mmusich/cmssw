@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltIter0Phase2L3FromL1TkMuonPixelSeedsFromPixelTracks = cms.EDProducer("SeedGeneratorFromProtoTracksEDProducer",
+from RecoTracker.TkSeedGenerator.SeedGeneratorFromProtoTracksEDProducer import SeedGeneratorFromProtoTracksEDProducer as _SeedGeneratorFromProtoTracksEDProducer
+
+hltIter0Phase2L3FromL1TkMuonPixelSeedsFromPixelTracks = _SeedGeneratorFromProtoTracksEDProducer(
     InputCollection = cms.InputTag("hltPhase2L3FromL1TkMuonPixelTracks"),
     InputVertexCollection = cms.InputTag("hltPhase2L3FromL1TkMuonTrimmedPixelVertices"),
     SeedCreatorPSet = cms.PSet(

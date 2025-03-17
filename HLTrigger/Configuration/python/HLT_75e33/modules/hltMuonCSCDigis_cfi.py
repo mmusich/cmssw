@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltMuonCSCDigis = cms.EDProducer("CSCDCCUnpacker",
+from EventFilter.CSCRawToDigi.CSCDCCUnpacker import CSCDCCUnpacker as _CSCDCCUnpacker
+
+hltMuonCSCDigis = _CSCDCCUnpacker(
     Debug = cms.untracked.bool(False),
     ErrorMask = cms.uint32(0),
     ExaminerMask = cms.uint32(535558134),

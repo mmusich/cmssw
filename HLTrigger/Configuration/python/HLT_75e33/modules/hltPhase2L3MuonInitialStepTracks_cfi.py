@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonInitialStepTracks = cms.EDProducer("TrackProducer",
+from RecoTracker.TrackProducer.TrackProducer import TrackProducer as _TrackProducer
+
+hltPhase2L3MuonInitialStepTracks = _TrackProducer(
     AlgorithmName = cms.string('initialStep'),
     Fitter = cms.string('FlexibleKFFittingSmoother'),
     GeometricInnerState = cms.bool(False),

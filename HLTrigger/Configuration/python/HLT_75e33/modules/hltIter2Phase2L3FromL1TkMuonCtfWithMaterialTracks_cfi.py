@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltIter2Phase2L3FromL1TkMuonCtfWithMaterialTracks = cms.EDProducer("TrackProducer",
+from RecoTracker.TrackProducer.TrackProducer import TrackProducer as _TrackProducer
+
+hltIter2Phase2L3FromL1TkMuonCtfWithMaterialTracks = _TrackProducer(
     AlgorithmName = cms.string('hltIter2'),
     Fitter = cms.string('FlexibleKFFittingSmoother'),
     GeometricInnerState = cms.bool(True),

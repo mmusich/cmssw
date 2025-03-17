@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltSiPixelClusterShapeCache = cms.EDProducer("SiPixelClusterShapeCacheProducer",
+from RecoTracker.PixelLowPtUtilities.SiPixelClusterShapeCacheProducer import SiPixelClusterShapeCacheProducer as _SiPixelClusterShapeCacheProducer
+
+hltSiPixelClusterShapeCache = _SiPixelClusterShapeCacheProducer(
     mightGet = cms.optional.untracked.vstring,
     onDemand = cms.bool(False),
     src = cms.InputTag("hltSiPixelClusters")

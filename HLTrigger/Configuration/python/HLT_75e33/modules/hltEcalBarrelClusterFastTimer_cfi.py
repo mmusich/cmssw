@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEcalBarrelClusterFastTimer = cms.EDProducer("EcalBarrelClusterFastTimer",
+from RecoParticleFlow.PFSimProducer.EcalBarrelClusterFastTimer import EcalBarrelClusterFastTimer as _EcalBarrelClusterFastTimer
+
+hltEcalBarrelClusterFastTimer = _EcalBarrelClusterFastTimer(
     ebClusters = cms.InputTag("hltParticleFlowClusterECALUncorrected"),
     ebTimeHits = cms.InputTag("hltEcalDetailedTimeRecHit","EcalRecHitsEB"),
     ecalDepth = cms.double(7.0),

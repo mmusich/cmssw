@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauPrimaryVertexProducerForDeepTau = cms.EDProducer("PFTauPrimaryVertexProducer",
+from RecoTauTag.RecoTau.PFTauPrimaryVertexProducer import PFTauPrimaryVertexProducer as _PFTauPrimaryVertexProducer
+
+hltHpsPFTauPrimaryVertexProducerForDeepTau = _PFTauPrimaryVertexProducer(
     Algorithm = cms.int32(0),
     ElectronTag = cms.InputTag("hltEgammaCandidates"),
     MuonTag = cms.InputTag("hltMuons"),

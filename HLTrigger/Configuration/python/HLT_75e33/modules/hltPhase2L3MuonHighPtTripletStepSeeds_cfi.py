@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonHighPtTripletStepSeeds = cms.EDProducer("SeedCreatorFromRegionConsecutiveHitsEDProducer",
+from RecoTracker.TkSeedGenerator.SeedCreatorFromRegionConsecutiveHitsEDProducer import SeedCreatorFromRegionConsecutiveHitsEDProducer as _SeedCreatorFromRegionConsecutiveHitsEDProducer
+
+hltPhase2L3MuonHighPtTripletStepSeeds = _SeedCreatorFromRegionConsecutiveHitsEDProducer(
     MinOneOverPtError = cms.double(1),
     OriginTransverseErrorMultiplier = cms.double(1),
     SeedComparitorPSet = cms.PSet(

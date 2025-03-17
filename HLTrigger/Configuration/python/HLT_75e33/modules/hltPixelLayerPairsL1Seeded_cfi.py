@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPixelLayerPairsL1Seeded = cms.EDProducer("SeedingLayersEDProducer",
+from RecoTracker.TkSeedingLayers.SeedingLayersEDProducer import SeedingLayersEDProducer as _SeedingLayersEDProducer
+
+hltPixelLayerPairsL1Seeded = _SeedingLayersEDProducer(
     BPix = cms.PSet(
         HitProducer = cms.string('hltSiPixelRecHits'),
         TTRHBuilder = cms.string('TTRHBuilderWithoutAngle4PixelTriplets'),

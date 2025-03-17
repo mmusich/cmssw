@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFPuppiMETTypeOneCorrector = cms.EDProducer("PFJetMETcorrInputProducer",
+from JetMETCorrections.Type1MET.PFJetMETcorrInputProducer import PFJetMETcorrInputProducer as _PFJetMETcorrInputProducer
+
+hltPFPuppiMETTypeOneCorrector = _PFJetMETcorrInputProducer(
     jetCorrEtaMax = cms.double(9.9),
     jetCorrLabel = cms.InputTag("hltAK4PFPuppiJetCorrector"),
     jetCorrLabelRes = cms.InputTag("hltAK4PFPuppiJetCorrector"),

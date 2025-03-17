@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPfDeepFlavourJetTags = cms.EDProducer("DeepFlavourONNXJetTagsProducer",
+from RecoBTag.ONNXRuntime.DeepFlavourONNXJetTagsProducer import DeepFlavourONNXJetTagsProducer as _DeepFlavourONNXJetTagsProducer
+
+hltPfDeepFlavourJetTags = _DeepFlavourONNXJetTagsProducer(
     flav_names = cms.vstring(
         'probb',
         'probbb',

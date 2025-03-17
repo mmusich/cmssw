@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHgcalTrackCollection = cms.EDProducer("HGCalTrackCollectionProducer",
+from RecoParticleFlow.PFTracking.HGCalTrackCollectionProducer import HGCalTrackCollectionProducer as _HGCalTrackCollectionProducer
+
+hltHgcalTrackCollection = _HGCalTrackCollectionProducer(
     DPtOverPtCuts_byTrackAlgo = cms.vdouble(
         10.0, 10.0, 10.0, 10.0, 10.0,
         5.0

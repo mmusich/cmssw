@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPMuonTransientTrackingRecHitBuilder = cms.ESProducer("MuonTransientTrackingRecHitBuilderESProducer",
+from RecoMuon.TransientTrackingRecHit.MuonTransientTrackingRecHitBuilderESProducer import MuonTransientTrackingRecHitBuilderESProducer as _MuonTransientTrackingRecHitBuilderESProducer
+
+hltESPMuonTransientTrackingRecHitBuilder = _MuonTransientTrackingRecHitBuilderESProducer(
     ComponentName = cms.string('hltESPMuonTransientTrackingRecHitBuilder')
 )

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFPuppiHT1070 = cms.EDFilter("HLTHtMhtFilter",
+from HLTrigger.JetMET.HLTHtMhtFilter import HLTHtMhtFilter as _HLTHtMhtFilter
+
+hltPFPuppiHT1070 = _HLTHtMhtFilter(
     htLabels = cms.VInputTag("hltPFPuppiHT"),
     meffSlope = cms.vdouble(1.0),
     mhtLabels = cms.VInputTag("hltPFPuppiHT"),

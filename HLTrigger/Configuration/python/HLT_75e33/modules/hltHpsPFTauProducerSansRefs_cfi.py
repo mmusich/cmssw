@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauProducerSansRefs = cms.EDProducer("RecoTauCleaner",
+from RecoTauTag.RecoTau.RecoTauCleaner import RecoTauCleaner as _RecoTauCleaner
+
+hltHpsPFTauProducerSansRefs = _RecoTauCleaner(
     cleaners = cms.VPSet(
         cms.PSet(
             name = cms.string('HPS_Select'),

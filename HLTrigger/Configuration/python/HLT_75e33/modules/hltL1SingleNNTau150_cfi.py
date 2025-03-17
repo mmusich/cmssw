@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL1SingleNNTau150 = cms.EDFilter("L1TPFTauFilter",
+from HLTrigger.HLTfilters.L1TPFTauFilter import L1TPFTauFilter as _L1TPFTauFilter
+
+hltL1SingleNNTau150 = _L1TPFTauFilter(
     MaxEta = cms.double(2.172),
     MinEta = cms.double(-2.172),
     MinN = cms.int32(1),

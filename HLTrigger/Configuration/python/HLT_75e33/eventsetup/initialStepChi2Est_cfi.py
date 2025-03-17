@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-initialStepChi2Est = cms.ESProducer("Chi2ChargeMeasurementEstimatorESProducer",
+from RecoTracker.MeasurementDet.Chi2ChargeMeasurementEstimatorESProducer import Chi2ChargeMeasurementEstimatorESProducer as _Chi2ChargeMeasurementEstimatorESProducer
+
+initialStepChi2Est = _Chi2ChargeMeasurementEstimatorESProducer(
     ComponentName = cms.string('initialStepChi2Est'),
     MaxChi2 = cms.double(9.0),
     MaxDisplacement = cms.double(0.5),

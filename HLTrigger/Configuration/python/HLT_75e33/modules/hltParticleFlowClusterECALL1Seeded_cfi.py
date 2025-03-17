@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowClusterECALL1Seeded = cms.EDProducer("CorrectedECALPFClusterProducer",
+from RecoParticleFlow.PFClusterProducer.CorrectedECALPFClusterProducer import CorrectedECALPFClusterProducer as _CorrectedECALPFClusterProducer
+
+hltParticleFlowClusterECALL1Seeded = _CorrectedECALPFClusterProducer(
     energyCorrector = cms.PSet(
         applyCrackCorrections = cms.bool(False),
         applyMVACorrections = cms.bool(True),

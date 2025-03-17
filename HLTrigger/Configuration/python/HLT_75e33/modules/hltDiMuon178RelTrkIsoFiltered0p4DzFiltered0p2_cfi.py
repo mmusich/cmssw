@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDiMuon178RelTrkIsoFiltered0p4DzFiltered0p2 = cms.EDFilter("HLT2MuonMuonDZ",
+from HLTrigger.HLTfilters.HLT2MuonMuonDZ import HLT2MuonMuonDZ as _HLT2MuonMuonDZ
+
+hltDiMuon178RelTrkIsoFiltered0p4DzFiltered0p2 = _HLT2MuonMuonDZ(
     MaxDZ = cms.double(0.2),
     MinDR = cms.double(0.001),
     MinN = cms.int32(1),

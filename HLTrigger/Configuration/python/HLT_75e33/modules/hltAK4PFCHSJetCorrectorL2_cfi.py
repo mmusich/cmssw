@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltAK4PFCHSJetCorrectorL2 = cms.EDProducer("LXXXCorrectorProducer",
+from JetMETCorrections.Modules.LXXXCorrectorProducer import LXXXCorrectorProducer as _LXXXCorrectorProducer
+
+hltAK4PFCHSJetCorrectorL2 = _LXXXCorrectorProducer(
     algorithm = cms.string('AK4PFchs'),
     level = cms.string('L2Relative')
 )

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltFilteredLayerClustersRecoveryL1Seeded = cms.EDProducer("FilteredLayerClustersProducer",
+from RecoHGCal.TICL.FilteredLayerClustersProducer import FilteredLayerClustersProducer as _FilteredLayerClustersProducer
+
+hltFilteredLayerClustersRecoveryL1Seeded = _FilteredLayerClustersProducer(
     LayerClusters = cms.InputTag("hltHgcalMergeLayerClustersL1Seeded"),
     LayerClustersInputMask = cms.InputTag("hltTiclTrackstersCLUE3DHighL1Seeded"),
     algo_number = cms.vint32(6, 7, 8),

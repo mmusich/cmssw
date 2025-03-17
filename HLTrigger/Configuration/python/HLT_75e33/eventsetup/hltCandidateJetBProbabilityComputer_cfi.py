@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltCandidateJetBProbabilityComputer = cms.ESProducer("CandidateJetBProbabilityESProducer",
+from RecoBTag.ImpactParameter.CandidateJetBProbabilityESProducer import CandidateJetBProbabilityESProducer as _CandidateJetBProbabilityESProducer
+
+hltCandidateJetBProbabilityComputer = _CandidateJetBProbabilityESProducer(
     a_dR = cms.double(-0.001053),
     a_pT = cms.double(0.005263),
     b_dR = cms.double(0.6263),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonFilter = cms.EDProducer("Phase2HLTMuonSelectorForL3",
+from RecoMuon.L3TrackFinder.Phase2HLTMuonSelectorForL3 import Phase2HLTMuonSelectorForL3 as _Phase2HLTMuonSelectorForL3
+
+hltPhase2L3MuonFilter = _Phase2HLTMuonSelectorForL3(
     l1TkMuons = cms.InputTag("l1tTkMuonsGmt"),
     l2MuonsUpdVtx = cms.InputTag("hltL2MuonsFromL1TkMuon:UpdatedAtVtx"),
     l3Tracks = cms.InputTag("hltIter2Phase2L3FromL1TkMuonMerged"),

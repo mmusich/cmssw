@@ -1,7 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 from ..psets.hgcal_reco_constants_cfi import HGCAL_reco_constants as HGCAL_reco_constants
 
-hltHGCalUncalibRecHitL1Seeded = cms.EDProducer("HGCalUncalibRecHitProducer",
+from RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHitProducer import HGCalUncalibRecHitProducer as _HGCalUncalibRecHitProducer
+
+hltHGCalUncalibRecHitL1Seeded = _HGCalUncalibRecHitProducer(
     HGCEEConfig = cms.PSet(
         adcNbits = cms.uint32(10),
         adcSaturation = cms.double(100),

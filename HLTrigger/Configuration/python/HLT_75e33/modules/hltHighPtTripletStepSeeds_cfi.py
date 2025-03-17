@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHighPtTripletStepSeeds = cms.EDProducer("SeedCreatorFromRegionConsecutiveHitsEDProducer",
+from RecoTracker.TkSeedGenerator.SeedCreatorFromRegionConsecutiveHitsEDProducer import SeedCreatorFromRegionConsecutiveHitsEDProducer as _SeedCreatorFromRegionConsecutiveHitsEDProducer
+
+hltHighPtTripletStepSeeds = _SeedCreatorFromRegionConsecutiveHitsEDProducer(
     MinOneOverPtError = cms.double(1),
     OriginTransverseErrorMultiplier = cms.double(1),
     SeedComparitorPSet = cms.PSet(

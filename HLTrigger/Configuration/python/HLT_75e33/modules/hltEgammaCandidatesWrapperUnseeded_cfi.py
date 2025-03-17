@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaCandidatesWrapperUnseeded = cms.EDFilter("HLTEgammaTriggerFilterObjectWrapper",
+from HLTrigger.Egamma.HLTEgammaTriggerFilterObjectWrapper import HLTEgammaTriggerFilterObjectWrapper as _HLTEgammaTriggerFilterObjectWrapper
+
+hltEgammaCandidatesWrapperUnseeded = _HLTEgammaTriggerFilterObjectWrapper(
     candIsolatedTag = cms.InputTag("hltEgammaCandidatesUnseeded"),
     candNonIsolatedTag = cms.InputTag(""),
     doIsolated = cms.bool(True),

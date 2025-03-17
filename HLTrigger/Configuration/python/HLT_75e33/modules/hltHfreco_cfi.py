@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHfreco = cms.EDProducer("HFPhase1Reconstructor",
+from RecoLocalCalo.HcalRecProducers.HFPhase1Reconstructor import HFPhase1Reconstructor as _HFPhase1Reconstructor
+
+hltHfreco = _HFPhase1Reconstructor(
     HFStripFilter = cms.PSet(
         gap = cms.int32(2),
         lstrips = cms.int32(2),

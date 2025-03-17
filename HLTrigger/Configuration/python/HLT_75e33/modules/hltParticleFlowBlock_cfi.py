@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowBlock = cms.EDProducer("PFBlockProducer",
+from RecoParticleFlow.PFProducer.PFBlockProducer import PFBlockProducer as _PFBlockProducer
+
+hltParticleFlowBlock = _PFBlockProducer(
     debug = cms.untracked.bool(False),
     elementImporters = cms.VPSet(
         cms.PSet(

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauDiscriminationByDecayModeFindingNewDMs = cms.EDProducer("PFRecoTauDiscriminationByHPSSelection",
+from RecoTauTag.RecoTau.PFRecoTauDiscriminationByHPSSelection import PFRecoTauDiscriminationByHPSSelection as _PFRecoTauDiscriminationByHPSSelection
+
+hltHpsPFTauDiscriminationByDecayModeFindingNewDMs = _PFRecoTauDiscriminationByHPSSelection(
     PFTauProducer = cms.InputTag("hltHpsPFTauProducer"),
     Prediscriminants = cms.PSet(
         BooleanOperator = cms.string('and')

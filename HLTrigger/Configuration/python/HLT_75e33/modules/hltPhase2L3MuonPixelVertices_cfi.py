@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonPixelVertices = cms.EDProducer("PixelVertexProducer",
+from RecoVertex.PixelVertexFinding.PixelVertexProducer import PixelVertexProducer as _PixelVertexProducer
+
+hltPhase2L3MuonPixelVertices = _PixelVertexProducer(
     Finder = cms.string('DivisiveVertexFinder'),
     Method2 = cms.bool(True),
     NTrkMin = cms.int32(2),

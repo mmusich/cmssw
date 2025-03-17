@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltIter2Phase2L3FromL1TkMuonPixelSeedsFiltered = cms.EDProducer("MuonHLTSeedMVAClassifierPhase2",
+from RecoMuon.TrackerSeedGenerator.MuonHLTSeedMVAClassifierPhase2 import MuonHLTSeedMVAClassifierPhase2 as _MuonHLTSeedMVAClassifierPhase2
+
+hltIter2Phase2L3FromL1TkMuonPixelSeedsFiltered = _MuonHLTSeedMVAClassifierPhase2(
     L1TkMu = cms.InputTag("l1tTkMuonsGmt"),
     baseScore = cms.double(0.5),
     doSort = cms.bool(True),

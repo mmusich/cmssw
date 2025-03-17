@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDeepSecondaryVertexTagInfosPFPuppi = cms.EDProducer("CandSecondaryVertexProducer",
+from RecoBTag.SecondaryVertex.CandSecondaryVertexProducer import CandSecondaryVertexProducer as _CandSecondaryVertexProducer
+
+hltDeepSecondaryVertexTagInfosPFPuppi = _CandSecondaryVertexProducer(
     beamSpotTag = cms.InputTag("hltOnlineBeamSpot"),
     constraint = cms.string('BeamSpot'),
     extSVCollection = cms.InputTag("hltDeepInclusiveMergedVerticesPF"),

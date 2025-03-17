@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL1SeedsForPuppiJetFilter = cms.EDFilter("PathStatusFilter",
+from FWCore.Modules.PathStatusFilter import PathStatusFilter as _PathStatusFilter
+
+hltL1SeedsForPuppiJetFilter = _PathStatusFilter(
     logicalExpression = cms.string('pSinglePuppiJet230')
 )

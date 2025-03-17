@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEle30WPTightPixelMatchL1SeededFilter = cms.EDFilter("HLTElectronPixelMatchFilter",
+from HLTrigger.Egamma.HLTElectronPixelMatchFilter import HLTElectronPixelMatchFilter as _HLTElectronPixelMatchFilter
+
+hltEle30WPTightPixelMatchL1SeededFilter = _HLTElectronPixelMatchFilter(
     candTag = cms.InputTag("hltEle30WPTightHcalIsoL1SeededFilter"),
     l1EGCand = cms.InputTag("hltEgammaCandidatesL1Seeded"),
     l1PixelSeedsTag = cms.InputTag("hltEgammaElectronPixelSeedsL1Seeded"),

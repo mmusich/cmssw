@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPuppiTauTkMuon4218L1TkFilter = cms.EDFilter("PathStatusFilter",
+from FWCore.Modules.PathStatusFilter import PathStatusFilter as _PathStatusFilter
+
+hltPuppiTauTkMuon4218L1TkFilter = _PathStatusFilter(
     logicalExpression = cms.string('pPuppiTauTkMuon42_18')
 )

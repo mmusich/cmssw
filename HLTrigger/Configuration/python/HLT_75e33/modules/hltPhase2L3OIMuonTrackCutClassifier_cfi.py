@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3OIMuonTrackCutClassifier = cms.EDProducer("TrackCutClassifier",
+from RecoTracker.FinalTrackSelectors.TrackCutClassifier import TrackCutClassifier as _TrackCutClassifier
+
+hltPhase2L3OIMuonTrackCutClassifier = _TrackCutClassifier(
     beamspot = cms.InputTag("hltOnlineBeamSpot"),
     ignoreVertices = cms.bool(True),
     mva = cms.PSet(

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTau30LooseTauWPDeepTau = cms.EDFilter("HLT1PFTau",
+from HLTrigger.HLTfilters.HLT1PFTau import HLT1PFTau as _HLT1PFTau
+
+hltHpsPFTau30LooseTauWPDeepTau = _HLT1PFTau(
     MaxEta = cms.double(2.1),
     MaxMass = cms.double(-1.0),
     MinE = cms.double(-1.0),

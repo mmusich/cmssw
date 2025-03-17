@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL2OfflineMuonSeeds = cms.EDProducer("MuonSeedGenerator",
+from RecoMuon.MuonSeedGenerator.MuonSeedGenerator import MuonSeedGenerator as _MuonSeedGenerator
+
+hltL2OfflineMuonSeeds = _MuonSeedGenerator(
     CSCRecSegmentLabel = cms.InputTag("hltCscSegments"),
     CSC_01 = cms.vdouble(
         0.166, 0.0, 0.0, 0.031, 0.0,

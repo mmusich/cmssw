@@ -37,7 +37,7 @@ alpaka.toReplaceWith(_HgcalLocalRecoUnseededSequence,
                                   + hltHgcalSoARecHitsProducer
                                   + hltHgcalSoARecHitsLayerClustersProducer
                                   + hltHgcalSoALayerClustersProducer
-                                  + hltHgCalLayerClustersFromSoAProducer
+                                  + hltHgcalLayerClustersFromSoAProducer
                                   + hltHgcalLayerClustersHSci
                                   + hltHgcalLayerClustersHSi
                                   + hltHgcalMergeLayerClusters

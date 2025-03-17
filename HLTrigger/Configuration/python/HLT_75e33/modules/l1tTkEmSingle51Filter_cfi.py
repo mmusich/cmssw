@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-l1tTkEmSingle51Filter = cms.EDFilter("L1TTkEmFilter",
+from HLTrigger.HLTfilters.L1TTkEmFilter import L1TTkEmFilter as _L1TTkEmFilter
+
+l1tTkEmSingle51Filter = _L1TTkEmFilter(
     ApplyQual1 = cms.bool(True),
     ApplyQual2 = cms.bool(True),
     EtaBinsForIsolation = cms.vdouble(0.0, 1.479, 2.4),

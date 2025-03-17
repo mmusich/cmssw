@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPL3MuKFTrajectoryFitter = cms.ESProducer("KFTrajectoryFitterESProducer",
+from TrackingTools.TrackFitters.KFTrajectoryFitterESProducer import KFTrajectoryFitterESProducer as _KFTrajectoryFitterESProducer
+
+hltESPL3MuKFTrajectoryFitter = _KFTrajectoryFitterESProducer(
     ComponentName = cms.string('hltESPL3MuKFTrajectoryFitter'),
     Estimator = cms.string('hltESPChi2MeasurementEstimator30'),
     Propagator = cms.string('hltESPSmartPropagatorAny'),

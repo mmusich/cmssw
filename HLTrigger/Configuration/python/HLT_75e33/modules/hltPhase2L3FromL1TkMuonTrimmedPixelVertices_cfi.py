@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3FromL1TkMuonTrimmedPixelVertices = cms.EDProducer("PixelVertexCollectionTrimmer",
+from RecoVertex.PixelVertexFinding.PixelVertexCollectionTrimmer import PixelVertexCollectionTrimmer as _PixelVertexCollectionTrimmer
+
+hltPhase2L3FromL1TkMuonTrimmedPixelVertices = _PixelVertexCollectionTrimmer(
     PVcomparer = cms.PSet(
         refToPSet_ = cms.string('hltPhase2PSetPvClusterComparerForIT')
     ),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltRechitInRegionsECAL = cms.EDProducer("HLTEcalRecHitsInRegionsProducer",
+from RecoEgamma.EgammaHLTProducers.HLTEcalRecHitsInRegionsProducer import HLTEcalRecHitsInRegionsProducer as _HLTEcalRecHitsInRegionsProducer
+
+hltRechitInRegionsECAL = _HLTEcalRecHitsInRegionsProducer(
     etaPhiRegions = cms.VPSet(cms.PSet(
         inputColl = cms.InputTag("hltL1TEGammaFilteredCollectionProducer"),
         maxDEta = cms.double(0.0),

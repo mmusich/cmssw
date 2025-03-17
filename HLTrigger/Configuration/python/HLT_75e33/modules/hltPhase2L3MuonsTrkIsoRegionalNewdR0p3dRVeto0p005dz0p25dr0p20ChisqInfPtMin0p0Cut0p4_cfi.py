@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonsTrkIsoRegionalNewdR0p3dRVeto0p005dz0p25dr0p20ChisqInfPtMin0p0Cut0p4 = cms.EDProducer("L3MuonCombinedRelativeIsolationProducer",
+from RecoMuon.L3MuonIsolationProducer.L3MuonCombinedRelativeIsolationProducer import L3MuonCombinedRelativeIsolationProducer as _L3MuonCombinedRelativeIsolationProducer
+
+hltPhase2L3MuonsTrkIsoRegionalNewdR0p3dRVeto0p005dz0p25dr0p20ChisqInfPtMin0p0Cut0p4 = _L3MuonCombinedRelativeIsolationProducer(
     CaloDepositsLabel = cms.InputTag("notUsed"),
     CaloExtractorPSet = cms.PSet(
         CaloTowerCollectionLabel = cms.InputTag("hltPhase2TowerMakerForAll"),

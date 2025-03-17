@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPfClusterRefsForJetsHGCAL = cms.EDProducer("PFClusterRefCandidateProducer",
+from CommonTools.RecoAlgos.PFClusterRefCandidateProducer import PFClusterRefCandidateProducer as _PFClusterRefCandidateProducer
+
+hltPfClusterRefsForJetsHGCAL = _PFClusterRefCandidateProducer(
     particleType = cms.string('pi+'),
     src = cms.InputTag("hltParticleFlowClusterHGCal")
 )

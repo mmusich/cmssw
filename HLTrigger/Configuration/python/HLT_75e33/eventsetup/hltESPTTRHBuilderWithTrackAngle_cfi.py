@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPTTRHBuilderWithTrackAngle = cms.ESProducer("TkTransientTrackingRecHitBuilderESProducer",
+from RecoTracker.TransientTrackingRecHit.TkTransientTrackingRecHitBuilderESProducer import TkTransientTrackingRecHitBuilderESProducer as _TkTransientTrackingRecHitBuilderESProducer
+
+hltESPTTRHBuilderWithTrackAngle = _TkTransientTrackingRecHitBuilderESProducer(
     ComponentName = cms.string('hltESPTTRHBuilderWithTrackAngle'),
     ComputeCoarseLocalPositionFromDisk = cms.bool(False),
     Matcher = cms.string('StandardMatcher'),

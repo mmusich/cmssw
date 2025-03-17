@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaHGCalLayerClusterIsoL1Seeded = cms.EDProducer("EgammaHLTHGCalLayerClusterIsolationProducer",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTHGCalLayerClusterIsolationProducer import EgammaHLTHGCalLayerClusterIsolationProducer as _EgammaHLTHGCalLayerClusterIsolationProducer
+
+hltEgammaHGCalLayerClusterIsoL1Seeded = _EgammaHLTHGCalLayerClusterIsolationProducer(
     doRhoCorrection = cms.bool(False),
     drMax = cms.double(0.2),
     drVetoEM = cms.double(0.02),

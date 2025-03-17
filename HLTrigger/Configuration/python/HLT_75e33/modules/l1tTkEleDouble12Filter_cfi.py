@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-l1tTkEleDouble12Filter = cms.EDFilter("L1TTkEleFilter",
+from HLTrigger.HLTfilters.L1TTkEleFilter import L1TTkEleFilter as _L1TTkEleFilter
+
+l1tTkEleDouble12Filter = _L1TTkEleFilter(
     ApplyQual1 = cms.bool(True),
     ApplyQual2 = cms.bool(True),
     EtaBinsForIsolation = cms.vdouble(0.0, 1.479, 2.4),

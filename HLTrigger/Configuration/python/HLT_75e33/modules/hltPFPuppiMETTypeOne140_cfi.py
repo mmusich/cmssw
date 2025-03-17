@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFPuppiMETTypeOne140 = cms.EDFilter("HLT1PFMET",
+from HLTrigger.HLTfilters.HLT1PFMET import HLT1PFMET as _HLT1PFMET
+
+hltPFPuppiMETTypeOne140 = _HLT1PFMET(
     MaxEta = cms.double(-1.0),
     MaxMass = cms.double(-1.0),
     MinE = cms.double(-1.0),

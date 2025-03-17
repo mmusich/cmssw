@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEcalDetailedTimeRecHit = cms.EDProducer("EcalDetailedTimeRecHitProducer",
+from RecoLocalCalo.EcalRecProducers.EcalDetailedTimeRecHitProducer import EcalDetailedTimeRecHitProducer as _EcalDetailedTimeRecHitProducer
+
+hltEcalDetailedTimeRecHit = _EcalDetailedTimeRecHitProducer(
     EBDetailedTimeRecHitCollection = cms.string('EcalRecHitsEB'),
     EBRecHitCollection = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
     EBTimeDigiCollection = cms.InputTag("mix","EBTimeDigi"),

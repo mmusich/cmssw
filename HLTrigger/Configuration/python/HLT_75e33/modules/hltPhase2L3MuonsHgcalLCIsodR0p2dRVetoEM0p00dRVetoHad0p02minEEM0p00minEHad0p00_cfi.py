@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonsHgcalLCIsodR0p2dRVetoEM0p00dRVetoHad0p02minEEM0p00minEHad0p00 = cms.EDProducer("MuonHLTHGCalLayerClusterIsolationProducer",
+from RecoEgamma.EgammaHLTProducers.MuonHLTHGCalLayerClusterIsolationProducer import MuonHLTHGCalLayerClusterIsolationProducer as _MuonHLTHGCalLayerClusterIsolationProducer
+
+hltPhase2L3MuonsHgcalLCIsodR0p2dRVetoEM0p00dRVetoHad0p02minEEM0p00minEHad0p00 = _MuonHLTHGCalLayerClusterIsolationProducer(
     doRhoCorrection = cms.bool(False),
     drMax = cms.double(0.2),
     drVetoEM = cms.double(0.0),

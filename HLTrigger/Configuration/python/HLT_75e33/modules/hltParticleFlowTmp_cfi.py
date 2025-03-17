@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowTmp = cms.EDProducer("PFCandidateListMerger",
+from RecoParticleFlow.PFProducer.PFCandidateListMerger import PFCandidateListMerger as _PFCandidateListMerger
+
+hltParticleFlowTmp = _PFCandidateListMerger(
     src = cms.VInputTag("hltParticleFlowTmpBarrel", "hltPfTICL")
 )

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsTauPFJetsRecoTauChargedHadronsWithNeutrals = cms.EDProducer("PFRecoTauChargedHadronProducer",
+from RecoTauTag.RecoTau.PFRecoTauChargedHadronProducer import PFRecoTauChargedHadronProducer as _PFRecoTauChargedHadronProducer
+
+hltHpsTauPFJetsRecoTauChargedHadronsWithNeutrals = _PFRecoTauChargedHadronProducer(
     builders = cms.VPSet(
         cms.PSet(
             chargedHadronCandidatesParticleIds = cms.vint32(1, 2, 3),

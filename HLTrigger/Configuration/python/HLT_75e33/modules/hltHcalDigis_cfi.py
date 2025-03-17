@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHcalDigis = cms.EDProducer("HcalRawToDigi",
+from EventFilter.HcalRawToDigi.HcalRawToDigi import HcalRawToDigi as _HcalRawToDigi
+
+hltHcalDigis = _HcalRawToDigi(
     ComplainEmptyData = cms.untracked.bool(False),
     ElectronicsMap = cms.string(''),
     ExpectedOrbitMessageTime = cms.untracked.int32(-1),

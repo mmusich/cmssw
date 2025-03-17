@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauTransverseImpactParametersForDeepTau = cms.EDProducer("PFTauTransverseImpactParameters",
+from RecoTauTag.RecoTau.PFTauTransverseImpactParameters import PFTauTransverseImpactParameters as _PFTauTransverseImpactParameters
+
+hltHpsPFTauTransverseImpactParametersForDeepTau = _PFTauTransverseImpactParameters(
     PFTauPVATag = cms.InputTag("hltHpsPFTauPrimaryVertexProducerForDeepTau"),
     PFTauSVATag = cms.InputTag("hltHpsPFTauSecondaryVertexProducerForDeepTau"),
     PFTauTag = cms.InputTag("hltHpsPFTauProducer"),

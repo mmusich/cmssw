@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltCsc2DRecHits = cms.EDProducer("CSCRecHitDProducer",
+from RecoLocalMuon.CSCRecHitD.CSCRecHitDProducer import CSCRecHitDProducer as _CSCRecHitDProducer
+
+hltCsc2DRecHits = _CSCRecHitDProducer(
     CSCDebug = cms.untracked.bool(False),
     CSCNoOfTimeBinsForDynamicPedestal = cms.int32(2),
     CSCStripClusterChargeCut = cms.double(25.0),

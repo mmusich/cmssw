@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2PixelTracksHitSeeds = cms.EDProducer("CAHitQuadrupletEDProducer",
+from RecoTracker.PixelSeeding.CAHitQuadrupletEDProducer import CAHitQuadrupletEDProducer as _CAHitQuadrupletEDProducer
+
+hltPhase2PixelTracksHitSeeds = _CAHitQuadrupletEDProducer(
     CAHardPtCut = cms.double(0.0),
     CAPhiCut = cms.double(0.2),
     CAThetaCut = cms.double(0.0012),

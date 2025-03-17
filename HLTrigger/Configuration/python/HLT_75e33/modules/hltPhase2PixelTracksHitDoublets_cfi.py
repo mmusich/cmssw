@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2PixelTracksHitDoublets = cms.EDProducer("HitPairEDProducer",
+from RecoTracker.TkHitPairs.HitPairEDProducer import HitPairEDProducer as _HitPairEDProducer
+
+hltPhase2PixelTracksHitDoublets = _HitPairEDProducer(
     clusterCheck = cms.InputTag(""),
     layerPairs = cms.vuint32(0, 1, 2),
     maxElement = cms.uint32(50000000),

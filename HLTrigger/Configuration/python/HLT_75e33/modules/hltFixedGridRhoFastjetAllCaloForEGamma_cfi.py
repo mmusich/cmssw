@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltFixedGridRhoFastjetAllCaloForEGamma = cms.EDProducer("FixedGridRhoProducerFastjetFromRecHit",
+from RecoJets.JetProducers.FixedGridRhoProducerFastjetFromRecHit import FixedGridRhoProducerFastjetFromRecHit as _FixedGridRhoProducerFastjetFromRecHit
+
+hltFixedGridRhoFastjetAllCaloForEGamma = _FixedGridRhoProducerFastjetFromRecHit(
     eThresHB = cms.vdouble(0.8, 1.2, 1.2, 1.2),
     eThresHE = cms.vdouble(
         0.1, 0.2, 0.2, 0.2, 0.2,

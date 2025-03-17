@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowRecHitHGCL1Seeded = cms.EDProducer("PFRecHitProducer",
+from RecoParticleFlow.PFClusterProducer.PFRecHitProducer import PFRecHitProducer as _PFRecHitProducer
+
+hltParticleFlowRecHitHGCL1Seeded = _PFRecHitProducer(
     navigator = cms.PSet(
         hgcee = cms.PSet(
             name = cms.string('PFRecHitHGCEENavigator'),

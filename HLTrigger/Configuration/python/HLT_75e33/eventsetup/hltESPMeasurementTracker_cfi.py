@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltESPMeasurementTracker = cms.ESProducer("MeasurementTrackerESProducer",
+from RecoTracker.MeasurementDet.MeasurementTrackerESProducer import MeasurementTrackerESProducer as _MeasurementTrackerESProducer
+
+hltESPMeasurementTracker = _MeasurementTrackerESProducer(
     ComponentName = cms.string('hltESPMeasurementTracker'),
     DebugPixelModuleQualityDB = cms.untracked.bool(False),
     DebugPixelROCQualityDB = cms.untracked.bool(False),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltGemSegments = cms.EDProducer("GEMSegmentProducer",
+from RecoLocalMuon.GEMSegment.GEMSegmentProducer import GEMSegmentProducer as _GEMSegmentProducer
+
+hltGemSegments = _GEMSegmentProducer(
     algo_name = cms.string('GEMSegmentAlgorithm'),
     algo_pset = cms.PSet(
         GEMDebug = cms.untracked.bool(True),
