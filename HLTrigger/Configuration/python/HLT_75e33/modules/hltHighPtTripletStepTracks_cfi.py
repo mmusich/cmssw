@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHighPtTripletStepTracks = cms.EDProducer("TrackProducer",
+from RecoTracker.TrackProducer.TrackProducer import TrackProducer as _TrackProducer
+
+hltHighPtTripletStepTracks = _TrackProducer(
     AlgorithmName = cms.string('highPtTripletStep'),
     Fitter = cms.string('FlexibleKFFittingSmoother'),
     GeometricInnerState = cms.bool(False),

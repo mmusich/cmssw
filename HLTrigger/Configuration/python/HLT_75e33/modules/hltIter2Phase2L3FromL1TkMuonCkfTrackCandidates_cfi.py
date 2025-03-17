@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltIter2Phase2L3FromL1TkMuonCkfTrackCandidates = cms.EDProducer("CkfTrackCandidateMaker",
+from RecoTracker.CkfPattern.CkfTrackCandidateMaker import CkfTrackCandidateMaker as _CkfTrackCandidateMaker
+
+hltIter2Phase2L3FromL1TkMuonCkfTrackCandidates = _CkfTrackCandidateMaker(
     MeasurementTrackerEvent = cms.InputTag("hltIter2Phase2L3FromL1TkMuonMaskedMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),

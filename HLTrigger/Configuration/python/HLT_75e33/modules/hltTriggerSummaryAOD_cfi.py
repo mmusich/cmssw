@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTriggerSummaryAOD = cms.EDProducer("TriggerSummaryProducerAOD",
+from HLTrigger.HLTcore.TriggerSummaryProducerAOD import TriggerSummaryProducerAOD as _TriggerSummaryProducerAOD
+
+hltTriggerSummaryAOD = _TriggerSummaryProducerAOD(
     moduleLabelPatternsToMatch = cms.vstring(
         'hlt*',
         'l1t*'

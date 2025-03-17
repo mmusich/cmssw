@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPrimaryVertexAssociation = cms.EDProducer("PFCandidatePrimaryVertexSorter",
+from CommonTools.RecoAlgos.PFCandidatePrimaryVertexSorter import PFCandidatePrimaryVertexSorter as _PFCandidatePrimaryVertexSorter
+
+hltPrimaryVertexAssociation = _PFCandidatePrimaryVertexSorter(
     assignment = cms.PSet(
         DzCutForChargedFromPUVtxs = cms.double(0.2),
         EtaMinUseDz = cms.double(-1),

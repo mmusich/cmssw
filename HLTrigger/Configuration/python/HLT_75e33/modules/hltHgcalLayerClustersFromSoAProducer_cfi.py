@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHgCalLayerClustersFromSoAProducer = cms.EDProducer("HGCalLayerClustersFromSoAProducer",
+from RecoLocalCalo.HGCalRecProducers.HGCalLayerClustersFromSoAProducer import HGCalLayerClustersFromSoAProducer as _HGCalLayerClustersFromSoAProducer
+
+hltHgcalLayerClustersFromSoAProducer = _HGCalLayerClustersFromSoAProducer(
     detector = cms.string('EE'),
     hgcalRecHitsLayerClustersSoA = cms.InputTag("hltHgcalSoARecHitsLayerClustersProducer"),
     hgcalRecHitsSoA = cms.InputTag("hltHgcalSoARecHitsProducer"),

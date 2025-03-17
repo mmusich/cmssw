@@ -1,3 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-bunchSpacingProducer = cms.EDProducer("BunchSpacingProducer")
+from RecoLuminosity.LumiProducer.BunchSpacingProducer import BunchSpacingProducer as _BunchSpacingProducer
+
+bunchSpacingProducer = _BunchSpacingProducer()

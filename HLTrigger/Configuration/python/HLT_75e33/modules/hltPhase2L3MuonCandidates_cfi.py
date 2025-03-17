@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonCandidates = cms.EDProducer("L3MuonCandidateProducerFromMuons",
+from RecoMuon.L3MuonProducer.L3MuonCandidateProducerFromMuons import L3MuonCandidateProducerFromMuons as _L3MuonCandidateProducerFromMuons
+
+hltPhase2L3MuonCandidates = _L3MuonCandidateProducerFromMuons(
     InputObjects = cms.InputTag("hltPhase2L3Muons")
 )

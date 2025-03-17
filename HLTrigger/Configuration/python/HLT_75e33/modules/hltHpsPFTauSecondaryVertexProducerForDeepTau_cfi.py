@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauSecondaryVertexProducerForDeepTau = cms.EDProducer("PFTauSecondaryVertexProducer",
+from RecoTauTag.RecoTau.PFTauSecondaryVertexProducer import PFTauSecondaryVertexProducer as _PFTauSecondaryVertexProducer
+
+hltHpsPFTauSecondaryVertexProducerForDeepTau = _PFTauSecondaryVertexProducer(
     PFTauTag = cms.InputTag("hltHpsPFTauProducer")
 )

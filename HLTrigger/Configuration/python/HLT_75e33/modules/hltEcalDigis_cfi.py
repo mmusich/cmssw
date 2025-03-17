@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEcalDigis = cms.EDProducer("EcalRawToDigi",
+from EventFilter.EcalRawToDigi.EcalRawToDigi import EcalRawToDigi as _EcalRawToDigi
+
+hltEcalDigis = _EcalRawToDigi(
     DoRegional = cms.bool(False),
     FEDs = cms.vint32(
         601, 602, 603, 604, 605,

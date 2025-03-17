@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHighPtTripletStepClusters = cms.EDProducer("TrackClusterRemoverPhase2",
+from RecoLocalTracker.SubCollectionProducers.TrackClusterRemoverPhase2 import TrackClusterRemoverPhase2 as _TrackClusterRemoverPhase2
+
+hltHighPtTripletStepClusters = _TrackClusterRemoverPhase2(
     TrackQuality = cms.string('highPurity'),
     maxChi2 = cms.double(9.0),
     mightGet = cms.optional.untracked.vstring,

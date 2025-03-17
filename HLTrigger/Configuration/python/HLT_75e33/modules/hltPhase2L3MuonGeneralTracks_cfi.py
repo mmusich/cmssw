@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonGeneralTracks = cms.EDProducer("TrackListMerger",
+from RecoTracker.FinalTrackSelectors.TrackListMerger import TrackListMerger as _TrackListMerger
+
+hltPhase2L3MuonGeneralTracks = _TrackListMerger(
     Epsilon = cms.double(-0.001),
     FoundHitBonus = cms.double(5.0),
     LostHitPenalty = cms.double(5.0),

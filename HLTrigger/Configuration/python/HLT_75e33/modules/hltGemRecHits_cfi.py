@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltGemRecHits = cms.EDProducer("GEMRecHitProducer",
+from RecoLocalMuon.GEMRecHit.GEMRecHitProducer import GEMRecHitProducer as _GEMRecHitProducer
+
+hltGemRecHits = _GEMRecHitProducer(
     applyMasking = cms.bool(False),
     deadFile = cms.optional.FileInPath,
     gemDigiLabel = cms.InputTag("simMuonGEMDigis"),

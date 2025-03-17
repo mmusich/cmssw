@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPfPileUpJME = cms.EDProducer("PFPileUp",
+from CommonTools.ParticleFlow.PFPileUp import PFPileUp as _PFPileUp
+
+hltPfPileUpJME = _PFPileUp(
     PFCandidates = cms.InputTag("hltParticleFlowPtrs"),
     Vertices = cms.InputTag("hltGoodOfflinePrimaryVertices"),
     checkClosestZVertex = cms.bool(False),

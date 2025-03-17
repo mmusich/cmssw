@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEcalDetIdToBeRecovered = cms.EDProducer("EcalDetIdToBeRecoveredProducer",
+from RecoLocalCalo.EcalRecProducers.EcalDetIdToBeRecoveredProducer import EcalDetIdToBeRecoveredProducer as _EcalDetIdToBeRecoveredProducer
+
+hltEcalDetIdToBeRecovered = _EcalDetIdToBeRecoveredProducer(
     ebDetIdToBeRecovered = cms.string('ebDetId'),
     ebFEToBeRecovered = cms.string('ebFE'),
     ebIntegrityChIdErrors = cms.InputTag("hltEcalDigis","EcalIntegrityChIdErrors"),

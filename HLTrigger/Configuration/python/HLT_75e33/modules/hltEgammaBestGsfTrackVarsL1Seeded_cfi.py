@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaBestGsfTrackVarsL1Seeded = cms.EDProducer("EgammaHLTGsfTrackVarProducer",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTGsfTrackVarProducer import EgammaHLTGsfTrackVarProducer as _EgammaHLTGsfTrackVarProducer
+
+hltEgammaBestGsfTrackVarsL1Seeded = _EgammaHLTGsfTrackVarProducer(
     beamSpotProducer = cms.InputTag("hltOnlineBeamSpot"),
     inputCollection = cms.InputTag("hltEgammaGsfElectronsL1Seeded"),
     lowerTrackNrToRemoveCut = cms.int32(-1),

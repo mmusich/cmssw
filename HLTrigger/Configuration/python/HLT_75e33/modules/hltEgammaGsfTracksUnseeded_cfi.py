@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaGsfTracksUnseeded = cms.EDProducer("GsfTrackProducer",
+from RecoTracker.TrackProducer.GsfTrackProducer import GsfTrackProducer as _GsfTrackProducer
+
+hltEgammaGsfTracksUnseeded = _GsfTrackProducer(
     AlgorithmName = cms.string('gsf'),
     Fitter = cms.string('GsfElectronFittingSmoother'),
     GeometricInnerState = cms.bool(False),

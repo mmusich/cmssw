@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltElePixelHitTripletsUnseeded = cms.EDProducer("CAHitTripletEDProducer",
+from RecoTracker.PixelSeeding.CAHitTripletEDProducer import CAHitTripletEDProducer as _CAHitTripletEDProducer
+
+hltElePixelHitTripletsUnseeded = _CAHitTripletEDProducer(
     CAHardPtCut = cms.double(0.3),
     CAPhiCut = cms.double(0.1),
     CAThetaCut = cms.double(0.004),

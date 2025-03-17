@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltFirstStepPrimaryVerticesUnsorted = cms.EDProducer("PrimaryVertexProducer",
+from RecoVertex.PrimaryVertexProducer.PrimaryVertexProducer import PrimaryVertexProducer as _PrimaryVertexProducer
+
+hltFirstStepPrimaryVerticesUnsorted = _PrimaryVertexProducer(
     TkClusParameters = cms.PSet(
         TkDAClusParameters = cms.PSet(
             Tmin = cms.double(2.0),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL1TEGammaHGCFilteredCollectionProducer = cms.EDProducer("L1TEGammaFilteredCollectionProducer",
+from RecoEgamma.EgammaHLTProducers.L1TEGammaFilteredCollectionProducer import L1TEGammaFilteredCollectionProducer as _L1TEGammaFilteredCollectionProducer
+
+hltL1TEGammaHGCFilteredCollectionProducer = _L1TEGammaFilteredCollectionProducer(
     applyQual = cms.bool(True),
     inputTag = cms.InputTag("l1tGTProducer", "CL2Photons"),
     maxBX = cms.int32(1),

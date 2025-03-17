@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltSiPixelClusters = cms.EDProducer("SiPixelClusterProducer",
+from RecoLocalTracker.SiPixelClusterizer.SiPixelClusterProducer import SiPixelClusterProducer as _SiPixelClusterProducer
+
+hltSiPixelClusters = _SiPixelClusterProducer(
     ChannelThreshold = cms.int32(1000),
     ClusterMode = cms.string('PixelThresholdClusterizer'),
     ClusterThreshold = cms.int32(4000),

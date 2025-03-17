@@ -1,7 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 from ..psets.hgcal_reco_constants_cfi import HGCAL_reco_constants as HGCAL_reco_constants
 
-hltHgcalLayerClustersHSci = cms.EDProducer("HGCalLayerClusterProducer",
+from RecoLocalCalo.HGCalRecProducers.HGCalLayerClusterProducer import HGCalLayerClusterProducer as _HGCalLayerClusterProducer
+
+hltHgcalLayerClustersHSci = _HGCalLayerClusterProducer(
     detector = cms.string('BH'),
     mightGet = cms.optional.untracked.vstring,
     nHitsTime = cms.uint32(3),

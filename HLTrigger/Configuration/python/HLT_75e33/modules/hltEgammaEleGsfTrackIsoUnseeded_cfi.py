@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaEleGsfTrackIsoUnseeded = cms.EDProducer("EgammaHLTElectronTrackIsolationProducers",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTElectronTrackIsolationProducers import EgammaHLTElectronTrackIsolationProducers as _EgammaHLTElectronTrackIsolationProducers
+
+hltEgammaEleGsfTrackIsoUnseeded = _EgammaHLTElectronTrackIsolationProducers(
     beamSpotProducer = cms.InputTag("hltOnlineBeamSpot"),
     egTrkIsoConeSize = cms.double(0.3),
     egTrkIsoPtMin = cms.double(1.0),

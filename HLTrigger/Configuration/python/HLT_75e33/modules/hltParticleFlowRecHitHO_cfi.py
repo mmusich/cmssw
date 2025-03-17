@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltParticleFlowRecHitHO = cms.EDProducer("PFRecHitProducer",
+from RecoParticleFlow.PFClusterProducer.PFRecHitProducer import PFRecHitProducer as _PFRecHitProducer
+
+hltParticleFlowRecHitHO = _PFRecHitProducer(
     navigator = cms.PSet(
         hcalEnums = cms.vint32(3),
         name = cms.string('PFRecHitHCALDenseIdNavigator')

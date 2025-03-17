@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPfDeepFlavourTagInfos = cms.EDProducer("DeepFlavourTagInfoProducer",
+from RecoBTag.FeatureTools.DeepFlavourTagInfoProducer import DeepFlavourTagInfoProducer as _DeepFlavourTagInfoProducer
+
+hltPfDeepFlavourTagInfos = _DeepFlavourTagInfoProducer(
     candidates = cms.InputTag("hltParticleFlowTmp"),
     compute_probabilities = cms.bool(False),
     fallback_puppi_weight = cms.bool(False),

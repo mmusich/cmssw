@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3MuonPixelTracks = cms.EDProducer("PixelTrackProducer",
+from RecoTracker.PixelTrackFitting.PixelTrackProducer import PixelTrackProducer as _PixelTrackProducer
+
+hltPhase2L3MuonPixelTracks = _PixelTrackProducer(
     Cleaner = cms.string('hltPhase2L3MuonPixelTrackCleanerBySharedHits'),
     Filter = cms.InputTag("hltPhase2PixelTrackFilterByKinematics"),
     Fitter = cms.InputTag("hltPhase2PixelFitterByHelixProjections"),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDeepBLifetimeTagInfosPFPuppiModEta2p4 = cms.EDProducer("CandIPProducer",
+from RecoBTag.ImpactParameter.CandIPProducer import CandIPProducer as _CandIPProducer
+
+hltDeepBLifetimeTagInfosPFPuppiModEta2p4 = _CandIPProducer(
     candidates = cms.InputTag("hltParticleFlowTmp"),
     computeGhostTrack = cms.bool(True),
     computeProbabilities = cms.bool(True),

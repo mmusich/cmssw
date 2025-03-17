@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTauPFJets08Region = cms.EDProducer("RecoTauJetRegionProducer",
+from RecoTauTag.RecoTau.RecoTauJetRegionProducer import RecoTauJetRegionProducer as _RecoTauJetRegionProducer
+
+hltTauPFJets08Region = _RecoTauJetRegionProducer(
     deltaR = cms.double(0.8),
     maxJetAbsEta = cms.double(99.0),
     minJetPt = cms.double(-1.0),

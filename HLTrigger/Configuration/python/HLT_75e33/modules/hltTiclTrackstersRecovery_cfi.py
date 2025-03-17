@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTiclTrackstersRecovery = cms.EDProducer("TrackstersProducer",
+from RecoHGCal.TICL.TrackstersProducer import TrackstersProducer as _TrackstersProducer
+
+hltTiclTrackstersRecovery = _TrackstersProducer(
     detector = cms.string('HGCAL'),
     filtered_mask = cms.InputTag("hltFilteredLayerClustersRecovery","Recovery"),
     itername = cms.string('Recovery'),

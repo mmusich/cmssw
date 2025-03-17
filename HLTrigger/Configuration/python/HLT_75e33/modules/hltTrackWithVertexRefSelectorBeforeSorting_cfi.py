@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTrackWithVertexRefSelectorBeforeSorting = cms.EDProducer("TrackWithVertexRefSelector",
+from CommonTools.RecoAlgos.TrackWithVertexRefSelector import TrackWithVertexRefSelector as _TrackWithVertexRefSelector
+
+hltTrackWithVertexRefSelectorBeforeSorting = _TrackWithVertexRefSelector(
     d0Max = cms.double(999.0),
     dzMax = cms.double(999.0),
     etaMax = cms.double(5.0),

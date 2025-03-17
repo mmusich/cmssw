@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2OTHitsInputLST = cms.EDProducer('LSTPhase2OTHitsInputProducer',
+from RecoTracker.LST.LSTPhase2OTHitsInputProducer import LSTPhase2OTHitsInputProducer as _LSTPhase2OTHitsInputProducer
+
+hltPhase2OTHitsInputLST = _LSTPhase2OTHitsInputProducer(
     phase2OTRecHits = cms.InputTag('hltSiPhase2RecHits'),
     mightGet = cms.optional.untracked.vstring
 )

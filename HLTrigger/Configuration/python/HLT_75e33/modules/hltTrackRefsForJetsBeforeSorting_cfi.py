@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTrackRefsForJetsBeforeSorting = cms.EDProducer("ChargedRefCandidateProducer",
+from CommonTools.RecoAlgos.ChargedRefCandidateProducer import ChargedRefCandidateProducer as _ChargedRefCandidateProducer
+
+hltTrackRefsForJetsBeforeSorting = _ChargedRefCandidateProducer(
     particleType = cms.string('pi+'),
     src = cms.InputTag("hltTrackWithVertexRefSelectorBeforeSorting")
 )

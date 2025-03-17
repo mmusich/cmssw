@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFPuppiMETTypeOne = cms.EDProducer("CorrectedPFMETProducer",
+from JetMETCorrections.Type1MET.CorrectedPFMETProducer import CorrectedPFMETProducer as _CorrectedPFMETProducer
+
+hltPFPuppiMETTypeOne = _CorrectedPFMETProducer(
     src = cms.InputTag("hltPFPuppiMET"),
     srcCorrections = cms.VInputTag("hltPFPuppiMETTypeOneCorrector:type1")
 )

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaSuperClustersToPixelMatchUnseeded = cms.EDProducer("EgammaHLTFilteredSuperClusterProducer",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTFilteredSuperClusterProducer import EgammaHLTFilteredSuperClusterProducer as _EgammaHLTFilteredSuperClusterProducer
+
+hltEgammaSuperClustersToPixelMatchUnseeded = _EgammaHLTFilteredSuperClusterProducer(
     cands = cms.InputTag("hltEgammaCandidatesUnseeded"),
     cuts = cms.VPSet(cms.PSet(
         barrelCut = cms.PSet(

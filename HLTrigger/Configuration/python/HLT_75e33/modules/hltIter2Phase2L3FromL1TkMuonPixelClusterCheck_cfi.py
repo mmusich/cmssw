@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltIter2Phase2L3FromL1TkMuonPixelClusterCheck = cms.EDProducer("ClusterCheckerEDProducer",
+from RecoTracker.TkSeedGenerator.ClusterCheckerEDProducer import ClusterCheckerEDProducer as _ClusterCheckerEDProducer
+
+hltIter2Phase2L3FromL1TkMuonPixelClusterCheck = _ClusterCheckerEDProducer(
     ClusterCollectionLabel = cms.InputTag("hltMeasurementTrackerEvent"),
     MaxNumberOfPixelClusters = cms.uint32(10000),
     MaxNumberOfStripClusters = cms.uint32(50000),

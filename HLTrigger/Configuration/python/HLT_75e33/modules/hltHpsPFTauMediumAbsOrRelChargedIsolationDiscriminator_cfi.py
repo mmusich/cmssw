@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHpsPFTauMediumAbsOrRelChargedIsolationDiscriminator = cms.EDProducer("PFTauDiscriminatorLogicalAndProducer",
+from RecoTauTag.RecoTau.PFTauDiscriminatorLogicalAndProducer import PFTauDiscriminatorLogicalAndProducer as _PFTauDiscriminatorLogicalAndProducer
+
+hltHpsPFTauMediumAbsOrRelChargedIsolationDiscriminator = _PFTauDiscriminatorLogicalAndProducer(
     FailValue = cms.double(0.0),
     PFTauProducer = cms.InputTag("hltHpsPFTauProducer"),
     PassValue = cms.double(1.0),

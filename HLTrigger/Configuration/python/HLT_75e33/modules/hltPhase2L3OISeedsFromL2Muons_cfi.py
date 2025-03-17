@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPhase2L3OISeedsFromL2Muons = cms.EDProducer("TSGForOIFromL2",
+from RecoMuon.TrackerSeedGenerator.TSGForOIFromL2 import TSGForOIFromL2 as _TSGForOIFromL2
+
+hltPhase2L3OISeedsFromL2Muons = _TSGForOIFromL2(
     MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
     SF1 = cms.double(3.0),
     SF2 = cms.double(4.0),

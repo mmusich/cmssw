@@ -26,7 +26,7 @@ _HLTHgcalLocalRecoSequence_heterogeneous = cms.Sequence(
         hltHgcalSoARecHitsProducer+
         hltHgcalSoARecHitsLayerClustersProducer+
         hltHgcalSoALayerClustersProducer+
-        hltHgCalLayerClustersFromSoAProducer+
+        hltHgcalLayerClustersFromSoAProducer+
         hltHgcalLayerClustersHSci+
         hltHgcalLayerClustersHSi+
         hltHgcalMergeLayerClusters)

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEleSeedsTrackingRegionsUnseeded = cms.EDProducer("TrackingRegionsFromSuperClustersEDProducer",
+from RecoEgamma.EgammaElectronProducers.TrackingRegionsFromSuperClustersEDProducer import TrackingRegionsFromSuperClustersEDProducer as _TrackingRegionsFromSuperClustersEDProducer
+
+hltEleSeedsTrackingRegionsUnseeded = _TrackingRegionsFromSuperClustersEDProducer(
     RegionPSet = cms.PSet(
         beamSpot = cms.InputTag("hltOnlineBeamSpot"),
         defaultZ = cms.double(0.0),

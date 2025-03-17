@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTiclSeedingL1 = cms.EDProducer("TICLSeedingRegionProducer",
+from RecoHGCal.TICL.TICLSeedingRegionProducer import TICLSeedingRegionProducer as _TICLSeedingRegionProducer
+
+hltTiclSeedingL1 = _TICLSeedingRegionProducer(
     seedingPSet = cms.PSet(
         algo_verbosity = cms.int32(0),
         l1GTCandColl = cms.InputTag("l1tGTProducer", "CL2Photons"),

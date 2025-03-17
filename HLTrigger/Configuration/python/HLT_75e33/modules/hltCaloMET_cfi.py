@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltCaloMET = cms.EDProducer("CaloMETProducer",
+from RecoMET.METProducers.CaloMETProducer import CaloMETProducer as _CaloMETProducer
+
+hltCaloMET = _CaloMETProducer(
     alias = cms.string('RawCaloMET'),
     calculateSignificance = cms.bool(False),
     globalThreshold = cms.double(0.3),

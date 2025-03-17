@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltAK4PFJetsForTaus = cms.EDProducer("FastjetJetProducer",
+from RecoJets.JetProducers.FastjetJetProducer import FastjetJetProducer as _FastjetJetProducer
+
+hltAK4PFJetsForTaus = _FastjetJetProducer(
     Active_Area_Repeats = cms.int32(5),
     DxyTrVtxMax = cms.double(0.0),
     DzTrVtxMax = cms.double(0.0),

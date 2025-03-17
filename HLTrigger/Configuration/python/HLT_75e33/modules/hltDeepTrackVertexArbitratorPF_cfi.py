@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDeepTrackVertexArbitratorPF = cms.EDProducer("CandidateVertexArbitrator",
+from RecoVertex.AdaptiveVertexFinder.CandidateVertexArbitrator import CandidateVertexArbitrator as _CandidateVertexArbitrator
+
+hltDeepTrackVertexArbitratorPF = _CandidateVertexArbitrator(
     beamSpot = cms.InputTag("hltOnlineBeamSpot"),
     dLenFraction = cms.double(0.333),
     dRCut = cms.double(0.4),

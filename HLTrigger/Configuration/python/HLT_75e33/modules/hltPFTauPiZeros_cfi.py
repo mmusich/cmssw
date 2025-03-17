@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPFTauPiZeros = cms.EDProducer("RecoTauPiZeroProducer",
+from RecoTauTag.RecoTau.RecoTauPiZeroProducer import RecoTauPiZeroProducer as _RecoTauPiZeroProducer
+
+hltPFTauPiZeros = _RecoTauPiZeroProducer(
     builders = cms.VPSet(cms.PSet(
         applyElecTrackQcuts = cms.bool(False),
         makeCombinatoricStrips = cms.bool(False),

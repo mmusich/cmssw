@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL2MuonSeedsFromL1TkMuon = cms.EDProducer("L2MuonSeedGeneratorFromL1TkMu",
+from RecoMuon.L2MuonSeedGenerator.L2MuonSeedGeneratorFromL1TkMu import L2MuonSeedGeneratorFromL1TkMu as _L2MuonSeedGeneratorFromL1TkMu
+
+hltL2MuonSeedsFromL1TkMuon = _L2MuonSeedGeneratorFromL1TkMu(
     EtaMatchingBins = cms.vdouble(0.0, 2.5),
     InputObjects = cms.InputTag("l1tTkMuonsGmt"),
     L1MaxEta = cms.double(2.5),
@@ -21,7 +23,9 @@ hltL2MuonSeedsFromL1TkMuon = cms.EDProducer("L2MuonSeedGeneratorFromL1TkMu",
     UseUnassociatedL1 = cms.bool(False)
 )
 
-phase2HltL2MuonSeedsFromL1TkMuon = cms.EDProducer('Phase2L2MuonSeedCreator',
+from RecoMuon.L2MuonSeedGenerator.L2MuonSeedGeneratorFromL1TkMu import L2MuonSeedGeneratorFromL1TkMu as _L2MuonSeedGeneratorFromL1TkMu
+
+phase2HltL2MuonSeedsFromL1TkMuon = _L2MuonSeedGeneratorFromL1TkMu(
     inputObjects = cms.InputTag('l1tTkMuonsGmt'),
     cscRecSegmentLabel = cms.InputTag('hltCscSegments'),
     dtRecSegmentLabel = cms.InputTag('hltDt4DSegments'),

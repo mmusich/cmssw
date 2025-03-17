@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTrackerClusterCheck = cms.EDProducer("ClusterCheckerEDProducer",
+from RecoTracker.TkSeedGenerator.ClusterCheckerEDProducer import ClusterCheckerEDProducer as _ClusterCheckerEDProducer
+
+hltTrackerClusterCheck = _ClusterCheckerEDProducer(
     ClusterCollectionLabel = cms.InputTag("siStripClusters"),
     MaxNumberOfPixelClusters = cms.uint32(40000),
     MaxNumberOfStripClusters = cms.uint32(400000),

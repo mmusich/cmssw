@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEcalRecHitL1Seeded = cms.EDProducer("EcalRecHitProducer",
+from RecoLocalCalo.EcalRecProducers.EcalRecHitProducer import EcalRecHitProducer as _EcalRecHitProducer
+
+hltEcalRecHitL1Seeded = _EcalRecHitProducer(
     ChannelStatusToBeExcluded = cms.vstring(
         'kDAC',
         'kNoisy',

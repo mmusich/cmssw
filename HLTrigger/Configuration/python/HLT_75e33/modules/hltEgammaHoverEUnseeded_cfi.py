@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaHoverEUnseeded = cms.EDProducer("EgammaHLTHcalVarProducerFromRecHit",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTHcalVarProducerFromRecHit import EgammaHLTHcalVarProducerFromRecHit as _EgammaHLTHcalVarProducerFromRecHit
+
+hltEgammaHoverEUnseeded = _EgammaHLTHcalVarProducerFromRecHit(
     absEtaLowEdges = cms.vdouble(0.0, 1.479),
     depth = cms.int32(0),
     doEtSum = cms.bool(False),

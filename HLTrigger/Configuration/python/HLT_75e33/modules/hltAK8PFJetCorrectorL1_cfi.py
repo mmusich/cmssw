@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltAK8PFJetCorrectorL1 = cms.EDProducer("L1FastjetCorrectorProducer",
+from JetMETCorrections.Modules.L1FastjetCorrectorProducer import L1FastjetCorrectorProducer as _L1FastjetCorrectorProducer
+
+hltAK8PFJetCorrectorL1 = _L1FastjetCorrectorProducer(
     algorithm = cms.string('AK8PF'),
     level = cms.string('L1FastJet'),
     srcRho = cms.InputTag("hltFixedGridRhoFastjetAll")

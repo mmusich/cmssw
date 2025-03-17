@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTiclCandidate = cms.EDProducer("TICLCandidateProducer",
+from RecoHGCal.TICL.TICLCandidateProducer import TICLCandidateProducer as _TICLCandidateProducer
+
+hltTiclCandidate = _TICLCandidateProducer(
     cutTk = cms.string('1.48 < abs(eta) < 3.0 && pt > 1. && quality("highPurity") && hitPattern().numberOfLostHits("MISSING_OUTER_HITS") < 5'),
     detector = cms.string('HGCAL'),
     egamma_tracksterlinks_collections = cms.VInputTag("hltTiclTracksterLinks"),

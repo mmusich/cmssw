@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHgcalMergeLayerClustersL1Seeded = cms.EDProducer("MergeClusterProducer",
+from RecoLocalCalo.HGCalRecProducers.MergeClusterProducer import MergeClusterProducer as _MergeClusterProducer
+
+hltHgcalMergeLayerClustersL1Seeded = _MergeClusterProducer(
     layerClustersEE = cms.InputTag("hltHgcalLayerClustersEEL1Seeded"),
     layerClustersHSci = cms.InputTag("hltHgcalLayerClustersHSciL1Seeded"),
     layerClustersHSi = cms.InputTag("hltHgcalLayerClustersHSiL1Seeded"),

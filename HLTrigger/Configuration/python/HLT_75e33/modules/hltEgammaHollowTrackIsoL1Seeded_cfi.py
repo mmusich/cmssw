@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEgammaHollowTrackIsoL1Seeded = cms.EDProducer("EgammaHLTPhotonTrackIsolationProducersRegional",
+from RecoEgamma.EgammaHLTProducers.EgammaHLTPhotonTrackIsolationProducersRegional import EgammaHLTPhotonTrackIsolationProducersRegional as _EgammaHLTPhotonTrackIsolationProducersRegional
+
+hltEgammaHollowTrackIsoL1Seeded = _EgammaHLTPhotonTrackIsolationProducersRegional(
     countTracks = cms.bool(False),
     egTrkIsoConeSize = cms.double(0.29),
     egTrkIsoPtMin = cms.double(1.0),

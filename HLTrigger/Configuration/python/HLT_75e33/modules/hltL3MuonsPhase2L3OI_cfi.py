@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltL3MuonsPhase2L3OI = cms.EDProducer("L3MuonProducer",
+from RecoMuon.L3MuonProducer.L3MuonProducer import L3MuonProducer as _L3MuonProducer
+
+hltL3MuonsPhase2L3OI = _L3MuonProducer(
     L3TrajBuilderParameters = cms.PSet(
         GlbRefitterParameters = cms.PSet(
             CSCRecSegmentLabel = cms.InputTag("hltCscSegments"),

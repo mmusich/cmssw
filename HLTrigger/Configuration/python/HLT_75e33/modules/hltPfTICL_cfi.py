@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltPfTICL = cms.EDProducer("PFTICLProducer",
+from RecoHGCal.TICL.PFTICLProducer import PFTICLProducer as _PFTICLProducer
+
+hltPfTICL = _PFTICLProducer(
     mightGet = cms.optional.untracked.vstring,
     muonSrc = cms.InputTag("hltPhase2L3Muons"),
     pfMuonAlgoParameters = cms.PSet(

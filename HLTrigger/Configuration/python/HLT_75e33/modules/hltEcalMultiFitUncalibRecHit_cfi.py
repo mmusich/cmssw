@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltEcalMultiFitUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
+from RecoLocalCalo.EcalRecProducers.EcalUncalibRecHitProducer import EcalUncalibRecHitProducer as _EcalUncalibRecHitProducer
+
+hltEcalMultiFitUncalibRecHit = _EcalUncalibRecHitProducer(
     EBdigiCollection = cms.InputTag("hltEcalDigis","ebDigis"),
     EBhitCollection = cms.string('EcalUncalibRecHitsEB'),
     EEdigiCollection = cms.InputTag("hltEcalDigis","eeDigis"),

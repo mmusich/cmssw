@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltHfprereco = cms.EDProducer("HFPreReconstructor",
+from RecoLocalCalo.HcalRecProducers.HFPreReconstructor import HFPreReconstructor as _HFPreReconstructor
+
+hltHfprereco = _HFPreReconstructor(
     digiLabel = cms.InputTag("hltHcalDigis"),
     dropZSmarkedPassed = cms.bool(True),
     forceSOI = cms.int32(-1),

@@ -1,6 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltDeepCombinedSecondaryVertexBJetTagsInfosPuppi = cms.EDProducer("DeepNNTagInfoProducer",
+from RecoBTag.Combined.DeepNNTagInfoProducer import DeepNNTagInfoProducer as _DeepNNTagInfoProducer
+
+hltDeepCombinedSecondaryVertexBJetTagsInfosPuppi = _DeepNNTagInfoProducer(
     computer = cms.PSet(
         SoftLeptonFlip = cms.bool(False),
         charmCut = cms.double(1.5),
