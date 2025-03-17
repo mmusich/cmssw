@@ -3,21 +3,21 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.CorrectedECALPFClusterProducer import CorrectedECALPFClusterProducer as _CorrectedECALPFClusterProducer
 
 hltParticleFlowClusterECAL = _CorrectedECALPFClusterProducer(
-    energyCorrector = cms.PSet(
-        applyCrackCorrections = cms.bool(False),
-        applyMVACorrections = cms.bool(True),
-        autoDetectBunchSpacing = cms.bool(True),
-        bunchSpacing = cms.int32(25),
-        ebSrFlagLabel = cms.InputTag("hltEcalDigis"),
-        eeSrFlagLabel = cms.InputTag("hltEcalDigis"),
-        maxPtForMVAEvaluation = cms.double(300.0),
-        recHitsEBLabel = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
-        recHitsEELabel = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
-        setEnergyUncertainty = cms.bool(False),
-        srfAwareCorrection = cms.bool(True)
+    energyCorrector = dict(
+        applyCrackCorrections = False,
+        applyMVACorrections = True,
+        autoDetectBunchSpacing = True,
+        bunchSpacing = 25,
+        ebSrFlagLabel = ("hltEcalDigis"),
+        eeSrFlagLabel = ("hltEcalDigis"),
+        maxPtForMVAEvaluation = 300.0,
+        recHitsEBLabel = ("hltEcalRecHit","EcalRecHitsEB"),
+        recHitsEELabel = ("hltEcalRecHit","EcalRecHitsEE"),
+        setEnergyUncertainty = False,
+        srfAwareCorrection = True
     ),
-    inputECAL = cms.InputTag("hltParticleFlowTimeAssignerECAL"),
+    inputECAL = ("hltParticleFlowTimeAssignerECAL"),
     mightGet = cms.optional.untracked.vstring,
-    minimumPSEnergy = cms.double(0),
-    skipPS = cms.bool(True)
+    minimumPSEnergy = 0,
+    skipPS = True
 )

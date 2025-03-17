@@ -3,25 +3,25 @@ import FWCore.ParameterSet.Config as cms
 from HLTrigger.HLTfilters.L1TTkEleFilter import L1TTkEleFilter as _L1TTkEleFilter
 
 l1tTkEleDouble12Filter = _L1TTkEleFilter(
-    ApplyQual1 = cms.bool(True),
-    ApplyQual2 = cms.bool(True),
-    EtaBinsForIsolation = cms.vdouble(0.0, 1.479, 2.4),
-    MaxAbsEta1 = cms.double(1.479),
-    MaxAbsEta2 = cms.double(2.4),
-    MinAbsEta1 = cms.double(0.0),
-    MinAbsEta2 = cms.double(1.479),
-    MinN = cms.int32(2),
-    MinPt = cms.double(12.0),
-    Qual1IsMask = cms.bool(True),
-    Qual2IsMask = cms.bool(True),
-    Quality1 = cms.int32(2),
-    Quality2 = cms.int32(2),
-    Scalings = cms.PSet(
-        barrel = cms.vdouble(0.805095, 1.18336, 0.0),
-        endcap = cms.vdouble(0.453144, 1.26205, 0.0)
+    ApplyQual1 = True,
+    ApplyQual2 = True,
+    EtaBinsForIsolation = [0.0, 1.479, 2.4],
+    MaxAbsEta1 = 1.479,
+    MaxAbsEta2 = 2.4,
+    MinAbsEta1 = 0.0,
+    MinAbsEta2 = 1.479,
+    MinN = 2,
+    MinPt = 12.0,
+    Qual1IsMask = True,
+    Qual2IsMask = True,
+    Quality1 = 2,
+    Quality2 = 2,
+    Scalings = dict(
+        barrel = [0.805095, 1.18336, 0.0],
+        endcap = [0.453144, 1.26205, 0.0]
     ),
-    TrkIsolation = cms.vdouble(99999.0, 99999.0),
-    inputTag1 = cms.InputTag("l1tLayer1EG","L1TkEleEB"),
-    inputTag2 = cms.InputTag("l1tLayer1EG","L1TkEleEE"),
-    saveTags = cms.bool(True)
+    TrkIsolation = [99999.0, 99999.0],
+    inputTag1 = ("l1tLayer1EG","L1TkEleEB"),
+    inputTag2 = ("l1tLayer1EG","L1TkEleEE"),
+    saveTags = True
 )

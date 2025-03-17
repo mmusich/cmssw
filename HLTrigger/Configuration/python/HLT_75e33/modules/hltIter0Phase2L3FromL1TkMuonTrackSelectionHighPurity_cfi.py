@@ -6,7 +6,7 @@ hltIter0Phase2L3FromL1TkMuonTrackSelectionHighPurity = _TrackCollectionFilterClo
     copyExtras = cms.untracked.bool(True),
     copyTrajectories = cms.untracked.bool(False),
     minQuality = cms.string('highPurity'),
-    originalMVAVals = cms.InputTag("hltIter0Phase2L3FromL1TkMuonTrackCutClassifier","MVAValues"),
-    originalQualVals = cms.InputTag("hltIter0Phase2L3FromL1TkMuonTrackCutClassifier","QualityMasks"),
-    originalSource = cms.InputTag("hltIter0Phase2L3FromL1TkMuonCtfWithMaterialTracks")
+    originalMVAVals = ("hltIter0Phase2L3FromL1TkMuonTrackCutClassifier","MVAValues"),
+    originalQualVals = ("hltIter0Phase2L3FromL1TkMuonTrackCutClassifier","QualityMasks"),
+    originalSource = ("hltIter0Phase2L3FromL1TkMuonCtfWithMaterialTracks")
 )

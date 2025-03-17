@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from RecoLocalMuon.CSCSegment.CSCSegmentProducer import CSCSegmentProducer as _CSCSegmentProducer
 
 hltCscSegments = _CSCSegmentProducer(
-    algo_psets = cms.VPSet(
+     algo_psets = cms.VPSet(
         cms.PSet(
             algo_name = cms.string('CSCSegAlgoSK'),
             algo_psets = cms.VPSet(
@@ -363,6 +363,6 @@ hltCscSegments = _CSCSegmentProducer(
             )
         )
     ),
-    algo_type = cms.int32(5),
-    inputObjects = cms.InputTag("hltCsc2DRecHits")
+    algo_type = 5,
+    inputObjects = ("hltCsc2DRecHits")
 )

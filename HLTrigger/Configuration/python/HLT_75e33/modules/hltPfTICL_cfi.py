@@ -4,36 +4,36 @@ from RecoHGCal.TICL.PFTICLProducer import PFTICLProducer as _PFTICLProducer
 
 hltPfTICL = _PFTICLProducer(
     mightGet = cms.optional.untracked.vstring,
-    muonSrc = cms.InputTag("hltPhase2L3Muons"),
-    pfMuonAlgoParameters = cms.PSet(
-        cosmicRejectionDistance = cms.double(1),
-        eventFactorForCosmics = cms.double(10),
-        eventFractionForCleaning = cms.double(0.5),
-        eventFractionForRejection = cms.double(0.8),
-        maxDPtOPt = cms.double(1),
-        metFactorForCleaning = cms.double(4),
-        metFactorForFakes = cms.double(4),
-        metFactorForHighEta = cms.double(25),
-        metFactorForRejection = cms.double(4),
-        metSignificanceForCleaning = cms.double(3),
-        metSignificanceForRejection = cms.double(4),
-        minEnergyForPunchThrough = cms.double(100),
-        minMomentumForPunchThrough = cms.double(100),
-        minPtForPostCleaning = cms.double(20),
-        ptErrorScale = cms.double(8),
-        ptFactorForHighEta = cms.double(2),
-        punchThroughFactor = cms.double(3),
-        punchThroughMETFactor = cms.double(4),
+    muonSrc = ("hltPhase2L3Muons"),
+    pfMuonAlgoParameters = dict(
+        cosmicRejectionDistance = 1,
+        eventFactorForCosmics = 10,
+        eventFractionForCleaning = 0.5,
+        eventFractionForRejection = 0.8,
+        maxDPtOPt = 1,
+        metFactorForCleaning = 4,
+        metFactorForFakes = 4,
+        metFactorForHighEta = 25,
+        metFactorForRejection = 4,
+        metSignificanceForCleaning = 3,
+        metSignificanceForRejection = 4,
+        minEnergyForPunchThrough = 100,
+        minMomentumForPunchThrough = 100,
+        minPtForPostCleaning = 20,
+        ptErrorScale = 8,
+        ptFactorForHighEta = 2,
+        punchThroughFactor = 3,
+        punchThroughMETFactor = 4,
         trackQuality = cms.string('highPurity')
     ),
-    ticlCandidateSrc = cms.InputTag("hltTiclTrackstersMerge"),
-    timingQualityThreshold = cms.double(0.5),
-    trackTimeErrorMap = cms.InputTag("tofPID","sigmat0"),
-    trackTimeQualityMap = cms.InputTag("mtdTrackQualityMVA","mtdQualMVA"),
-    trackTimeValueMap = cms.InputTag("tofPID","t0"),
-    useMTDTiming = cms.bool(False),
-    useTimingAverage = cms.bool(False)
+    ticlCandidateSrc = ("hltTiclTrackstersMerge"),
+    timingQualityThreshold = 0.5,
+    trackTimeErrorMap = ("tofPID","sigmat0"),
+    trackTimeQualityMap = ("mtdTrackQualityMVA","mtdQualMVA"),
+    trackTimeValueMap = ("tofPID","t0"),
+    useMTDTiming = False,
+    useTimingAverage = False
 )
 
 from Configuration.ProcessModifiers.ticl_v5_cff import ticl_v5
-ticl_v5.toModify(hltPfTICL, ticlCandidateSrc = cms.InputTag('hltTiclCandidate'), isTICLv5 = cms.bool(True))
+ticl_v5.toModify(hltPfTICL, ticlCandidateSrc = cms.InputTag('hltTiclCandidate'), isTICLv5 = True)

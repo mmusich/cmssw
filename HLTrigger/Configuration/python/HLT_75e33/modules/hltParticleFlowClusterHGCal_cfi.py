@@ -3,37 +3,37 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFClusterProducer.PFClusterProducer import PFClusterProducer as _PFClusterProducer
 
 hltParticleFlowClusterHGCal = _PFClusterProducer(
-    energyCorrector = cms.PSet(
+    energyCorrector = dict(
 
     ),
-    initialClusteringStep = cms.PSet(
-        algoName = cms.string('PFClusterFromHGCalTrackster'),
-        clusterSrc = cms.InputTag("hltHgcalMergeLayerClusters"),
-        filterByTracksterIteration = cms.bool(True),
-        filterByTracksterPID = cms.bool(False),
-        filter_on_categories = cms.vint32(0, 1),
-        filter_on_iterations = cms.vint32(0, 1),
-        pid_threshold = cms.double(0.8),
-        thresholdsByDetector = cms.VPSet(),
-        tracksterSrc = cms.InputTag("hltTiclTrackstersMerge")
+    initialClusteringStep = dict(
+        algoName = 'PFClusterFromHGCalTrackster',
+        clusterSrc = ("hltHgcalMergeLayerClusters"),
+        filterByTracksterIteration = True,
+        filterByTracksterPID = False,
+        filter_on_categories = [0, 1],
+        filter_on_iterations = [0, 1],
+        pid_threshold = 0.8,
+        thresholdsByDetector = [],
+        tracksterSrc = ("hltTiclTrackstersMerge")
     ),
-    pfClusterBuilder = cms.PSet(
+    pfClusterBuilder = dict(
 
     ),
-    positionReCalc = cms.PSet(
-        algoName = cms.string('Cluster3DPCACalculator'),
-        minFractionInCalc = cms.double(1e-09),
-        updateTiming = cms.bool(False)
+    positionReCalc = dict(
+        algoName = 'Cluster3DPCACalculator',
+        minFractionInCalc = 1e-09,
+        updateTiming = False
     ),
-    recHitCleaners = cms.VPSet(),
-    recHitsSource = cms.InputTag("hltParticleFlowRecHitHGC"),
-    seedCleaners = cms.VPSet(),
-    seedFinder = cms.PSet(
-        algoName = cms.string('PassThruSeedFinder'),
-        nNeighbours = cms.int32(8),
-        thresholdsByDetector = cms.VPSet()
+    recHitCleaners = [],
+    recHitsSource = ("hltParticleFlowRecHitHGC"),
+    seedCleaners = [],
+    seedFinder = dict(
+        algoName = 'PassThruSeedFinder',
+        nNeighbours = 8,
+        thresholdsByDetector = []
     ),
-    usePFThresholdsFromDB = cms.bool(False)
+    usePFThresholdsFromDB = False
 )
 
 from Configuration.ProcessModifiers.ticl_v5_cff import ticl_v5

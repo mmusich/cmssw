@@ -9,6 +9,6 @@ hltESPRKTrajectorySmoother = _KFTrajectorySmootherESProducer(
     RecoGeometry = cms.string('hltESPGlobalDetLayerGeometry'),
     Updator = cms.string('hltESPKFUpdator'),
     appendToDataLabel = cms.string(''),
-    errorRescaling = cms.double(100.0),
-    minHits = cms.int32(3)
+    errorRescaling = 100.0,
+    minHits = 3
 )

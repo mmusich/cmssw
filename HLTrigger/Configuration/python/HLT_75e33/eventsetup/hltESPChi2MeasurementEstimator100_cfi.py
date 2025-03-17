@@ -4,11 +4,11 @@ from TrackingTools.KalmanUpdators.Chi2MeasurementEstimatorESProducer import Chi2
 
 hltESPChi2MeasurementEstimator100 = _Chi2MeasurementEstimatorESProducer(
     ComponentName = cms.string('hltESPChi2MeasurementEstimator100'),
-    MaxChi2 = cms.double(40.0),
-    MaxDisplacement = cms.double(0.5),
-    MaxSagitta = cms.double(2.0),
-    MinPtForHitRecoveryInGluedDet = cms.double(1e+12),
-    MinimalTolerance = cms.double(0.5),
+    MaxChi2 = 40.0,
+    MaxDisplacement = 0.5,
+    MaxSagitta = 2.0,
+    MinPtForHitRecoveryInGluedDet = 1e+12,
+    MinimalTolerance = 0.5,
     appendToDataLabel = cms.string(''),
-    nSigma = cms.double(4.0)
+    nSigma = 4.0
 )

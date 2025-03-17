@@ -3,19 +3,19 @@ import FWCore.ParameterSet.Config as cms
 from RecoLocalCalo.HcalRecProducers.HFPhase1Reconstructor import HFPhase1Reconstructor as _HFPhase1Reconstructor
 
 hltHfreco = _HFPhase1Reconstructor(
-    HFStripFilter = cms.PSet(
-        gap = cms.int32(2),
-        lstrips = cms.int32(2),
-        maxStripTime = cms.double(10.0),
-        maxThreshold = cms.double(100.0),
-        seedHitIetaMax = cms.int32(35),
-        stripThreshold = cms.double(40.0),
-        timeMax = cms.double(6.0),
+    HFStripFilter = dict(
+        gap = 2,
+        lstrips = 2,
+        maxStripTime = 10.0,
+        maxThreshold = 100.0,
+        seedHitIetaMax = 35,
+        stripThreshold = 40.0,
+        timeMax = 6.0,
         verboseLevel = cms.untracked.int32(10),
-        wedgeCut = cms.double(0.05)
+        wedgeCut = 0.05
     ),
-    PETstat = cms.PSet(
-        HcalAcceptSeverityLevel = cms.int32(9),
+    PETstat = dict(
+        HcalAcceptSeverityLevel = 9,
         longETParams = cms.vdouble(
             0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0, 0.0,
@@ -26,8 +26,8 @@ hltHfreco = _HFPhase1Reconstructor(
             58.7, 63.0, 67.72, 72.86, 78.42,
             84.4, 90.8, 97.62
         ),
-        long_R = cms.vdouble(0.98),
-        long_R_29 = cms.vdouble(0.8),
+        long_R = [0.98],
+        long_R_29 = [0.8],
         shortETParams = cms.vdouble(
             0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0, 0.0,
@@ -38,12 +38,12 @@ hltHfreco = _HFPhase1Reconstructor(
             38.4468, 39.7925, 41.3688, 43.1757, 45.2132,
             47.4813, 49.98, 52.7093
         ),
-        short_R = cms.vdouble(0.8),
-        short_R_29 = cms.vdouble(0.8)
+        short_R = [0.8],
+        short_R_29 = [0.8]
     ),
-    S8S1stat = cms.PSet(
-        HcalAcceptSeverityLevel = cms.int32(9),
-        isS8S1 = cms.bool(True),
+    S8S1stat = dict(
+        HcalAcceptSeverityLevel = 9,
+        isS8S1 = True,
         longETParams = cms.vdouble(
             0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0, 0.0,
@@ -75,9 +75,9 @@ hltHfreco = _HFPhase1Reconstructor(
             0.1, 0.1, 0.1
         )
     ),
-    S9S1stat = cms.PSet(
-        HcalAcceptSeverityLevel = cms.int32(9),
-        isS8S1 = cms.bool(False),
+    S9S1stat = dict(
+        HcalAcceptSeverityLevel = 9,
+        isS8S1 = False,
         longETParams = cms.vdouble(
             0.0, 0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0, 0.0,
@@ -110,7 +110,7 @@ hltHfreco = _HFPhase1Reconstructor(
         )
     ),
     algoConfigClass = cms.string('HFPhase1PMTParams'),
-    algorithm = cms.PSet(
+    algorithm = dict(
         Class = cms.string('HFFlexibleTimeCheck'),
         energyWeights = cms.vdouble(
             1.0, 1.0, 1.0, 0.0, 1.0,
@@ -120,16 +120,16 @@ hltHfreco = _HFPhase1Reconstructor(
             0.0, 2.0, 0.0, 2.0, 0.0,
             1.0
         ),
-        rejectAllFailures = cms.bool(True),
-        soiPhase = cms.uint32(1),
-        tfallIfNoTDC = cms.double(-101.0),
-        timeShift = cms.double(0.0),
-        tlimits = cms.vdouble(-1000.0, 1000.0, -1000.0, 1000.0),
-        triseIfNoTDC = cms.double(-100.0)
+        rejectAllFailures = True,
+        soiPhase = 1,
+        tfallIfNoTDC = -101.0,
+        timeShift = 0.0,
+        tlimits = [-1000.0, 1000.0, -1000.0, 1000.0],
+        triseIfNoTDC = -100.0
     ),
-    checkChannelQualityForDepth3and4 = cms.bool(False),
-    inputLabel = cms.InputTag("hltHfprereco"),
-    runHFStripFilter = cms.bool(False),
-    setNoiseFlags = cms.bool(True),
-    useChannelQualityFromDB = cms.bool(False)
+    checkChannelQualityForDepth3and4 = False,
+    inputLabel = ("hltHfprereco"),
+    runHFStripFilter = False,
+    setNoiseFlags = True,
+    useChannelQualityFromDB = False
 )

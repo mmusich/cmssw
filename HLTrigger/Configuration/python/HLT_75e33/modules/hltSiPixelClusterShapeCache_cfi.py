@@ -4,6 +4,6 @@ from RecoTracker.PixelLowPtUtilities.SiPixelClusterShapeCacheProducer import SiP
 
 hltSiPixelClusterShapeCache = _SiPixelClusterShapeCacheProducer(
     mightGet = cms.optional.untracked.vstring,
-    onDemand = cms.bool(False),
-    src = cms.InputTag("hltSiPixelClusters")
+    onDemand = False,
+    src = ("hltSiPixelClusters")
 )

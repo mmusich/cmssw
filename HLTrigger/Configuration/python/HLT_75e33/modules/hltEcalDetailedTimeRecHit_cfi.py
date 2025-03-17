@@ -4,14 +4,14 @@ from RecoLocalCalo.EcalRecProducers.EcalDetailedTimeRecHitProducer import EcalDe
 
 hltEcalDetailedTimeRecHit = _EcalDetailedTimeRecHitProducer(
     EBDetailedTimeRecHitCollection = cms.string('EcalRecHitsEB'),
-    EBRecHitCollection = cms.InputTag("hltEcalRecHit","EcalRecHitsEB"),
-    EBTimeDigiCollection = cms.InputTag("mix","EBTimeDigi"),
-    EBTimeLayer = cms.int32(7),
+    EBRecHitCollection = ("hltEcalRecHit","EcalRecHitsEB"),
+    EBTimeDigiCollection = ("mix","EBTimeDigi"),
+    EBTimeLayer = 7,
     EEDetailedTimeRecHitCollection = cms.string('EcalRecHitsEE'),
-    EERecHitCollection = cms.InputTag("hltEcalRecHit","EcalRecHitsEE"),
-    EETimeDigiCollection = cms.InputTag("mix","EETimeDigi"),
-    EETimeLayer = cms.int32(3),
-    correctForVertexZPosition = cms.bool(False),
-    simVertex = cms.InputTag("g4SimHits"),
-    useMCTruthVertex = cms.bool(False)
+    EERecHitCollection = ("hltEcalRecHit","EcalRecHitsEE"),
+    EETimeDigiCollection = ("mix","EETimeDigi"),
+    EETimeLayer = 3,
+    correctForVertexZPosition = False,
+    simVertex = ("g4SimHits"),
+    useMCTruthVertex = False
 )

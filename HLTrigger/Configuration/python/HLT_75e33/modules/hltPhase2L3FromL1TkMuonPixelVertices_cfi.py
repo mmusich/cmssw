@@ -4,17 +4,17 @@ from RecoVertex.PixelVertexFinding.PixelVertexProducer import PixelVertexProduce
 
 hltPhase2L3FromL1TkMuonPixelVertices = _PixelVertexProducer(
     Finder = cms.string('DivisiveVertexFinder'),
-    Method2 = cms.bool(True),
-    NTrkMin = cms.int32(2),
-    PVcomparer = cms.PSet(
+    Method2 = True,
+    NTrkMin = 2,
+    PVcomparer = dict(
         refToPSet_ = cms.string('hltPhase2PSetPvClusterComparerForIT')
     ),
-    PtMin = cms.double(1.0),
-    TrackCollection = cms.InputTag("hltPhase2L3FromL1TkMuonPixelTracks"),
-    UseError = cms.bool(True),
-    Verbosity = cms.int32(0),
-    WtAverage = cms.bool(True),
-    ZOffset = cms.double(5.0),
-    ZSeparation = cms.double(0.05),
-    beamSpot = cms.InputTag("hltOnlineBeamSpot")
+    PtMin = 1.0,
+    TrackCollection = ("hltPhase2L3FromL1TkMuonPixelTracks"),
+    UseError = True,
+    Verbosity = 0,
+    WtAverage = True,
+    ZOffset = 5.0,
+    ZSeparation = 0.05,
+    beamSpot = ("hltOnlineBeamSpot")
 )

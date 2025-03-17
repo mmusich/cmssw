@@ -3,19 +3,15 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.HLTHGCalDigisInRegionsProducer import HLTHGCalDigisInRegionsProducer as _HLTHGCalDigisInRegionsProducer
 
 hltHgcalDigisL1Seeded = _HLTHGCalDigisInRegionsProducer(
-    etaPhiRegions = cms.VPSet(cms.PSet(
-        inputColl = cms.InputTag("hltL1TEGammaHGCFilteredCollectionProducer"),
-        maxDEta = cms.double(0.0),
-        maxDPhi = cms.double(0.0),
-        maxDeltaR = cms.double(0.35),
-        maxEt = cms.double(999999.0),
-        minEt = cms.double(5.0),
-        type = cms.string('L1P2GTCandidate')
-    )),
-    inputCollTags = cms.VInputTag("hltHgcalDigis:EE", "hltHgcalDigis:HEback", "hltHgcalDigis:HEfront"),
-    outputProductNames = cms.vstring(
-        'EE',
-        'HEback',
-        'HEfront'
-    )
+    etaPhiRegions = [dict(
+        inputColl = ("hltL1TEGammaHGCFilteredCollectionProducer"),
+        maxDEta = 0.0,
+        maxDPhi = 0.0,
+        maxDeltaR = 0.35,
+        maxEt = 999999.0,
+        minEt = 5.0,
+        type = 'L1P2GTCandidate'
+    )],
+    inputCollTags = ["hltHgcalDigis:EE", "hltHgcalDigis:HEback", "hltHgcalDigis:HEfront"],
+    outputProductNames = ['EE','HEback','HEfront']
 )

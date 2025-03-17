@@ -5,17 +5,17 @@ from RecoTracker.TrackProducer.TrackProducer import TrackProducer as _TrackProdu
 hltPhase2L3OIMuCtfWithMaterialTracks = _TrackProducer(
     AlgorithmName = cms.string('iter10'),
     Fitter = cms.string('FlexibleKFFittingSmoother'),
-    GeometricInnerState = cms.bool(True),
+    GeometricInnerState = True,
     MeasurementTracker = cms.string(''),
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string(''),
     Propagator = cms.string('hltESPRungeKuttaTrackerPropagator'),
     SimpleMagneticField = cms.string(''),
     TTRHBuilder = cms.string('WithTrackAngle'),
-    TrajectoryInEvent = cms.bool(False),
-    beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-    clusterRemovalInfo = cms.InputTag(""),
-    src = cms.InputTag("hltPhase2L3OITrackCandidates"),
-    useHitsSplitting = cms.bool(False),
-    useSimpleMF = cms.bool(False)
+    TrajectoryInEvent = False,
+    beamSpot = ("hltOnlineBeamSpot"),
+    clusterRemovalInfo = (""),
+    src = ("hltPhase2L3OITrackCandidates"),
+    useHitsSplitting = False,
+    useSimpleMF = False
 )

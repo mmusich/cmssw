@@ -3,27 +3,27 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.EgammaHLTEleL1TrackIsolProducer import EgammaHLTEleL1TrackIsolProducer as _EgammaHLTEleL1TrackIsolProducer
 
 hltEgammaEleL1TrkIsoL1Seeded = _EgammaHLTEleL1TrackIsolProducer(
-    ecalCands = cms.InputTag("hltEgammaCandidatesL1Seeded"),
-    eles = cms.InputTag("hltEgammaGsfElectronsL1Seeded"),
-    isolCfg = cms.PSet(
-        etaBoundaries = cms.vdouble(1.5),
-        trkCuts = cms.VPSet(
-            cms.PSet(
-                maxDR = cms.double(0.3),
-                maxDZ = cms.double(0.7),
-                minDEta = cms.double(0.003),
-                minDR = cms.double(0.01),
-                minPt = cms.double(2.0)
+    ecalCands = ("hltEgammaCandidatesL1Seeded"),
+    eles = ("hltEgammaGsfElectronsL1Seeded"),
+    isolCfg = dict(
+        etaBoundaries = [1.5],
+        trkCuts = [
+            dict(
+                maxDR = 0.3,
+                maxDZ = 0.7,
+                minDEta = 0.003,
+                minDR = 0.01,
+                minPt = 2.0
             ),
-            cms.PSet(
-                maxDR = cms.double(0.3),
-                maxDZ = cms.double(0.7),
-                minDEta = cms.double(0.003),
-                minDR = cms.double(0.01),
-                minPt = cms.double(2.0)
+            dict(
+                maxDR = 0.3,
+                maxDZ = 0.7,
+                minDEta = 0.003,
+                minDR = 0.01,
+                minPt = 2.0
             )
-        ),
-        useAbsEta = cms.bool(True)
+        ],
+        useAbsEta = True
     ),
-    l1Tracks = cms.InputTag("l1tTTTracksFromTrackletEmulation","Level1TTTracks")
+    l1Tracks = ("l1tTTTracksFromTrackletEmulation","Level1TTTracks")
 )

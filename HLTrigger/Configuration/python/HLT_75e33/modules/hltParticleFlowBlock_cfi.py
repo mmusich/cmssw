@@ -3,22 +3,22 @@ import FWCore.ParameterSet.Config as cms
 from RecoParticleFlow.PFProducer.PFBlockProducer import PFBlockProducer as _PFBlockProducer
 
 hltParticleFlowBlock = _PFBlockProducer(
-    debug = cms.untracked.bool(False),
-    elementImporters = cms.VPSet(
-        cms.PSet(
-            importerName = cms.string('SuperClusterImporter'),
-            maximumHoverE = cms.double(0.5),
-            minPTforBypass = cms.double(100.0),
-            minSuperClusterPt = cms.double(10.0),
-            source_eb = cms.InputTag("hltParticleFlowSuperClusterECAL","particleFlowSuperClusterECALBarrel"),
-            source_ee = cms.InputTag("hltParticleFlowSuperClusterECAL","particleFlowSuperClusterECALEndcapWithPreshower"),
-            hbheRecHitsTag = cms.InputTag("hltHbhereco"),
-            maxSeverityHB = cms.int32(9),
-            maxSeverityHE = cms.int32(9),
-            usePFThresholdsFromDB = cms.bool(True),
-            superClustersArePF = cms.bool(True)
+    debug = False,
+    elementImporters = [
+        dict(
+            importerName = 'SuperClusterImporter',
+            maximumHoverE = 0.5,
+            minPTforBypass = 100.0,
+            minSuperClusterPt = 10.0,
+            source_eb = ("hltParticleFlowSuperClusterECAL","particleFlowSuperClusterECALBarrel"),
+            source_ee = ("hltParticleFlowSuperClusterECAL","particleFlowSuperClusterECALEndcapWithPreshower"),
+            hbheRecHitsTag = ("hltHbhereco"),
+            maxSeverityHB = 9,
+            maxSeverityHE = 9,
+            usePFThresholdsFromDB = True,
+            superClustersArePF = True
         ),
-        cms.PSet(
+        dict(
             DPtOverPtCuts_byTrackAlgo = cms.vdouble(
                 10.0, 10.0, 10.0, 10.0, 10.0,
                 5.0
@@ -27,117 +27,117 @@ hltParticleFlowBlock = _PFBlockProducer(
                 3, 3, 3, 3, 3,
                 3
             ),
-            cleanBadConvertedBrems = cms.bool(True),
-            importerName = cms.string('GeneralTracksImporter'),
-            maxDPtOPt = cms.double(1.0),
-            muonMaxDPtOPt = cms.double(1),
-            muonSrc = cms.InputTag("hltPhase2L3Muons"),
-            source = cms.InputTag("hltPfTrack"),
-            trackQuality = cms.string('highPurity'),
-            useIterativeTracking = cms.bool(True),
-            vetoEndcap = cms.bool(True),
-            vetoMode = cms.uint32(2),
-            vetoSrc = cms.InputTag("hltPfTICL")
+            cleanBadConvertedBrems = True,
+            importerName = 'GeneralTracksImporter',
+            maxDPtOPt = 1.0,
+            muonMaxDPtOPt = 1,
+            muonSrc = ("hltPhase2L3Muons"),
+            source = ("hltPfTrack"),
+            trackQuality = 'highPurity',
+            useIterativeTracking = True,
+            vetoEndcap = True,
+            vetoMode = 2,
+            vetoSrc = ("hltPfTICL")
         ),
-        cms.PSet(
-            BCtoPFCMap = cms.InputTag("hltParticleFlowSuperClusterECAL","PFClusterAssociationEBEE"),
-            importerName = cms.string('ECALClusterImporter'),
-            source = cms.InputTag("hltParticleFlowClusterECAL")
+        dict(
+            BCtoPFCMap = ("hltParticleFlowSuperClusterECAL","PFClusterAssociationEBEE"),
+            importerName = 'ECALClusterImporter',
+            source = ("hltParticleFlowClusterECAL")
         ),
-        cms.PSet(
-            importerName = cms.string('GenericClusterImporter'),
-            source = cms.InputTag("hltParticleFlowClusterHCAL")
+        dict(
+            importerName = 'GenericClusterImporter',
+            source = ("hltParticleFlowClusterHCAL")
         ),
-        cms.PSet(
-            importerName = cms.string('GenericClusterImporter'),
-            source = cms.InputTag("hltParticleFlowBadHcalPseudoCluster")
+        dict(
+            importerName = 'GenericClusterImporter',
+            source = ("hltParticleFlowBadHcalPseudoCluster")
         ),
-        cms.PSet(
-            importerName = cms.string('GenericClusterImporter'),
-            source = cms.InputTag("hltParticleFlowClusterHO")
+        dict(
+            importerName = 'GenericClusterImporter',
+            source = ("hltParticleFlowClusterHO")
         ),
-        cms.PSet(
-            importerName = cms.string('GenericClusterImporter'),
-            source = cms.InputTag("hltParticleFlowClusterHF")
+        dict(
+            importerName = 'GenericClusterImporter',
+            source = ("hltParticleFlowClusterHF")
         )
-    ),
-    linkDefinitions = cms.VPSet(
-        cms.PSet(
-            linkType = cms.string('TRACK:ECAL'),
-            linkerName = cms.string('TrackAndECALLinker'),
-            useKDTree = cms.bool(True)
+    ],
+    linkDefinitions = [
+        dict(
+            linkType = 'TRACK:ECAL',
+            linkerName = 'TrackAndECALLinker',
+            useKDTree = True
         ),
-        cms.PSet(
-            linkType = cms.string('TRACK:HCAL'),
-            linkerName = cms.string('TrackAndHCALLinker'),
-            nMaxHcalLinksPerTrack = cms.int32(1),
-            trajectoryLayerEntrance = cms.string('HCALEntrance'),
-            trajectoryLayerExit = cms.string('HCALExit'),
-            useKDTree = cms.bool(True)
+        dict(
+            linkType = 'TRACK:HCAL',
+            linkerName = 'TrackAndHCALLinker',
+            nMaxHcalLinksPerTrack = 1,
+            trajectoryLayerEntrance = 'HCALEntrance',
+            trajectoryLayerExit = 'HCALExit',
+            useKDTree = True
         ),
-        cms.PSet(
-            linkType = cms.string('TRACK:HO'),
-            linkerName = cms.string('TrackAndHOLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'TRACK:HO',
+            linkerName = 'TrackAndHOLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('ECAL:HCAL'),
-            linkerName = cms.string('ECALAndHCALLinker'),
-            minAbsEtaEcal = cms.double(2.5),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'ECAL:HCAL',
+            linkerName = 'ECALAndHCALLinker',
+            minAbsEtaEcal = 2.5,
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('HCAL:HO'),
-            linkerName = cms.string('HCALAndHOLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'HCAL:HO',
+            linkerName = 'HCALAndHOLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('HFEM:HFHAD'),
-            linkerName = cms.string('HFEMAndHFHADLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'HFEM:HFHAD',
+            linkerName = 'HFEMAndHFHADLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('TRACK:TRACK'),
-            linkerName = cms.string('TrackAndTrackLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'TRACK:TRACK',
+            linkerName = 'TrackAndTrackLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('ECAL:ECAL'),
-            linkerName = cms.string('ECALAndECALLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'ECAL:ECAL',
+            linkerName = 'ECALAndECALLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('ECAL:BREM'),
-            linkerName = cms.string('ECALAndBREMLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'ECAL:BREM',
+            linkerName = 'ECALAndBREMLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('HCAL:BREM'),
-            linkerName = cms.string('HCALAndBREMLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            linkType = 'HCAL:BREM',
+            linkerName = 'HCALAndBREMLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            SuperClusterMatchByRef = cms.bool(True),
-            linkType = cms.string('SC:ECAL'),
-            linkerName = cms.string('SCAndECALLinker'),
-            useKDTree = cms.bool(False)
+        dict(
+            SuperClusterMatchByRef = True,
+            linkType = 'SC:ECAL',
+            linkerName = 'SCAndECALLinker',
+            useKDTree = False
         ),
-        cms.PSet(
-            linkType = cms.string('TRACK:HFEM'),
-            linkerName = cms.string('TrackAndHCALLinker'),
-            nMaxHcalLinksPerTrack = cms.int32(-1),
-            trajectoryLayerEntrance = cms.string('VFcalEntrance'),
-            trajectoryLayerExit = cms.string(''),
-            useKDTree = cms.bool(True)
+        dict(
+            linkType = 'TRACK:HFEM',
+            linkerName = 'TrackAndHCALLinker',
+            nMaxHcalLinksPerTrack = -1,
+            trajectoryLayerEntrance = 'VFcalEntrance',
+            trajectoryLayerExit = '',
+            useKDTree = True
         ),
-        cms.PSet(
-            linkType = cms.string('TRACK:HFHAD'),
-            linkerName = cms.string('TrackAndHCALLinker'),
-            nMaxHcalLinksPerTrack = cms.int32(-1),
-            trajectoryLayerEntrance = cms.string('VFcalEntrance'),
-            trajectoryLayerExit = cms.string(''),
-            useKDTree = cms.bool(True)
+        dict(
+            linkType = 'TRACK:HFHAD',
+            linkerName = 'TrackAndHCALLinker',
+            nMaxHcalLinksPerTrack = -1,
+            trajectoryLayerEntrance = 'VFcalEntrance',
+            trajectoryLayerExit = '',
+            useKDTree = True
         )
-    ),
+    ],
     verbose = cms.untracked.bool(False)
 )

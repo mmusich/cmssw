@@ -4,10 +4,10 @@ from RecoBTag.Combined.DeepFlavourJetTagsProducer import DeepFlavourJetTagsProdu
 
 hltDeepCombinedSecondaryVertexBJetTagsPFPuppiModEta2p4 = _DeepFlavourJetTagsProducer(
     NNConfig = cms.FileInPath('RecoBTag/Combined/data/DeepCSV_PhaseII.json'),
-    checkSVForDefaults = cms.bool(True),
-    meanPadding = cms.bool(True),
-    src = cms.InputTag("hltDeepCombinedSecondaryVertexBJetTagsInfosPuppiModEta2p4"),
-    toAdd = cms.PSet(
+    checkSVForDefaults = True,
+    meanPadding = True,
+    src = ("hltDeepCombinedSecondaryVertexBJetTagsInfosPuppiModEta2p4"),
+    toAdd = dict(
         probbb = cms.string('probb')
     )
 )

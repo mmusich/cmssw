@@ -4,7 +4,7 @@ from RecoTracker.TransientTrackingRecHit.TkTransientTrackingRecHitBuilderESProdu
 
 hltESPTTRHBuilderPixelOnly = _TkTransientTrackingRecHitBuilderESProducer(
     ComponentName = cms.string('hltESPTTRHBuilderPixelOnly'),
-    ComputeCoarseLocalPositionFromDisk = cms.bool(False),
+    ComputeCoarseLocalPositionFromDisk = False,
     Matcher = cms.string('StandardMatcher'),
     Phase2StripCPE = cms.string(''),
     PixelCPE = cms.string('PixelCPEGeneric'),

@@ -9,5 +9,5 @@ hltESPRKTrajectoryFitter = _KFTrajectoryFitterESProducer(
     RecoGeometry = cms.string('hltESPGlobalDetLayerGeometry'),
     Updator = cms.string('hltESPKFUpdator'),
     appendToDataLabel = cms.string(''),
-    minHits = cms.int32(3)
+    minHits = 3
 )

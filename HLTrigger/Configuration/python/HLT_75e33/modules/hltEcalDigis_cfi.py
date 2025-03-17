@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from EventFilter.EcalRawToDigi.EcalRawToDigi import EcalRawToDigi as _EcalRawToDigi
 
 hltEcalDigis = _EcalRawToDigi(
-    DoRegional = cms.bool(False),
+    DoRegional = False,
     FEDs = cms.vint32(
         601, 602, 603, 604, 605,
         606, 607, 608, 609, 610,
@@ -17,17 +17,17 @@ hltEcalDigis = _EcalRawToDigi(
         646, 647, 648, 649, 650,
         651, 652, 653, 654
     ),
-    FedLabel = cms.InputTag("listfeds"),
-    InputLabel = cms.InputTag("rawDataCollector"),
-    eventPut = cms.bool(True),
-    feIdCheck = cms.bool(True),
-    feUnpacking = cms.bool(True),
-    forceToKeepFRData = cms.bool(False),
-    headerUnpacking = cms.bool(True),
-    memUnpacking = cms.bool(True),
+    FedLabel = ("listfeds"),
+    InputLabel = ("rawDataCollector"),
+    eventPut = True,
+    feIdCheck = True,
+    feUnpacking = True,
+    forceToKeepFRData = False,
+    headerUnpacking = True,
+    memUnpacking = True,
     mightGet = cms.optional.untracked.vstring,
-    numbTriggerTSamples = cms.int32(1),
-    numbXtalTSamples = cms.int32(10),
+    numbTriggerTSamples = 1,
+    numbXtalTSamples = 10,
     orderedDCCIdList = cms.vint32(
         1, 2, 3, 4, 5,
         6, 7, 8, 9, 10,
@@ -55,7 +55,7 @@ hltEcalDigis = _EcalRawToDigi(
         651, 652, 653, 654
     ),
     silentMode = cms.untracked.bool(True),
-    srpUnpacking = cms.bool(True),
-    syncCheck = cms.bool(True),
-    tccUnpacking = cms.bool(True)
+    srpUnpacking = True,
+    syncCheck = True,
+    tccUnpacking = True
 )

@@ -3,16 +3,16 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.TkSeedGenerator.SeedCreatorFromRegionConsecutiveHitsEDProducer import SeedCreatorFromRegionConsecutiveHitsEDProducer as _SeedCreatorFromRegionConsecutiveHitsEDProducer
 
 hltHighPtTripletStepSeeds = _SeedCreatorFromRegionConsecutiveHitsEDProducer(
-    MinOneOverPtError = cms.double(1),
-    OriginTransverseErrorMultiplier = cms.double(1),
-    SeedComparitorPSet = cms.PSet(
+    MinOneOverPtError = 1,
+    OriginTransverseErrorMultiplier = 1,
+    SeedComparitorPSet = dict(
         ComponentName = cms.string('none')
     ),
-    SeedMomentumForBOFF = cms.double(5),
+    SeedMomentumForBOFF = 5,
     TTRHBuilder = cms.string('WithTrackAngle'),
-    forceKinematicWithRegionDirection = cms.bool(False),
+    forceKinematicWithRegionDirection = False,
     magneticField = cms.string(''),
     mightGet = cms.optional.untracked.vstring,
     propagator = cms.string('PropagatorWithMaterial'),
-    seedingHitSets = cms.InputTag("hltHighPtTripletStepHitTriplets")
+    seedingHitSets = ("hltHighPtTripletStepHitTriplets")
 )

@@ -5,61 +5,61 @@ from ..psets.hgcal_reco_constants_cfi import HGCAL_reco_constants as HGCAL_reco_
 from RecoLocalCalo.HGCalRecProducers.HGCalUncalibRecHitProducer import HGCalUncalibRecHitProducer as _HGCalUncalibRecHitProducer
 
 hltHGCalUncalibRecHit = _HGCalUncalibRecHitProducer(
-    HGCEEConfig = cms.PSet(
-        adcNbits = cms.uint32(10),
-        adcSaturation = cms.double(100),
-        fCPerMIP = cms.vdouble(HGCAL_reco_constants.fcPerMip[0:3]),
-        isSiFE = cms.bool(True),
-        tdcNbits = cms.uint32(12),
-        tdcOnset = cms.double(60),
-        tdcSaturation = cms.double(10000),
-        toaLSB_ns = cms.double(0.0244),
-        tofDelay = cms.double(-9)
+    HGCEEConfig = dict(
+        adcNbits = 10,
+        adcSaturation = 100,
+        fCPerMIP = HGCAL_reco_constants.fcPerMip[0:3],
+        isSiFE = True,
+        tdcNbits = 12,
+        tdcOnset = 60,
+        tdcSaturation = 10000,
+        toaLSB_ns = 0.0244,
+        tofDelay = -9
     ),
-    HGCEEdigiCollection = cms.InputTag("hltHgcalDigis","EE"),
+    HGCEEdigiCollection = ("hltHgcalDigis","EE"),
     HGCEEhitCollection = cms.string('HGCEEUncalibRecHits'),
-    HGCHEBConfig = cms.PSet(
-        adcNbits = cms.uint32(10),
-        adcSaturation = cms.double(68.75),
-        fCPerMIP = cms.vdouble(1.0, 1.0, 1.0),
-        isSiFE = cms.bool(True),
-        tdcNbits = cms.uint32(12),
-        tdcOnset = cms.double(55),
-        tdcSaturation = cms.double(1000),
-        toaLSB_ns = cms.double(0.0244),
-        tofDelay = cms.double(-14)
+    HGCHEBConfig = dict(
+        adcNbits = 10,
+        adcSaturation = 68.75,
+        fCPerMIP = [1.0, 1.0, 1.0],
+        isSiFE = True,
+        tdcNbits = 12,
+        tdcOnset = 55,
+        tdcSaturation = 1000,
+        toaLSB_ns = 0.0244,
+        tofDelay = -14
     ),
-    HGCHEBdigiCollection = cms.InputTag("hltHgcalDigis","HEback"),
+    HGCHEBdigiCollection = ("hltHgcalDigis","HEback"),
     HGCHEBhitCollection = cms.string('HGCHEBUncalibRecHits'),
-    HGCHEFConfig = cms.PSet(
-        adcNbits = cms.uint32(10),
-        adcSaturation = cms.double(100),
-        fCPerMIP = cms.vdouble(HGCAL_reco_constants.fcPerMip[3:6]),
-        isSiFE = cms.bool(True),
-        tdcNbits = cms.uint32(12),
-        tdcOnset = cms.double(60),
-        tdcSaturation = cms.double(10000),
-        toaLSB_ns = cms.double(0.0244),
-        tofDelay = cms.double(-11)
+    HGCHEFConfig = dict(
+        adcNbits = 10,
+        adcSaturation = 100,
+        fCPerMIP = HGCAL_reco_constants.fcPerMip[3:6],
+        isSiFE = True,
+        tdcNbits = 12,
+        tdcOnset = 60,
+        tdcSaturation = 10000,
+        toaLSB_ns = 0.0244,
+        tofDelay = -11
     ),
-    HGCHEFdigiCollection = cms.InputTag("hltHgcalDigis","HEfront"),
+    HGCHEFdigiCollection = ("hltHgcalDigis","HEfront"),
     HGCHEFhitCollection = cms.string('HGCHEFUncalibRecHits'),
-    HGCHFNoseConfig = cms.PSet(
-        adcNbits = cms.uint32(10),
-        adcSaturation = cms.double(100),
-        fCPerMIP = cms.vdouble(1.25, 2.57, 3.88),
-        isSiFE = cms.bool(False),
-        tdcNbits = cms.uint32(12),
-        tdcOnset = cms.double(60),
-        tdcSaturation = cms.double(10000),
-        toaLSB_ns = cms.double(0.0244),
-        tofDelay = cms.double(-33)
+    HGCHFNoseConfig = dict(
+        adcNbits = 10,
+        adcSaturation = 100,
+        fCPerMIP = [1.25, 2.57, 3.88],
+        isSiFE = False,
+        tdcNbits = 12,
+        tdcOnset = 60,
+        tdcSaturation = 10000,
+        toaLSB_ns = 0.0244,
+        tofDelay = -33
     ),
-    HGCHFNosedigiCollection = cms.InputTag("hfnoseDigis","HFNose"),
+    HGCHFNosedigiCollection = ("hfnoseDigis","HFNose"),
     HGCHFNosehitCollection = cms.string('HGCHFNoseUncalibRecHits'),
-    computeLocalTime = cms.bool(False),
+    computeLocalTime = False,
     algo = cms.string('HGCalUncalibRecHitWorkerWeights')
 )
 
 from Configuration.ProcessModifiers.ticl_v5_cff import ticl_v5
-ticl_v5.toModify(hltHGCalUncalibRecHit, computeLocalTime = cms.bool(True))
+ticl_v5.toModify(hltHGCalUncalibRecHit, computeLocalTime = True)

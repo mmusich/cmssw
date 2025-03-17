@@ -5,14 +5,14 @@ from RecoTracker.TrackProducer.GsfTrackProducer import GsfTrackProducer as _GsfT
 hltEgammaGsfTracksUnseeded = _GsfTrackProducer(
     AlgorithmName = cms.string('gsf'),
     Fitter = cms.string('GsfElectronFittingSmoother'),
-    GeometricInnerState = cms.bool(False),
+    GeometricInnerState = False,
     MeasurementTracker = cms.string(''),
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     Propagator = cms.string('fwdGsfElectronPropagator'),
     TTRHBuilder = cms.string('WithTrackAngle'),
-    TrajectoryInEvent = cms.bool(False),
-    beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-    src = cms.InputTag("hltEgammaCkfTrackCandidatesForGSFUnseeded"),
-    useHitsSplitting = cms.bool(False)
+    TrajectoryInEvent = False,
+    beamSpot = ("hltOnlineBeamSpot"),
+    src = ("hltEgammaCkfTrackCandidatesForGSFUnseeded"),
+    useHitsSplitting = False
 )

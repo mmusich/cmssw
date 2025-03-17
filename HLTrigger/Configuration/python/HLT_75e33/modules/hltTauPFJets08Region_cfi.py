@@ -3,11 +3,11 @@ import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.RecoTauJetRegionProducer import RecoTauJetRegionProducer as _RecoTauJetRegionProducer
 
 hltTauPFJets08Region = _RecoTauJetRegionProducer(
-    deltaR = cms.double(0.8),
-    maxJetAbsEta = cms.double(99.0),
-    minJetPt = cms.double(-1.0),
-    pfCandAssocMapSrc = cms.InputTag(""),
-    pfCandSrc = cms.InputTag("hltParticleFlowTmp"),
-    src = cms.InputTag("hltAK4PFJets"),
-    verbosity = cms.int32(0)
+    deltaR = 0.8,
+    maxJetAbsEta = 99.0,
+    minJetPt = -1.0,
+    pfCandAssocMapSrc = (""),
+    pfCandSrc = ("hltParticleFlowTmp"),
+    src = ("hltAK4PFJets"),
+    verbosity = 0
 )

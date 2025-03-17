@@ -4,9 +4,9 @@ from HLTrigger.Muon.HLTMuonTrackSelector import HLTMuonTrackSelector as _HLTMuon
 
 hltPhase2L3MuonTracks = _HLTMuonTrackSelector(
     copyExtras = cms.untracked.bool(True),
-    copyMVA = cms.bool(False),
+    copyMVA = False,
     copyTrajectories = cms.untracked.bool(False),
-    muon = cms.InputTag("hltPhase2L3Muons"),
-    originalMVAVals = cms.InputTag("none"),
-    track = cms.InputTag("hltPhase2L3MuonMerged")
+    muon = ("hltPhase2L3Muons"),
+    originalMVAVals = ("none"),
+    track = ("hltPhase2L3MuonMerged")
 )

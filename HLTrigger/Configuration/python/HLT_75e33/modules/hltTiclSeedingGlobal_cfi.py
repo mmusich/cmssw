@@ -4,8 +4,8 @@ from RecoHGCal.TICL.TICLSeedingRegionProducer import TICLSeedingRegionProducer a
 
 hltTiclSeedingGlobal = _TICLSeedingRegionProducer(
     mightGet = cms.optional.untracked.vstring,
-    seedingPSet = cms.PSet(
-        algo_verbosity = cms.int32(0),
+    seedingPSet = dict(
+        algo_verbosity = 0,
         type = cms.string('SeedingRegionGlobal')
     )
 )

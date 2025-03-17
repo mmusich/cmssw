@@ -5,17 +5,17 @@ from RecoTracker.TrackProducer.TrackProducer import TrackProducer as _TrackProdu
 hltHighPtTripletStepTracks = _TrackProducer(
     AlgorithmName = cms.string('highPtTripletStep'),
     Fitter = cms.string('FlexibleKFFittingSmoother'),
-    GeometricInnerState = cms.bool(False),
+    GeometricInnerState = False,
     MeasurementTracker = cms.string(''),
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     Propagator = cms.string('RungeKuttaTrackerPropagator'),
     SimpleMagneticField = cms.string(''),
     TTRHBuilder = cms.string('WithTrackAngle'),
-    TrajectoryInEvent = cms.bool(False),
-    beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-    clusterRemovalInfo = cms.InputTag(""),
-    src = cms.InputTag("hltHighPtTripletStepTrackCandidates"),
-    useHitsSplitting = cms.bool(False),
-    useSimpleMF = cms.bool(False)
+    TrajectoryInEvent = False,
+    beamSpot = ("hltOnlineBeamSpot"),
+    clusterRemovalInfo = (""),
+    src = ("hltHighPtTripletStepTrackCandidates"),
+    useHitsSplitting = False,
+    useSimpleMF = False
 )

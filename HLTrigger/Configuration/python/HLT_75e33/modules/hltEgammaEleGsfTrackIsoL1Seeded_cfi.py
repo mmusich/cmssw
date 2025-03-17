@@ -3,18 +3,18 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.EgammaHLTElectronTrackIsolationProducers import EgammaHLTElectronTrackIsolationProducers as _EgammaHLTElectronTrackIsolationProducers
 
 hltEgammaEleGsfTrackIsoL1Seeded = _EgammaHLTElectronTrackIsolationProducers(
-    beamSpotProducer = cms.InputTag("hltOnlineBeamSpot"),
-    egTrkIsoConeSize = cms.double(0.3),
-    egTrkIsoPtMin = cms.double(1.0),
-    egTrkIsoRSpan = cms.double(999999.0),
-    egTrkIsoStripBarrel = cms.double(0.01),
-    egTrkIsoStripEndcap = cms.double(0.01),
-    egTrkIsoVetoConeSizeBarrel = cms.double(0.01),
-    egTrkIsoVetoConeSizeEndcap = cms.double(0.01),
-    egTrkIsoZSpan = cms.double(0.15),
-    electronProducer = cms.InputTag("hltEgammaGsfElectronsL1Seeded"),
-    recoEcalCandidateProducer = cms.InputTag("hltEgammaCandidatesL1Seeded"),
-    trackProducer = cms.InputTag("hltGeneralTracks"),
-    useGsfTrack = cms.bool(True),
-    useSCRefs = cms.bool(True)
+    beamSpotProducer = ("hltOnlineBeamSpot"),
+    egTrkIsoConeSize = 0.3,
+    egTrkIsoPtMin = 1.0,
+    egTrkIsoRSpan = 999999.0,
+    egTrkIsoStripBarrel = 0.01,
+    egTrkIsoStripEndcap = 0.01,
+    egTrkIsoVetoConeSizeBarrel = 0.01,
+    egTrkIsoVetoConeSizeEndcap = 0.01,
+    egTrkIsoZSpan = 0.15,
+    electronProducer = ("hltEgammaGsfElectronsL1Seeded"),
+    recoEcalCandidateProducer = ("hltEgammaCandidatesL1Seeded"),
+    trackProducer = ("hltGeneralTracks"),
+    useGsfTrack = True,
+    useSCRefs = True
 )

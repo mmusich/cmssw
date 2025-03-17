@@ -4,5 +4,5 @@ from EventFilter.DTRawToDigi.DTuROSRawToDigi import DTuROSRawToDigi as _DTuROSRa
 
 hltMuonDTDigis = _DTuROSRawToDigi(
     debug = cms.untracked.bool(False),
-    inputLabel = cms.InputTag("rawDataCollector")
+    inputLabel = ("rawDataCollector")
 )

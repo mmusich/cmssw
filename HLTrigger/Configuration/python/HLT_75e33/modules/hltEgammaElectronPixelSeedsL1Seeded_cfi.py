@@ -3,11 +3,11 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaElectronProducers.ElectronNHitSeedProducer import ElectronNHitSeedProducer as _ElectronNHitSeedProducer
 
 hltEgammaElectronPixelSeedsL1Seeded = _ElectronNHitSeedProducer(
-    beamSpot = cms.InputTag("hltOnlineBeamSpot"),
-    initialSeeds = cms.InputTag("hltElePixelSeedsCombinedL1Seeded"),
-    matcherConfig = cms.PSet(
-        detLayerGeom = cms.ESInputTag("","GlobalDetLayerGeometry"),
-        enableHitSkipping = cms.bool(True),
+    beamSpot = ("hltOnlineBeamSpot"),
+    initialSeeds = ("hltElePixelSeedsCombinedL1Seeded"),
+    matcherConfig = dict(
+        detLayerGeom = ("","GlobalDetLayerGeometry"),
+        enableHitSkipping = True,
         matchingCuts = cms.VPSet(
             cms.PSet(
                 dPhiMaxHighEt = cms.vdouble(0.05),
@@ -39,14 +39,14 @@ hltEgammaElectronPixelSeedsL1Seeded = _ElectronNHitSeedProducer(
                 version = cms.int32(2)
             )
         ),
-        minNrHits = cms.vuint32(2, 3),
-        minNrHitsValidLayerBins = cms.vint32(4),
-        navSchool = cms.ESInputTag("","SimpleNavigationSchool"),
-        requireExactMatchCount = cms.bool(False),
-        useParamMagFieldIfDefined = cms.bool(True),
-        useRecoVertex = cms.bool(False)
+        minNrHits = [2, 3],
+        minNrHitsValidLayerBins = [4],
+        navSchool = ("","SimpleNavigationSchool"),
+        requireExactMatchCount = False,
+        useParamMagFieldIfDefined = True,
+        useRecoVertex = False
     ),
-    measTkEvt = cms.InputTag("hltMeasurementTrackerEvent"),
+    measTkEvt = ("hltMeasurementTrackerEvent"),
     superClusters = cms.VInputTag("hltEgammaSuperClustersToPixelMatchL1Seeded"),
-    vertices = cms.InputTag("")
+    vertices = ("")
 )

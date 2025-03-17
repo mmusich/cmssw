@@ -3,14 +3,14 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.EgammaHLTPhotonTrackIsolationProducersRegional import EgammaHLTPhotonTrackIsolationProducersRegional as _EgammaHLTPhotonTrackIsolationProducersRegional
 
 hltEgammaHollowTrackIsoL1Seeded = _EgammaHLTPhotonTrackIsolationProducersRegional(
-    countTracks = cms.bool(False),
-    egTrkIsoConeSize = cms.double(0.29),
-    egTrkIsoPtMin = cms.double(1.0),
-    egTrkIsoRSpan = cms.double(999999.0),
-    egTrkIsoStripBarrel = cms.double(0.03),
-    egTrkIsoStripEndcap = cms.double(0.03),
-    egTrkIsoVetoConeSize = cms.double(0.06),
-    egTrkIsoZSpan = cms.double(999999.0),
-    recoEcalCandidateProducer = cms.InputTag("hltEgammaCandidatesL1Seeded"),
-    trackProducer = cms.InputTag("hltGeneralTracks")
+    countTracks = False,
+    egTrkIsoConeSize = 0.29,
+    egTrkIsoPtMin = 1.0,
+    egTrkIsoRSpan = 999999.0,
+    egTrkIsoStripBarrel = 0.03,
+    egTrkIsoStripEndcap = 0.03,
+    egTrkIsoVetoConeSize = 0.06,
+    egTrkIsoZSpan = 999999.0,
+    recoEcalCandidateProducer = ("hltEgammaCandidatesL1Seeded"),
+    trackProducer = ("hltGeneralTracks")
 )

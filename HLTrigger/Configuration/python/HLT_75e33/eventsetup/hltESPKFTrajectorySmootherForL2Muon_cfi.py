@@ -9,6 +9,6 @@ hltESPKFTrajectorySmootherForL2Muon = _KFTrajectorySmootherESProducer(
     RecoGeometry = cms.string('hltESPDummyDetLayerGeometry'),
     Updator = cms.string('hltESPKFUpdator'),
     appendToDataLabel = cms.string(''),
-    errorRescaling = cms.double(100.0),
-    minHits = cms.int32(3)
+    errorRescaling = 100.0,
+    minHits = 3
 )

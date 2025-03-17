@@ -4,6 +4,6 @@ from CommonTools.RecoAlgos.VertexSelector import VertexSelector as _VertexSelect
 
 hltGoodOfflinePrimaryVertices = _VertexSelector(
     cut = cms.string('!isFake && ndof >= 4.0 && abs(z) <= 24.0 && abs(position.Rho) <= 2.0'),
-    filter = cms.bool(False),
-    src = cms.InputTag("hltOfflinePrimaryVertices")
+    filter = False,
+    src = ("hltOfflinePrimaryVertices")
 )

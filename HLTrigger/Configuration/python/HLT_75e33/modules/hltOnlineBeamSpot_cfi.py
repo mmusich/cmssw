@@ -3,13 +3,13 @@ import FWCore.ParameterSet.Config as cms
 from RecoVertex.BeamSpotProducer.BeamSpotOnlineProducer import BeamSpotOnlineProducer as _BeamSpotOnlineProducer
 
 hltOnlineBeamSpot = _BeamSpotOnlineProducer(
-    changeToCMSCoordinates = cms.bool(False),
-    gtEvmLabel = cms.InputTag(""),
-    maxRadius = cms.double(2.0),
-    maxZ = cms.double(40.0),
-    setSigmaZ = cms.double(0.0),
-    useBSOnlineRecords = cms.bool(True),
-    timeThreshold = cms.int32(48),
-    sigmaZThreshold = cms.double( 2.0 ),
-    sigmaXYThreshold = cms.double( 4.0 )
+    changeToCMSCoordinates = False,
+    gtEvmLabel = (""),
+    maxRadius = 2.0,
+    maxZ = 40.0,
+    setSigmaZ = 0.0,
+    useBSOnlineRecords = True,
+    timeThreshold = 48,
+    sigmaZThreshold =  2.0 ,
+    sigmaXYThreshold =  4.0 
 )

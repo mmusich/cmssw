@@ -4,15 +4,15 @@ from RecoTracker.MeasurementDet.Chi2ChargeMeasurementEstimatorESProducer import 
 
 hltESPChi2ChargeMeasurementEstimator30 = _Chi2ChargeMeasurementEstimatorESProducer(
     ComponentName = cms.string('hltESPChi2ChargeMeasurementEstimator30'),
-    MaxChi2 = cms.double(30.0),
-    MaxDisplacement = cms.double(100.0),
-    MaxSagitta = cms.double(-1.0),
-    MinPtForHitRecoveryInGluedDet = cms.double(1000000.0),
-    MinimalTolerance = cms.double(10.0),
+    MaxChi2 = 30.0,
+    MaxDisplacement = 100.0,
+    MaxSagitta = -1.0,
+    MinPtForHitRecoveryInGluedDet = 1000000.0,
+    MinimalTolerance = 10.0,
     appendToDataLabel = cms.string(''),
-    clusterChargeCut = cms.PSet(
+    clusterChargeCut = dict(
         refToPSet_ = cms.string('HLTSiStripClusterChargeCutNone')
     ),
-    nSigma = cms.double(3.0),
-    pTChargeCutThreshold = cms.double(-1.0)
+    nSigma = 3.0,
+    pTChargeCutThreshold = -1.0
 )

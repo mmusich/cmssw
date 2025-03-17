@@ -3,24 +3,24 @@ import FWCore.ParameterSet.Config as cms
 from RecoEgamma.EgammaHLTProducers.EgammaHLTHcalVarProducerFromRecHit import EgammaHLTHcalVarProducerFromRecHit as _EgammaHLTHcalVarProducerFromRecHit
 
 hltEgammaHoverEUnseeded = _EgammaHLTHcalVarProducerFromRecHit(
-    absEtaLowEdges = cms.vdouble(0.0, 1.479),
-    depth = cms.int32(0),
-    doEtSum = cms.bool(False),
-    doRhoCorrection = cms.bool(False),
-    effectiveAreas = cms.vdouble(0.105, 0.17),
-    innerCone = cms.double(0.0),
-    outerCone = cms.double(0.14),
-    recoEcalCandidateProducer = cms.InputTag("hltEgammaCandidatesUnseeded"),
-    rhoMax = cms.double(99999999.0),
-    rhoProducer = cms.InputTag("hltFixedGridRhoFastjetAllCaloForEGamma"),
-    rhoScale = cms.double(1.0),
-    useSingleTower = cms.bool(False),
+    absEtaLowEdges = [0.0, 1.479],
+    depth = 0,
+    doEtSum = False,
+    doRhoCorrection = False,
+    effectiveAreas = [0.105, 0.17],
+    innerCone = 0.0,
+    outerCone = 0.14,
+    recoEcalCandidateProducer = ("hltEgammaCandidatesUnseeded"),
+    rhoMax = 99999999.0,
+    rhoProducer = ("hltFixedGridRhoFastjetAllCaloForEGamma"),
+    rhoScale = 1.0,
+    useSingleTower = False,
     hbheRecHitsTag = cms.InputTag( "hltHbhereco" ),
-    eThresHB = cms.vdouble( 0.1, 0.2, 0.3, 0.3 ), #Run3 thresholds. Will be overwritten with valid aging customisation
-    etThresHB = cms.vdouble( 0.0, 0.0, 0.0, 0.0 ),
-    eThresHE = cms.vdouble( 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 ),
-    etThresHE = cms.vdouble( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ),
-    usePFThresholdsFromDB = cms.bool(True),
-    maxSeverityHB = cms.int32( 9 ),
-    maxSeverityHE = cms.int32( 9 )
+    eThresHB = [ 0.1, 0.2, 0.3, 0.3 ], #Run3 thresholds. Will be overwritten with valid aging customisation
+    etThresHB = [ 0.0, 0.0, 0.0, 0.0 ],
+    eThresHE = [ 0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2 ],
+    etThresHE = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    usePFThresholdsFromDB = True,
+    maxSeverityHB =  9 ,
+    maxSeverityHE =  9 
 )

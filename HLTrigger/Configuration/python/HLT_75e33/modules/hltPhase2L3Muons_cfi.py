@@ -3,17 +3,17 @@ import FWCore.ParameterSet.Config as cms
 from RecoMuon.MuonIdentification.MuonIDFilterProducerForHLT import MuonIDFilterProducerForHLT as _MuonIDFilterProducerForHLT
 
 hltPhase2L3Muons = _MuonIDFilterProducerForHLT(
-    allowedTypeMask = cms.uint32(0),
-    applyTriggerIdLoose = cms.bool(True),
-    inputMuonCollection = cms.InputTag("hltPhase2L3MuonsNoID"),
-    maxNormalizedChi2 = cms.double(9999.0),
-    minNMuonHits = cms.int32(0),
-    minNMuonStations = cms.int32(0),
-    minNTrkLayers = cms.int32(0),
-    minPixHits = cms.int32(0),
-    minPixLayer = cms.int32(0),
-    minPt = cms.double(0.0),
-    minTrkHits = cms.int32(0),
-    requiredTypeMask = cms.uint32(0),
-    typeMuon = cms.uint32(0)
+    allowedTypeMask = 0,
+    applyTriggerIdLoose = True,
+    inputMuonCollection = ("hltPhase2L3MuonsNoID"),
+    maxNormalizedChi2 = 9999.0,
+    minNMuonHits = 0,
+    minNMuonStations = 0,
+    minNTrkLayers = 0,
+    minPixHits = 0,
+    minPixLayer = 0,
+    minPt = 0.0,
+    minTrkHits = 0,
+    requiredTypeMask = 0,
+    typeMuon = 0
 )

@@ -11,7 +11,7 @@ hltMeasurementTrackerEvent = _MeasurementTrackerEventProducer(
     mightGet = cms.optional.untracked.vstring,
     pixelCablingMapLabel = cms.string(''),
     pixelClusterProducer = cms.string('hltSiPixelClusters'),
-    skipClusters = cms.InputTag(""),
+    skipClusters = (""),
     stripClusterProducer = cms.string(''),
-    switchOffPixelsIfEmpty = cms.bool(True)
+    switchOffPixelsIfEmpty = True
 )

@@ -4,10 +4,10 @@ from RecoLocalCalo.HGCalRecProducers.HGCalLayerClustersFromSoAProducer import HG
 
 hltHgcalLayerClustersFromSoAProducer = _HGCalLayerClustersFromSoAProducer(
     detector = cms.string('EE'),
-    hgcalRecHitsLayerClustersSoA = cms.InputTag("hltHgcalSoARecHitsLayerClustersProducer"),
-    hgcalRecHitsSoA = cms.InputTag("hltHgcalSoARecHitsProducer"),
-    nHitsTime = cms.uint32(3),
-    src = cms.InputTag("hltHgcalSoALayerClustersProducer"),
+    hgcalRecHitsLayerClustersSoA = ("hltHgcalSoARecHitsLayerClustersProducer"),
+    hgcalRecHitsSoA = ("hltHgcalSoARecHitsProducer"),
+    nHitsTime = 3,
+    src = ("hltHgcalSoALayerClustersProducer"),
     timeClname = cms.string('timeLayerCluster')
 )
 

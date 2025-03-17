@@ -4,9 +4,9 @@ from RecoEgamma.EgammaHLTProducers.EgammaHLTRecoEcalCandidateProducers import Eg
 
 hltEgammaCandidatesUnseeded = _EgammaHLTRecoEcalCandidateProducers(
     recoEcalCandidateCollection = cms.string(''),
-    scHybridBarrelProducer = cms.InputTag("hltParticleFlowSuperClusterECALUnseeded","particleFlowSuperClusterECALBarrel"),
-    scIslandEndcapProducer = cms.InputTag("hltParticleFlowSuperClusterHGCalFromTICLUnseeded")
+    scHybridBarrelProducer = ("hltParticleFlowSuperClusterECALUnseeded","particleFlowSuperClusterECALBarrel"),
+    scIslandEndcapProducer = ("hltParticleFlowSuperClusterHGCalFromTICLUnseeded")
 )
 
 from Configuration.ProcessModifiers.ticl_v5_cff import ticl_v5
-ticl_v5.toModify(hltEgammaCandidatesUnseeded, scIslandEndcapProducer = cms.InputTag("hltTiclEGammaSuperClusterProducerUnseeded"))
+ticl_v5.toModify(hltEgammaCandidatesUnseeded, scIslandEndcapProducer = ("hltTiclEGammaSuperClusterProducerUnseeded"))

@@ -3,22 +3,22 @@ import FWCore.ParameterSet.Config as cms
 from TrackPropagation.SteppingHelixPropagator.SteppingHelixPropagatorESProducer import SteppingHelixPropagatorESProducer as _SteppingHelixPropagatorESProducer
 
 hltESPSteppingHelixPropagatorOpposite = _SteppingHelixPropagatorESProducer(
-    ApplyRadX0Correction = cms.bool(True),
-    AssumeNoMaterial = cms.bool(False),
+    ApplyRadX0Correction = True,
+    AssumeNoMaterial = False,
     ComponentName = cms.string('hltESPSteppingHelixPropagatorOpposite'),
-    NoErrorPropagation = cms.bool(False),
+    NoErrorPropagation = False,
     PropagationDirection = cms.string('oppositeToMomentum'),
-    SetVBFPointer = cms.bool(False),
+    SetVBFPointer = False,
     VBFName = cms.string('VolumeBasedMagneticField'),
-    debug = cms.bool(False),
-    endcapShiftInZNeg = cms.double(0.0),
-    endcapShiftInZPos = cms.double(0.0),
-    returnTangentPlane = cms.bool(True),
-    sendLogWarning = cms.bool(False),
-    useEndcapShiftsInZ = cms.bool(False),
-    useInTeslaFromMagField = cms.bool(False),
-    useIsYokeFlag = cms.bool(True),
-    useMagVolumes = cms.bool(True),
-    useMatVolumes = cms.bool(True),
-    useTuningForL2Speed = cms.bool(False)
+    debug = False,
+    endcapShiftInZNeg = 0.0,
+    endcapShiftInZPos = 0.0,
+    returnTangentPlane = True,
+    sendLogWarning = False,
+    useEndcapShiftsInZ = False,
+    useInTeslaFromMagField = False,
+    useIsYokeFlag = True,
+    useMagVolumes = True,
+    useMatVolumes = True,
+    useTuningForL2Speed = False
 )

@@ -3,22 +3,22 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.CkfPattern.CkfTrackCandidateMaker import CkfTrackCandidateMaker as _CkfTrackCandidateMaker
 
 hltIter0Phase2L3FromL1TkMuonCkfTrackCandidates = _CkfTrackCandidateMaker(
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     RedundantSeedCleaner = cms.string('none'),
-    TrajectoryBuilderPSet = cms.PSet(
+    TrajectoryBuilderPSet = dict(
         refToPSet_ = cms.string('HLTIter0Phase2L3FromL1TkMuonPSetGroupedCkfTrajectoryBuilderIT')
     ),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
-    TransientInitialStateEstimatorParameters = cms.PSet(
-        numberMeasurementsForFit = cms.int32(4),
+    TransientInitialStateEstimatorParameters = dict(
+        numberMeasurementsForFit = 4,
         propagatorAlongTISE = cms.string('PropagatorWithMaterialParabolicMf'),
         propagatorOppositeTISE = cms.string('PropagatorWithMaterialParabolicMfOpposite')
     ),
-    cleanTrajectoryAfterInOut = cms.bool(False),
-    doSeedingRegionRebuilding = cms.bool(True),
-    maxNSeeds = cms.uint32(100000),
-    maxSeedsBeforeCleaning = cms.uint32(1000),
-    src = cms.InputTag("hltIter0Phase2L3FromL1TkMuonPixelSeedsFromPixelTracks"),
-    useHitsSplitting = cms.bool(True)
+    cleanTrajectoryAfterInOut = False,
+    doSeedingRegionRebuilding = True,
+    maxNSeeds = 100000,
+    maxSeedsBeforeCleaning = 1000,
+    src = ("hltIter0Phase2L3FromL1TkMuonPixelSeedsFromPixelTracks"),
+    useHitsSplitting = True
 )

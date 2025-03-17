@@ -3,23 +3,23 @@ import FWCore.ParameterSet.Config as cms
 from RecoTracker.CkfPattern.CkfTrackCandidateMaker import CkfTrackCandidateMaker as _CkfTrackCandidateMaker
 
 hltEgammaCkfTrackCandidatesForGSFUnseeded = _CkfTrackCandidateMaker(
-    MeasurementTrackerEvent = cms.InputTag("hltMeasurementTrackerEvent"),
+    MeasurementTrackerEvent = ("hltMeasurementTrackerEvent"),
     NavigationSchool = cms.string('SimpleNavigationSchool'),
     RedundantSeedCleaner = cms.string('CachingSeedCleanerBySharedInput'),
-    TrajectoryBuilderPSet = cms.PSet(
+    TrajectoryBuilderPSet = dict(
         refToPSet_ = cms.string('HLTPSetTrajectoryBuilderForGsfElectrons')
     ),
     TrajectoryCleaner = cms.string('hltESPTrajectoryCleanerBySharedHits'),
-    TransientInitialStateEstimatorParameters = cms.PSet(
-        numberMeasurementsForFit = cms.int32(4),
+    TransientInitialStateEstimatorParameters = dict(
+        numberMeasurementsForFit = 4,
         propagatorAlongTISE = cms.string('PropagatorWithMaterial'),
         propagatorOppositeTISE = cms.string('PropagatorWithMaterialOpposite')
     ),
-    cleanTrajectoryAfterInOut = cms.bool(True),
-    doSeedingRegionRebuilding = cms.bool(True),
-    maxNSeeds = cms.uint32(1000000),
-    maxSeedsBeforeCleaning = cms.uint32(1000),
-    reverseTrajectories = cms.bool(False),
-    src = cms.InputTag("hltEgammaElectronPixelSeedsUnseeded"),
-    useHitsSplitting = cms.bool(True)
+    cleanTrajectoryAfterInOut = True,
+    doSeedingRegionRebuilding = True,
+    maxNSeeds = 1000000,
+    maxSeedsBeforeCleaning = 1000,
+    reverseTrajectories = False,
+    src = ("hltEgammaElectronPixelSeedsUnseeded"),
+    useHitsSplitting = True
 )

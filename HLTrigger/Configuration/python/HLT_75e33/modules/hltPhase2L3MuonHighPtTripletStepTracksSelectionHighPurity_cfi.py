@@ -6,7 +6,7 @@ hltPhase2L3MuonHighPtTripletStepTracksSelectionHighPurity = _TrackCollectionFilt
     copyExtras = cms.untracked.bool(True),
     copyTrajectories = cms.untracked.bool(False),
     minQuality = cms.string('highPurity'),
-    originalMVAVals = cms.InputTag("hltPhase2L3MuonHighPtTripletStepTrackCutClassifier","MVAValues"),
-    originalQualVals = cms.InputTag("hltPhase2L3MuonHighPtTripletStepTrackCutClassifier","QualityMasks"),
-    originalSource = cms.InputTag("hltPhase2L3MuonHighPtTripletStepTracks")
+    originalMVAVals = ("hltPhase2L3MuonHighPtTripletStepTrackCutClassifier","MVAValues"),
+    originalQualVals = ("hltPhase2L3MuonHighPtTripletStepTrackCutClassifier","QualityMasks"),
+    originalSource = ("hltPhase2L3MuonHighPtTripletStepTracks")
 )

@@ -5,5 +5,5 @@ from JetMETCorrections.Modules.L1FastjetCorrectorProducer import L1FastjetCorrec
 hltAK8PFCHSJetCorrectorL1 = _L1FastjetCorrectorProducer(
     algorithm = cms.string('AK8PFchs'),
     level = cms.string('L1FastJet'),
-    srcRho = cms.InputTag("hltFixedGridRhoFastjetAll")
+    srcRho = ("hltFixedGridRhoFastjetAll")
 )
