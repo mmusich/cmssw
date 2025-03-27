@@ -77,7 +77,7 @@ private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
 
-  const std::string outputInternalPath_;
+  const std::string outputInternalPath_ = "HLT/ScoutingOffline/Mis";
 
   const edm::InputTag triggerResultsTag;
   const edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
