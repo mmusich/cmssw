@@ -181,97 +181,72 @@ void TrackToTrackComparisonHists::analyze(const edm::Event& iEvent, const edm::E
   idx2idxByDoubleColl reference2monitoredColl;
   fillMap(referenceTracks, monitoredTracks, reference2monitoredColl, dRmin_);
 
-  unsigned int nReferenceTracks(0);           // Counts the number of refernce tracks
-  unsigned int nMatchedReferenceTracks(0);    // Counts the number of matched refernce tracks
+  unsigned int nReferenceTracks(0);           // Counts the number of reference tracks
+  unsigned int nMatchedReferenceTracks(0);    // Counts the number of matched reference tracks
   unsigned int nMonitoredTracks(0);           // Counts the number of monitored tracks
   unsigned int nUnmatchedMonitoredTracks(0);  // Counts the number of unmatched monitored tracks
 
-  //
-  // loop over reference tracks
-  //
+  // Loop over reference tracks
   LogDebug("TrackToTrackComparisonHists") << "\n# of tracks (reference): " << referenceTracks.size() << "\n";
-  for (idx2idxByDoubleColl::const_iterator pItr = reference2monitoredColl.begin(), eItr = reference2monitoredColl.end();
-       pItr != eItr;
-       ++pItr) {
+  for (const auto& [trackIdx, trackDRmap] : reference2monitoredColl) {
     nReferenceTracks++;
-    int trackIdx = pItr->first;
-    reco::Track track = referenceTracks.at(trackIdx);
+    const auto& track = referenceTracks.at(trackIdx);
 
-    float dzWRTpv = track.dz(referencePV.position());
-    if (fabs(dzWRTpv) > dzWRTPvCut_)
+    if (std::abs(track.dz(referencePV.position())) > dzWRTPvCut_)
       continue;
 
-    fill_generic_tracks_histos(*&referenceTracksMEs_, &track, &referenceBS, &referencePV, ls, onlinelumi, PU);
+    fill_generic_tracks_histos(referenceTracksMEs_, &track, &referenceBS, &referencePV, ls, onlinelumi, PU);
 
-    std::map<double, int> trackDRmap = pItr->second;
     if (trackDRmap.empty()) {
-      (matchedReferenceTracksMEs_.h_dRmin)->Fill(-1.);
-      (matchedReferenceTracksMEs_.h_dRmin_l)->Fill(-1.);
+      matchedReferenceTracksMEs_.h_dRmin->Fill(-1.);
+      matchedReferenceTracksMEs_.h_dRmin_l->Fill(-1.);
       continue;
     }
 
     double dRmin = trackDRmap.begin()->first;
-    (referenceTracksMEs_.h_dRmin)->Fill(dRmin);
-    (referenceTracksMEs_.h_dRmin_l)->Fill(dRmin);
+    referenceTracksMEs_.h_dRmin->Fill(dRmin);
+    referenceTracksMEs_.h_dRmin_l->Fill(dRmin);
 
-    bool matched = false;
-    if (dRmin < dRmin_)
-      matched = true;
-
-    if (matched) {
+    if (dRmin < dRmin_) {
       nMatchedReferenceTracks++;
-      fill_generic_tracks_histos(*&matchedReferenceTracksMEs_, &track, &referenceBS, &referencePV, ls, onlinelumi, PU);
-      (matchedReferenceTracksMEs_.h_dRmin)->Fill(dRmin);
-      (matchedReferenceTracksMEs_.h_dRmin_l)->Fill(dRmin);
+      fill_generic_tracks_histos(matchedReferenceTracksMEs_, &track, &referenceBS, &referencePV, ls, onlinelumi, PU);
+      matchedReferenceTracksMEs_.h_dRmin->Fill(dRmin);
+      matchedReferenceTracksMEs_.h_dRmin_l->Fill(dRmin);
 
-      int matchedTrackIndex = trackDRmap[dRmin];
-      reco::Track matchedTrack = monitoredTracks.at(matchedTrackIndex);
-      fill_matching_tracks_histos(*&matchTracksMEs_, &track, &matchedTrack, &referenceBS, &referencePV);
+      const auto matchedTrackIndex = trackDRmap.begin()->second;
+      const auto& matchedTrack = monitoredTracks.at(matchedTrackIndex);
+      fill_matching_tracks_histos(matchTracksMEs_, &track, &matchedTrack, &referenceBS, &referencePV);
     }
+  }
 
-  }  // Over reference tracks
-
-  //
-  // loop over monitoed tracks
-  //
+  // Loop over monitored tracks
   LogDebug("TrackToTrackComparisonHists") << "\n# of tracks (monitored): " << monitoredTracks.size() << "\n";
-  for (idx2idxByDoubleColl::const_iterator pItr = monitored2referenceColl.begin(), eItr = monitored2referenceColl.end();
-       pItr != eItr;
-       ++pItr) {
+  for (const auto& [trackIdx, trackDRmap] : monitored2referenceColl) {
     nMonitoredTracks++;
-    int trackIdx = pItr->first;
-    reco::Track track = monitoredTracks.at(trackIdx);
+    const auto& track = monitoredTracks.at(trackIdx);
 
-    float dzWRTpv = track.dz(monitoredPV.position());
-    if (fabs(dzWRTpv) > dzWRTPvCut_)
+    if (std::abs(track.dz(monitoredPV.position())) > dzWRTPvCut_)
       continue;
 
-    fill_generic_tracks_histos(*&monitoredTracksMEs_, &track, &monitoredBS, &monitoredPV, ls, onlinelumi, PU);
+    fill_generic_tracks_histos(monitoredTracksMEs_, &track, &monitoredBS, &monitoredPV, ls, onlinelumi, PU);
 
-    std::map<double, int> trackDRmap = pItr->second;
     if (trackDRmap.empty()) {
-      (unMatchedMonitoredTracksMEs_.h_dRmin)->Fill(-1.);
-      (unMatchedMonitoredTracksMEs_.h_dRmin_l)->Fill(-1.);
+      unMatchedMonitoredTracksMEs_.h_dRmin->Fill(-1.);
+      unMatchedMonitoredTracksMEs_.h_dRmin_l->Fill(-1.);
       continue;
     }
 
     double dRmin = trackDRmap.begin()->first;
-    (monitoredTracksMEs_.h_dRmin)->Fill(dRmin);
-    (monitoredTracksMEs_.h_dRmin_l)->Fill(dRmin);
+    monitoredTracksMEs_.h_dRmin->Fill(dRmin);
+    monitoredTracksMEs_.h_dRmin_l->Fill(dRmin);
 
-    bool matched = false;
-    if (dRmin < dRmin_)
-      matched = true;
-
-    if (!matched) {
+    if (dRmin >= dRmin_) {
       nUnmatchedMonitoredTracks++;
-      fill_generic_tracks_histos(
-          *&unMatchedMonitoredTracksMEs_, &track, &monitoredBS, &monitoredPV, ls, onlinelumi, PU);
-      (unMatchedMonitoredTracksMEs_.h_dRmin)->Fill(dRmin);
-      (unMatchedMonitoredTracksMEs_.h_dRmin_l)->Fill(dRmin);
+      fill_generic_tracks_histos(unMatchedMonitoredTracksMEs_, &track, &monitoredBS, &monitoredPV, ls, onlinelumi, PU);
+      unMatchedMonitoredTracksMEs_.h_dRmin->Fill(dRmin);
+      unMatchedMonitoredTracksMEs_.h_dRmin_l->Fill(dRmin);
     }
-
-  }  // over monitoed tracks
+  }
 
   edm::LogInfo("TrackToTrackComparisonHists")
       << "Total reference tracks: " << nReferenceTracks << "\n"
@@ -490,13 +465,13 @@ void TrackToTrackComparisonHists::book_matching_tracks_histos(DQMStore::IBooker&
 }
 
 void TrackToTrackComparisonHists::fill_generic_tracks_histos(generalME& mes,
-                                                             reco::Track* trk,
-                                                             reco::BeamSpot* bs,
-                                                             reco::Vertex* pv,
-                                                             unsigned int ls,
-                                                             double onlinelumi,
-                                                             double PU,
-                                                             bool requirePlateau) {
+                                                             const reco::Track* trk,
+                                                             const reco::BeamSpot* bs,
+                                                             const reco::Vertex* pv,
+                                                             const unsigned int ls,
+                                                             const double onlinelumi,
+                                                             const double PU,
+                                                             const bool requirePlateau) {
   float pt = trk->pt();
   float eta = trk->eta();
   float phi = trk->phi();
@@ -535,7 +510,7 @@ void TrackToTrackComparisonHists::fill_generic_tracks_histos(generalME& mes,
 }
 
 void TrackToTrackComparisonHists::fill_matching_tracks_histos(
-    matchingME& mes, reco::Track* mon, reco::Track* ref, reco::BeamSpot* bs, reco::Vertex* pv) {
+    matchingME& mes, const reco::Track* mon, const reco::Track* ref, const reco::BeamSpot* bs, const reco::Vertex* pv) {
   float mon_pt = mon->pt();
   float mon_eta = mon->eta();
   float mon_phi = mon->phi();

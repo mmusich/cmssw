@@ -76,15 +76,19 @@ protected:
   void book_matching_tracks_histos(DQMStore::IBooker& ibooker, matchingME& mes, TString label, std::string& dir);
 
   void fill_generic_tracks_histos(generalME& mes,
-                                  reco::Track* trk,
-                                  reco::BeamSpot* bs,
-                                  reco::Vertex* pv,
-                                  unsigned int ls,
-                                  double onlinelumi,
-                                  double PU,
-                                  bool requirePlateau = true);
-  void fill_matching_tracks_histos(
-      matchingME& mes, reco::Track* mon, reco::Track* ref, reco::BeamSpot* bs, reco::Vertex* pv);
+                                  const reco::Track* trk,
+                                  const reco::BeamSpot* bs,
+                                  const reco::Vertex* pv,
+                                  const unsigned int ls,
+                                  const double onlinelumi,
+                                  const double PU,
+                                  const bool requirePlateau = true);
+
+  void fill_matching_tracks_histos(matchingME& mes,
+                                   const reco::Track* mon,
+                                   const reco::Track* ref,
+                                   const reco::BeamSpot* bs,
+                                   const reco::Vertex* pv);
 
   DQMStore* dqmStore_;
 
