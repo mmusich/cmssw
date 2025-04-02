@@ -148,6 +148,81 @@ private:
   dqm::reco::MonitorElement* r9_pho_hist;
   dqm::reco::MonitorElement* sMin_pho_hist;
   dqm::reco::MonitorElement* sMaj_pho_hist;
+
+  // electron histograms
+  dqm::reco::MonitorElement* pt_ele_hist;
+  dqm::reco::MonitorElement* eta_ele_hist;
+  dqm::reco::MonitorElement* phi_ele_hist;
+  dqm::reco::MonitorElement* m_ele_hist;
+  dqm::reco::MonitorElement* rawEnergy_ele_hist;
+  dqm::reco::MonitorElement* preshowerEnergy_ele_hist;
+  dqm::reco::MonitorElement* corrEcalEnergyError_ele_hist;
+  dqm::reco::MonitorElement* dEtaIn_ele_hist;
+  dqm::reco::MonitorElement* dPhiIn_ele_hist;
+  dqm::reco::MonitorElement* sigmaIetaIeta_ele_hist;
+  dqm::reco::MonitorElement* hOverE_ele_hist;
+  dqm::reco::MonitorElement* ooEMOop_ele_hist;
+  dqm::reco::MonitorElement* missingHits_ele_hist;
+  dqm::reco::MonitorElement* trackfbrem_ele_hist;
+  dqm::reco::MonitorElement* ecalIso_ele_hist;
+  dqm::reco::MonitorElement* hcalIso_ele_hist;
+  dqm::reco::MonitorElement* trackIso_ele_hist;
+  dqm::reco::MonitorElement* r9_ele_hist;
+  dqm::reco::MonitorElement* sMin_ele_hist;
+  dqm::reco::MonitorElement* sMaj_ele_hist;
+
+  // muon histograms
+
+  dqm::reco::MonitorElement* pt_mu_hist;
+  dqm::reco::MonitorElement* eta_mu_hist;
+  dqm::reco::MonitorElement* phi_mu_hist;
+  dqm::reco::MonitorElement* m_mu_hist;
+  dqm::reco::MonitorElement* type_mu_hist;
+  dqm::reco::MonitorElement* charge_mu_hist;
+  dqm::reco::MonitorElement* normalizedChi2_mu_hist;
+  dqm::reco::MonitorElement* ecalIso_mu_hist;
+  dqm::reco::MonitorElement* hcalIso_mu_hist;
+  dqm::reco::MonitorElement* trackIso_mu_hist;
+  dqm::reco::MonitorElement* nValidStandAloneMuonHits_mu_hist;
+  dqm::reco::MonitorElement* nStandAloneMuonMatchedStations_mu_hist;
+  dqm::reco::MonitorElement* nValidRecoMuonHits_mu_hist;
+  dqm::reco::MonitorElement* nRecoMuonChambers_mu_hist;
+  dqm::reco::MonitorElement* nRecoMuonChambersCSCorDT_mu_hist;
+  dqm::reco::MonitorElement* nRecoMuonMatches_mu_hist;
+  dqm::reco::MonitorElement* nRecoMuonMatchedStations_mu_hist;
+  dqm::reco::MonitorElement* nRecoMuonExpectedMatchedStations_mu_hist;
+  dqm::reco::MonitorElement* recoMuonStationMask_mu_hist;
+  dqm::reco::MonitorElement* nRecoMuonMatchedRPCLayers_mu_hist;
+  dqm::reco::MonitorElement* recoMuonRPClayerMask_mu_hist;
+  dqm::reco::MonitorElement* nValidPixelHits_mu_hist;
+  dqm::reco::MonitorElement* nValidStripHits_mu_hist;
+  dqm::reco::MonitorElement* nPixelLayersWithMeasurement_mu_hist;
+  dqm::reco::MonitorElement* nTrackerLayersWithMeasurement_mu_hist;
+
+  // PF Jet histograms
+
+  dqm::reco::MonitorElement* pt_pfj_hist;
+  dqm::reco::MonitorElement* eta_pfj_hist;
+  dqm::reco::MonitorElement* phi_pfj_hist;
+  dqm::reco::MonitorElement* m_pfj_hist;
+  dqm::reco::MonitorElement* jetArea_pfj_hist;
+  dqm::reco::MonitorElement* chargedHadronEnergy_pfj_hist;
+  dqm::reco::MonitorElement* neutralHadronEnergy_pfj_hist;
+  dqm::reco::MonitorElement* photonEnergy_pfj_hist;
+  dqm::reco::MonitorElement* electronEnergy_pfj_hist;
+  dqm::reco::MonitorElement* muonEnergy_pfj_hist;
+  dqm::reco::MonitorElement* HFHadronEnergy_pfj_hist;
+  dqm::reco::MonitorElement* HFEMEnergy_pfj_hist;
+  dqm::reco::MonitorElement* chargedHadronMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* neutralHadronMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* photonMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* electronMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* muonMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* HFHadronMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* HFEMMultiplicity_pfj_hist;
+  dqm::reco::MonitorElement* HOEnergy_pfj_hist;
+  dqm::reco::MonitorElement* csv_pfj_hist;
+  dqm::reco::MonitorElement* mvaDiscriminator_pfj_hist;
 };
 
 //
@@ -211,6 +286,12 @@ void ScoutingDQMMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSet
   iEvent.getByToken(pfcandsToken, pfcandsH);
   Handle<vector<Run3ScoutingPhoton>> photonsH;
   iEvent.getByToken(photonsToken, photonsH);
+  Handle<vector<Run3ScoutingElectron>> electronsH;
+  iEvent.getByToken(electronsToken, electronsH);
+  Handle<vector<Run3ScoutingMuon>> muonsH;
+  iEvent.getByToken(muonsToken, muonsH);
+  Handle<vector<Run3ScoutingPFJet>> PFjetsH;
+  iEvent.getByToken(pfjetsToken, PFjetsH);
 
   // fill the PF candidate histograms (no electrons!)
 
@@ -280,6 +361,86 @@ void ScoutingDQMMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSet
     sMin_pho_hist->Fill(iter->sMin());
     sMaj_pho_hist->Fill(iter->sMaj());
   }
+
+  // fill all the electron histograms
+
+  for (auto iter = electronsH->begin(); iter != electronsH->end(); ++iter) {
+    pt_ele_hist->Fill(iter->pt());
+    eta_ele_hist->Fill(iter->eta());
+    phi_ele_hist->Fill(iter->phi());
+    m_ele_hist->Fill(iter->m());
+    rawEnergy_ele_hist->Fill(iter->rawEnergy());
+    preshowerEnergy_ele_hist->Fill(iter->preshowerEnergy());
+    corrEcalEnergyError_ele_hist->Fill(iter->corrEcalEnergyError());
+    dEtaIn_ele_hist->Fill(iter->dEtaIn());
+    dPhiIn_ele_hist->Fill(iter->dPhiIn());
+    sigmaIetaIeta_ele_hist->Fill(iter->sigmaIetaIeta());
+    hOverE_ele_hist->Fill(iter->hOverE());
+    ooEMOop_ele_hist->Fill(iter->ooEMOop());
+    missingHits_ele_hist->Fill(iter->missingHits());
+    trackfbrem_ele_hist->Fill(iter->trackfbrem());
+    ecalIso_ele_hist->Fill(iter->ecalIso());
+    hcalIso_ele_hist->Fill(iter->hcalIso());
+    trackIso_ele_hist->Fill(iter->trackIso());
+    r9_ele_hist->Fill(iter->r9());
+    sMin_ele_hist->Fill(iter->sMin());
+    sMaj_ele_hist->Fill(iter->sMaj());
+
+    // fill all the muon histograms
+    for (auto iter = muonsH->begin(); iter != muonsH->end(); ++iter) {
+      pt_mu_hist->Fill(iter->pt());
+      eta_mu_hist->Fill(iter->eta());
+      phi_mu_hist->Fill(iter->phi());
+      m_mu_hist->Fill(iter->m());
+      type_mu_hist->Fill(iter->type());
+      charge_mu_hist->Fill(iter->charge());
+      normalizedChi2_mu_hist->Fill(iter->normalizedChi2());
+      ecalIso_mu_hist->Fill(iter->ecalIso());
+      hcalIso_mu_hist->Fill(iter->hcalIso());
+      trackIso_mu_hist->Fill(iter->trackIso());
+      nValidStandAloneMuonHits_mu_hist->Fill(iter->nValidStandAloneMuonHits());
+      nStandAloneMuonMatchedStations_mu_hist->Fill(iter->nStandAloneMuonMatchedStations());
+      nValidRecoMuonHits_mu_hist->Fill(iter->nValidRecoMuonHits());
+      nRecoMuonChambers_mu_hist->Fill(iter->nRecoMuonChambers());
+      nRecoMuonChambersCSCorDT_mu_hist->Fill(iter->nRecoMuonChambersCSCorDT());
+      nRecoMuonMatches_mu_hist->Fill(iter->nRecoMuonMatches());
+      nRecoMuonMatchedStations_mu_hist->Fill(iter->nRecoMuonMatchedStations());
+      nRecoMuonExpectedMatchedStations_mu_hist->Fill(iter->nRecoMuonExpectedMatchedStations());
+      recoMuonStationMask_mu_hist->Fill(iter->recoMuonStationMask());
+      nRecoMuonMatchedRPCLayers_mu_hist->Fill(iter->nRecoMuonMatchedRPCLayers());
+      recoMuonRPClayerMask_mu_hist->Fill(iter->recoMuonRPClayerMask());
+      nValidPixelHits_mu_hist->Fill(iter->nValidPixelHits());
+      nValidStripHits_mu_hist->Fill(iter->nValidStripHits());
+      nPixelLayersWithMeasurement_mu_hist->Fill(iter->nPixelLayersWithMeasurement());
+      nTrackerLayersWithMeasurement_mu_hist->Fill(iter->nTrackerLayersWithMeasurement());
+    }
+
+    // fill all the PF Jet histograms
+    for (auto iter = PFjetsH->begin(); iter != PFjetsH->end(); ++iter) {
+      pt_pfj_hist->Fill(iter->pt());
+      eta_pfj_hist->Fill(iter->eta());
+      phi_pfj_hist->Fill(iter->phi());
+      m_pfj_hist->Fill(iter->m());
+      jetArea_pfj_hist->Fill(iter->jetArea());
+      chargedHadronEnergy_pfj_hist->Fill(iter->chargedHadronEnergy());
+      neutralHadronEnergy_pfj_hist->Fill(iter->neutralHadronEnergy());
+      photonEnergy_pfj_hist->Fill(iter->photonEnergy());
+      electronEnergy_pfj_hist->Fill(iter->electronEnergy());
+      muonEnergy_pfj_hist->Fill(iter->muonEnergy());
+      HFHadronEnergy_pfj_hist->Fill(iter->HFHadronEnergy());
+      HFEMEnergy_pfj_hist->Fill(iter->HFEMEnergy());
+      chargedHadronMultiplicity_pfj_hist->Fill(iter->chargedHadronMultiplicity());
+      neutralHadronMultiplicity_pfj_hist->Fill(iter->neutralHadronMultiplicity());
+      photonMultiplicity_pfj_hist->Fill(iter->photonMultiplicity());
+      electronMultiplicity_pfj_hist->Fill(iter->electronMultiplicity());
+      muonMultiplicity_pfj_hist->Fill(iter->muonMultiplicity());
+      HFHadronMultiplicity_pfj_hist->Fill(iter->HFHadronMultiplicity());
+      HFEMMultiplicity_pfj_hist->Fill(iter->HFEMMultiplicity());
+      HOEnergy_pfj_hist->Fill(iter->HOEnergy());
+      csv_pfj_hist->Fill(iter->csv());
+      mvaDiscriminator_pfj_hist->Fill(iter->mvaDiscriminator());
+    }
+  }
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -333,6 +494,100 @@ void ScoutingDQMMakerRun3::bookHistograms(DQMStore::IBooker& ibook,
   r9_pho_hist = ibook.book1D("r9_pho", "R9; R9; Entries", 100, 0.0, 5);
   sMin_pho_hist = ibook.book1D("sMin_pho", "sMin Photon; sMin; Entries", 100, 0.0, 3);
   sMaj_pho_hist = ibook.book1D("sMaj_pho", "sMaj Photon ; sMaj; Entries", 100, 0.0, 3);
+
+  pt_ele_hist = ibook.book1D("pt_ele", "Electron pT; pT (GeV); Entries", 100, 0.0, 200.0);
+  eta_ele_hist = ibook.book1D("eta_ele", "Electron #eta; #eta; Entries", 100, -2.7, 2.7);
+  phi_ele_hist = ibook.book1D("phi_ele", "Electron #phi; #phi (rad); Entries", 100, -3.14, 3.14);
+  m_ele_hist = ibook.book1D("m_ele", "Electron #m; m; Entries", 100, -0.01, 0.01);
+  rawEnergy_ele_hist = ibook.book1D("rawEnergy_ele", "Raw Energy Electron; Energy (GeV); Entries", 100, 0.0, 250.0);
+  preshowerEnergy_ele_hist =
+      ibook.book1D("preshowerEnergy_ele", "Preshower Energy Electron; Energy (GeV); Entries", 100, 0.0, 10.0);
+  corrEcalEnergyError_ele_hist = ibook.book1D(
+      "corrEcalEnergyError_ele", "Corrected ECAL Energy Error Electron; Energy Error (GeV); Entries", 100, 0.0, 20.0);
+  dEtaIn_ele_hist = ibook.book1D("dEtaIn_ele", "dEtaIn Electron; dEtaIn; Entries", 100, -0.05, 0.05);
+  dPhiIn_ele_hist = ibook.book1D("dPhiIn_ele", "dPhiIn Electron; dPhiIn; Entries", 100, -0.2, 0.2);
+  sigmaIetaIeta_ele_hist =
+      ibook.book1D("sigmaIetaIeta_ele", "Sigma iEta iEta Electron; #sigma_{i#eta i#eta}; Entries", 100, 0.0, 0.05);
+  hOverE_ele_hist = ibook.book1D("hOverE_ele", "H/E Electron; H/E; Entries", 100, 0.0, 1.5);
+  ooEMOop_ele_hist = ibook.book1D("ooEMOop_ele", "1/E - 1/p Electron; 1/E - 1/p; Entries", 100, -0.05, 0.05);
+  missingHits_ele_hist = ibook.book1D("missingHits_ele", "Missing Hits Electron; Count; Entries", 10, 0, 10);
+  trackfbrem_ele_hist = ibook.book1D("trackfbrem_ele", "Track fbrem Electron; fbrem; Entries", 100, -1.0, 1.0);
+  ecalIso_ele_hist = ibook.book1D("ecalIso_ele", "ECAL Isolation Electron; Isolation (GeV); Entries", 100, 0.0, 100.0);
+  hcalIso_ele_hist = ibook.book1D("hcalIso_ele", "HCAL Isolation Electron; Isolation (GeV); Entries", 100, 0.0, 100.0);
+  trackIso_ele_hist = ibook.book1D("trackIso_ele", "Track Isolation Electron; Isolation (GeV); Entries", 100, 0.0, 0.5);
+  r9_ele_hist = ibook.book1D("r9_ele", "R9 Electron; R9; Entries", 100, 0.0, 5);
+  sMin_ele_hist = ibook.book1D("sMin_ele", "sMin Electron; sMin; Entries", 100, 0.0, 3);
+  sMaj_ele_hist = ibook.book1D("sMaj_ele", "sMaj Electron; sMaj; Entries", 100, 0.0, 3);
+
+  pt_mu_hist = ibook.book1D("pt_mu", "Muon pT; pT (GeV); Entries", 100, 0.0, 200.0);
+  eta_mu_hist = ibook.book1D("eta_mu", "Muon #eta; #eta; Entries", 100, -2.7, 2.7);
+  phi_mu_hist = ibook.book1D("phi_mu", "Muon #phi; #phi (rad); Entries", 100, -3.14, 3.14);
+  m_mu_hist = ibook.book1D("m_mu", "Muon Mass; m (GeV); Entries", 100, 0.0, 0.2);
+  type_mu_hist = ibook.book1D("type_mu", "Muon Type; Type; Entries", 10, 0, 10);
+  charge_mu_hist = ibook.book1D("charge_mu", "Muon Charge; Charge; Entries", 3, -1, 2);
+  normalizedChi2_mu_hist = ibook.book1D("normalizedChi2_mu", "Normalized Chi2; Chi2; Entries", 100, 0.0, 10.0);
+  ecalIso_mu_hist = ibook.book1D("ecalIso_mu", "ECAL Isolation Muon; Isolation (GeV); Entries", 100, 0.0, 100.0);
+  hcalIso_mu_hist = ibook.book1D("hcalIso_mu", "HCAL Isolation Muon; Isolation (GeV); Entries", 100, 0.0, 100.0);
+  trackIso_mu_hist = ibook.book1D("trackIso_mu", "Track Isolation Muon; Isolation (GeV); Entries", 100, 0.0, 50.0);
+  nValidStandAloneMuonHits_mu_hist =
+      ibook.book1D("nValidStandAloneMuonHits_mu", "Valid Standalone Muon Hits; Hits; Entries", 50, 0, 50);
+  nStandAloneMuonMatchedStations_mu_hist = ibook.book1D(
+      "nStandAloneMuonMatchedStations_mu", "Standalone Muon Matched Stations; Stations; Entries", 10, 0, 10);
+  nValidRecoMuonHits_mu_hist = ibook.book1D("nValidRecoMuonHits_mu", "Valid Reco Muon Hits; Hits; Entries", 50, 0, 50);
+  nRecoMuonChambers_mu_hist = ibook.book1D("nRecoMuonChambers_mu", "Reco Muon Chambers; Chambers; Entries", 10, 0, 10);
+  nRecoMuonChambersCSCorDT_mu_hist =
+      ibook.book1D("nRecoMuonChambersCSCorDT_mu", "Reco Muon Chambers (CSC or DT); Chambers; Entries", 10, 0, 10);
+  nRecoMuonMatches_mu_hist = ibook.book1D("nRecoMuonMatches_mu", "Reco Muon Matches; Matches; Entries", 10, 0, 10);
+  nRecoMuonMatchedStations_mu_hist =
+      ibook.book1D("nRecoMuonMatchedStations_mu", "Reco Muon Matched Stations; Stations; Entries", 10, 0, 10);
+  nRecoMuonExpectedMatchedStations_mu_hist = ibook.book1D(
+      "nRecoMuonExpectedMatchedStations_mu", "Reco Muon Expected Matched Stations; Stations; Entries", 10, 0, 10);
+  recoMuonStationMask_mu_hist =
+      ibook.book1D("recoMuonStationMask_mu", "Reco Muon Station Mask; Mask; Entries", 20, 0, 20);
+  nRecoMuonMatchedRPCLayers_mu_hist =
+      ibook.book1D("nRecoMuonMatchedRPCLayers_mu", "Reco Muon Matched RPC Layers; Layers; Entries", 10, 0, 10);
+  recoMuonRPClayerMask_mu_hist =
+      ibook.book1D("recoMuonRPClayerMask_mu", "Reco Muon RPC Layer Mask; Mask; Entries", 20, 0, 20);
+  nValidPixelHits_mu_hist = ibook.book1D("nValidPixelHits_mu", "Valid Pixel Hits; Hits; Entries", 20, 0, 20);
+  nValidStripHits_mu_hist = ibook.book1D("nValidStripHits_mu", "Valid Strip Hits; Hits; Entries", 50, 0, 50);
+  nPixelLayersWithMeasurement_mu_hist =
+      ibook.book1D("nPixelLayersWithMeasurement_mu", "Pixel Layers with Measurement; Layers; Entries", 10, 0, 10);
+  nTrackerLayersWithMeasurement_mu_hist =
+      ibook.book1D("nTrackerLayersWithMeasurement_mu", "Tracker Layers with Measurement; Layers; Entries", 20, 0, 20);
+
+  pt_pfj_hist = ibook.book1D("pt_pfj", "PF Jet pT; pT (GeV); Entries", 100, 0.0, 500.0);
+  eta_pfj_hist = ibook.book1D("eta_pfj", "PF Jet #eta; #eta; Entries", 100, -5.0, 5.0);
+  phi_pfj_hist = ibook.book1D("phi_pfj", "PF Jet #phi; #phi (rad); Entries", 100, -3.14, 3.14);
+  m_pfj_hist = ibook.book1D("m_pfj", "PF Jet Mass; Mass (GeV); Entries", 100, 0.0, 200.0);
+  jetArea_pfj_hist = ibook.book1D("jetArea_pfj", "PF Jet Area; Area; Entries", 100, 0.0, 2.0);
+  chargedHadronEnergy_pfj_hist =
+      ibook.book1D("chargedHadronEnergy_pfj", "Charged Hadron Energy; Energy (GeV); Entries", 100, 0.0, 500.0);
+  neutralHadronEnergy_pfj_hist =
+      ibook.book1D("neutralHadronEnergy_pfj", "Neutral Hadron Energy; Energy (GeV); Entries", 100, 0.0, 500.0);
+  photonEnergy_pfj_hist = ibook.book1D("photonEnergy_pfj", "Photon Energy; Energy (GeV); Entries", 100, 0.0, 300.0);
+  electronEnergy_pfj_hist =
+      ibook.book1D("electronEnergy_pfj", "Electron Energy; Energy (GeV); Entries", 100, 0.0, 100.0);
+  muonEnergy_pfj_hist = ibook.book1D("muonEnergy_pfj", "Muon Energy; Energy (GeV); Entries", 100, 0.0, 100.0);
+  HFHadronEnergy_pfj_hist =
+      ibook.book1D("HFHadronEnergy_pfj", "HF Hadron Energy; Energy (GeV); Entries", 100, 0.0, 300.0);
+  HFEMEnergy_pfj_hist = ibook.book1D("HFEMEnergy_pfj", "HF EM Energy; Energy (GeV); Entries", 100, 0.0, 300.0);
+  chargedHadronMultiplicity_pfj_hist =
+      ibook.book1D("chargedHadronMultiplicity_pfj", "Charged Hadron Multiplicity; Multiplicity; Entries", 50, 0, 50);
+  neutralHadronMultiplicity_pfj_hist =
+      ibook.book1D("neutralHadronMultiplicity_pfj", "Neutral Hadron Multiplicity; Multiplicity; Entries", 50, 0, 50);
+  photonMultiplicity_pfj_hist =
+      ibook.book1D("photonMultiplicity_pfj", "Photon Multiplicity; Multiplicity; Entries", 50, 0, 50);
+  electronMultiplicity_pfj_hist =
+      ibook.book1D("electronMultiplicity_pfj", "Electron Multiplicity; Multiplicity; Entries", 20, 0, 20);
+  muonMultiplicity_pfj_hist =
+      ibook.book1D("muonMultiplicity_pfj", "Muon Multiplicity; Multiplicity; Entries", 20, 0, 20);
+  HFHadronMultiplicity_pfj_hist =
+      ibook.book1D("HFHadronMultiplicity_pfj", "HF Hadron Multiplicity; Multiplicity; Entries", 20, 0, 20);
+  HFEMMultiplicity_pfj_hist =
+      ibook.book1D("HFEMMultiplicity_pfj", "HF EM Multiplicity; Multiplicity; Entries", 20, 0, 20);
+  HOEnergy_pfj_hist = ibook.book1D("HOEnergy_pfj", "HO Energy; Energy (GeV); Entries", 100, 0.0, 50.0);
+  csv_pfj_hist = ibook.book1D("csv_pfj", "Combined Secondary Vertex (CSV); CSV Score; Entries", 100, 0.0, 1.0);
+  mvaDiscriminator_pfj_hist = ibook.book1D("mvaDiscriminator_pfj", "MVA Discriminator; Score; Entries", 100, -1.0, 1.0);
 }
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void ScoutingDQMMakerRun3::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
