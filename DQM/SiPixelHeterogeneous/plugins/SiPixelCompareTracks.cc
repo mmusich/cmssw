@@ -152,26 +152,27 @@ void SiPixelCompareTracks<T>::analyzeSeparate(U tokenRef, V tokenTar, const edm:
   const auto& tsoaHandleRef = iEvent.getHandle(tokenRef);
   const auto& tsoaHandleTar = iEvent.getHandle(tokenTar);
 
-  if (not tsoaHandleRef or not tsoaHandleTar) {
+  if (!tsoaHandleRef || !tsoaHandleTar) {
     edm::LogWarning out("SiPixelCompareTracks");
-    if (not tsoaHandleRef) {
+    if (!tsoaHandleRef)
       out << "reference tracks not found; ";
-    }
-    if (not tsoaHandleTar) {
+    if (!tsoaHandleTar)
       out << "target tracks not found; ";
-    }
     out << "the comparison will not run.";
     return;
   }
 
-  auto const& tsoaRef = *tsoaHandleRef;
-  auto const& tsoaTar = *tsoaHandleTar;
+  const auto& tsoaRef = *tsoaHandleRef;
+  const auto& tsoaTar = *tsoaHandleTar;
 
-  auto maxTracksRef = tsoaRef.view().metadata().size();  //this should be same for both?
-  auto maxTracksTar = tsoaTar.view().metadata().size();  //this should be same for both?
+  const auto& viewRef = tsoaRef.view();
+  const auto& viewTar = tsoaTar.view();
 
-  auto const* qualityRef = tsoaRef.view().quality();
-  auto const* qualityTar = tsoaTar.view().quality();
+  auto maxTracksRef = viewRef.metadata().size();
+  auto maxTracksTar = viewTar.metadata().size();
+
+  const auto* qualityRef = viewRef.quality();
+  const auto* qualityTar = viewTar.quality();
 
   int32_t nTracksRef = 0;
   int32_t nTracksTar = 0;
@@ -179,94 +180,100 @@ void SiPixelCompareTracks<T>::analyzeSeparate(U tokenRef, V tokenTar, const edm:
   int32_t nLooseAndAboveTracksRef_matchedTar = 0;
   int32_t nLooseAndAboveTracksTar = 0;
 
-  //Loop over Tar tracks and store the indices of the loose tracks. Whats happens if useQualityCut_ is false?
   std::vector<int32_t> looseTrkidxTar;
+
   for (int32_t jt = 0; jt < maxTracksTar; ++jt) {
-    if (helper::nHits(tsoaTar.view(), jt) == 0)
-      break;  // this is a guard
-    if (!(tsoaTar.view()[jt].pt() > 0.))
+    if (helper::nHits(viewTar, jt) == 0)
+      break;
+
+    if (viewTar[jt].pt() <= 0.)
       continue;
-    nTracksTar++;
+
+    ++nTracksTar;
     if (useQualityCut_ && qualityTar[jt] < minQuality_)
       continue;
-    nLooseAndAboveTracksTar++;
+
+    ++nLooseAndAboveTracksTar;
     looseTrkidxTar.emplace_back(jt);
   }
 
-  //Now loop over Ref tracks//nested loop for loose gPU tracks
   for (int32_t it = 0; it < maxTracksRef; ++it) {
-    int nHitsRef = helper::nHits(tsoaRef.view(), it);
+    if (helper::nHits(viewRef, it) == 0)
+      break;
 
-    if (nHitsRef == 0)
-      break;  // this is a guard
-
-    float ptRef = tsoaRef.view()[it].pt();
-    float etaRef = tsoaRef.view()[it].eta();
-    float phiRef = reco::phi(tsoaRef.view(), it);
-    float zipRef = reco::zip(tsoaRef.view(), it);
-    float tipRef = reco::tip(tsoaRef.view(), it);
-    auto qRef = reco::charge(tsoaRef.view(), it);
-
-    if (!(ptRef > 0.))
+    float ptRef = viewRef[it].pt();
+    if (ptRef <= 0.)
       continue;
-    nTracksRef++;
+
+    ++nTracksRef;
     if (useQualityCut_ && qualityRef[it] < minQuality_)
       continue;
-    nLooseAndAboveTracksRef++;
-    //Now loop over loose Tar trk and find the closest in DeltaR//do we need pt cut?
-    const int32_t notFound = -1;
-    int32_t closestTkidx = notFound;
+
+    ++nLooseAndAboveTracksRef;
+
+    float etaRef = viewRef[it].eta();
+    float phiRef = reco::phi(viewRef, it);
+    float zipRef = reco::zip(viewRef, it);
+    float tipRef = reco::tip(viewRef, it);
+    auto qRef = reco::charge(viewRef, it);
+
+    int32_t closestTkidx = -1;
     float mindr2 = dr2cut_;
 
-    for (auto gid : looseTrkidxTar) {
-      float etaTar = tsoaTar.view()[gid].eta();
-      float phiTar = reco::phi(tsoaTar.view(), gid);
+    for (int32_t gid : looseTrkidxTar) {
+      float etaTar = viewTar[gid].eta();
+      float phiTar = reco::phi(viewTar, gid);
       float dr2 = reco::deltaR2(etaRef, phiRef, etaTar, phiTar);
-      if (dr2 > dr2cut_)
-        continue;  // this is arbitrary
-      if (mindr2 > dr2) {
+
+      if (dr2 < mindr2) {
         mindr2 = dr2;
         closestTkidx = gid;
       }
     }
 
-    hpt_eta_tkAllRef_->Fill(etaRef, ptRef);  //all Ref tk
+    hpt_eta_tkAllRef_->Fill(etaRef, ptRef);
     hphi_z_tkAllRef_->Fill(phiRef, zipRef);
-    if (closestTkidx == notFound)
-      continue;
-    nLooseAndAboveTracksRef_matchedTar++;
 
-    hchi2_->Fill(tsoaRef.view()[it].chi2(), tsoaTar.view()[closestTkidx].chi2());
-    hCharge_->Fill(qRef, reco::charge(tsoaTar.view(), closestTkidx));
-    hnHits_->Fill(helper::nHits(tsoaRef.view(), it), helper::nHits(tsoaTar.view(), closestTkidx));
-    hnLayers_->Fill(tsoaRef.view()[it].nLayers(), tsoaTar.view()[closestTkidx].nLayers());
-    hpt_->Fill(ptRef, tsoaTar.view()[closestTkidx].pt());
-    hCurvature_->Fill(qRef / ptRef, reco::charge(tsoaTar.view(), closestTkidx) / tsoaTar.view()[closestTkidx].pt());
-    hptLogLog_->Fill(ptRef, tsoaTar.view()[closestTkidx].pt());
-    heta_->Fill(etaRef, tsoaTar.view()[closestTkidx].eta());
-    hphi_->Fill(phiRef, reco::phi(tsoaTar.view(), closestTkidx));
-    hz_->Fill(zipRef, reco::zip(tsoaTar.view(), closestTkidx));
-    htip_->Fill(tipRef, reco::tip(tsoaTar.view(), closestTkidx));
-    hptdiffMatched_->Fill(ptRef - tsoaTar.view()[closestTkidx].pt());
-    hCurvdiffMatched_->Fill(qRef / ptRef -
-                            (reco::charge(tsoaTar.view(), closestTkidx) / tsoaTar.view()[closestTkidx].pt()));
-    hetadiffMatched_->Fill(etaRef - tsoaTar.view()[closestTkidx].eta());
-    hphidiffMatched_->Fill(reco::deltaPhi(phiRef, reco::phi(tsoaTar.view(), closestTkidx)));
-    hzdiffMatched_->Fill(zipRef - reco::zip(tsoaTar.view(), closestTkidx));
-    htipdiffMatched_->Fill(tipRef - reco::tip(tsoaTar.view(), closestTkidx));
-    hpt_eta_tkAllRefMatched_->Fill(etaRef, tsoaRef.view()[it].pt());  //matched to gpu
+    if (closestTkidx == -1)
+      continue;
+
+    ++nLooseAndAboveTracksRef_matchedTar;
+
+    const auto& matchedTar = viewTar[closestTkidx];
+    float ptTar = matchedTar.pt();
+    float etaTar = matchedTar.eta();
+    float phiTar = reco::phi(viewTar, closestTkidx);
+    float zipTar = reco::zip(viewTar, closestTkidx);
+    float tipTar = reco::tip(viewTar, closestTkidx);
+    auto qTar = reco::charge(viewTar, closestTkidx);
+
+    hchi2_->Fill(viewRef[it].chi2(), matchedTar.chi2());
+    hCharge_->Fill(qRef, qTar);
+    hnHits_->Fill(helper::nHits(viewRef, it), helper::nHits(viewTar, closestTkidx));
+    hnLayers_->Fill(viewRef[it].nLayers(), matchedTar.nLayers());
+    hpt_->Fill(ptRef, ptTar);
+    hCurvature_->Fill(qRef / ptRef, qTar / ptTar);
+    hptLogLog_->Fill(ptRef, ptTar);
+    heta_->Fill(etaRef, etaTar);
+    hphi_->Fill(phiRef, phiTar);
+    hz_->Fill(zipRef, zipTar);
+    htip_->Fill(tipRef, tipTar);
+
+    hptdiffMatched_->Fill(ptRef - ptTar);
+    hCurvdiffMatched_->Fill(qRef / ptRef - qTar / ptTar);
+    hetadiffMatched_->Fill(etaRef - etaTar);
+    hphidiffMatched_->Fill(reco::deltaPhi(phiRef, phiTar));
+    hzdiffMatched_->Fill(zipRef - zipTar);
+    htipdiffMatched_->Fill(tipRef - tipTar);
+    hpt_eta_tkAllRefMatched_->Fill(etaRef, ptRef);
     hphi_z_tkAllRefMatched_->Fill(etaRef, zipRef);
   }
 
-  // Define a lambda function for filling the histograms
-  auto fillHistogram = [](auto& histogram, auto xValue, auto yValue) { histogram->Fill(xValue, yValue); };
-
-  // Define a lambda for filling delta histograms
-  auto fillDeltaHistogram = [](auto& histogram, int cpuValue, int gpuValue) {
-    histogram->Fill(std::min(cpuValue, 1000), std::clamp(gpuValue - cpuValue, -100, 100));
+  auto fillHistogram = [](auto& h, auto x, auto y) { h->Fill(x, y); };
+  auto fillDeltaHistogram = [](auto& h, int cpu, int gpu) {
+    h->Fill(std::min(cpu, 1000), std::clamp(gpu - cpu, -100, 100));
   };
 
-  // Fill the histograms
   fillHistogram(hnTracks_, nTracksRef, nTracksTar);
   fillHistogram(hnLooseAndAboveTracks_, nLooseAndAboveTracksRef, nLooseAndAboveTracksTar);
   fillHistogram(hnLooseAndAboveTracks_matched_, nLooseAndAboveTracksRef, nLooseAndAboveTracksRef_matchedTar);
