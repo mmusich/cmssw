@@ -943,17 +943,21 @@ void ScoutingDQMMakerRun3::bookHistograms(DQMStore::IBooker& ibook,
 }
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void ScoutingDQMMakerRun3::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
-
-  //Specify that only 'tracks' is allowed
-  //To use, remove the default given above and uncomment below
-  //ParameterSetDescription desc;
-  //desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
-  //descriptions.addWithDefaultLabel(desc);
+  desc.add<std::string>("OutputInternalPath", "MY_FOLDER");
+  desc.add<edm::InputTag>("triggerresults", edm::InputTag("TriggerResults", "", "HLT"));
+  desc.add<edm::InputTag>("electrons", edm::InputTag("hltScoutingEgammaPacker"));
+  desc.add<edm::InputTag>("muons", edm::InputTag("hltScoutingMuonPackerNoVtx"));
+  desc.add<edm::InputTag>("pfcands", edm::InputTag("hltScoutingPFPacker"));
+  desc.add<edm::InputTag>("photons", edm::InputTag("hltScoutingEgammaPacker"));
+  desc.add<edm::InputTag>("pfjets", edm::InputTag("hltScoutingPFPacker"));
+  desc.add<edm::InputTag>("tracks", edm::InputTag("hltScoutingTrackPacker"));
+  desc.add<edm::InputTag>("displacedVertices", edm::InputTag("hltScoutingMuonPackerNoVtx","displacedVtx"));
+  desc.add<edm::InputTag>("primaryVertices", edm::InputTag("hltScoutingPrimaryVertexPacker","primaryVtx"));
+  desc.add<edm::InputTag>("pfMetPt", edm::InputTag("hltScoutingPFPacker","pfMetPt"));
+  desc.add<edm::InputTag>("pfMetPhi", edm::InputTag("hltScoutingPFPacker","pfMetPhi"));
+  desc.add<edm::InputTag>("rho", edm::InputTag("hltScoutingPFPacker","rho"));
+  descriptions.addWithDefaultLabel(desc);
 }
 
 //define this as a plug-in
