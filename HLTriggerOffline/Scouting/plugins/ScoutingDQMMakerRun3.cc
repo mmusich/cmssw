@@ -952,11 +952,11 @@ void ScoutingDQMMakerRun3::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.add<edm::InputTag>("photons", edm::InputTag("hltScoutingEgammaPacker"));
   desc.add<edm::InputTag>("pfjets", edm::InputTag("hltScoutingPFPacker"));
   desc.add<edm::InputTag>("tracks", edm::InputTag("hltScoutingTrackPacker"));
-  desc.add<edm::InputTag>("displacedVertices", edm::InputTag("hltScoutingMuonPackerNoVtx","displacedVtx"));
-  desc.add<edm::InputTag>("primaryVertices", edm::InputTag("hltScoutingPrimaryVertexPacker","primaryVtx"));
-  desc.add<edm::InputTag>("pfMetPt", edm::InputTag("hltScoutingPFPacker","pfMetPt"));
-  desc.add<edm::InputTag>("pfMetPhi", edm::InputTag("hltScoutingPFPacker","pfMetPhi"));
-  desc.add<edm::InputTag>("rho", edm::InputTag("hltScoutingPFPacker","rho"));
+  desc.add<edm::InputTag>("displacedVertices", edm::InputTag("hltScoutingMuonPackerNoVtx", "displacedVtx"));
+  desc.add<edm::InputTag>("primaryVertices", edm::InputTag("hltScoutingPrimaryVertexPacker", "primaryVtx"));
+  desc.add<edm::InputTag>("pfMetPt", edm::InputTag("hltScoutingPFPacker", "pfMetPt"));
+  desc.add<edm::InputTag>("pfMetPhi", edm::InputTag("hltScoutingPFPacker", "pfMetPhi"));
+  desc.add<edm::InputTag>("rho", edm::InputTag("hltScoutingPFPacker", "rho"));
   descriptions.addWithDefaultLabel(desc);
 }
 
