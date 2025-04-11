@@ -59,7 +59,7 @@
 class ScoutingCollectionsDQMMonitor : public DQMEDAnalyzer {
 public:
   explicit ScoutingCollectionsDQMMonitor(const edm::ParameterSet&);
-  ~ScoutingCollectionsDQMMonitor() override;
+  ~ScoutingCollectionsDQMMonitor() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -68,7 +68,13 @@ private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
 
-  const std::string outputInternalPath_ = "HLT/ScoutingOffline/Misc";
+  template <typename T>
+  bool getValidHandle(const edm::Event& iEvent,
+                      const edm::EDGetTokenT<T>& token,
+                      edm::Handle<T>& handle,
+                      const std::string& label);
+
+  const std::string outputInternalPath_ = "HLT/ScoutingOffline/Miscellanea";
 
   const edm::InputTag triggerResultsTag;
   const edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken;
@@ -248,7 +254,6 @@ private:
   dqm::reco::MonitorElement* sMaj_ele_hist;
 
   // muon histograms
-
   dqm::reco::MonitorElement* pt_mu_hist;
   dqm::reco::MonitorElement* eta_mu_hist;
   dqm::reco::MonitorElement* phi_mu_hist;
@@ -396,14 +401,6 @@ private:
 };
 
 //
-// constants, enums and typedefs
-//
-
-//
-// static data member definitions
-//
-
-//
 // constructors and destructor
 //
 ScoutingCollectionsDQMMonitor::ScoutingCollectionsDQMMonitor(const edm::ParameterSet& iConfig)
@@ -423,16 +420,21 @@ ScoutingCollectionsDQMMonitor::ScoutingCollectionsDQMMonitor(const edm::Paramete
       pfjetsToken(consumes<std::vector<Run3ScoutingPFJet>>(iConfig.getParameter<edm::InputTag>("pfjets"))),
       tracksToken(consumes<std::vector<Run3ScoutingTrack>>(iConfig.getParameter<edm::InputTag>("tracks"))) {}
 
-ScoutingCollectionsDQMMonitor::~ScoutingCollectionsDQMMonitor() {
-  // do anything here that needs to be done at desctruction time
-  // (e.g. close files, deallocate resources etc.)
-  //
-  // please remove this method altogether if it would be left empty
-}
-
 //
 // member functions
 //
+template <typename T>
+bool ScoutingCollectionsDQMMonitor::getValidHandle(const edm::Event& iEvent,
+                                                   const edm::EDGetTokenT<T>& token,
+                                                   edm::Handle<T>& handle,
+                                                   const std::string& label) {
+  iEvent.getByToken(token, handle);
+  if (!handle.isValid()) {
+    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for " << label;
+    return false;
+  }
+  return true;
+}
 
 // ------------ method called for each event  ------------
 void ScoutingCollectionsDQMMonitor::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -441,80 +443,28 @@ void ScoutingCollectionsDQMMonitor::analyze(const edm::Event& iEvent, const edm:
   using namespace reco;
 
   // all the handles needed
-  Handle<double> rhoH;
-  iEvent.getByToken(rhoToken, rhoH);
-  if (!rhoH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for rho";
-    return;
-  }
+  edm::Handle<double> rhoH;
+  edm::Handle<double> pfMetPhiH;
+  edm::Handle<double> pfMetPtH;
+  edm::Handle<std::vector<Run3ScoutingParticle>> pfcandsH;
+  edm::Handle<std::vector<Run3ScoutingPhoton>> photonsH;
+  edm::Handle<std::vector<Run3ScoutingElectron>> electronsH;
+  edm::Handle<std::vector<Run3ScoutingMuon>> muonsH;
+  edm::Handle<std::vector<Run3ScoutingPFJet>> PFjetsH;
+  edm::Handle<std::vector<Run3ScoutingVertex>> verticesH;
+  edm::Handle<std::vector<Run3ScoutingVertex>> primaryVerticesH;
+  edm::Handle<std::vector<Run3ScoutingTrack>> tracksH;
 
-  Handle<double> pfMetPhiH;
-  iEvent.getByToken(pfMetPhiToken, pfMetPhiH);
-  if (!pfMetPhiH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for MET phi";
-    return;
-  }
-
-  Handle<double> pfMetPtH;
-  iEvent.getByToken(pfMetPtToken, pfMetPtH);
-  if (!pfMetPtH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for MET pT";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingParticle>> pfcandsH;
-  iEvent.getByToken(pfcandsToken, pfcandsH);
-  if (!pfcandsH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for PF candidates";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingPhoton>> photonsH;
-  iEvent.getByToken(photonsToken, photonsH);
-  if (!photonsH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for photons";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingElectron>> electronsH;
-  iEvent.getByToken(electronsToken, electronsH);
-  if (!electronsH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for electrons";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingMuon>> muonsH;
-  iEvent.getByToken(muonsToken, muonsH);
-  if (!muonsH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for muons";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingPFJet>> PFjetsH;
-  iEvent.getByToken(pfjetsToken, PFjetsH);
-  if (!PFjetsH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for PF jets";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingVertex>> primaryVerticesH;
-  iEvent.getByToken(primaryVerticesToken, primaryVerticesH);
-  if (!primaryVerticesH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for primary vertices";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingVertex>> verticesH;
-  iEvent.getByToken(verticesToken, verticesH);
-  if (!verticesH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for displaced vertices";
-    return;
-  }
-
-  Handle<vector<Run3ScoutingTrack>> tracksH;
-  iEvent.getByToken(tracksToken, tracksH);
-  if (!tracksH.isValid()) {
-    edm::LogWarning("ScoutingAnalyzer") << "Invalid handle for tracks";
+  if (!getValidHandle(iEvent, rhoToken, rhoH, "rho") || !getValidHandle(iEvent, pfMetPhiToken, pfMetPhiH, "MET phi") ||
+      !getValidHandle(iEvent, pfMetPtToken, pfMetPtH, "MET pT") ||
+      !getValidHandle(iEvent, pfcandsToken, pfcandsH, "PF candidates") ||
+      !getValidHandle(iEvent, photonsToken, photonsH, "photons") ||
+      !getValidHandle(iEvent, electronsToken, electronsH, "electrons") ||
+      !getValidHandle(iEvent, muonsToken, muonsH, "muons") ||
+      !getValidHandle(iEvent, pfjetsToken, PFjetsH, "PF jets") ||
+      !getValidHandle(iEvent, verticesToken, verticesH, "vertices") ||
+      !getValidHandle(iEvent, primaryVerticesToken, primaryVerticesH, "primary vertices") ||
+      !getValidHandle(iEvent, tracksToken, tracksH, "tracks")) {
     return;
   }
 
@@ -1184,7 +1134,6 @@ void ScoutingCollectionsDQMMonitor::bookHistograms(DQMStore::IBooker& ibook,
 
 void ScoutingCollectionsDQMMonitor::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.setUnknown();
   desc.add<std::string>("OutputInternalPath", "MY_FOLDER");
   desc.add<edm::InputTag>("triggerresults", edm::InputTag("TriggerResults", "", "HLT"));
   desc.add<edm::InputTag>("electrons", edm::InputTag("hltScoutingEgammaPacker"));
@@ -1198,7 +1147,7 @@ void ScoutingCollectionsDQMMonitor::fillDescriptions(edm::ConfigurationDescripti
   desc.add<edm::InputTag>("pfMetPt", edm::InputTag("hltScoutingPFPacker", "pfMetPt"));
   desc.add<edm::InputTag>("pfMetPhi", edm::InputTag("hltScoutingPFPacker", "pfMetPhi"));
   desc.add<edm::InputTag>("rho", edm::InputTag("hltScoutingPFPacker", "rho"));
-  descriptions.addDefault(desc);
+  descriptions.addWithDefaultLabel(desc);
 }
 
 //define this as a plug-in
