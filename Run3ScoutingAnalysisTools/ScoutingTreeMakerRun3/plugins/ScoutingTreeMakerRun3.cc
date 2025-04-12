@@ -22,53 +22,41 @@
 #include <TLorentzVector.h>
 
 // user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/one/EDAnalyzer.h"
-
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/Utilities/interface/InputTag.h"
-
-#include "FWCore/Common/interface/TriggerNames.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
-
-#include "DataFormats/Scouting/interface/Run3ScoutingElectron.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingPhoton.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingPFJet.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingVertex.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingTrack.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingMuon.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingParticle.h"
-
-#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
-#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
-#include "L1Trigger/L1TGlobal/interface/L1TGlobalUtil.h"
 #include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h"
+#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
+#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingElectron.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingMuon.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingPFJet.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingParticle.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingPhoton.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingTrack.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingVertex.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "HLTrigger/HLTcore/interface/TriggerExpressionData.h"
 #include "HLTrigger/HLTcore/interface/TriggerExpressionEvaluator.h"
 #include "HLTrigger/HLTcore/interface/TriggerExpressionParser.h"
-
-#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
-
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "L1Trigger/L1TGlobal/interface/L1TGlobalUtil.h"
 
 //
 // class declaration
 //
 
-// If the analyzer does not use TFileService, please remove
-// the template argument to the base class so the class inherits
-// from  edm::one::EDAnalyzer<>
-// This will improve performance in multithreaded jobs.
-
 class ScoutingTreeMakerRun3 : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
   explicit ScoutingTreeMakerRun3(const edm::ParameterSet&);
-  ~ScoutingTreeMakerRun3() override;
+  ~ScoutingTreeMakerRun3() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -341,30 +329,8 @@ private:
   std::vector<float> pT_1;
   std::vector<float> pT_2;
 
-  /*
-
-// Calojets (this is actually not used anymore lol)
-
-  float pt1_CLJ;
-  float pt2_CLJ;
-  float eta1_CLJ;
-  float eta2_CLJ;
-  float phi1_CLJ;
-  float phi2_CLJ;
-  float m_CLJ;
-  float jetArea_CLJ;
-  float maxEInEmTowers_CLJ;
-  float maxEInHadTowers_CLJ;
-  float hadEnergyInHB_CLJ;
-  float hadEnergyInHE_CLJ;
-  float hadEnergyInHF_CLJ;
-  float emEnergyInEB_CLJ;
-  float emEnergyInEE_CLJ;
-  float emEnergyInHF_CLJ;
-  float towersArea_CLJ;
-  float mvaDiscriminator_CLJ;
-  float btagDiscriminator_CLJ;
- */
+  int noDimuon{0};
+  int noResonance{0};
 };
 
 //
@@ -407,13 +373,6 @@ ScoutingTreeMakerRun3::ScoutingTreeMakerRun3(const edm::ParameterSet& iConfig)
   }
 }
 
-ScoutingTreeMakerRun3::~ScoutingTreeMakerRun3() {
-  // do anything here that needs to be done at desctruction time
-  // (e.g. close files, deallocate resources etc.)
-  //
-  // please remove this method altogether if it would be left empty
-}
-
 //
 // member functions
 //
@@ -423,29 +382,6 @@ void ScoutingTreeMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSe
   using namespace edm;
   using namespace std;
   using namespace reco;
-
-  /*
-  Handle<vector<Run3ScoutingParticle>> pfcandsH;
-  iEvent.getByToken(pfcandsToken, pfcandsH);
-
-  Handle<vector<Run3ScoutingMuon>> muonsH;
-  iEvent.getByToken(muonsToken, muonsH);
-
-  Handle<vector<Run3ScoutingPFJet>> PFjetsH;
-  iEvent.getByToken(pfjetsToken, PFjetsH);
-
-  Handle<vector<Run3ScoutingPhoton>> photonsH;
-  iEvent.getByToken(photonsToken, photonsH);
-
-  Handle<vector<Run3ScoutingElectron>> electronsH;
-  iEvent.getByToken(electronsToken, electronsH);
-
-  Handle<vector<Run3ScoutingVertex>> verticesH;
-  iEvent.getByToken(verticesToken, verticesH);
-
-  Handle<vector<Run3ScoutingVertex>> primaryVerticesH;
-  iEvent.getByToken(primaryVerticesToken, primaryVerticesH);
-  */
 
   Handle<vector<Run3ScoutingParticle>> pfcandsH;
   iEvent.getByToken(pfcandsToken, pfcandsH);
@@ -505,60 +441,22 @@ void ScoutingTreeMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSe
   }
   */
 
-  if (pfcandsH->size() >= 2 && PFjetsH->size() >= 2 && muonsH->size() >= 2 && photonsH->size() >= 2 &&
-      electronsH->size() >= 2 && verticesH->size() >= 2) {
-    std::cout << "\n whatever ok is " << pfcandsH->size() << " \n ";
-    std::cout << "pfjets  " << PFjetsH->size() << "  \n ";
-    std::cout << "muons  " << muonsH->size() << "  \n ";
-    std::cout << "photons  " << photonsH->size() << "  \n ";
-    std::cout << "electrons  " << electronsH->size() << "  \n ";
-    std::cout << "vertices  " << verticesH->size() << "  \n ";
-  }
-
-  /*
-  std::cout << "\n whatever ok is " << pfcandsH->size() << " \n "; 
-
-  std::cout << "pfjets  " << PFjetsH->size() << "  \n "; 
-  std::cout << "muons  " << muonsH->size() << "  \n "; 
-  std::cout << "photons  " << photonsH->size() << "  \n "; 
-  std::cout << "electrons  " << electronsH->size() << "  \n "; 
-  std::cout << "vertices  " << verticesH->size() << "  \n "; 
-  */
-
-  if (muonsH->size() < 2)
-    return;
-
-  // int nMuons=0;
-  // nMuonsID=0;
-
   vector<int> idx;
 
   int j = 0;
   for (auto muons_iter = muonsH->begin(); muons_iter != muonsH->end(); ++muons_iter) {
-    //std::cout<<"pt_mu: "<<muons_iter->pt()<<std::endl;
-    //std::cout<<"trkiso: "<<muons_iter->trackIso()<<" pix hits: "<< muons_iter->nValidPixelHits()<<" layers: "<<muons_iter->nTrackerLayersWithMeasurement()<<" trk chi2: "<<muons_iter->trk_chi2()<<std::endl;
-
-    /*
-      if (muons_iter->pt()>4) {
-          nMuons+=1;
-          if ((muons_iter->trackIso()<0.15) &&
-              (muons_iter->nValidPixelHits()>0) &&
-              (muons_iter->nTrackerLayersWithMeasurement()>5)&&
-              (muons_iter->trk_chi2()<10)) {
-              nMuonsID+=1;
-          }
-      }
-      */
-
     idx.push_back(j);
     j += 1;
   }
 
-  // std::cout<<std::endl<<idx.size()<<std::endl;
+  if (idx.size() < 2) {
+    std::cout << " scouting muons in the event: " << idx.size() << std::endl;
+    noDimuon++;
+  }
 
   if (idx.size() > 1) {
-    //std::cout << "charge: " << (muonsH->at(idx[0]).charge()) << ", " << (muonsH->at(idx[1]).charge()) << std::endl;
     if ((muonsH->at(idx[0]).charge()) * (muonsH->at(idx[1]).charge()) > 0) {
+      noResonance++;
       return;
     }
 
@@ -677,13 +575,13 @@ void ScoutingTreeMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSe
       }
     }
 
-    //Handle<vector<Run3ScoutingElectron> > electronsH;
-    //iEvent.getByToken(electronsToken, electronsH);
+    std::cout << " no DiMuon: " << noDimuon << std::endl;
+    std::cout << " no Resonance: " << noResonance << std::endl;
+
+    tree->Fill();
 
     if (electronsH->size() < 2)
       return;
-
-    std::cout << "\n two electrons present \n ";
 
     pt1_ele = electronsH->at(idx[0]).pt();
     pt2_ele = electronsH->at(idx[1]).pt();
@@ -720,9 +618,6 @@ void ScoutingTreeMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSe
     sMin_ele = electronsH->at(idx[0]).sMin();
     sMaj_ele = electronsH->at(idx[0]).sMaj();
 
-    //Handle<vector<Run3ScoutingPhoton> > photonsH;
-    //iEvent.getByToken(photonsToken, photonsH);
-
     if (photonsH->size() < 2)
       return;
     pt1_pho = photonsH->at(idx[0]).pt();
@@ -743,9 +638,6 @@ void ScoutingTreeMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSe
     r9_pho = photonsH->at(idx[0]).r9();
     sMin_pho = photonsH->at(idx[0]).sMin();
     sMaj_pho = photonsH->at(idx[0]).sMaj();
-
-    //Handle<vector<Run3ScoutingPFJet> > PFjetsH;
-    //iEvent.getByToken(pfjetsToken, PFjetsH);
 
     if (PFjetsH->size() < 2)
       return;
@@ -804,31 +696,6 @@ void ScoutingTreeMakerRun3::analyze(const edm::Event& iEvent, const edm::EventSe
       }
     }
 
-    /*      
-      std::cout << "\n" << "entries in pfcandsH : " ;
-      for (auto i:pdgId_all) {std::cout << i << " " ;}
-      std::cout << "\n";
-
-
-      std::cout << "\n" << "do we have pT 211 ? ";
-      for (auto i:pT_211) {std::cout << i << " " ;}
-      std::cout << "\n";
-
-*/
-
-    //TLorentzVector jet1;
-    //jet1.SetPtEtaPhiM(pt1_PFJ, eta1_PFJ, phi1_PFJ, 0);
-
-    //TLorentzVector jet2;
-    //jet2.SetPtEtaPhiM(pt2_PFJ, eta2_PFJ, phi2_PFJ, 0);
-
-    //TLorentzVector dijet = jet1 + jet2;
-    //mass_PFJ = dijet.M();
-    //pt_dijet = dijet.Pt();
-    //dr_PFJ = jet1.DeltaR(jet2);
-
-    //std::cout<<"tree filling with mass_mu: "<<mass_mu<<", pt: "<<pt_dimu<<std::endl;
-    tree->Fill();
     dimuon_hist->Fill(mass_mu);
     pt1_mu_hist->Fill(pt1_mu);
     eta1_mu_hist->Fill(eta1_mu);
