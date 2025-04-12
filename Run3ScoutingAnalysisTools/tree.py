@@ -15,7 +15,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-       'file:/data/jprendi/diff_Tags_initial/src/scouting_kickoff/outputScoutingPF_PromptTag.root'
+       'file:outputLocalTestDataScouting.root'
  )
 )
 
