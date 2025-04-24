@@ -9,6 +9,8 @@ from SimCalorimetry.HGCalAssociatorProducers.SimClusterToCaloParticleAssociation
 from SimCalorimetry.HGCalAssociatorProducers.TSToSimTSAssociation_cfi import  allTrackstersToSimTrackstersAssociationsByLCs as _allTrackstersToSimTrackstersAssociationsByLCs
 from SimCalorimetry.HGCalAssociatorProducers.hitToSimClusterCaloParticleAssociator_cfi import hitToSimClusterCaloParticleAssociator as _hitToSimClusterCaloParticleAssociator
 
+from Validation.HGCalValidation.HLT_TICLIterLabels_cff import hltTiclIterLabels as _hltTiclIterLabels
+
 from RecoLocalCalo.HGCalRecProducers.recHitMapProducer_cfi import recHitMapProducer as _recHitMapProducer
 hltRecHitMapProducer = _recHitMapProducer.clone(
     BHInput = cms.InputTag("hltHGCalRecHit","HGCHEBRecHits"),
@@ -40,31 +42,12 @@ hltLayerClusterSimClusterAssociationProducer = _layerClusterSimClusterAssociatio
     label_lcl = cms.InputTag("hltHgcalMergeLayerClusters")
 )
 
-
-#hltTiclIterLabels = ["hltTiclTrackstersCLUE3DHigh", "hltTiclTrackstersCLUE3DHighL1Seeded", "hltTiclTrackstersMerge"]
-hltTiclIterLabels = ["hltTiclTrackstersCLUE3DHigh", "hltTiclTrackstersMerge"]
-
-from Configuration.ProcessModifiers.ticl_v5_cff import ticl_v5
-ticl_v5.toModify(
-    globals(),
-    lambda g: g.update({
-        "hltTiclIterLabels": [
-            "hltTiclTrackstersCLUE3DHigh",
-            #"hltTiclTrackstersCLUE3DHighL1Seeded",
-            "hltTiclTracksterLinks",
-            #"hltTiclTracksterLinksSuperclusteringDNNUnseeded",
-            #"hltTiclTracksterLinksSuperclusteringDNNL1Seeded",
-            "hltTiclCandidate"
-        ]
-    })
-)
-
 from SimCalorimetry.HGCalAssociatorProducers.AllLayerClusterToTracksterAssociatorsProducer_cfi import AllLayerClusterToTracksterAssociatorsProducer as _AllLayerClusterToTracksterAssociatorsProducer
 
 hltAllLayerClusterToTracksterAssociations = _AllLayerClusterToTracksterAssociatorsProducer.clone(
     layer_clusters = cms.InputTag("hltHgcalMergeLayerClusters"),
     tracksterCollections = cms.VInputTag(
-        *[cms.InputTag(label) for label in hltTiclIterLabels],
+        *[cms.InputTag(label) for label in _hltTiclIterLabels],
         cms.InputTag("hltTiclSimTracksters"),
         cms.InputTag("hltTiclSimTracksters", "fromCPs"),
     )
@@ -74,7 +57,7 @@ hltAllTrackstersToSimTrackstersAssociationsByLCs = _allTrackstersToSimTracksters
     allLCtoTSAccoc =  cms.string("hltAllLayerClusterToTracksterAssociations"),
     layerClusters = cms.InputTag("hltHgcalMergeLayerClusters"),
     tracksterCollections = cms.VInputTag(
-        *[cms.InputTag(label) for label in hltTiclIterLabels]
+        *[cms.InputTag(label) for label in _hltTiclIterLabels]
     ),
     simTracksterCollections = cms.VInputTag(
       cms.InputTag('hltTiclSimTracksters'),
@@ -96,7 +79,7 @@ hltAllHitToTracksterAssociations =  _AllHitToTracksterAssociatorsProducer.clone(
     hits = cms.VInputTag("hltHGCalRecHit:HGCEERecHits", "hltHGCalRecHit:HGCHEFRecHits", "hltHGCalRecHit:HGCHEBRecHits"),
     layerClusters = cms.InputTag("hltHgcalMergeLayerClusters"),
     tracksterCollections = cms.VInputTag(
-        *[cms.InputTag(label) for label in hltTiclIterLabels],
+        *[cms.InputTag(label) for label in _hltTiclIterLabels],
         cms.InputTag("hltTiclSimTracksters"),
         cms.InputTag("hltTiclSimTracksters", "fromCPs"),
     )
@@ -108,7 +91,7 @@ hltAllTrackstersToSimTrackstersAssociationsByHits = _AllTracksterToSimTracksterA
     hitToSimClusterMap = cms.InputTag("hltHitToSimClusterCaloParticleAssociator","hitToSimClusterMap"),
     hits = cms.VInputTag("hltHGCalRecHit:HGCEERecHits", "hltHGCalRecHit:HGCHEFRecHits", "hltHGCalRecHit:HGCHEBRecHits"),
     tracksterCollections = cms.VInputTag(
-        *[cms.InputTag(label) for label in hltTiclIterLabels]
+        *[cms.InputTag(label) for label in _hltTiclIterLabels]
     ),
     simTracksterCollections = cms.VInputTag(
       'hltTiclSimTracksters',
