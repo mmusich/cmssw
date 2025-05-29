@@ -74,6 +74,8 @@ runs=(
     386614 # see https://github.com/cms-sw/cmssw/issues/45555
     386872 # see https://github.com/cms-sw/cmssw/issues/45555
     386951 # see https://github.com/cms-sw/cmssw/issues/45555
+    392441 # see https://github.com/cms-sw/cmssw/issues/48157
+    392669 # see https://github.com/cms-sw/cmssw/issues/48205
 )
 
 runsHI=(
