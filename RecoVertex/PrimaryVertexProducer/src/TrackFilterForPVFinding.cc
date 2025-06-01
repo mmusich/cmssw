@@ -22,6 +22,7 @@ TrackFilterForPVFinding::TrackFilterForPVFinding(const edm::ParameterSet& conf) 
 }
 
 // select a single track
+/*
 bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
   if (!tk.stateAtBeamLine().isValid())
     return false;
@@ -37,6 +38,85 @@ bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
   bool nStripHitsCut = tk.hitPattern().numberOfValidStripHits() >= minStripHits_;
 
   return IPSigCut && pTCut && etaCut && normChi2Cut && nPxLayCut && nSiLayCut && trackQualityCut && nStripHitsCut;
+}
+*/
+
+#include <iostream>  // for std::cout
+#include <iomanip>   // for std::setprecision
+
+bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
+  if (!tk.stateAtBeamLine().isValid()) {
+    std::cout << "[TrackFilter] Invalid beamline state" << std::endl;
+    return false;
+  }
+
+  bool passed = true;
+
+  auto d0sig = tk.stateAtBeamLine().transverseImpactParameter().significance();
+  auto d0err = tk.stateAtBeamLine().transverseImpactParameter().error();
+  auto dzerr = tk.track().dzError();
+
+  if (d0sig >= maxD0Sig_) {
+    std::cout << "[TrackFilter] Failed d0 significance cut: " << d0sig << " >= " << maxD0Sig_ << std::endl;
+    passed = false;
+  }
+
+  if (d0err >= maxD0Error_) {
+    std::cout << "[TrackFilter] Failed d0 error cut: " << d0err << " >= " << maxD0Error_ << std::endl;
+    passed = false;
+  }
+
+  if (dzerr >= maxDzError_) {
+    std::cout << "[TrackFilter] Failed dz error cut: " << dzerr << " >= " << maxDzError_ << std::endl;
+    passed = false;
+  }
+
+  auto pt = tk.impactPointState().globalMomentum().transverse();
+  if (pt <= minPt_) {
+    std::cout << "[TrackFilter] Failed pT cut: " << pt << " <= " << minPt_ << std::endl;
+    passed = false;
+  }
+
+  auto eta = tk.impactPointState().globalMomentum().eta();
+  if (std::fabs(eta) >= maxEta_) {
+    std::cout << "[TrackFilter] Failed eta cut: |" << eta << "| >= " << maxEta_ << std::endl;
+    passed = false;
+  }
+
+  auto chi2 = tk.normalizedChi2();
+  if (chi2 >= maxNormChi2_) {
+    std::cout << "[TrackFilter] Failed normalized chi2 cut: " << chi2 << " >= " << maxNormChi2_ << std::endl;
+    passed = false;
+  }
+
+  auto pxLayers = tk.hitPattern().pixelLayersWithMeasurement();
+  if (pxLayers < minPxLayers_) {
+    std::cout << "[TrackFilter] Failed pixel layers cut: " << pxLayers << " < " << minPxLayers_ << std::endl;
+    passed = false;
+  }
+
+  auto siLayers = tk.hitPattern().trackerLayersWithMeasurement();
+  if (siLayers < minSiLayers_) {
+    std::cout << "[TrackFilter] Failed silicon layers cut: " << siLayers << " < " << minSiLayers_ << std::endl;
+    passed = false;
+  }
+
+  auto nStripHits = tk.hitPattern().numberOfValidStripHits();
+  if (nStripHits < minStripHits_) {
+    std::cout << "[TrackFilter] Failed strip hits cut: " << nStripHits << " < " << minStripHits_ << std::endl;
+    passed = false;
+  }
+
+  bool qualityPass = (quality_ == reco::TrackBase::undefQuality) || tk.track().quality(quality_);
+  if (!qualityPass) {
+    std::cout << "[TrackFilter] Failed quality flag check: required " << quality_ << std::endl;
+    passed = false;
+  }
+
+  if (passed)
+    std::cout << "[TrackFilter] Track passed all cuts" << std::endl;
+
+  return passed;
 }
 
 // select the vector of tracks that pass the filter cuts

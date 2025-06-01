@@ -438,7 +438,7 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   EventNumber_ = iEvent.eventAuxiliary().id().event();
 
   if (debug_)
-    edm::LogInfo("PrimaryVertexValidation") << " looping over " << trackCollectionHandle->size() << "tracks";
+    edm::LogInfo("PrimaryVertexValidation") << " looping over " << trackCollectionHandle->size() << " tracks";
 
   h_nTracks->Fill(trackCollectionHandle->size());
 
@@ -453,9 +453,9 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     t_tks.push_back(tt);
   }
 
-  if (debug_) {
-    edm::LogInfo("PrimaryVertexValidation") << "Found: " << t_tks.size() << " reconstructed tracks";
-  }
+  //if (debug_) {
+  edm::LogPrint("PrimaryVertexValidation") << "Found: " << t_tks.size() << " reconstructed tracks";
+  //}
 
   //======================================================
   // select the tracks
@@ -467,12 +467,14 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   // clusterize tracks in Z
   //======================================================
 
-  vector<vector<TransientTrack>> clusters = theTrackClusterizer_->clusterize(seltks);
+  //vector<vector<TransientTrack>> clusters = theTrackClusterizer_->clusterize(seltks);
+  vector<vector<TransientTrack>> clusters = theTrackClusterizer_->clusterize(t_tks);
 
-  if (debug_) {
-    edm::LogInfo("PrimaryVertexValidation")
-        << " looping over: " << clusters.size() << " clusters  from " << t_tks.size() << " selected tracks";
-  }
+  //if (debug_) {
+  edm::LogPrint("PrimaryVertexValidation")
+      << " looping over: " << clusters.size() << " clusters  from " << seltks.size() << " selected tracks out of "
+      << t_tks.size() << " reconstructed tracks";
+  //}
 
   nClus_ = clusters.size();
   h_nClus->Fill(nClus_);

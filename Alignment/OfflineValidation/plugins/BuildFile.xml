@@ -55,6 +55,7 @@
 <use name="rootcore"/>
 <use name="rootmath"/>
 <use name="rootrflx"/>
+<Flags CXXFLAGS="-g"/>
 <library file="*.cc" name="AlignmentOfflinevalidationPlugins">
   <use name="Alignment/OfflineValidation"/>
   <use name="CondFormats/GeometryObjects"/>
