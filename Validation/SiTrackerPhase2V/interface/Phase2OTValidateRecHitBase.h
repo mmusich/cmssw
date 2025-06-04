@@ -71,10 +71,17 @@ protected:
     MonitorElement* deltaX_S = nullptr;
     MonitorElement* deltaY_P = nullptr;
     MonitorElement* deltaY_S = nullptr;
+
+    MonitorElement* errX_P = nullptr;
+    MonitorElement* errX_S = nullptr;
+    MonitorElement* errY_P = nullptr;
+    MonitorElement* errY_S = nullptr;
+
     MonitorElement* pullX_P = nullptr;
     MonitorElement* pullX_S = nullptr;
     MonitorElement* pullY_P = nullptr;
     MonitorElement* pullY_S = nullptr;
+
     MonitorElement* deltaX_eta_P = nullptr;
     MonitorElement* deltaX_eta_S = nullptr;
     MonitorElement* deltaY_eta_P = nullptr;
@@ -83,6 +90,16 @@ protected:
     MonitorElement* deltaX_phi_S = nullptr;
     MonitorElement* deltaY_phi_P = nullptr;
     MonitorElement* deltaY_phi_S = nullptr;
+
+    MonitorElement* errX_eta_P = nullptr;
+    MonitorElement* errX_eta_S = nullptr;
+    MonitorElement* errY_eta_P = nullptr;
+    MonitorElement* errY_eta_S = nullptr;
+    MonitorElement* errX_phi_P = nullptr;
+    MonitorElement* errX_phi_S = nullptr;
+    MonitorElement* errY_phi_P = nullptr;
+    MonitorElement* errY_phi_S = nullptr;
+
     MonitorElement* pullX_eta_P = nullptr;
     MonitorElement* pullX_eta_S = nullptr;
     MonitorElement* pullY_eta_P = nullptr;
