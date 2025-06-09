@@ -74,6 +74,7 @@ private:
 
   reco::BeamSpot result;
   const unsigned int theBeamShoutMode;
+  const bool verbose;
   BeamSpotOnlineObjects fakeBS_;
 };
 
@@ -95,7 +96,8 @@ BeamSpotOnlineProducer::BeamSpotOnlineProducer(const ParameterSet& iconf)
           esConsumes<BeamSpotOnlineObjects, BeamSpotOnlineLegacyObjectsRcd, edm::Transition::BeginLuminosityBlock>()),
       beamTokenHLT_(
           esConsumes<BeamSpotOnlineObjects, BeamSpotOnlineHLTObjectsRcd, edm::Transition::BeginLuminosityBlock>()),
-      theBeamShoutMode(iconf.getUntrackedParameter<unsigned int>("beamMode", 11)) {
+      theBeamShoutMode(iconf.getUntrackedParameter<unsigned int>("beamMode", 11)),
+      verbose(iconf.getUntrackedParameter<bool>("verbose",false)) {
   fakeBS_.setType(reco::BeamSpot::Fake);
   theMaxR2 = iconf.getParameter<double>("maxRadius");
   theMaxR2 *= theMaxR2;
@@ -116,10 +118,14 @@ void BeamSpotOnlineProducer::fillDescriptions(edm::ConfigurationDescriptions& iD
   ps.add<int>("timeThreshold", 48)->setComment("hours");
   ps.add<double>("sigmaZThreshold", 2.)->setComment("cm");
   ps.add<double>("sigmaXYThreshold", 4.)->setComment("um");
+  ps.addUntracked<bool>("verbose",false);
   iDesc.addWithDefaultLabel(ps);
 }
 
 void BeamSpotOnlineProducer::beginLuminosityBlock(const edm::LuminosityBlock& lumi, const edm::EventSetup& setup) {
+  // re-initialize the result;
+  result = reco::BeamSpot();
+
   /// fetch online records only at the beginning of a lumisection
   if (useBSOnlineRecords_) {
     processRecords(lumi, setup, true);
@@ -145,6 +151,10 @@ void BeamSpotOnlineProducer::produce(edm::Event& iEvent, const edm::EventSetup& 
   }
 
   std::unique_ptr<reco::BeamSpot> toput = std::make_unique<reco::BeamSpot>(result);
+
+  if(verbose){
+    edm::LogPrint("BeamSpotOnlineProducer") << "BS from BeamSpotOnlineProducer:   \n" << *toput;
+  }
   iEvent.put(std::move(toput));
 }
 
@@ -170,10 +180,46 @@ bool BeamSpotOnlineProducer::processRecords(const edm::LuminosityBlock& iLumi,
     }
     return true;  // Trigger fallback to DB
   }
-
   // Create BeamSpot from transient record
   createBeamSpotFromRecord(spotDB);
   return false;  // No fallback needed
+}
+
+#include <iostream>
+#include <iomanip>  // for std::put_time
+#include <chrono>
+#include <ctime>  // for std::time_t, std::localtime
+
+// Helper function to print chrono time point
+template <typename Clock, typename Duration>
+void printChronoTime(const std::chrono::time_point<Clock, Duration>& tp, const std::string& label) {
+  auto tt = Clock::to_time_t(tp);
+  edm::LogPrint("printChronoTime") << label << ": " << std::put_time(std::localtime(&tt), "%Y-%m-%d %H:%M:%S") << '\n';
+}
+
+#include <sstream>
+
+std::string formatTimeDiff(std::chrono::microseconds diff) {
+  using namespace std::chrono;
+
+  bool negative = diff.count() < 0;
+  if (negative)
+    diff = -diff;
+
+  auto hours = duration_cast<std::chrono::hours>(diff);
+  diff -= hours;
+  auto minutes = duration_cast<std::chrono::minutes>(diff);
+  diff -= minutes;
+  auto seconds = duration_cast<std::chrono::seconds>(diff);
+  diff -= seconds;
+  auto microseconds = duration_cast<std::chrono::microseconds>(diff);
+
+  std::ostringstream oss;
+  if (negative)
+    oss << '-';
+  oss << std::setfill('0') << std::setw(2) << hours.count() << ':' << std::setw(2) << minutes.count() << ':'
+      << std::setw(2) << seconds.count() << '.' << std::setw(6) << microseconds.count();
+  return oss.str();
 }
 
 template <typename RecordType, typename TokenType>
@@ -203,8 +249,14 @@ const BeamSpotOnlineObjects& BeamSpotOnlineProducer::getBeamSpotFromRecord(const
     auto bstime = std::chrono::microseconds(bs.creationTime());
     auto threshold = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::hours(timeThreshold_)).count();
     if ((lumitime - bstime).count() > threshold) {
+      printChronoTime(std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>(lumitime),
+                      "LumiSection time");
+      printChronoTime(std::chrono::time_point<std::chrono::system_clock, std::chrono::microseconds>(bstime),
+                      "BeamSpot    time");
+
       edm::LogWarning("BeamSpotOnlineProducer")
-          << "The beam spot record is too old. (record: " << recordTypeName << ")" << std::endl
+          << "The beam spot record is too old. (record: " << recordTypeName << ", " << formatTimeDiff(lumitime - bstime)
+          << " hours)"
           << " record creation time: " << std::chrono::duration_cast<std::chrono::seconds>(bstime).count()
           << " lumi block time: " << std::chrono::duration_cast<std::chrono::seconds>(lumitime).count();
       return fakeBS_;

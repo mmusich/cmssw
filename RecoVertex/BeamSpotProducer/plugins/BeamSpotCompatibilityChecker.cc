@@ -131,7 +131,14 @@ private:
         matrix(i, j) = aSpot->covariance(i, j);
 
     // this assume beam width same in x and y
-    return reco::BeamSpot(apoint, aSpot->sigmaZ(), aSpot->dxdz(), aSpot->dydz(), aSpot->beamWidthX(), matrix);
+    reco::BeamSpot result =
+        reco::BeamSpot(apoint, aSpot->sigmaZ(), aSpot->dxdz(), aSpot->dydz(), aSpot->beamWidthX(), matrix);
+    result.setBeamWidthY(aSpot->beamWidthY());
+    result.setEmittanceX(aSpot->emittanceX());
+    result.setEmittanceY(aSpot->emittanceY());
+    result.setbetaStar(aSpot->betaStar());
+    result.setType(static_cast<reco::BeamSpot::BeamType>(aSpot->beamType()));
+    return result;
   }
 };
 
