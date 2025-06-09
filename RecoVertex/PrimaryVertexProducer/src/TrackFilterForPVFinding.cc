@@ -22,7 +22,6 @@ TrackFilterForPVFinding::TrackFilterForPVFinding(const edm::ParameterSet& conf) 
 }
 
 // select a single track
-/*
 bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
   if (!tk.stateAtBeamLine().isValid())
     return false;
@@ -39,11 +38,11 @@ bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
 
   return IPSigCut && pTCut && etaCut && normChi2Cut && nPxLayCut && nSiLayCut && trackQualityCut && nStripHitsCut;
 }
-*/
 
 #include <iostream>  // for std::cout
 #include <iomanip>   // for std::setprecision
 
+/*
 bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
   if (!tk.stateAtBeamLine().isValid()) {
     std::cout << "[TrackFilter] Invalid beamline state" << std::endl;
@@ -118,6 +117,7 @@ bool TrackFilterForPVFinding::operator()(const reco::TransientTrack& tk) const {
 
   return passed;
 }
+*/
 
 // select the vector of tracks that pass the filter cuts
 std::vector<reco::TransientTrack> TrackFilterForPVFinding::select(
