@@ -28,7 +28,8 @@ process.options.wantSummary = True
 ###################################################################
 print('Loading file list from ASCII file')
 import FWCore.Utilities.FileUtils as FileUtils
-filelist = FileUtils.loadListFromFile ('listOfFiles.txt')
+#filelist = FileUtils.loadListFromFile ('listOfFiles.txt')
+filelist = FileUtils.loadListFromFile ('listOfFiles_392732.txt')
 readFiles = cms.untracked.vstring( *filelist)
 
 process.source = cms.Source("PoolSource",
@@ -38,7 +39,7 @@ process.source = cms.Source("PoolSource",
 
 runboundary = 1
 process.source.firstRun = cms.untracked.uint32(int(runboundary))
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
 
 ###################################################################
 # JSON Filtering
@@ -209,7 +210,7 @@ if(theRefitter == RefitType.COMMON):
      process.seqTrackselRefit = trackselRefit.getSequence(process, _theTrackCollection,
                                                           isPVValidation=True, 
                                                           TTRHBuilder='WithTrackAngle',
-                                                          usePixelQualityFlag=True,
+                                                          usePixelQualityFlag=False,
                                                           openMassWindow=False,
                                                           cosmicsDecoMode=True,
                                                           cosmicsZeroTesla=False,
@@ -240,7 +241,7 @@ elif (theRefitter == RefitType.STANDARD):
      process.FinalTrackRefitter.src = _theTrackCollection
      process.FinalTrackRefitter.TrajectoryInEvent = True
      process.FinalTrackRefitter.NavigationSchool = ''
-     process.FinalTrackRefitter.TTRHBuilder = "WithAngleAndTemplate"
+     process.FinalTrackRefitter.TTRHBuilder = "WithTrackAngle"
 
      ####################################################################
      # Sequence
@@ -374,6 +375,6 @@ process.PrimaryVertexResolution = cms.EDAnalyzer('SplitVertexResolution',
 process.p2 = cms.Path(process.HLTFilter                               +
                       process.seqTrackselRefit                        +
                       process.offlinePrimaryVerticesFromRefittedTrks  +
-                      process.PrimaryVertexResolution                 
-                      #+ process.myanalysis
+                      process.PrimaryVertexResolution                 +
+                      process.myanalysis
                       )

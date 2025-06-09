@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
-process = cms.Process("Demo")
+
+from Configuration.StandardSequences.Eras import eras
+process = cms.Process("Demo",eras.Run3_2025)
 
 ###################################################################
 # Messages
@@ -33,7 +35,13 @@ process.source = cms.Source("PoolSource",
                             duplicateCheckMode = cms.untracked.string('checkAllFilesOpened')
                             )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+
+####################################################################
+# Get Multi-threading going
+####################################################################
+process.options.numberOfThreads = 8
+process.options.numberOfStreams = 0
 
 ####################################################################
 # Get the Magnetic Field
@@ -45,11 +53,46 @@ process.load('Configuration.StandardSequences.MagneticField_cff')
 ###################################################################
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 
+####################################################################
+# Load and Configure TrackRefitter
+####################################################################
+process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
+import RecoTracker.TrackProducer.TrackRefitters_cff
+process.FinalTrackRefitter = RecoTracker.TrackProducer.TrackRefitter_cfi.TrackRefitter.clone()
+process.FinalTrackRefitter.src = "ALCARECOTkAlHLTTracks"
+process.FinalTrackRefitter.TrajectoryInEvent = True
+process.FinalTrackRefitter.NavigationSchool = ''
+process.FinalTrackRefitter.TTRHBuilder = "WithTrackAngle"
+
+####################################################################
+# Load and Configure Common Track Selection and refitting sequence
+####################################################################
+import Alignment.CommonAlignment.tools.trackselectionRefitting as trackselRefit
+process.seqTrackselRefit = trackselRefit.getSequence(process,"ALCARECOTkAlHLTTracks",
+                                                     isPVValidation=True, 
+                                                     TTRHBuilder='WithTrackAngle',
+                                                     usePixelQualityFlag=False,
+                                                     openMassWindow=False,
+                                                     cosmicsDecoMode=True,
+                                                     cosmicsZeroTesla=False,
+                                                     momentumConstraint=None,
+                                                     cosmicTrackSplitting=False,
+                                                     use_d0cut=False,
+                                                     )
+     
+####################################################################
+# swap the bemspot
+####################################################################
+process.load("RecoVertex.BeamSpotProducer.BeamSpotOnline_cfi")
+from RecoVertex.BeamSpotProducer.BeamSpotOnline_cfi import onlineBeamSpotProducer as _onlineBeamSpotProducer
+process.offlineBeamSpot = _onlineBeamSpotProducer.clone()
+
 ###################################################################
 # Analyzer
 ###################################################################
 process.LhcTrackAnalyzer = cms.EDAnalyzer("LhcTrackAnalyzer",
-                                          TrackCollectionTag = cms.InputTag("ALCARECOTkAlHLTTracks"),
+                                          #TrackCollectionTag = cms.InputTag("ALCARECOTkAlHLTTracks"),
+                                          TrackCollectionTag = cms.InputTag("FinalTrackRefitter"),
                                           PVtxCollectionTag = cms.InputTag("hltVerticesPFFilter"),
                                           acceptedBX        = cms.vuint32(), # (51,2724)
                                           OutputFileName    = cms.string("AnalyzerOutput_1.root"),
@@ -57,7 +100,8 @@ process.LhcTrackAnalyzer = cms.EDAnalyzer("LhcTrackAnalyzer",
                                           )
 
 process.myanalysis = cms.EDAnalyzer("GeneralPurposeTrackAnalyzer",
-                                    TkTag  = cms.InputTag('ALCARECOTkAlHLTTracks'),
+                                    #TkTag  = cms.InputTag('ALCARECOTkAlHLTTracks'),
+                                    TkTag = cms.InputTag("FinalTrackRefitter"),
                                     isCosmics = cms.bool(False)
                                     )
 
@@ -65,6 +109,9 @@ process.TFileService = cms.Service("TFileService",
                                    fileName=cms.string("test_out.root")
                                    )
 
-process.p = cms.Path(#process.LhcTrackAnalyzer
-    process.myanalysis    
+process.p = cms.Path(process.offlineBeamSpot+
+                     #process.FinalTrackRefitter+
+                     process.seqTrackselRefit+
+                     #process.LhcTrackAnalyzer+
+                     process.myanalysis    
 )

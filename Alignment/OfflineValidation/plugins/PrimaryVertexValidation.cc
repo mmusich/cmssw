@@ -277,12 +277,16 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   //edm::Handle<VertexCollection> vertices;
   edm::Handle<std::vector<Vertex>> vertices;
   vertices = iEvent.getHandle(theVertexCollectionToken_);
+  std::vector<Vertex> vsorted;
+  int nvvertex = 0;
+
   if (!vertices.isValid()) {
-    edm::LogError("PrimaryVertexValidation") << "Vertex collection handle is not valid. Aborting!" << std::endl;
-    return;
+    //edm::LogError("PrimaryVertexValidation") << "Vertex collection handle is not valid. Aborting!" << std::endl;
+    goto skipVertexAnalysis;
+  } else {
+    vsorted = *(vertices);
   }
 
-  std::vector<Vertex> vsorted = *(vertices);
   // sort the vertices by number of tracks in descending order
   // use chi2 as tiebreaker
   std::sort(vsorted.begin(), vsorted.end(), PrimaryVertexValidation::vtxSort);
@@ -312,10 +316,7 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   h_yErrOfflineVertex->Fill(yErrOfflineVertex_);
   h_zErrOfflineVertex->Fill(zErrOfflineVertex_);
 
-  unsigned int vertexCollectionSize = vsorted.size();
-  int nvvertex = 0;
-
-  for (unsigned int i = 0; i < vertexCollectionSize; i++) {
+  for (unsigned int i = 0; i < vsorted.size(); i++) {
     const Vertex& vertex = vsorted.at(i);
     if (vertex.isValid())
       nvvertex++;
@@ -396,6 +397,8 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     }
   }
 
+skipVertexAnalysis:
+
   //=======================================================
   // Retrieve Beamspot information
   //=======================================================
@@ -453,9 +456,9 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
     t_tks.push_back(tt);
   }
 
-  //if (debug_) {
-  edm::LogPrint("PrimaryVertexValidation") << "Found: " << t_tks.size() << " reconstructed tracks";
-  //}
+  if (debug_) {
+    edm::LogPrint("PrimaryVertexValidation") << "Found: " << t_tks.size() << " reconstructed tracks";
+  }
 
   //======================================================
   // select the tracks
@@ -467,14 +470,13 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   // clusterize tracks in Z
   //======================================================
 
-  //vector<vector<TransientTrack>> clusters = theTrackClusterizer_->clusterize(seltks);
-  vector<vector<TransientTrack>> clusters = theTrackClusterizer_->clusterize(t_tks);
+  vector<vector<TransientTrack>> clusters = theTrackClusterizer_->clusterize(seltks);
 
-  //if (debug_) {
-  edm::LogPrint("PrimaryVertexValidation")
-      << " looping over: " << clusters.size() << " clusters  from " << seltks.size() << " selected tracks out of "
-      << t_tks.size() << " reconstructed tracks";
-  //}
+  if (debug_) {
+    edm::LogPrint("PrimaryVertexValidation")
+        << " looping over: " << clusters.size() << " clusters  from " << seltks.size() << " selected tracks out of "
+        << t_tks.size() << " reconstructed tracks";
+  }
 
   nClus_ = clusters.size();
   h_nClus->Fill(nClus_);
