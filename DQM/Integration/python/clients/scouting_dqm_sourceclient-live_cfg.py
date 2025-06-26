@@ -20,7 +20,7 @@ else:
   from DQM.Integration.config.inputsource_cfi import options
 
   if not options.inputFiles:
-      process.source.streamLabel = "DQMOnlineScouting"
+      process.source.streamLabel = "streamDQMOnlineScouting"
 
 process.load("DQM.Integration.config.environment_cfi")
 
