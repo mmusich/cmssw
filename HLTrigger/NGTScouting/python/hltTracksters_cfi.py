@@ -9,7 +9,6 @@ hltUpgradeNanoTask = cms.Task(nanoMetadata)
 hltTrackstersTable = []
 hltTrackstersAssociationOneToManyTable = []
 for iterLabel in hltTiclIterLabels:
-    print(iterLabel)
     tracksterTable = cms.EDProducer(
         "TracksterCollectionTableProducer",
         skipNonExistingSrc=cms.bool(True),
@@ -55,7 +54,7 @@ for iterLabel in hltTiclIterLabels:
         ),
         collectionVariables=cms.PSet(
             tracksterVertices=cms.PSet(
-                name=cms.string("vertices"),
+                name=cms.string("vertices"+iterLabel),
                 doc=cms.string("Vertex properties"),
                 useCount=cms.bool(True),
                 useOffset=cms.bool(True),
@@ -116,3 +115,12 @@ hltSimCl2CPOneToOneFlatTable = cms.EDProducer(
                      doc="Fraction of linked CaloParticle."),
     ),
 )
+
+# create a sequence out of the trackster tables
+trackstersProducers = []
+for i, _producer in enumerate(hltTrackstersTable):
+    label = f"tracksterTableProducer{i}"
+    globals()[label] = _producer.clone()
+    trackstersProducers.append(globals()[label])
+
+trackstersSeq = cms.Sequence(sum(trackstersProducers, cms.Sequence()))

@@ -53,7 +53,7 @@ hltNanoProducer = cms.Sequence(
     + hltMuonTable
     + hltPFCandidateTable
     + hltJetTable
-    + hltTrackstersTable
+    + trackstersSeq
     + hltTauTable
     + hltTauExtTable
     + METTable
@@ -74,7 +74,7 @@ dstNanoProducer = cms.Sequence(
     + hltPFCandidateTable
     + hltJetTable
     + hltTauTable
-    + hltTrackstersTable
+    + trackstersSeq
     + hltTauExtTable
     + METTable
     + HTTable
