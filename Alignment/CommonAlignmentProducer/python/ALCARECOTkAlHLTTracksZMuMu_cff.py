@@ -66,11 +66,18 @@ ALCARECOTkAlHLTPixelZMuMuVertexTracks = _TracksFromPixelVertex.AlignmentTracksFr
     useClosestVertexToDilepton = True,
 )
 
+import Alignment.CommonAlignmentProducer.vertexDistanceValueMapProducer_cfi as _vertexDistanceValueMapProducer
+ALCARECOTkAlHLTZMuMuVertexDistanceValueMap =  _vertexDistanceValueMapProducer.VertexDistanceValueMapProducer(
+    leptonTracks = 'ALCARECOTkAlHLTTracksZMuMu',
+    vertices = 'hltPixelVertices',
+)
+
 seqALCARECOTkAlHLTTracksZMuMu = cms.Sequence(ALCARECOTkAlHLTTracksZMuMuHLT+
                                              ALCARECOTkAlHLTTracksZMuMuDCSFilter+
                                              ALCARECOTkAlHLTTracksZMuMuGoodMuons+
                                              ALCARECOTkAlHLTTracksZMuMuRelCombIsoMuons+
                                              ALCARECOTkAlHLTTracksZMuMu+
-                                             ALCARECOTkAlHLTPixelZMuMuVertexTracks)
+                                             ALCARECOTkAlHLTPixelZMuMuVertexTracks+
+                                             ALCARECOTkAlHLTZMuMuVertexDistanceValueMap)
 
 

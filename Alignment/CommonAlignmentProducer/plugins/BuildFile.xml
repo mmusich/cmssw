@@ -62,3 +62,12 @@
   <use name="DataFormats/MuonReco"/>
   <flags EDM_PLUGIN="1"/>
 </library>
+
+<library file="VertexDistanceValueMapProducer.cc" name="AlignmentVertexDistanceValueMapProducer">
+  <use name="RecoVertex/KalmanVertexFit"/>
+  <use name="RecoVertex/VertexPrimitives"/>
+  <use name="RecoVertex/VertexTools"/>
+  <use name="TrackingTools/Records"/>
+  <use name="TrackingTools/TransientTrack"/>
+  <flags EDM_PLUGIN="1"/>
+</library>
