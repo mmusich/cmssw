@@ -136,6 +136,7 @@ private:
   using VertexScore = edm::ValueMap<float>;
   const edm::EDGetTokenT<VertexScore> scoreToken_;
   const edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
+  const edm::EDGetTokenT<edm::ValueMap<float>> vtxDistanceToken_;
 
   static constexpr int cmToUm = 10000;
 
@@ -164,6 +165,8 @@ private:
   const double etaMax_;
 
   // the histos
+  TH1F *vtxDist;
+  TH1F *closestVtxDist;
   TH1I *nbvtx, *nbgvtx;
   TH1D *nbtksinvtx[2], *trksWeight[2], *score[2];
   TH1D *tt[2];
@@ -394,6 +397,7 @@ GeneralPurposeVertexAnalyzer::GeneralPurposeVertexAnalyzer(const edm::ParameterS
       vertexToken_(consumes<reco::VertexCollection>(vertexInputTag_)),
       scoreToken_(consumes<VertexScore>(vertexInputTag_)),
       beamspotToken_(consumes<reco::BeamSpot>(beamSpotInputTag_)),
+      vtxDistanceToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("distToVtx"))),
       // to be configured for each year...
       vposx_(iConfig.getParameter<double>("Xpos")),
       vposy_(iConfig.getParameter<double>("Ypos")),
@@ -460,26 +464,73 @@ void GeneralPurposeVertexAnalyzer::analyze(const edm::Event &iEvent, const edm::
     return;
   }
 
+  // get the track distances
+  const auto &distancesToVertex = iEvent.getHandle(vtxDistanceToken_);
+  const auto &vertices = *recVtxs;  // edm::Handle<reco::VertexCollection>
+
+  // fill the plot of the distances
+  unsigned int nVertices = vertices.size();
+  for (unsigned int ij = 0; ij < nVertices; ij++) {
+    edm::Ref<reco::VertexCollection> vtxRef(recVtxs, ij);
+    const auto &distance = (*distancesToVertex)[vtxRef];
+    vtxDist->Fill(distance);
+  }
+
+  const reco::Vertex *closestVertex = nullptr;
+  if (!vertices.empty() && distancesToVertex.isValid()) {
+    auto minIt = std::min_element(vertices.begin(), vertices.end(), [&](const reco::Vertex &a, const reco::Vertex &b) {
+      size_t idxA = &a - &vertices[0];
+      size_t idxB = &b - &vertices[0];
+      edm::Ref<reco::VertexCollection> refA(recVtxs, idxA);
+      edm::Ref<reco::VertexCollection> refB(recVtxs, idxB);
+      return (*distancesToVertex)[refA] < (*distancesToVertex)[refB];
+    });
+
+    if (minIt != vertices.end()) {
+      size_t minIdx = std::distance(vertices.begin(), minIt);
+      edm::Ref<reco::VertexCollection> minRef(recVtxs, minIdx);
+      float minDist = (*distancesToVertex)[minRef];
+
+      closestVertex = &(*minIt);
+      if (closestVertex) {
+        closestVtxDist->Fill(minDist);
+        edm::LogPrint("ClosestVertex") << "Found closest vertex at distance: " << minDist;
+      }
+    }
+  }
+
   // check upfront that refs to track are (likely) to be valid
   bool ok{true};
-  for (const auto &v : *recVtxs) {
+
+  auto checkTrackRef = [&](const reco::Vertex &v) {
     if (v.tracksSize() > 0) {
       const auto &ref = v.trackRefAt(0);
       if (ref.isNull() || !ref.isAvailable()) {
         if (!errorPrinted_) {
-          edm::LogWarning("GeneralPurposeVertexAnalyzer")
+          edm::LogPrint("GeneralPurposeVertexAnalyzer")
               << "Skipping vertex collection: " << vertexInputTag_
-              << " since likely the track collection the vertex has refs pointing to is missing (at least the first "
-                 "TrackBaseRef is null or not available)";
-        } else {
+              << " since a vertex has an invalid track ref (null or unavailable).";
           errorPrinted_ = true;
         }
+        return false;
+      }
+    }
+    return true;
+  };
+
+  if (closestVertex) {
+    ok = true;  // checkTrackRef(*closestVertex);
+  } else {
+    for (const auto &v : *recVtxs) {
+      if (!checkTrackRef(v)) {
         ok = false;
+        break;
       }
     }
   }
 
   if (!ok) {
+    edm::LogPrint("GeneralPurposeVertexAnalyzer") << "not OK, returning" << std::endl;
     return;
   }
 
@@ -502,11 +553,16 @@ void GeneralPurposeVertexAnalyzer::analyze(const edm::Event &iEvent, const edm::
 
   // fill PV tracks MEs (as now, for alignment)
   if (!recVtxs->empty()) {
-    vertexPlots(recVtxs->front(), beamSpot, 1);
-    pvTracksPlots(recVtxs->front());
+    if (closestVertex) {
+      vertexPlots(*closestVertex, beamSpot, 1);
+      pvTracksPlots(*closestVertex);
+    } else {
+      vertexPlots(recVtxs->front(), beamSpot, 1);
+      pvTracksPlots(recVtxs->front());
 
-    for (reco::VertexCollection::const_iterator v = recVtxs->begin() + 1; v != recVtxs->end(); ++v) {
-      vertexPlots(*v, beamSpot, 0);
+      for (reco::VertexCollection::const_iterator v = recVtxs->begin() + 1; v != recVtxs->end(); ++v) {
+        vertexPlots(*v, beamSpot, 0);
+      }
     }
   }
 
@@ -652,6 +708,8 @@ T *GeneralPurposeVertexAnalyzer::book(const Args &...args) const {
 
 // ------------ method called once each job just before starting event loop  ------------
 void GeneralPurposeVertexAnalyzer::beginJob() {
+  vtxDist = book<TH1F>("vtxDis", "distance of pixel vertex to di-muon one", 100, 0., 1.);
+  closestVtxDist = book<TH1F>("clostestVtxDist", "distance of the closests pixel vertex to di-muon one", 100, 0., 1.);
   nbvtx = book<TH1I>("vtxNbr", "Reconstructed Vertices in Event", 80, -0.5, 79.5);
   nbgvtx = book<TH1I>("goodvtxNbr", "Reconstructed Good Vertices in Event", 80, -0.5, 79.5);
 
@@ -787,6 +845,7 @@ void GeneralPurposeVertexAnalyzer::fillDescriptions(edm::ConfigurationDescriptio
   desc.add<int>("ndof", 4);
   desc.add<edm::InputTag>("vertexLabel", edm::InputTag("offlinePrimaryVertices"));
   desc.add<edm::InputTag>("beamSpotLabel", edm::InputTag("offlineBeamSpot"));
+  desc.add<edm::InputTag>("distToVtx", edm::InputTag("distanceValueMap"));
   desc.add<double>("Xpos", 0.1);
   desc.add<double>("Ypos", 0.0);
   desc.add<int>("TkSizeBin", 100);

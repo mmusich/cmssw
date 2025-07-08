@@ -60,7 +60,7 @@ private:
   const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttbESToken_;
   const edm::EDGetTokenT<reco::VertexCollection> vertexToken_;
   const edm::EDGetTokenT<reco::TrackCollection> diLeptonToken_;
-  
+
   // putToken
   const edm::EDPutTokenT<edm::ValueMap<float>> distancesPutToken_;
 };
@@ -69,10 +69,11 @@ private:
 // constructors and destructor
 //
 VertexDistanceValueMapProducer::VertexDistanceValueMapProducer(const edm::ParameterSet& iConfig)
-  :  ttbESToken_(esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"))),
-     vertexToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-     diLeptonToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("leptonTracks"))),
-     distancesPutToken_(produces<edm::ValueMap<float>>()) {}
+    : ttbESToken_(
+          esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"))),
+      vertexToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+      diLeptonToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("leptonTracks"))),
+      distancesPutToken_(produces<edm::ValueMap<float>>()) {}
 
 //
 // member functions
@@ -80,8 +81,8 @@ VertexDistanceValueMapProducer::VertexDistanceValueMapProducer(const edm::Parame
 
 // ------------ method called to produce the data  ------------
 void VertexDistanceValueMapProducer::produce(edm::StreamID streamID,
-                                            edm::Event& iEvent,
-                                            const edm::EventSetup& iSetup) const {
+                                             edm::Event& iEvent,
+                                             const edm::EventSetup& iSetup) const {
   using namespace edm;
 
   //=======================================================
@@ -89,7 +90,7 @@ void VertexDistanceValueMapProducer::produce(edm::StreamID streamID,
   //=======================================================
 
   const auto& leptonTracksHandle = iEvent.getHandle(diLeptonToken_);
-  
+
   if (!leptonTracksHandle.isValid())
     return;
   auto const& leptonTracks = *leptonTracksHandle;
@@ -102,13 +103,13 @@ void VertexDistanceValueMapProducer::produce(edm::StreamID streamID,
   const auto& vertexHandle = iEvent.getHandle(vertexToken_);
   if (!vertexHandle.isValid())
     return;
-  
+
   auto const& vertices = *vertexHandle;
 
   //=======================================================
   // fill the distance vector
   //=======================================================
-  
+
   // fill the transient track collection with the lepton tracks
   const TransientTrackBuilder* theB = &iSetup.getData(ttbESToken_);
   std::vector<reco::TransientTrack> tks;
@@ -116,7 +117,6 @@ void VertexDistanceValueMapProducer::produce(edm::StreamID streamID,
     reco::TransientTrack trajectory = theB->build(track);
     tks.push_back(trajectory);
   }
-
 
   // compute the secondary vertex
   TransientVertex aTransVtx;
@@ -130,9 +130,9 @@ void VertexDistanceValueMapProducer::produce(edm::StreamID streamID,
   VertexDistance3D vertTool3D;
   for (const auto& vtx : vertices) {
     double dist3D = -1.;
-    if (!aTransVtx.isValid()) {
-      dist3D = vertTool3D.distance(aTransVtx, vtx).value();      
-    } 
+    if (aTransVtx.isValid()) {
+      dist3D = vertTool3D.distance(aTransVtx, vtx).value();
+    }
     v_dist.push_back(dist3D);
   }
 
