@@ -13,10 +13,11 @@ from Validation.HGCalValidation.HLT_TICLIterLabels_cff import hltTiclIterLabels 
 
 from RecoLocalCalo.HGCalRecProducers.recHitMapProducer_cff import recHitMapProducer as _recHitMapProducer
 
-hits = ["hltHGCalRecHit:HGCEERecHits", "hltHGCalRecHit:HGCHEFRecHits", "hltHGCalRecHit:HGCHEBRecHits"]
 hltRecHitMapProducer = _recHitMapProducer.clone(
-    hits = hits,
-    hgcalOnly = cms.bool(True),
+    hits = dict(HGCEE  = ("hltHGCalRecHit", "HGCEERecHits"),
+                HGCHEF = ("hltHGCalRecHit", "HGCHEFRecHits"),
+                HGCHEB = ("hltHGCalRecHit", "HGCHEBRecHits")),
+    hgcalOnly = True,
 )
 
 hltLcAssocByEnergyScoreProducer = _lcAssocByEnergyScoreProducer.clone(
