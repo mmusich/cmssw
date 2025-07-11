@@ -45,6 +45,8 @@ void storeTracks(Ev& ev, const TWH& tracksWithHits, const TrackerTopology& ttopo
   edm::OrphanHandle<TrackingRecHitCollection> ohRH = ev.put(std::move(recHits));
 
   edm::RefProd<TrackingRecHitCollection> hitCollProd(ohRH);
+
+  /*
   for (int k = 0; k < nTracks; k++) {
     auto& aTrackExtra = (*trackExtras)[k];
 
@@ -56,6 +58,50 @@ void storeTracks(Ev& ev, const TWH& tracksWithHits, const TrackerTopology& ttopo
     reco::TrackExtra::TrajParams trajParams(nHits, LocalTrajectoryParameters(v, 1.));
     reco::TrackExtra::Chi2sFive chi2s(nHits, 0);
     aTrackExtra.setTrajParams(std::move(trajParams), std::move(chi2s));
+
+    // set the inner and outer ids
+    const auto& hits = tracksWithHits[k].second;
+    aTrackExtra.setOuterId(hits[0]->geographicalId().rawId());
+    aTrackExtra.setInnerId(hits[hits.size() - 1]->geographicalId().rawId());
+
+    aTrackExtra.setSeedDirection(PropagationDirection::oppositeToMomentum);
+  }
+  */
+
+  for (int k = 0; k < nTracks; k++) {
+    auto& aTrackExtra = (*trackExtras)[k];
+    
+    const auto& hits = tracksWithHits[k].second;
+    
+    // // Estimate outer/inner positions and momenta (we can refine this)
+    const auto& outerPos = hits[0]->globalPosition();
+    const auto& innerPos = hits[hits.size() - 1]->globalPosition();
+
+    const auto& outerMom = tracksWithHits[k].first->outerMomentum();
+    const auto& innerMom = tracksWithHits[k].first->innerMomentum();
+    
+    reco::Track::Point xOuter(outerPos.x(), outerPos.y(), outerPos.z());
+    reco::Track::Point xInner(innerPos.x(), innerPos.y(), innerPos.z());
+
+    /*
+    (*trackExtras)[k] = reco::TrackExtra(
+					 // trackExtras->emplace_back(
+					 xOuter,
+					 outerMom,
+					 true,
+					 xInner,
+					 innerMom
+					 true,
+					 reco::Track::CovarianceMatrix(),
+					 hits[0]->geographicalId().rawId(),
+					 reco::Track::CovarianceMatrix(),
+					 hits[hits.size() - 1]->geographicalId().rawId(),
+					 alongMomentum);
+    */
+
+    unsigned int nHits = (*tracks)[k].numberOfValidHits();
+    aTrackExtra.setHits(hitCollProd, cc, nHits);
+    cc += nHits;
   }
 
   LogDebug("TrackProducer") << "put the collection of TrackExtra in the event"

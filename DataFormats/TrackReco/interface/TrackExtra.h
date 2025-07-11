@@ -131,6 +131,15 @@ namespace reco {
     /// set the residuals
     void setResiduals(const TrackResiduals &r) { trackResiduals_ = r; }
 
+    // set the outer id
+    void setOuterId(const unsigned int oId) { outerDetId_ = oId; }
+
+    // set the inner id
+    void setInnerId(const unsigned int iId) { innerDetId_ = iId; }
+
+    // set the seed direction
+    void setSeedDirection(const PropagationDirection &propDir) { seedDir_ = propDir; }
+
     /// get the residuals
     const TrackResiduals &residuals() const { return trackResiduals_; }
 
