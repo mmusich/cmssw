@@ -419,7 +419,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     edm::ParameterSetDescription trackQualityCuts;
     trackQualityCuts.add<double>("maxChi2", 5.)->setComment("Max normalized chi2 for tracks with 6 or more hits");
-    trackQualityCuts.add<double>("maxChi2Quadruplets", 5.)->setComment("Max normalized chi2 for tracks with 4 or less hits");
+    trackQualityCuts.add<double>("maxChi2Quadruplets", 5.)
+        ->setComment("Max normalized chi2 for tracks with 4 or less hits");
     trackQualityCuts.add<double>("maxChi2Quintuplets", 5.)->setComment("Max normalized chi2 for tracks with 5 hits");
     trackQualityCuts.add<double>("minPt", 0.5)->setComment("Min pT in GeV");
     trackQualityCuts.add<double>("maxTip", 0.3)->setComment("Max |Tip| in cm");
@@ -492,7 +493,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     edm::ParameterSetDescription trackQualityCuts;
     trackQualityCuts.add<double>("maxChi2", 5.)->setComment("Max normalized chi2 for tracks with 6 or more hits");
-    trackQualityCuts.add<double>("maxChi2Quadruplets", 5.)->setComment("Max normalized chi2 for tracks with 4 or less hits");
+    trackQualityCuts.add<double>("maxChi2Quadruplets", 5.)
+        ->setComment("Max normalized chi2 for tracks with 4 or less hits");
     trackQualityCuts.add<double>("maxChi2Quintuplets", 5.)->setComment("Max normalized chi2 for tracks with 5 hits");
     trackQualityCuts.add<double>("minPt", 0.9)->setComment("Min pT in GeV");
     trackQualityCuts.add<double>("maxTip", 0.3)->setComment("Max |Tip| in cm");

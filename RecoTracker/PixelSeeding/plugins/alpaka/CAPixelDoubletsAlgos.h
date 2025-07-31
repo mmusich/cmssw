@@ -368,8 +368,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
 #endif
             continue;
           }
-          
-          auto dz = zo-zi;
+
+          auto dz = zo - zi;
 
           // cut on outer z
           if (dz < cc.minDZ()[pairLayerId] || dz > cc.maxDZ()[pairLayerId]) {
@@ -382,7 +382,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::caPixelDoublets {
 #endif
             continue;
           }
-
 
           if (params.cellZ0Cut_ > 0. && z0cutoff(oi)) {
 #ifdef DOUBLETS_DEBUG

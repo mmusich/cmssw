@@ -58,7 +58,7 @@ namespace reco {
           maxOuterR_(iConfig.getParameter<std::vector<double>>("maxOuterR")),
           maxDZ_(iConfig.getParameter<std::vector<double>>("maxDZ")),
           minDZ_(iConfig.getParameter<std::vector<double>>("minDZ")),
-          maxDR_(iConfig.getParameter<std::vector<double>>("maxDR")){}
+          maxDR_(iConfig.getParameter<std::vector<double>>("maxDR")) {}
 
     // Layers params
     const std::vector<double> caThetaCuts_;
@@ -143,7 +143,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       std::cout << "No. Layers to be used = " << n_layers << std::endl;
       std::cout << "No. Pairs to be used = " << n_pairs << std::endl;
 #endif
-    
+
       assert(int(n_pairs) == int(iCache->maxDR_.size()));
       assert(int(*std::max_element(iCache->startingPairs_.begin(), iCache->startingPairs_.end())) <= n_pairs);
       assert(int(*std::max_element(iCache->pairGraph_.begin(), iCache->pairGraph_.end())) < n_layers);

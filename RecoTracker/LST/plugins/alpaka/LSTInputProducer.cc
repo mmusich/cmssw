@@ -164,8 +164,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
             const auto& clusterRef = bhit->firstClusterRef();
             const auto clusterKey = clusterRef.cluster_pixel().key();
             hitIdx.push_back(clusterKey);
-          } else {
-            throw cms::Exception("LSTInputProducer") << "Not pixel hits found!";
           }
         }
 

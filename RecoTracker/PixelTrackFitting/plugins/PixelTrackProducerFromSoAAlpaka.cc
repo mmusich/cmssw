@@ -336,7 +336,7 @@ void PixelTrackProducerFromSoAAlpaka::produce(edm::StreamID streamID,
       return (o - i - 25);
 
     else if (outerInOTExtension)
-        return (o - 28);
+      return (o - 28);
 
     else if (innerInBarrel && outerInBackward)
       return (o - 16);
