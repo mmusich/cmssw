@@ -52,6 +52,90 @@ def run_command(command, log_file=None, workdir=None):
        
     return 0  # Return 0 for success
 
+def list_hlt_menus(cmssw_base=None):
+    if not cmssw_base:
+        cmssw_base = os.environ.get("CMSSW_RELEASE_BASE", "")
+    if not cmssw_base:
+        raise RuntimeError("CMSSW_RELEASE_BASE environment variable not set.")
+
+    hlt_dir = os.path.join(cmssw_base, "src", "HLTrigger", "Configuration", "python")
+    if not os.path.isdir(hlt_dir):
+        raise FileNotFoundError(f"Directory not found: {hlt_dir}")
+
+    menu_files = [
+        f for f in os.listdir(hlt_dir)
+        if f.startswith("HLT_") and f.endswith("_cff.py")
+    ]
+
+    menu_names = [f.replace("HLT_", "").replace("_cff.py", "") for f in menu_files]
+    return sorted(menu_names)
+
+def run_command_and_check(command, log_file, cwd=None, known_errors=None, exit_on_fail=True):
+    """
+    Runs a shell command, checks for errors, logs output, and prints a summary of failures.
+
+    Parameters:
+    - command (str): The shell command to run.
+    - log_file (str): Path to the log file to save stdout and stderr.
+    - cwd (str or None): Working directory for the command execution.
+    - known_errors (dict or None): Dict of error_name -> list of keywords to search in stderr.
+    - exit_on_fail (bool): If True, exits the script on failure.
+
+    Returns:
+    - returncode (int): The return code of the command.
+    """
+    print(f"Running command:\n{command}\n")
+    process = subprocess.run(
+        command,
+        shell=True,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True  # Ensures output is string, not bytes
+    )
+
+    # Write stdout and stderr to log
+    with open(log_file, "w") as log_f:
+        log_f.write("=== STDOUT ===\n")
+        log_f.write(process.stdout)
+        log_f.write("\n\n=== STDERR ===\n")
+        log_f.write(process.stderr)
+
+    if process.returncode != 0:
+        print("Command failed. Summary of error:\n")
+        stderr_lines = process.stderr.strip().splitlines()
+        summary_lines = stderr_lines[-10:] if len(stderr_lines) > 10 else stderr_lines
+        for line in summary_lines:
+            print(line)
+
+        if known_errors:
+            print("\n Detected known issues:")
+            for err_name, keywords in known_errors.items():
+                for kw in keywords:
+                    if kw in process.stderr:
+                        print(f"   -> {err_name}: found '{kw}'")
+                        break
+
+        # Special handling for ModuleNotFoundError
+        if "ModuleNotFoundError" in process.stderr and "HLTrigger.Configuration" in process.stderr:
+            print("\nDetected missing HLT menu module.")
+            try:
+                menus = list_hlt_menus()
+                print("\n Available HLT menus you can use:")
+                for menu in menus:
+                    print(f"   - {menu}")
+            except Exception as e:
+                print(f" Could not list HLT menus: {e}")
+
+        print(f"\n Full log saved at: {log_file}")
+        if exit_on_fail:
+            sys.exit(1)
+
+    else:
+        print("Command executed successfully.")
+
+    return process.returncode
+
 # Function to compare the single file HLT results with the respect to a the base
 def compare_single_file(root_file, base_root_file, num_events, output_dir):
     root_path = os.path.join(output_dir, root_file)
@@ -176,8 +260,24 @@ dumped_config_file = os.path.join(output_dir, "Phase2_dump.py")
 log_file = os.path.join(output_dir, "hlt.log")
 
 # Step 1: Run the cmsDriver.py command to generate the base configuration in the output directory
-print(f"Running cmsDriver.py to generate the base config: {base_config_file}")
-subprocess.run(base_cmsdriver_command, shell=True, cwd=output_dir)
+#print(f"Running cmsDriver.py to generate the base config: {base_config_file}")
+#subprocess.run(base_cmsdriver_command, shell=True, cwd=output_dir)
+
+# Define known error patterns to detect
+known_errors = {
+    "Missing Module": ["ModuleNotFoundError", "No module named"],
+    "Invalid Step or Spec": ["KeyError", "prepare_HLT", "Unknown step"],
+    "File Not Found": ["No such file or directory"],
+}
+
+# Run the cmsDriver command using the function
+log_file = os.path.join(output_dir, "cmsDriver.log")
+run_command_and_check(
+    base_cmsdriver_command,
+    log_file=log_file,
+    cwd=output_dir,
+    known_errors=known_errors
+)
 
 # Step 2: Use edmConfigDump to dump the full configuration
 print(f"Dumping the full configuration using edmConfigDump to {dumped_config_file}")
