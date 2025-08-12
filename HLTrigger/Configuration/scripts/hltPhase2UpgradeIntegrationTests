@@ -18,6 +18,13 @@ _PH2_GEOMETRY = f"Extended{_settings.DEFAULT_VERSION}"
 # Get the actual era name from the version key
 _PH2_ERA_NAME = _settings.properties['Run4'][_settings.DEFAULT_VERSION]['Era']
 
+# Function to print a generic error message
+def print_error(message: str) -> None:
+    separator = "-" * 40
+    print(separator)
+    print(f"ERROR: {message} Exiting...")
+    print(separator)
+
 # Function to run a shell command and handle errors
 def run_command(command, log_file=None, workdir=None):
     try:
@@ -174,7 +181,7 @@ unsorted_hlt_paths = re.findall(r"process\.(HLT_[A-Za-z0-9_]+|L1T_[A-Za-z0-9_]+|
 hlt_paths = sorted(set(unsorted_hlt_paths))
 
 if not hlt_paths:
-    print("No HLT paths found in the schedule!")
+    print_error("No HLT paths found in the schedule!")
     exit(1)
 
 print(f"Found {len(hlt_paths)} HLT paths.")
@@ -198,7 +205,7 @@ if restrict_paths_to:
 
     # If no valid paths remain after filtering, exit
     if not valid_paths:
-        print("Error: None of the specified patterns matched any paths. Exiting.")
+        print_error("None of the specified patterns matched any paths!")
         exit(1)
 
     # Update hlt_paths to contain only the valid ones
@@ -214,7 +221,7 @@ schedule_match = re.search(
 )
 
 if not schedule_match:
-    print("No schedule match found after tweaking regex! Exiting...")
+    print_error("No schedule match found after tweaking regex!")
     exit(1)
 else:
     print(f"Matched schedule section.")
@@ -273,7 +280,9 @@ hlt_configs_dir = output_dir
 
 # Check if the directory exists
 if not os.path.exists(hlt_configs_dir):
+    print("-" * 40)
     print(f"Directory {hlt_configs_dir} not found! Exiting...")
+    print("-" * 40)
     exit(1)
 
 # Step 7: Function to run cmsRun on a given HLT config file and save the output
@@ -302,7 +311,9 @@ print(f"Found {len(config_files)} configuration files in {hlt_configs_dir}.")
 
 ##### stop here in case it's dryRun mode
 if args.dryRun:  # Check if the --dryRun flag is active
+    print("-" * 40)
     print("Dry run mode activated. All configurations have been created.")
+    print("-" * 40)
     exit(0)
 
 # Run cmsRun on all config files in parallel and handle errors
@@ -322,9 +333,7 @@ with ThreadPoolExecutor(max_workers=num_parallel_jobs) as executor:
             print(f"cmsRun for {config_file} generated an exception: {exc}")
 
 if error_occurred:
-    print("-" * 40)
-    print("One or more cmsRun jobs failed. Exiting with failure.")
-    print("-" * 40)
+    print_error("One or more cmsRun jobs failed!")
     exit(1)
 
 print("All cmsRun jobs submitted.")
@@ -342,7 +351,9 @@ def compare_hlt_results(input_dir, num_events, max_workers=4):
 
     # Check if base_root_file exists
     if not os.path.exists(base_root_file):
+        print("-" * 40)
         print(f"Base root file {base_root_file} not found! Exiting...")
+        print("-" * 40)
         exit(1)
 
     # Use ThreadPoolExecutor to run comparisons in parallel
@@ -355,9 +366,7 @@ def compare_hlt_results(input_dir, num_events, max_workers=4):
         for future in as_completed(futures):
             result = future.result()
             if result:  # If there is an error message, print it and exit
-                print("-" * 40)
-                print(result)
-                print("-" * 40)
+                print_error(result)
                 exit(1)
 
     print("All HLT comparisons passed with no differences.")
