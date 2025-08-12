@@ -73,7 +73,6 @@ _HLTInitialStepSequenceNGTScouting = cms.Sequence(
     +hltSiPhase2RecHits
     +hltInputLST
     +hltLST
-    +hltInitialStepTrajectorySeedsLST
     +hltInitialStepTrackCandidates
     +hltInitialStepTracksT5TCLST
 )
