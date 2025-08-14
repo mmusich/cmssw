@@ -1,3 +1,4 @@
+from Validation.SiPixelPhase1ConfigV.HLTSiPixelPhase1OfflineDQM_sourceV_cff import *
 from Validation.RecoTrack.HLTmultiTrackValidator_cff import *
 from Validation.RecoVertex.HLTmultiPVvalidator_cff import *
 from HLTriggerOffline.Muon.HLTMuonVal_cff import *
@@ -49,7 +50,8 @@ from DQMOffline.Trigger.HLTMonTau_cfi import *
 # additional producer sequence prior to hltvalidation
 # to evacuate producers/filters from the EndPath
 hltassociation = cms.Sequence(
-    hltMultiTrackValidation
+    hltSiPixelPhase1OfflineDQM_sourceV
+    +hltMultiTrackValidation
     +hltMultiPVValidation
     +egammaSelectors
     +ExoticaValidationProdSeq
@@ -62,6 +64,7 @@ from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
 
 # Create the modified sequence for phase 2
 _phase2_hltassociation = hltassociation.copyAndExclude([
+    hltSiPixelPhase1OfflineDQM_sourceV,
     egammaSelectors,
     ExoticaValidationProdSeq,
 ])

@@ -14,11 +14,10 @@ from Validation.SiPixelPhase1TrackingParticleV.SiPixelPhase1TrackingParticleV_cf
 PerModule.enabled = False
 
 siPixelPhase1OfflineDQM_sourceV = cms.Sequence(SiPixelPhase1DigisAnalyzerV
-                                            + SiPixelPhase1HitsAnalyzerV
-                                            + SiPixelPhase1RecHitsAnalyzerV
-                                            + SiPixelPhase1TrackClustersAnalyzerV
-                                            + SiPixelPhase1TrackingParticleAnalyzerV
-                                            )
+                                               + SiPixelPhase1HitsAnalyzerV
+                                               + SiPixelPhase1RecHitsAnalyzerV
+                                               + SiPixelPhase1TrackClustersAnalyzerV
+                                               + SiPixelPhase1TrackingParticleAnalyzerV)
 
 ### Pixel Tracking-only configurations for the GPU workflow
 
