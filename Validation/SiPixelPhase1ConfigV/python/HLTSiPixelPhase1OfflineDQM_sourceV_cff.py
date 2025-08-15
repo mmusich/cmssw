@@ -12,29 +12,36 @@ hltSiPixelPhase1HitsAnalyzerV = _SiPixelPhase1HitsAnalyzerV.clone(
 # RecHit (clusters)
 from Validation.SiPixelPhase1RecHitsV.SiPixelPhase1RecHitsV_cfi import SiPixelPhase1RecHitsAnalyzerV as _SiPixelPhase1RecHitsAnalyzerV
 hltSiPixelPhase1RecHitsAnalyzerV = _SiPixelPhase1RecHitsAnalyzerV.clone(
-    src = "hltSiPixelRecHits"
+    src = "hltSiPixelRecHits",
+    histograms = [h.clone(topFolderName="HLT/PixelPhase1V/RecHits")
+                  for h in _SiPixelPhase1RecHitsAnalyzerV.histograms]
 )
 
 # Clusters ontrack/offtrack (also hlt merged tracks)
 from Validation.SiPixelPhase1TrackClustersV.SiPixelPhase1TrackClustersV_cfi import SiPixelPhase1TrackClustersAnalyzerV as _SiPixelPhase1TrackClustersAnalyzerV
 hltSiPixelPhase1TrackClustersAnalyzerV = _SiPixelPhase1TrackClustersAnalyzerV.clone(
     clusters = cms.InputTag("hltSiPixelClusters"),
-    tracks = cms.InputTag("hltMergedTracks"),    
+    tracks = cms.InputTag("hltMergedTracks"),
+    histograms = [h.clone(topFolderName="HLT/PixelPhase1V/Clusters")
+                  for h in _SiPixelPhase1TrackClustersAnalyzerV.histograms]
 )
 
-hltSiPixelPhase1OfflineDQM_sourceV = cms.Sequence(hltSiPixelPhase1HitsAnalyzerV + hltSiPixelPhase1RecHitsAnalyzerV + hltSiPixelPhase1TrackClustersAnalyzerV)
+# the sequence
+hltSiPixelPhase1OfflineDQM_sourceV = cms.Sequence(hltSiPixelPhase1HitsAnalyzerV +
+                                                  hltSiPixelPhase1RecHitsAnalyzerV +
+                                                  hltSiPixelPhase1TrackClustersAnalyzerV)
 
-### Pixel Tracking-only configurations for the GPU workflow
+### Pixel Tracking-only configuration
 
 # # Pixel clusters
-# pixelOnlyTrackClustersAnalyzerV = SiPixelPhase1TrackClustersAnalyzerV.clone(
-#     clusters = 'siPixelClustersPreSplitting',
-#     tracks = 'pixelTracks'
+# hltPixelOnlyTrackClustersAnalyzerV = hltSiPixelPhase1TrackClustersAnalyzerV.clone(
+#     clusters = 'hltSiPixelClusters',
+#     tracks = 'hltPixelTracks'
 # )
 
 # # Pixel rechit analyzer
-# pixelOnlyRecHitsAnalyzerV = SiPixelPhase1RecHitsAnalyzerV.clone(
-#     src = 'siPixelRecHitsPreSplitting',
+# hltPixelOnlyRecHitsAnalyzerV = hltSiPixelPhase1RecHitsAnalyzerV.clone(
+#     src = 'hltSiPixelRecHits',
 #     pixelSimLinkSrc = 'simSiPixelDigis',
 #     ROUList = ('TrackerHitsPixelBarrelLowTof',
 #                'TrackerHitsPixelBarrelHighTof',
@@ -43,16 +50,11 @@ hltSiPixelPhase1OfflineDQM_sourceV = cms.Sequence(hltSiPixelPhase1HitsAnalyzerV 
 # )
 
 # # Pixel hits
-# pixelOnlyHitsAnalyzerV = SiPixelPhase1HitsAnalyzerV.clone(
-#     tracksTag = 'pixelTracks'
+# hltPixelOnlyHitsAnalyzerV = hltSiPixelPhase1HitsAnalyzerV.clone(
+#     tracksTag = 'hltPixelTracks'
 # )
 
-# # Tracking particles
-# pixelOnlyTrackingParticleAnalyzerV = SiPixelPhase1TrackingParticleAnalyzerV.clone()
-
-# siPixelPhase1ValidationPixelTrackingOnly_sourceV = cms.Sequence(pixelOnlyDigisAnalyzerV 
-#                                                                 + pixelOnlyTrackClustersAnalyzerV 
-#                                                                 + pixelOnlyHitsAnalyzerV
-#                                                                 + pixelOnlyRecHitsAnalyzerV
-#                                                                 + pixelOnlyTrackingParticleAnalyzerV
+# hltSiPixelPhase1ValidationPixelTrackingOnly_sourceV = cms.Sequence(hltPixelOnlyTrackClustersAnalyzerV +
+#                                                                    hltPixelOnlyHitsAnalyzerV +
+#                                                                    hltPixelOnlyRecHitsAnalyzerV
 # )

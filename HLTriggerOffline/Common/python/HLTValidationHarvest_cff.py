@@ -15,11 +15,13 @@ from Validation.RecoVertex.HLTpostProcessorVertex_cfi import *
 from HLTriggerOffline.Common.HLTValidationQT_cff import *
 from HLTriggerOffline.Btag.HltBtagPostValidation_cff import *
 from HLTriggerOffline.Egamma.HLTpostProcessorGsfTracker_cfi import *
+from Validation.SiPixelPhase1ConfigV.HLTSiPixelPhase1OfflineDQM_harvestingV_cff import *
 from Validation.HGCalValidation.HLTHGCalPostProcessor_cff import *
 from Validation.HLTrigger.HLTGenValidationHarvesting_cff import *
 
-hltpostvalidation = cms.Sequence( 
-    postProcessorHLTtrackingSequence
+hltpostvalidation = cms.Sequence(
+    hltSiPixelPhase1OfflineDQM_harvestingV
+    +postProcessorHLTtrackingSequence
     +postProcessorHLTvertexing
     +HLTMuonPostVal
     +HLTTauPostVal
@@ -41,7 +43,8 @@ from Configuration.Eras.Modifier_phase1Pixel_cff import phase1Pixel
 
 # Temporary Phase-2 configuration
 # Exclude everything except JetMET for now
-_phase2_hltpostvalidation =  hltpostvalidation.copyAndExclude([HLTTauPostVal,
+_phase2_hltpostvalidation =  hltpostvalidation.copyAndExclude([hltSiPixelPhase1OfflineDQM_harvestingV,
+                                                               HLTTauPostVal,
                                                                EgammaPostVal,
                                                                heavyFlavorValidationHarvestingSequence,
                                                                #JetMETPostVal,
