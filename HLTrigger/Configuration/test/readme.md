@@ -65,3 +65,39 @@ EDM input files and the unit test `testAccessToEDMInputsOfHLTTests`.
  - Run the unit test (e.g. `scram b runtests_testAccessToEDMInputsOfHLTTests`).
 
  - Commit the changes to `testAccessToEDMInputsOfHLTTests_filelist.txt`, if any.
+
+
+---
+
+Unit test: `test_OnlineVsDevTablesConsistency.sh`
+---
+
+This unit test checks consistency between the **online HLT configuration files** and their corresponding **reference files** in `HLTrigger/Configuration/tables`.
+
+## What it does
+- Verifies that all HLT paths listed in each `online_*.txt` file also exist in the matching reference file.
+- Ignores comment lines and excludes known technical paths (`HLTAnalyzerEndpath`, `RatesMonitoring`, `DQMHistograms`).
+- Fails if any online paths are missing from the reference set.
+
+## Files compared
+| Online file                  | Reference file |
+|-------------------------------|----------------|
+| `online_pion.txt`            | `PIon.txt`     |
+| `online_hion.txt`            | `HIon.txt`     |
+| `online_pref.txt`            | `PRef.txt`     |
+| `online_Circulating.txt`     | `Special.txt`  |
+| `online_PPS.txt`             | `Special.txt`  |
+| `online_LumiScan.txt`        | `Special.txt`  |
+| `online_FirstCollisions.txt` | `Special.txt`  |
+| `online_ECAL.txt`            | `Special.txt`  |
+| `online_Cosmics.txt`         | `Special.txt`  |
+| `online_TrackerVR.txt`       | `Special.txt`  |
+| `online_Splashes.txt`        | `Special.txt`  |
+| `online_Special.txt`         | `Special.txt`  |
+| `online_grun.txt`            | `GRun.txt`     |
+
+## Usage
+From a CMSSW environment:
+```bash
+./test_OnlineVsDevTablesConsistency.sh
+```
