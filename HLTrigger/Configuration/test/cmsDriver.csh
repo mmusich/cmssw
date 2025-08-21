@@ -27,7 +27,7 @@ eval `scram runtime -csh`
 set InputGenSimGRun0 = /store/relval/CMSSW_8_0_11/RelValProdTTbar/GEN-SIM/80X_mcRun1_realistic_v4-v1/10000/06A6C86B-C634-E611-93A5-0CC47A74525A.root
 set InputGenSimGRun1 = /store/relval/CMSSW_8_0_16/RelValProdTTbar_13/GEN-SIM/80X_mcRun2_asymptotic_v16_gs7120p2-v1/10000/06F2C3AC-8957-E611-9DDF-0025905B85D8.root
 set InputGenSimGRun2 = /store/relval/CMSSW_8_0_16/RelValProdTTbar_13/GEN-SIM/80X_mcRun2_asymptotic_v16_gs7120p2-v1/10000/06F2C3AC-8957-E611-9DDF-0025905B85D8.root
-set InputGenSimGRun3 = /store/relval/CMSSW_15_1_0_pre5/RelValTTbar_14TeV/GEN-SIM/151X_mcRun3_2025_realistic_v4_STD_RegeneratedGS_2025_noPU-v1/2580000/52ddb107-8172-46da-a3e2-b2784419c868.root
+set InputGenSimGRun3 = /store/relval/CMSSW_15_0_0/RelValTTbar_14TeV/GEN-SIM/142X_mcRun3_2025_realistic_v7_STD_2025_PU-v3/2580000/edf6fee2-e9d4-4072-a83a-c87a94f38900.root
 set InputGenSimHIon1 = /store/relval/CMSSW_8_0_16/RelValZEEMM_13_HI/GEN-SIM/80X_mcRun2_HeavyIon_v9-v1/10000/F8FC5F64-1657-E611-A57E-002590A887F0.root
 set InputGenSimHIon3 = /store/relval/CMSSW_14_1_0_pre7/RelValZEE_5362_HI_2023/GEN-SIM/140X_mcRun3_2023_realistic_HI_v4_STD_RegeneratedGS_2023HIN_noPU-v1/2580000/ca67f8db-780c-4078-84e8-61e514e56f1b.root
 set InputGenSimPIon2 = $InputGenSimGRun2
