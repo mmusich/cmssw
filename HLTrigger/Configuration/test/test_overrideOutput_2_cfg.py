@@ -15,6 +15,54 @@ class _DummyConfig:
         self.fragment = False
         self.output   = output  # "minimal", "all", or "full"
 
+import os, sys, importlib.util, tempfile, shutil
+import FWCore.ParameterSet.Config as cms
+from Configuration.Eras.Era_Run3_cff import Run3
+
+import os
+import subprocess
+import importlib.util
+
+
+def _load_menu_with_Run3():
+    """Generate a Run3 HLT menu with cmsDriver and load the process object."""
+
+    # Location where cmsDriver should write the config
+    menu_path = os.path.join(
+        os.environ["CMSSW_BASE"],
+        "src/HLTrigger/Configuration/test/myMenu.py",
+    )
+
+    # Ensure output dir exists
+    os.makedirs(os.path.dirname(menu_path), exist_ok=True)
+
+    # Run cmsDriver
+    cmsdriver_cmd = [
+        "cmsDriver.py",
+        "TEST",
+        "-s", "L1REPACK:uGT,HLT:@relval2025",
+        "--data",
+        "--scenario=pp",
+        "-n", "10",
+        "--conditions", "auto:run3_hlt_GRun",
+        "--datatier", "RAW",
+        "--eventcontent", "RAW",
+        "--era", "Run3_2025",
+        "--process", "reHLT",
+        "--filein", "/store/data/Run2024I/EphemeralHLTPhysics0/RAW/v1/000/386/593/00000/91a08676-199e-404c-9957-f72772ef1354.root",
+        "--no_exec",
+        "--python_filename", menu_path,
+    ]
+
+    subprocess.run(cmsdriver_cmd, check=True)
+
+    # Import the generated configuration
+    spec = importlib.util.spec_from_file_location("myMenu", menu_path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    return mod.process
+        
 def _load_menu_process():
     """Import OnLine_HLT_GRun.py while shielding VarParsing from our argv."""
     argv_saved = sys.argv[:]
@@ -30,7 +78,7 @@ def _load_menu_process():
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
                 
-        return process
+        return mod.process
     finally:
         sys.argv = argv_saved
 
@@ -136,7 +184,7 @@ def main():
         sys.exit(1)
 
     # 1) Load the real menu
-    process = _load_menu_process()
+    process = _load_menu_with_Run3()
 
     #2) For minimal/full, prune existing outputs so we end up with ONLY the requested one
     if mode in ("minimal", "full"):
