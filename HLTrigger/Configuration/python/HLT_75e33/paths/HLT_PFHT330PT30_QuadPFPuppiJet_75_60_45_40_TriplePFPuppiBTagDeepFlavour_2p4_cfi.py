@@ -37,6 +37,7 @@ HLT_PFHT330PT30_QuadPFPuppiJet_75_60_45_40_TriplePFPuppiBTagDeepFlavour_2p4 = cm
     + hlt4PFPuppiCentralJet40MaxEta2p4
     + hltHtMhtPFPuppiCentralJetsQuadC30MaxEta2p4
     + hltPFPuppiCentralJetsQuad30HT330MaxEta2p4
+    + HLTVertexRecoSequence
     + HLTBtagDeepFlavourSequencePFPuppiModEta2p4
     + hltBTagPFPuppiDeepFlavour0p275Eta2p4TripleEta2p4
     + HLTEndSequence

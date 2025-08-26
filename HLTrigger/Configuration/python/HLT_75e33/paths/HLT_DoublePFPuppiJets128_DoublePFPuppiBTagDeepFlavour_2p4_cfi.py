@@ -27,6 +27,7 @@ HLT_DoublePFPuppiJets128_DoublePFPuppiBTagDeepFlavour_2p4 = cms.Path(
     + HLTAK4PFPuppiJetsReconstruction
     + hltDoublePFPuppiJets128MaxEta2p4
     + hltDoublePFPuppiJets128Eta2p4MaxDeta1p6
+    + HLTVertexRecoSequence
     + HLTBtagDeepFlavourSequencePFPuppiModEta2p4
     + hltBTagPFPuppiDeepFlavour0p935DoubleEta2p4
     + HLTEndSequence
