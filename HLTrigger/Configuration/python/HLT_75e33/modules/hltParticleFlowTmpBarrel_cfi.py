@@ -172,7 +172,7 @@ hltParticleFlowTmpBarrel = cms.EDProducer("PFProducer",
     useProtectionsForJetMET = cms.bool(False),
     useVerticesForNeutral = cms.bool(True),
     verbose = cms.untracked.bool(False),
-    vertexCollection = cms.InputTag("hltOfflinePrimaryVertices"),
+    vertexCollection = cms.InputTag("hltPhase2PixelVertices"),
     vetoEndcap = cms.bool(True),
     vetoes = cms.InputTag({"hltPfTICL"})
 )
