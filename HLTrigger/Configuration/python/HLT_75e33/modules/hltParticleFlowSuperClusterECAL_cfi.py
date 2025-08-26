@@ -44,7 +44,8 @@ hltParticleFlowSuperClusterECAL = cms.EDProducer("PFECALSuperClusterProducer",
         uncertaintyMaxEE = cms.double(0.5),
         uncertaintyMinEB = cms.double(0.0002),
         uncertaintyMinEE = cms.double(0.0002),
-        vertexCollection = cms.InputTag("hltOfflinePrimaryVertices")
+        #vertexCollection = cms.InputTag("hltOfflinePrimaryVertices")
+        vertexCollection = cms.InputTag("hltPhase2PixelVertices")
     ),
     satelliteClusterSeedThreshold = cms.double(50),
     satelliteMajorityFraction = cms.double(0.5),
