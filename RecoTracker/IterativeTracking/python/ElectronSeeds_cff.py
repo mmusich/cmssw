@@ -6,6 +6,11 @@ initialStepSeedClusterMask = seedClusterRemover.clone(
     oldClusterRemovalInfo = cms.InputTag("pixelLessStepClusters")
 )
 
+from Configuration.ProcessModifiers.trackingIters01_cff import trackingIters01
+trackingIters01.toModify(initialStepSeedClusterMask,
+                         oldClusterRemovalInfo = cms.InputTag('highPtTripletStepClusters')
+                         )
+
 from RecoLocalTracker.SubCollectionProducers.seedClusterRemoverPhase2_cfi import seedClusterRemoverPhase2
 from Configuration.Eras.Modifier_trackingPhase2PU140_cff import trackingPhase2PU140
 trackingPhase2PU140.toReplaceWith(initialStepSeedClusterMask, seedClusterRemoverPhase2.clone(
@@ -271,10 +276,10 @@ _seedCollections_Phase1 = [
     'pixelPairStepSeeds'
 ]
 trackingPhase1.toModify(newCombinedSeeds, seedCollections = _seedCollections_Phase1)
-trackingPhase2PU140.toModify(newCombinedSeeds, 
-    seedCollections = ['initialStepSeeds',
-	               'highPtTripletStepSeeds',
-	               'tripletElectronSeeds'] )
+(trackingPhase2PU140 | trackingIters01).toModify(newCombinedSeeds,
+                                                 seedCollections = ['initialStepSeeds',
+	                                                            'highPtTripletStepSeeds' ])
+	                                                            #'tripletElectronSeeds'] )
 
 from Configuration.Eras.Modifier_fastSim_cff import fastSim
 from FastSimulation.Tracking.ElectronSeeds_cff import _newCombinedSeeds
@@ -303,6 +308,16 @@ electronSeedsSeq = cms.Sequence(electronSeedsSeqTask)
 _electronSeedsSeqTask_Phase1 = electronSeedsSeqTask.copy()
 _electronSeedsSeqTask_Phase1.replace(pixelPairStepSeedClusterMask, detachedTripletStepSeedClusterMask)
 trackingPhase1.toReplaceWith(electronSeedsSeqTask, _electronSeedsSeqTask_Phase1 )
+trackingIters01.toReplaceWith(electronSeedsSeqTask, cms.Task(
+    initialStepSeedClusterMask,
+    highPtTripletStepSeedClusterMask,
+    #tripletElectronSeedLayers,
+    #tripletElectronTrackingRegions,
+    #tripletElectronHitDoublets,
+    #tripletElectronHitTriplets,
+    #tripletElectronSeeds,
+    newCombinedSeeds
+))
 trackingPhase2PU140.toReplaceWith(electronSeedsSeqTask, cms.Task(
     initialStepSeedClusterMask,
     highPtTripletStepSeedClusterMask,
