@@ -88,6 +88,12 @@ _layerListForPhase1 = [
     'BPix1+FPix1_pos+FPix3_pos', 'BPix1+FPix1_neg+FPix3_neg'
 ]
 trackingPhase1.toModify(tripletElectronSeedLayers, layerList = _layerListForPhase1)
+
+(trackingIters01 & ~trackingPhase2PU140).toModify(tripletElectronSeedLayers,
+    BPix = dict(skipClusters = cms.InputTag('highPtTripletStepSeedClusterMask')),
+    FPix = dict(skipClusters = cms.InputTag('highPtTripletStepSeedClusterMask'))
+)
+
 trackingPhase2PU140.toModify(tripletElectronSeedLayers,
     layerList = _layerListForPhase1,
     BPix = dict(skipClusters = 'pixelPairStepSeedClusterMask'),
@@ -139,6 +145,11 @@ tripletElectronClusterMask = seedClusterRemover.clone(
     trajectories = 'tripletElectronSeeds',
     oldClusterRemovalInfo = cms.InputTag('pixelLessStepSeedClusterMask')
 )
+
+(trackingIters01 & ~trackingPhase2PU140).toModify(tripletElectronClusterMask,
+    oldClusterRemovalInfo = cms.InputTag('highPtTripletStepSeedClusterMask')
+)
+
 trackingPhase2PU140.toReplaceWith(tripletElectronClusterMask, seedClusterRemoverPhase2.clone(
     trajectories = 'tripletElectronSeeds',
     oldClusterRemovalInfo = cms.InputTag('pixelLessStepSeedClusterMask')
@@ -311,11 +322,11 @@ trackingPhase1.toReplaceWith(electronSeedsSeqTask, _electronSeedsSeqTask_Phase1 
 trackingIters01.toReplaceWith(electronSeedsSeqTask, cms.Task(
     initialStepSeedClusterMask,
     highPtTripletStepSeedClusterMask,
-    #tripletElectronSeedLayers,
-    #tripletElectronTrackingRegions,
-    #tripletElectronHitDoublets,
-    #tripletElectronHitTriplets,
-    #tripletElectronSeeds,
+    tripletElectronSeedLayers,
+    tripletElectronTrackingRegions,
+    tripletElectronHitDoublets,
+    tripletElectronHitTriplets,
+    tripletElectronSeeds,
     newCombinedSeeds
 ))
 trackingPhase2PU140.toReplaceWith(electronSeedsSeqTask, cms.Task(
