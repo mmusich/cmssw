@@ -5,8 +5,7 @@ from ..modules.hltPhase2PixelTrackFilterByKinematics_cfi import hltPhase2PixelTr
 from ..modules.hltPhase2PixelTracks_cfi import hltPhase2PixelTracks
 from ..modules.hltPhase2PixelTracksSoA_cfi import hltPhase2PixelTracksSoA
 from ..modules.hltPhase2PixelTracksAndHighPtStepTrackingRegions_cfi import hltPhase2PixelTracksAndHighPtStepTrackingRegions
-from ..modules.hltPhase2PixelVertices_cfi import *
-from ..sequences.HLTPhase2PixelVertexingSequence_cfi import HLTPhase2PixelVertexingSequence
+from ..sequences.HLTPhase2PixelVertexingSequence_cfi import *
 from ..sequences.HLTBeamSpotSequence_cfi import HLTBeamSpotSequence
 
 HLTPhase2PixelTracksAndVerticesSequence = cms.Sequence(
