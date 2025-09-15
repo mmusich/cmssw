@@ -17,6 +17,16 @@ hltPhase2PixelVertices = cms.EDProducer("PixelVertexProducer",
     beamSpot = cms.InputTag("hltOnlineBeamSpot")
 )
 
+from RecoVertex.PixelVertexFinding.PixelVertexProducerFromSoAAlpaka import PixelVertexProducerFromSoAAlpaka as _PixelVertexProducerFromSoAAlpaka
+_hltPhase2PixelVertices = _PixelVertexProducerFromSoAAlpaka(
+    TrackCollection = "hltPhase2PixelTracks",
+    beamSpot = "hltOnlineBeamSpot",
+    src = "hltPhase2PixelVerticesSoA"
+)
+
+from Configuration.ProcessModifiers.alpaka_cff import alpaka
+alpaka.toReplaceWith(hltPhase2PixelVertices, _hltPhase2PixelVertices)
+
 from Configuration.ProcessModifiers.phase2CAExtension_cff import phase2CAExtension
 phase2CAExtension.toModify(hltPhase2PixelVertices,
     TrackCollection = "hltPhase2PixelTracksCAExtension"
