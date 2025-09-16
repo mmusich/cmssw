@@ -15,8 +15,9 @@ from SimTracker.VertexAssociation.VertexAssociatorByPositionAndTracks_cfi import
 vertexAssociatorByPositionAndTracks4pixelTracks = _VertexAssociatorByPositionAndTracks.clone(
     trackAssociation = "tpToHLTpixelTrackAssociation",
     sharedTrackFraction = 0.5, # requires optimization
-
+    useWeightPtSum2 = True
 )
+
 hltOtherTPClusterProducer = hltTPClusterProducer.clone(
     stripClusterOtherSrc = "hltSiStripRawToClustersFacilityOnDemand"
 )

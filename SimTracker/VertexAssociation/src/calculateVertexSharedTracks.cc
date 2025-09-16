@@ -1,10 +1,14 @@
 #include "SimTracker/VertexAssociation/interface/calculateVertexSharedTracks.h"
 
-unsigned int calculateVertexSharedTracks(const reco::Vertex &recoV,
-                                         const TrackingVertex &simV,
-                                         const reco::RecoToSimCollection &trackRecoToSimAssociation) {
+NumFrac calculateVertexSharedTracks(const reco::Vertex &recoV,
+                                    const TrackingVertex &simV,
+                                    const reco::RecoToSimCollection &trackRecoToSimAssociation,
+                                    const bool weightPtSum2) {
   unsigned int sharedTracks = 0;
+  float sharedTracksWeightPtSum2 = 0;
+  float totalTracksWeightPtSum2 = 0;
   for (auto iTrack = recoV.tracks_begin(); iTrack != recoV.tracks_end(); ++iTrack) {
+    totalTracksWeightPtSum2 += ((*iTrack)->pt() * (*iTrack)->pt());
     auto found = trackRecoToSimAssociation.find(*iTrack);
 
     if (found == trackRecoToSimAssociation.end())
@@ -16,18 +20,25 @@ unsigned int calculateVertexSharedTracks(const reco::Vertex &recoV,
             return tp.first == vtp;
           }) != simV.daughterTracks_end()) {
         sharedTracks += 1;
+        sharedTracksWeightPtSum2 += ((*iTrack)->pt() * (*iTrack)->pt());
         break;
       }
     }
   }
-
-  return sharedTracks;
+  if (weightPtSum2)
+    return NumFrac(sharedTracks, sharedTracksWeightPtSum2 / totalTracksWeightPtSum2);
+  else
+    return NumFrac(sharedTracks, float(sharedTracks) / recoV.tracksSize());
 }
 
-unsigned int calculateVertexSharedTracks(const TrackingVertex &simV,
-                                         const reco::Vertex &recoV,
-                                         const reco::SimToRecoCollection &trackSimToRecoAssociation) {
+NumFrac calculateVertexSharedTracks(const TrackingVertex &simV,
+                                    const reco::Vertex &recoV,
+                                    const reco::SimToRecoCollection &trackSimToRecoAssociation,
+                                    const bool weightPtSum2) {
   unsigned int sharedTracks = 0;
+  float sharedTracksWeightPtSum2 = 0;
+  float totalTracksWeightPtSum2 = 0;
+
   for (auto iTP = simV.daughterTracks_begin(); iTP != simV.daughterTracks_end(); ++iTP) {
     auto found = trackSimToRecoAssociation.find(*iTP);
 
@@ -37,13 +48,18 @@ unsigned int calculateVertexSharedTracks(const TrackingVertex &simV,
     // matched track equal to any track of reco vertex => increase counter
     for (const auto &tk : found->val) {
       if (std::find_if(recoV.tracks_begin(), recoV.tracks_end(), [&](const reco::TrackBaseRef &vtk) {
-            return tk.first.key() == vtk.key(); // tk.first == vtk; operator::== not working
+            totalTracksWeightPtSum2 += (tk.first->pt() * tk.first->pt());
+            return ((tk.first.id() == vtk.id()) &&
+                    (tk.first.key() == vtk.key()));  // tk.first == vtk; operator::== not working
           }) != recoV.tracks_end()) {
         sharedTracks += 1;
+        sharedTracksWeightPtSum2 += (tk.first->pt() * tk.first->pt());
         break;
       }
     }
   }
-
-  return sharedTracks;
+  if (weightPtSum2)
+    return NumFrac(sharedTracks, sharedTracksWeightPtSum2 / totalTracksWeightPtSum2);
+  else
+    return NumFrac(sharedTracks, float(sharedTracks) / recoV.tracksSize());
 }

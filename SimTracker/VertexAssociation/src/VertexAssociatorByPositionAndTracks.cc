@@ -14,7 +14,8 @@ VertexAssociatorByPositionAndTracks::VertexAssociatorByPositionAndTracks(
     double maxRecoT,
     double sharedTrackFraction,
     const reco::RecoToSimCollection *trackRecoToSimAssociation,
-    const reco::SimToRecoCollection *trackSimToRecoAssociation)
+    const reco::SimToRecoCollection *trackSimToRecoAssociation,
+    const bool weightPtSum2)
     : productGetter_(productGetter),
       absZ_(absZ),
       sigmaZ_(sigmaZ),
@@ -24,7 +25,8 @@ VertexAssociatorByPositionAndTracks::VertexAssociatorByPositionAndTracks(
       maxRecoT_(maxRecoT),
       sharedTrackFraction_(sharedTrackFraction),
       trackRecoToSimAssociation_(trackRecoToSimAssociation),
-      trackSimToRecoAssociation_(trackSimToRecoAssociation) {}
+      trackSimToRecoAssociation_(trackSimToRecoAssociation),
+      weightPtSum2_(weightPtSum2) {}
 
 VertexAssociatorByPositionAndTracks::VertexAssociatorByPositionAndTracks(
     const edm::EDProductGetter *productGetter,
@@ -33,7 +35,8 @@ VertexAssociatorByPositionAndTracks::VertexAssociatorByPositionAndTracks(
     double maxRecoZ,
     double sharedTrackFraction,
     const reco::RecoToSimCollection *trackRecoToSimAssociation,
-    const reco::SimToRecoCollection *trackSimToRecoAssociation)
+    const reco::SimToRecoCollection *trackSimToRecoAssociation,
+    const bool weightPtSum2)
     : productGetter_(productGetter),
       absZ_(absZ),
       sigmaZ_(sigmaZ),
@@ -43,7 +46,8 @@ VertexAssociatorByPositionAndTracks::VertexAssociatorByPositionAndTracks(
       maxRecoT_(std::numeric_limits<double>::max()),
       sharedTrackFraction_(sharedTrackFraction),
       trackRecoToSimAssociation_(trackRecoToSimAssociation),
-      trackSimToRecoAssociation_(trackSimToRecoAssociation) {}
+      trackSimToRecoAssociation_(trackSimToRecoAssociation),
+      weightPtSum2_(weightPtSum2) {}
 
 VertexAssociatorByPositionAndTracks::~VertexAssociatorByPositionAndTracks() {}
 
@@ -103,15 +107,17 @@ reco::VertexRecoToSimCollection VertexAssociatorByPositionAndTracks::associateRe
       const double zdiff = std::abs(recoVertex.z() - simVertex.position().z());
       if (zdiff < absZ_ && zdiff / recoVertex.zError() < sigmaZ_ &&
           (!useTiming || (tdiff < absT_ && tdiff / recoVertex.tError() < sigmaT_))) {
-        auto sharedTracks = calculateVertexSharedTracks(recoVertex, simVertex, *trackRecoToSimAssociation_);
-        auto fraction = double(sharedTracks) / recoVertex.tracksSize();
+        auto sharedTracksAndFraction =
+            calculateVertexSharedTracks(recoVertex, simVertex, *trackRecoToSimAssociation_, weightPtSum2_);
+        auto fraction = sharedTracksAndFraction.frac;
         if (sharedTrackFraction_ < 0 || fraction > sharedTrackFraction_) {
           LogTrace("VertexAssociation") << "   Matched with significance " << zdiff / recoVertex.zError() << " "
-                                        << tdiff / recoVertex.tError() << " shared tracks " << sharedTracks
-                                        << " reco Tracks " << recoVertex.tracksSize() << " TrackingParticles "
-                                        << simVertex.nDaughterTracks();
+                                        << tdiff / recoVertex.tError() << " shared tracks "
+                                        << sharedTracksAndFraction.num << " reco Tracks " << recoVertex.tracksSize()
+                                        << " TrackingParticles " << simVertex.nDaughterTracks();
 
-          ret.insert(reco::VertexBaseRef(vCH, iReco), std::make_pair(TrackingVertexRef(tVCH, iSim), sharedTracks));
+          ret.insert(reco::VertexBaseRef(vCH, iReco),
+                     std::make_pair(TrackingVertexRef(tVCH, iSim), sharedTracksAndFraction.num));
         }
       }
     }
@@ -170,15 +176,17 @@ reco::VertexSimToRecoCollection VertexAssociatorByPositionAndTracks::associateSi
       const double zdiff = std::abs(recoVertex.z() - simVertex.position().z());
       if (zdiff < absZ_ && zdiff / recoVertex.zError() < sigmaZ_ &&
           (!useTiming || (tdiff < absT_ && tdiff / recoVertex.tError() < sigmaT_))) {
-        auto sharedTracks = calculateVertexSharedTracks(simVertex, recoVertex, *trackSimToRecoAssociation_);
-        auto fraction = double(sharedTracks) / recoVertex.tracksSize();
+        auto sharedTracksAndFraction =
+            calculateVertexSharedTracks(simVertex, recoVertex, *trackSimToRecoAssociation_, weightPtSum2_);
+        auto fraction = sharedTracksAndFraction.frac;
         if (sharedTrackFraction_ < 0 || fraction > sharedTrackFraction_) {
           LogTrace("VertexAssociation") << "   Matched with significance " << zdiff / recoVertex.zError() << " "
-                                        << tdiff / recoVertex.tError() << " shared tracks " << sharedTracks
-                                        << " reco Tracks " << recoVertex.tracksSize() << " TrackingParticles "
-                                        << simVertex.nDaughterTracks();
+                                        << tdiff / recoVertex.tError() << " shared tracks "
+                                        << sharedTracksAndFraction.num << " reco Tracks " << recoVertex.tracksSize()
+                                        << " TrackingParticles " << simVertex.nDaughterTracks();
 
-          ret.insert(TrackingVertexRef(tVCH, iSim), std::make_pair(reco::VertexBaseRef(vCH, iReco), sharedTracks));
+          ret.insert(TrackingVertexRef(tVCH, iSim),
+                     std::make_pair(reco::VertexBaseRef(vCH, iReco), sharedTracksAndFraction.num));
         }
       }
     }

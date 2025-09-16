@@ -24,7 +24,8 @@ public:
                                       double maxRecoT,
                                       double sharedTrackFraction,
                                       const reco::RecoToSimCollection *trackRecoToSimAssociation,
-                                      const reco::SimToRecoCollection *trackSimToRecoAssociation);
+                                      const reco::SimToRecoCollection *trackSimToRecoAssociation,
+                                      const bool weightPtSum2 = false);
 
   VertexAssociatorByPositionAndTracks(const edm::EDProductGetter *productGetter,
                                       double absZ,
@@ -32,7 +33,8 @@ public:
                                       double maxRecoZ,
                                       double sharedTrackFraction,
                                       const reco::RecoToSimCollection *trackRecoToSimAssociation,
-                                      const reco::SimToRecoCollection *trackSimToRecoAssociation);
+                                      const reco::SimToRecoCollection *trackSimToRecoAssociation,
+                                      const bool weightPtSum2 = false);
 
   ~VertexAssociatorByPositionAndTracks() override;
 
@@ -57,6 +59,8 @@ private:
 
   const reco::RecoToSimCollection *trackRecoToSimAssociation_;
   const reco::SimToRecoCollection *trackSimToRecoAssociation_;
+
+  const bool weightPtSum2_;
 };
 
 #endif

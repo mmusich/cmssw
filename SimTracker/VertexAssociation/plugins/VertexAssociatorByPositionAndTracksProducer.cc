@@ -18,7 +18,7 @@
 class VertexAssociatorByPositionAndTracksProducer : public edm::global::EDProducer<> {
 public:
   explicit VertexAssociatorByPositionAndTracksProducer(const edm::ParameterSet &);
-  ~VertexAssociatorByPositionAndTracksProducer() override;
+  ~VertexAssociatorByPositionAndTracksProducer() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
 
@@ -33,6 +33,7 @@ private:
   const double sigmaT_;
   const double maxRecoT_;
   const double sharedTrackFraction_;
+  const bool useWeightPtSum2_;
 
   edm::EDGetTokenT<reco::RecoToSimCollection> trackRecoToSimAssociationToken_;
   edm::EDGetTokenT<reco::SimToRecoCollection> trackSimToRecoAssociationToken_;
@@ -46,14 +47,13 @@ VertexAssociatorByPositionAndTracksProducer::VertexAssociatorByPositionAndTracks
       sigmaT_(config.getParameter<double>("sigmaT")),
       maxRecoT_(config.getParameter<double>("maxRecoT")),
       sharedTrackFraction_(config.getParameter<double>("sharedTrackFraction")),
+      useWeightPtSum2_(config.getParameter<bool>("useWeightPtSum2")),
       trackRecoToSimAssociationToken_(
           consumes<reco::RecoToSimCollection>(config.getParameter<edm::InputTag>("trackAssociation"))),
       trackSimToRecoAssociationToken_(
           consumes<reco::SimToRecoCollection>(config.getParameter<edm::InputTag>("trackAssociation"))) {
   produces<reco::VertexToTrackingVertexAssociator>();
 }
-
-VertexAssociatorByPositionAndTracksProducer::~VertexAssociatorByPositionAndTracksProducer() {}
 
 void VertexAssociatorByPositionAndTracksProducer::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
   edm::ParameterSetDescription desc;
@@ -66,6 +66,7 @@ void VertexAssociatorByPositionAndTracksProducer::fillDescriptions(edm::Configur
   desc.add<double>("sigmaT", -1.0);
   desc.add<double>("maxRecoT", -1.0);
   desc.add<double>("sharedTrackFraction", -1.0);
+  desc.add<bool>("useWeightPtSum2", false);
 
   // Track-TrackingParticle association
   desc.add<edm::InputTag>("trackAssociation", edm::InputTag("trackingParticleRecoTrackAsssociation"));
@@ -98,7 +99,8 @@ void VertexAssociatorByPositionAndTracksProducer::produce(edm::StreamID,
                                                                  maxRecoZ_,
                                                                  sharedTrackFraction_,
                                                                  recotosimCollectionH.product(),
-                                                                 simtorecoCollectionH.product());
+                                                                 simtorecoCollectionH.product(),
+                                                                 useWeightPtSum2_);
   } else {
     impl = std::make_unique<VertexAssociatorByPositionAndTracks>(&(iEvent.productGetter()),
                                                                  absZ_,
@@ -109,7 +111,8 @@ void VertexAssociatorByPositionAndTracksProducer::produce(edm::StreamID,
                                                                  maxRecoT_,
                                                                  sharedTrackFraction_,
                                                                  recotosimCollectionH.product(),
-                                                                 simtorecoCollectionH.product());
+                                                                 simtorecoCollectionH.product(),
+                                                                 useWeightPtSum2_);
   }
 
   auto toPut = std::make_unique<reco::VertexToTrackingVertexAssociator>(std::move(impl));
