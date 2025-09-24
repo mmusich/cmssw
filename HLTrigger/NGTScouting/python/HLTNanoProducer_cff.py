@@ -119,6 +119,8 @@ def hltNanoValCustomize(process):
                                     process.hltSimTracksterSequence +
                                     process.hltSimTiclCandidateTable +
                                     process.hltSimTiclCandidateExtraTable +
-                                    process.trackingExtraNanoProducer)
+                                    process.trackingExtraNanoProducer +
+                                    process.hltSimVertexTable
+                                    )
 
     return process
