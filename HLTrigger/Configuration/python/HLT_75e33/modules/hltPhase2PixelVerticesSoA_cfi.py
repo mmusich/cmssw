@@ -5,8 +5,13 @@ from RecoVertex.PixelVertexFinding.PixelVertexProducerAlpakaPhase2_alpaka import
 hltPhase2PixelVerticesSoA = _PixelVertexProducerAlpakaPhase2_alpaka(
     PtMin = 1.0,
     pixelTrackSrc = "hltPhase2PixelTracksSoA",
+    errmax = 0.015,
+    chi2max = cms.double(9.0),
     maxVertices = 512,
+    doSplitting = cms.bool(True),
+    oneKernel = cms.bool(False),
     useDBSCAN = cms.bool(False),
-    useDensity = cms.bool(True),
+    useDensity = cms.bool(False),
+    useDensityClue = cms.bool(True),
     useIterative = cms.bool(False)
 )
