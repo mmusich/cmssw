@@ -2017,7 +2017,7 @@ upgradeWFs['HLTTiming75e33TiclBarrel'].step3 = {
 class UpgradeWorkflow_HLTPhase2_WithNano(UpgradeWorkflow):
     def setup_(self, step, stepName, stepDict, k, properties):
         # skip RECO, ALCA and HLT
-        if ('ALCA' in step) or ('Reco' in step) or ('HLT' in step) or ('HARVEST' in step):
+        if ('ALCA' in step) or ('Reco' in step) or ('HLT' in step):
             stepDict[stepName][k] = None
         elif 'DigiTrigger' in step:
             # Add the aging customization
@@ -2027,6 +2027,8 @@ class UpgradeWorkflow_HLTPhase2_WithNano(UpgradeWorkflow):
             else:
                 mergedStep['--customise'] = 'SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000'
             stepDict[stepName][k] = mergedStep
+        elif 'HARVEST' in step:
+            stepDict[stepName][k] = merge([self.step3, stepDict[step][k]])
         else:
             stepDict[stepName][k] = merge([stepDict[step][k]])
     def condition(self, fragment, stepList, key, hasHarvest):
@@ -2062,8 +2064,12 @@ upgradeWFs['HLTPhase2WithNano'] = UpgradeWorkflow_HLTPhase2_WithNano(
 )
 upgradeWFs['HLTPhase2WithNano'].step2 = {
     '-s':'DIGI:pdigi_valid,L1TrackTrigger,L1,L1P2GT,DIGI2RAW,HLT:75e33,NANO:@Phase2HLT',
-    '--datatier':'GEN-SIM-DIGI-RAW,NANOAODSIM',
-    '--eventcontent':'FEVTDEBUGHLT,NANOAODSIM'
+    '--datatier':'GEN-SIM-DIGI-RAW,DQMIO,NANOAODSIM',
+    '--eventcontent':'FEVTDEBUGHLT,DQMIO,NANOAODSIM'
+}
+
+upgradeWFs['HLTPhase2WithNano'].step3 = {
+    '-s':'HARVESTING:@hltValidation'
 }
 
 upgradeWFs['NGTScoutingWithNano'] = deepcopy(upgradeWFs['HLTPhase2WithNano'])
@@ -2071,9 +2077,14 @@ upgradeWFs['NGTScoutingWithNano'].suffix = '_NGTScoutingWithNano'
 upgradeWFs['NGTScoutingWithNano'].offset = 0.772
 upgradeWFs['NGTScoutingWithNano'].step2 = {
     '-s':'DIGI:pdigi_valid,L1TrackTrigger,L1,L1P2GT,DIGI2RAW,HLT:NGTScouting,NANO:@NGTScouting',
-    '--datatier':'GEN-SIM-DIGI-RAW,NANOAODSIM',
+    '--datatier':'GEN-SIM-DIGI-RAW,DQMIO,NANOAODSIM',
     '--procModifiers': 'ngtScouting',
-    '--eventcontent':'FEVTDEBUGHLT,NANOAODSIM'
+    '--eventcontent':'FEVTDEBUGHLT,DQMIO,NANOAODSIM'
+}
+
+upgradeWFs['NGTScoutingWithNano'].step3 = {
+    '--procModifiers': 'ngtScouting',
+    '-s':'HARVESTING:@hltValidation'
 }
 
 upgradeWFs['NGTScoutingWithNanoValid'] = deepcopy(upgradeWFs['HLTPhase2WithNano'])
@@ -2081,9 +2092,14 @@ upgradeWFs['NGTScoutingWithNanoValid'].suffix = '_NGTScoutingWithNanoVal'
 upgradeWFs['NGTScoutingWithNanoValid'].offset = 0.773
 upgradeWFs['NGTScoutingWithNanoValid'].step2 = {
     '-s':'DIGI:pdigi_valid,L1TrackTrigger,L1,L1P2GT,DIGI2RAW,HLT:NGTScouting,VALIDATION:@hltValidation,NANO:@NGTScoutingVal',
-    '--datatier':'GEN-SIM-DIGI-RAW,NANOAODSIM',
+    '--datatier':'GEN-SIM-DIGI-RAW,DQMIO,NANOAODSIM',
     '--procModifiers': 'ngtScouting',
-    '--eventcontent':'FEVTDEBUGHLT,NANOAODSIM'
+    '--eventcontent':'FEVTDEBUGHLT,DQMIO,NANOAODSIM'
+}
+
+upgradeWFs['NGTScoutingWithNanoValid'].step3 = {
+    '--procModifiers': 'ngtScouting',
+    '-s':'HARVESTING:@hltValidation'
 }
 
 class UpgradeWorkflow_HLTwDIGI75e33(UpgradeWorkflow):
