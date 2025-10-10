@@ -165,7 +165,7 @@ def customiseL1EmulatorFromRaw(process):
         path.replace(process.SimL1Emulator, process.CaloTPG_SimL1Emulator)
 
     # set the new input tags after RawToDigi
-    process.simEcalTriggerPrimitiveDigis.Label = 'ecalDigis'
+    process.simEcalTriggerPrimitiveDigis_with_suppressed.Label = 'ecalDigis'
     process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
         cms.InputTag('hcalDigis'),
         cms.InputTag('hcalDigis')
@@ -253,7 +253,7 @@ def customiseL1CaloAndGtEmulatorsFromRaw(process):
 
     # run Calo TPGs on unpacked digis
     process.load('L1Trigger.Configuration.CaloTriggerPrimitives_cff')
-    process.simEcalTriggerPrimitiveDigis.Label = 'ecalDigis'
+    process.simEcalTriggerPrimitiveDigis_with_suppressed.Label = 'ecalDigis'
     process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(
         cms.InputTag('hcalDigis'),
         cms.InputTag('hcalDigis')

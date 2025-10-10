@@ -27,20 +27,20 @@ process.load("Configuration.StandardSequences.RawToDigi_cff")
 # run trigger primitive generation on unpacked digis, then central L1
 process.load("L1Trigger.Configuration.CaloTriggerPrimitives_cff")
 
-process.simEcalTriggerPrimitiveDigis.Label = 'ecalDigis'
+process.simEcalTriggerPrimitiveDigis_with_suppressed.Label = 'ecalDigis'
 process.simHcalTriggerPrimitiveDigis.inputLabel = 'hcalDigis'
 
 
 process.load("L1TriggerConfig.RCTConfigProducers.L1RCTConfig_cff")
 process.load("L1Trigger.RegionalCaloTrigger.rctDigis_cfi")
 
-process.rctDigis.ecalDigis =cms.VInputTag( cms.InputTag('simEcalTriggerPrimitiveDigis'))
+process.rctDigis.ecalDigis =cms.VInputTag( cms.InputTag('simEcalTriggerPrimitiveDigis_with_suppressed'))
 process.rctDigis.hcalDigis = cms.VInputTag(cms.InputTag('simHcalTriggerPrimitiveDigis'))
 
 process.L1Analysis = cms.EDAnalyzer("L1RCTTestAnalyzer",
     hcalDigisLabel = cms.InputTag("simHcalTriggerPrimitiveDigis"),
     showEmCands = cms.untracked.bool(False),
-    ecalDigisLabel = cms.InputTag("simEcalTriggerPrimitiveDigis"),
+    ecalDigisLabel = cms.InputTag("simEcalTriggerPrimitiveDigis_with_suppressed"),
     rctDigisLabel = cms.InputTag("rctDigis"),
     showRegionSums = cms.untracked.bool(False)
 )

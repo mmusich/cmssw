@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 #
 # attention: default is changed to work on unsuppressed digis!! ##############
 #
-simEcalTriggerPrimitiveDigis = cms.EDProducer("EcalTrigPrimProducer",
+simEcalTriggerPrimitiveDigis_with_suppressed = cms.EDProducer("EcalTrigPrimProducer",
     BarrelOnly = cms.bool(False),
     InstanceEB = cms.string('ebDigis'),
     InstanceEE = cms.string('eeDigis'),

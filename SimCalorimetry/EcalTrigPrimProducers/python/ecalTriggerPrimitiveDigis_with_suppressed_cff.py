@@ -6,7 +6,6 @@ from SimCalorimetry.EcalTrigPrimProducers.ecalTriggerPrimitiveDigis_with_suppres
 # esmodule creating  records + corresponding empty essource
 from SimCalorimetry.EcalTrigPrimProducers.ecalTrigPrimESProducer_mc_cff import *
 
-
 #Common
 from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
-phase2_hgcal.toModify( simEcalTriggerPrimitiveDigis, BarrelOnly = cms.bool(True) )
+phase2_hgcal.toModify( simEcalTriggerPrimitiveDigis_with_suppressed, BarrelOnly = cms.bool(True) )

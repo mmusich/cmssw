@@ -7,5 +7,5 @@ from SimCalorimetry.EcalTrigPrimProducers.ecalTriggerPrimitiveDigis_with_suppres
 from SimCalorimetry.HcalTrigPrimProducers.hcaltpdigi_cff import *
 
 #
-CaloTriggerPrimitives = cms.Sequence(simEcalTriggerPrimitiveDigis*simHcalTriggerPrimitiveDigis)
+CaloTriggerPrimitives = cms.Sequence(simEcalTriggerPrimitiveDigis_with_suppressed*simHcalTriggerPrimitiveDigis)
 

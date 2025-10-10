@@ -137,7 +137,7 @@ process.load("L1Trigger.Configuration.CaloTriggerPrimitives_cff")
 process.load("L1Trigger.Configuration.SimL1Emulator_cff")
 
 # set the new input tags after RawToDigi for the TPG producers
-process.simEcalTriggerPrimitiveDigis.Label = 'ecalDigis'
+process.simEcalTriggerPrimitiveDigis_with_suppressed.Label = 'ecalDigis'
 process.simHcalTriggerPrimitiveDigis.inputLabel = cms.VInputTag(cms.InputTag('hcalDigis'), 
                                                                 cms.InputTag('hcalDigis'))
 #
