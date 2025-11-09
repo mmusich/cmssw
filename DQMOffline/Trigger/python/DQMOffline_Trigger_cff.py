@@ -48,6 +48,7 @@ from DQMOffline.Trigger.PrimaryVertexMonitoring_cff import *
 from DQMOffline.Trigger.TrackingMonitoring_cff import *
 from DQMOffline.Trigger.TrackingMonitoringPA_cff import*
 from DQMOffline.Trigger.TrackToTrackMonitoring_cff import *
+from DQMOffline.Trigger.ShortenedTrackMonitoring_cff import *
 
 # hcal
 from DQMOffline.Trigger.HCALMonitoring_cff import *
@@ -199,6 +200,7 @@ offlineHLTSource4HLTMonitorPD = cms.Sequence(
     BTVHLTOfflineSource *             # BTV
     bTagHLTTrackMonitoringSequence *  # BTV relative track efficiencies
     trackingMonitorHLT *              # tracking
+    hltShortTrackResolution3to8 *     # shortened track monitoring
     BTagAndProbeHLT *                 # BTag and Probe
     trackingMonitorHLTDisplacedJet*   # EXO : DisplacedJet Tracking 
     egmTrackingMonitorHLT *           # EGM tracking
