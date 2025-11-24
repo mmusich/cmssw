@@ -9,6 +9,34 @@ import numpy as np
 from DQMServices.FileIO.blacklist import get_blacklist
 import multiprocessing
 
+def hist_to_array(h, include_overflow=False):
+    dim = h.GetDimension()
+
+    nx = h.GetNbinsX()
+    ny = h.GetNbinsY() if dim >= 2 else 1
+    nz = h.GetNbinsZ() if dim == 3 else 1
+
+    # choose bin index ranges
+    if include_overflow:
+        xrange = range(0, nx+2)   # includes under/overflow
+        yrange = range(0, ny+2)
+        zrange = range(0, nz+2)
+    else:
+        xrange = range(1, nx+1)
+        yrange = range(1, ny+1)
+        zrange = range(1, nz+1)
+
+    # prepare array
+    arr = np.zeros((len(xrange), len(yrange), len(zrange)), dtype=float)
+
+    for ix, x in enumerate(xrange):
+        for iy, y in enumerate(yrange):
+            for iz, z in enumerate(zrange):
+                arr[ix, iy, iz] = h.GetBinContent(x, y, z)
+
+    # squeeze back to expected dimension
+    return np.squeeze(arr)
+
 def create_dif(base_file_path, pr_file_path, pr_number, test_number, cmssw_version, num_processes, output_dir_path):
    base_file = ROOT.TFile(base_file_path, 'read')
    ROOT.gROOT.GetListOfFiles().Remove(base_file)
@@ -143,8 +171,8 @@ def compareMP(shared_paths, pr_flat_dict, base_flat_dict, iProc, return_dict):
 
       elif pr_item.InheritsFrom('TH1') and base_item.InheritsFrom('TH1'):
          # Compare bin by bin
-         pr_array = np.array(pr_item)
-         base_array = np.array(base_item)
+         pr_array  = hist_to_array(pr_item)
+         base_array = hist_to_array(base_item)
 
          if pr_array.shape != base_array.shape or not np.allclose(pr_array, base_array, equal_nan=True):
             are_different = True
@@ -179,8 +207,8 @@ def compare(shared_paths, pr_flat_dict, base_flat_dict, paths_to_save_in_pr, pat
 
       elif pr_item.InheritsFrom('TH1') and base_item.InheritsFrom('TH1'):
          # Compare bin by bin
-         pr_array = np.array(pr_item)
-         base_array = np.array(base_item)
+         pr_array  = hist_to_array(pr_item)
+         base_array = hist_to_array(base_item)
 
          if pr_array.shape != base_array.shape or not np.allclose(pr_array, base_array, equal_nan=True):
             are_different = True
