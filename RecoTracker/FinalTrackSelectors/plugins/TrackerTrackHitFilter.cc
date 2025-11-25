@@ -690,6 +690,9 @@ namespace reco {
         if (hit->isValid() && hit == nullptr && detid.rawId() == 0)
           continue;
 
+        if (!hit->det())
+          continue;
+
         int verdict = checkHit(iSetup, detid, hit);
         if (verdict == 0) {
           // just copy the hit
