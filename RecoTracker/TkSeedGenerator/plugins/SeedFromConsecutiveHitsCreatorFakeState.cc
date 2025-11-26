@@ -18,11 +18,11 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 
-class dso_hidden SeedFromConsecutiveHitsCreatorNoFit : public SeedCreator {
+class dso_hidden SeedFromConsecutiveHitsCreatorFakeState : public SeedCreator {
 public:
-  SeedFromConsecutiveHitsCreatorNoFit(const edm::ParameterSet &, edm::ConsumesCollector &&);
+  SeedFromConsecutiveHitsCreatorFakeState(const edm::ParameterSet &, edm::ConsumesCollector &&);
 
-  ~SeedFromConsecutiveHitsCreatorNoFit() override = default;
+  ~SeedFromConsecutiveHitsCreatorFakeState() override = default;
 
   static void fillDescriptions(edm::ParameterSetDescription &desc);
   static const char *fillDescriptionsLabel() { return "ConsecutiveHitsSimple"; }
@@ -39,20 +39,20 @@ protected:
   const SeedComparitor *filter = nullptr;
 };
 
-SeedFromConsecutiveHitsCreatorNoFit::SeedFromConsecutiveHitsCreatorNoFit(const edm::ParameterSet &cfg,
-                                                                           edm::ConsumesCollector &&iC) {}
+SeedFromConsecutiveHitsCreatorFakeState::SeedFromConsecutiveHitsCreatorFakeState(const edm::ParameterSet &cfg,
+                                                                                 edm::ConsumesCollector &&iC) {}
 
-void SeedFromConsecutiveHitsCreatorNoFit::fillDescriptions(edm::ParameterSetDescription &desc) {}
+void SeedFromConsecutiveHitsCreatorFakeState::fillDescriptions(edm::ParameterSetDescription &desc) {}
 
-void SeedFromConsecutiveHitsCreatorNoFit::init(const TrackingRegion &iregion,
-                                                const edm::EventSetup &es,
-                                                const SeedComparitor *ifilter) {
+void SeedFromConsecutiveHitsCreatorFakeState::init(const TrackingRegion &iregion,
+                                                   const edm::EventSetup &es,
+                                                   const SeedComparitor *ifilter) {
   region = &iregion;
   filter = ifilter;
 }
 
-void SeedFromConsecutiveHitsCreatorNoFit::makeSeed(TrajectorySeedCollection &seedCollection,
-                                                    const SeedingHitSet &hits) {
+void SeedFromConsecutiveHitsCreatorFakeState::makeSeed(TrajectorySeedCollection &seedCollection,
+                                                       const SeedingHitSet &hits) {
   if (hits.size() < 2)
     return;
 
@@ -74,6 +74,6 @@ void SeedFromConsecutiveHitsCreatorNoFit::makeSeed(TrajectorySeedCollection &see
 
 #include "RecoTracker/TkSeedGenerator/interface/SeedCreatorFromRegionHitsEDProducerT.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-using NoFitSeedCreatorFromRegionConsecutiveHitsEDProducer =
-    SeedCreatorFromRegionHitsEDProducerT<SeedFromConsecutiveHitsCreatorNoFit>;
-DEFINE_FWK_MODULE(NoFitSeedCreatorFromRegionConsecutiveHitsEDProducer);
+using FakeStateSeedCreatorFromRegionConsecutiveHitsEDProducer =
+    SeedCreatorFromRegionHitsEDProducerT<SeedFromConsecutiveHitsCreatorFakeState>;
+DEFINE_FWK_MODULE(FakeStateSeedCreatorFromRegionConsecutiveHitsEDProducer);
