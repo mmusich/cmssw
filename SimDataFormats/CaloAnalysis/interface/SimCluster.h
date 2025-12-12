@@ -49,18 +49,38 @@ public:
       using reference = value_type;  // returned by value
       using pointer = void;
 
-      const uint32_t* h = nullptr;
-      const float* f = nullptr;
+      const uint32_t *h = nullptr;
+      const float *f = nullptr;
 
       reference operator*() const { return {*h, *f}; }
 
-      iterator& operator++() { ++h; ++f; return *this; }
-      iterator operator++(int) { auto tmp = *this; ++(*this); return tmp; }
-      iterator& operator--() { --h; --f; return *this; }
-      iterator operator--(int) { auto tmp = *this; --(*this); return tmp; }
+      iterator &operator++() {
+        ++h;
+        ++f;
+        return *this;
+      }
+      iterator operator++(int) {
+        auto tmp = *this;
+        ++(*this);
+        return tmp;
+      }
+      iterator &operator--() {
+        --h;
+        --f;
+        return *this;
+      }
+      iterator operator--(int) {
+        auto tmp = *this;
+        --(*this);
+        return tmp;
+      }
 
-      iterator& operator+=(difference_type n) { h += n; f += n; return *this; }
-      iterator& operator-=(difference_type n) { return (*this) += (-n); }
+      iterator &operator+=(difference_type n) {
+        h += n;
+        f += n;
+        return *this;
+      }
+      iterator &operator-=(difference_type n) { return (*this) += (-n); }
 
       friend iterator operator+(iterator it, difference_type n) { return it += n; }
       friend iterator operator-(iterator it, difference_type n) { return it -= n; }
@@ -86,7 +106,7 @@ public:
   SimCluster(const SimTrack &simtrk) {
     g4Tracks_.push_back(simtrk);
     theMomentum_.SetPxPyPzE(
-      simtrk.momentum().px(), simtrk.momentum().py(), simtrk.momentum().pz(), simtrk.momentum().E());
+        simtrk.momentum().px(), simtrk.momentum().py(), simtrk.momentum().pz(), simtrk.momentum().E());
     event_ = simtrk.eventId();
     particleId_ = simtrk.trackId();
   }
@@ -236,7 +256,8 @@ public:
     // legacy returns a copy; now deterministic because finalizeHits() sorted it
     std::vector<std::pair<uint32_t, float>> result;
     result.reserve(hits_.size());
-    for (size_t i = 0; i < hits_.size(); ++i) result.emplace_back(hits_[i], fractions_[i]);
+    for (size_t i = 0; i < hits_.size(); ++i)
+      result.emplace_back(hits_[i], fractions_[i]);
     return result;
   }
 
@@ -246,7 +267,8 @@ public:
     std::vector<std::pair<uint32_t, float>> result;
     for (size_t i = 0; i < hits_.size(); ++i) {
       DetId detid(hits_[i]);
-      if (predicate(detid)) result.emplace_back(hits_[i], fractions_[i]);
+      if (predicate(detid))
+        result.emplace_back(hits_[i], fractions_[i]);
     }
     return result;
   }
@@ -256,7 +278,8 @@ public:
     assert(hits_.size() == energies_.size());
     std::vector<std::pair<uint32_t, float>> result;
     result.reserve(hits_.size());
-    for (size_t i = 0; i < hits_.size(); ++i) result.emplace_back(hits_[i], energies_[i]);
+    for (size_t i = 0; i < hits_.size(); ++i)
+      result.emplace_back(hits_[i], energies_[i]);
     return result;
   }
 
@@ -287,10 +310,12 @@ public:
     // Keep your original implicit invariant:
     assert(hits_.size() == fractions_.size());
     // Energies are optional but if present must align.
-    if (!energies_.empty()) assert(energies_.size() == hits_.size());
+    if (!energies_.empty())
+      assert(energies_.size() == hits_.size());
 
     // Already finalized? keep it cheap and idempotent.
-    if (hitsFinalized_) return;
+    if (hitsFinalized_)
+      return;
 
     // Sort by (det, subdet, rawid)
     std::vector<size_t> order(hits_.size());
@@ -305,7 +330,8 @@ public:
 
     applyPermutation_(hits_, order);
     applyPermutation_(fractions_, order);
-    if (!energies_.empty()) applyPermutation_(energies_, order);
+    if (!energies_.empty())
+      applyPermutation_(energies_, order);
 
     buildDetRanges_();
 
@@ -318,7 +344,7 @@ public:
   HitsAndFractionsView hits_and_fractions_view() const {
     assertFinalized_();
     return HitsAndFractionsView{std::span<const uint32_t>(hits_.data(), hits_.size()),
-                               std::span<const float>(fractions_.data(), fractions_.size())};
+                                std::span<const float>(fractions_.data(), fractions_.size())};
   }
 
   HitsAndFractionsView hits_and_fractions_view(DetId::Detector det) const {
@@ -326,7 +352,7 @@ public:
     const auto idx = detIndex_(det);
     auto [b, e] = detRanges_[idx];
     return HitsAndFractionsView{std::span<const uint32_t>(hits_.data() + b, e - b),
-                               std::span<const float>(fractions_.data() + b, e - b)};
+                                std::span<const float>(fractions_.data() + b, e - b)};
   }
 
   // det + subdet (still zero-copy; uses binary search within the det block)
@@ -334,29 +360,29 @@ public:
     assertFinalized_();
     const auto idx = detIndex_(det);
     auto [b, e] = detRanges_[idx];
-    if (b == e) return HitsAndFractionsView{};
+    if (b == e)
+      return HitsAndFractionsView{};
 
     auto beginIt = hits_.begin() + static_cast<std::ptrdiff_t>(b);
-    auto endIt   = hits_.begin() + static_cast<std::ptrdiff_t>(e);
+    auto endIt = hits_.begin() + static_cast<std::ptrdiff_t>(e);
 
     auto keyOf = [](uint32_t rawid) {
       DetId id(rawid);
       return std::pair<int, uint32_t>(id.subdetId(), rawid);
     };
 
-    const auto lowKey  = std::pair<int, uint32_t>(subdetId, 0u);
+    const auto lowKey = std::pair<int, uint32_t>(subdetId, 0u);
     const auto highKey = std::pair<int, uint32_t>(subdetId, std::numeric_limits<uint32_t>::max());
 
-    auto lo = std::lower_bound(beginIt, endIt, lowKey,
-                               [&](uint32_t rawid, const auto &k) { return keyOf(rawid) < k; });
-    auto hi = std::upper_bound(beginIt, endIt, highKey,
-                               [&](const auto &k, uint32_t rawid) { return k < keyOf(rawid); });
+    auto lo = std::lower_bound(beginIt, endIt, lowKey, [&](uint32_t rawid, const auto &k) { return keyOf(rawid) < k; });
+    auto hi =
+        std::upper_bound(beginIt, endIt, highKey, [&](const auto &k, uint32_t rawid) { return k < keyOf(rawid); });
 
     const size_t bb = static_cast<size_t>(std::distance(hits_.begin(), lo));
     const size_t ee = static_cast<size_t>(std::distance(hits_.begin(), hi));
 
     return HitsAndFractionsView{std::span<const uint32_t>(hits_.data() + bb, ee - bb),
-                               std::span<const float>(fractions_.data() + bb, ee - bb)};
+                                std::span<const float>(fractions_.data() + bb, ee - bb)};
   }
 
 protected:
@@ -376,7 +402,7 @@ protected:
   reco::GenParticleRefVector genParticles_;
 
 private:
-  static constexpr size_t kMaxDetectors_ = 32; // Probably 16 could be enough
+  static constexpr size_t kMaxDetectors_ = 32;  // Probably 16 could be enough
 
   bool hitsFinalized_{false};
   std::array<std::pair<size_t, size_t>, kMaxDetectors_> detRanges_{};  // [begin,end) per detector
@@ -399,7 +425,9 @@ private:
       DetId id(hits_[i]);
       const auto idx = detIndex_(static_cast<DetId::Detector>(id.det()));
       const size_t begin = i;
-      do { ++i; } while (i < hits_.size() && DetId(hits_[i]).det() == id.det());
+      do {
+        ++i;
+      } while (i < hits_.size() && DetId(hits_[i]).det() == id.det());
       detRanges_[idx] = {begin, i};
     }
   }
@@ -408,7 +436,8 @@ private:
   static void applyPermutation_(std::vector<T> &v, const std::vector<size_t> &order) {
     std::vector<T> tmp;
     tmp.reserve(v.size());
-    for (size_t idx : order) tmp.push_back(v[idx]);
+    for (size_t idx : order)
+      tmp.push_back(v[idx]);
     v.swap(tmp);
   }
 };

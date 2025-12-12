@@ -36,7 +36,8 @@ DEFINE_FWK_MODULE(RecHitMapProducer);
 
 using DetIdRecHitMap = std::unordered_map<DetId, const unsigned int>;
 
-RecHitMapProducer::RecHitMapProducer(const edm::ParameterSet& ps) : doHgcal_(ps.getParameter<bool>("doHgcal")), doBarrel_(ps.getParameter<bool>("doBarrel")) {
+RecHitMapProducer::RecHitMapProducer(const edm::ParameterSet& ps)
+    : doHgcal_(ps.getParameter<bool>("doHgcal")), doBarrel_(ps.getParameter<bool>("doBarrel")) {
   std::vector<edm::InputTag> tags = ps.getParameter<std::vector<edm::InputTag>>("hits");
   for (auto& tag : tags) {
     if (tag.label().find("HGCalRecHit") != std::string::npos) {
@@ -63,7 +64,6 @@ void RecHitMapProducer::fillDescriptions(edm::ConfigurationDescriptions& descrip
 }
 
 void RecHitMapProducer::produce(edm::StreamID, edm::Event& evt, const edm::EventSetup& es) const {
-
   if (doHgcal_) {
     auto hitMapHGCal = std::make_unique<DetIdRecHitMap>();
 
@@ -76,7 +76,7 @@ void RecHitMapProducer::produce(edm::StreamID, edm::Event& evt, const edm::Event
     // Check validity of all handles
     if (!ee_hits.isValid() || !fh_hits.isValid() || !bh_hits.isValid()) {
       edm::LogWarning("HGCalRecHitMapProducer") << "One or more HGCal hit collections are unavailable. Returning an "
-                                                  "empty map and an empty RefProdVectorHGCRecHitCollection";
+                                                   "empty map and an empty RefProdVectorHGCRecHitCollection";
       evt.put(std::make_unique<edm::RefProdVector<HGCRecHitCollection>>(), "RefProdVectorHGCRecHitCollection");
       evt.put(std::move(hitMapHGCal), "hgcalRecHitMap");
     } else {

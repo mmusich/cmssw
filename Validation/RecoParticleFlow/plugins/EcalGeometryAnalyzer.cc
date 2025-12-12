@@ -69,7 +69,7 @@ private:
 
   template <typename T>
   using UMap = std::unordered_map<std::string, T>;
-								  
+
   UMap<unsigned> nHits_;
   UMap<std::vector<float>> energies_;
   UMap<std::vector<unsigned>> detids_;
@@ -84,11 +84,11 @@ private:
 };
 
 EcalGeometryAnalyzer::EcalGeometryAnalyzer(const edm::ParameterSet& iConfig)
-  : caloGeomToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()),
-	recHitToken_(consumes<reco::PFRecHitCollection>(iConfig.getParameter<edm::InputTag>("recHits"))),
-	simHitToken_(consumes<std::vector<PCaloHit>>(iConfig.getParameter<edm::InputTag>("simHits"))),
-	recClusterToken_(consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("recClusters"))),
-	simClusterToken_(consumes<SimClusterCollection>(iConfig.getParameter<edm::InputTag>("simClusters"))) {
+    : caloGeomToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()),
+      recHitToken_(consumes<reco::PFRecHitCollection>(iConfig.getParameter<edm::InputTag>("recHits"))),
+      simHitToken_(consumes<std::vector<PCaloHit>>(iConfig.getParameter<edm::InputTag>("simHits"))),
+      recClusterToken_(consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("recClusters"))),
+      simClusterToken_(consumes<SimClusterCollection>(iConfig.getParameter<edm::InputTag>("simClusters"))) {
   edm::Service<TFileService> fs;
   geomTree_ = fs->make<TTree>("Geometry", "Geometry data");
   eventTree_ = fs->make<TTree>("Event", "Event data");
@@ -99,7 +99,7 @@ void EcalGeometryAnalyzer::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.add<edm::InputTag>("recHits", edm::InputTag("hltParticleFlowRecHitECALUnseeded"));
   desc.add<edm::InputTag>("simHits", edm::InputTag("g4SimHits", "EcalHitsEB"));
   desc.add<edm::InputTag>("recClusters", edm::InputTag("hltParticleFlowClusterECAL"));
-  desc.add<edm::InputTag>("simClusters", edm::InputTag("mix", "MergedCaloTruth"));    
+  desc.add<edm::InputTag>("simClusters", edm::InputTag("mix", "MergedCaloTruth"));
   descriptions.add("ecalGeometryAnalyzer", desc);
 }
 
@@ -119,17 +119,17 @@ void EcalGeometryAnalyzer::beginJob() {
   eventTree_->Branch("eventId", &eventId_);
 
   for (auto& prefix : prefixes_) {
-	eventTree_->Branch(("nHits" + prefix).c_str(), &nHits_[prefix]);
-	eventTree_->Branch(("energies" + prefix).c_str(), &energies_[prefix]);
-	eventTree_->Branch(("detids" + prefix).c_str(), &detids_[prefix]);
+    eventTree_->Branch(("nHits" + prefix).c_str(), &nHits_[prefix]);
+    eventTree_->Branch(("energies" + prefix).c_str(), &energies_[prefix]);
+    eventTree_->Branch(("detids" + prefix).c_str(), &detids_[prefix]);
 
-	eventTree_->Branch(("clusterEnergies" + prefix).c_str(), &clusterEnergies_[prefix]);
-	eventTree_->Branch(("clusterEtas" + prefix).c_str(), &clusterEtas_[prefix]);
-	eventTree_->Branch(("clusterPhis" + prefix).c_str(), &clusterPhis_[prefix]);
-	eventTree_->Branch(("clusterHitDetids" + prefix).c_str(), &clusterHitDetids_[prefix]);
-	eventTree_->Branch(("clusterHitClids" + prefix).c_str(), &clusterHitClids_[prefix]);
-	eventTree_->Branch(("clusterHitEnergies" + prefix).c_str(), &clusterHitEnergies_[prefix]);
-	eventTree_->Branch(("clusterHitFractions" + prefix).c_str(), &clusterHitFractions_[prefix]);
+    eventTree_->Branch(("clusterEnergies" + prefix).c_str(), &clusterEnergies_[prefix]);
+    eventTree_->Branch(("clusterEtas" + prefix).c_str(), &clusterEtas_[prefix]);
+    eventTree_->Branch(("clusterPhis" + prefix).c_str(), &clusterPhis_[prefix]);
+    eventTree_->Branch(("clusterHitDetids" + prefix).c_str(), &clusterHitDetids_[prefix]);
+    eventTree_->Branch(("clusterHitClids" + prefix).c_str(), &clusterHitClids_[prefix]);
+    eventTree_->Branch(("clusterHitEnergies" + prefix).c_str(), &clusterHitEnergies_[prefix]);
+    eventTree_->Branch(("clusterHitFractions" + prefix).c_str(), &clusterHitFractions_[prefix]);
   }
 }
 
@@ -149,18 +149,18 @@ void EcalGeometryAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
 
   // Reset vector variables
   for (auto& prefix : prefixes_) {
-	detids_[prefix].clear();
-	energies_[prefix].clear();
+    detids_[prefix].clear();
+    energies_[prefix].clear();
 
-	clusterEnergies_[prefix].clear();
-	clusterEtas_[prefix].clear();
-	clusterPhis_[prefix].clear();
-	clusterHitEnergies_[prefix].clear();
-	clusterHitFractions_[prefix].clear();
-	clusterHitDetids_[prefix].clear();
-	clusterHitClids_[prefix].clear();
+    clusterEnergies_[prefix].clear();
+    clusterEtas_[prefix].clear();
+    clusterPhis_[prefix].clear();
+    clusterHitEnergies_[prefix].clear();
+    clusterHitFractions_[prefix].clear();
+    clusterHitDetids_[prefix].clear();
+    clusterHitClids_[prefix].clear();
   }
-  
+
   // Geometry fill
   if (eventId == 1) {
     for (auto& did : detids) {
@@ -187,7 +187,7 @@ void EcalGeometryAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       geomTree_->Fill();
     }
   }  // if (eventId == 1)
-  
+
   edm::Handle<reco::PFRecHitCollection> recHits_;
   iEvent.getByToken(recHitToken_, recHits_);
   if (!recHits_.isValid()) {
@@ -240,70 +240,69 @@ void EcalGeometryAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
   // reco clusters
   unsigned clusterCounter = 0;
   for (auto& cl : recClusters) {
-	clusterCounter++;
-	
-	// properties of the clusters
-	clusterEnergies_["Reco"].push_back(cl.energy());
-	clusterEtas_["Reco"].push_back(cl.eta());
-	clusterPhis_["Reco"].push_back(cl.phi());
+    clusterCounter++;
 
-	for (auto const& rechit : cl.recHitFractions()) {
-	  const auto& ref = rechit.recHitRef();
-	  DetId clhitId(ref->detId());
-	  if (!inBarrel(clhitId))
-		continue;
+    // properties of the clusters
+    clusterEnergies_["Reco"].push_back(cl.energy());
+    clusterEtas_["Reco"].push_back(cl.eta());
+    clusterPhis_["Reco"].push_back(cl.phi());
 
-	  clusterHitDetids_["Reco"].push_back(clhitId);
-	  clusterHitClids_["Reco"].push_back(clusterCounter);
-	  clusterHitEnergies_["Reco"].push_back(ref->energy());
-	  clusterHitFractions_["Reco"].push_back(rechit.fraction());
-	}
+    for (auto const& rechit : cl.recHitFractions()) {
+      const auto& ref = rechit.recHitRef();
+      DetId clhitId(ref->detId());
+      if (!inBarrel(clhitId))
+        continue;
 
-	// // properties of the hits in each cluster
-	// for (auto [clhitId, clhitFrac] : cl.hitsAndFractions()) {
-	//   if (!inBarrel(clhitId))
-	// 	continue;
+      clusterHitDetids_["Reco"].push_back(clhitId);
+      clusterHitClids_["Reco"].push_back(clusterCounter);
+      clusterHitEnergies_["Reco"].push_back(ref->energy());
+      clusterHitFractions_["Reco"].push_back(rechit.fraction());
+    }
 
-	//   for (auto& rechit : recHits) {
-	// 	if (clhitId == rechit.detId()) {
-	// 	  float energy = rechit.energy();
-	// 	  clusterHitDetids_["Reco"].push_back(clhitId);
-	// 	  clusterHitClids_["Reco"].push_back(clusterCounter);
-	// 	  clusterHitEnergies_["Reco"].push_back(energy);
-	// 	  clusterHitFractions_["Reco"].push_back(clhitFrac);
-	// 	  break;
-	// 	}
-	//   }
-	// }
+    // // properties of the hits in each cluster
+    // for (auto [clhitId, clhitFrac] : cl.hitsAndFractions()) {
+    //   if (!inBarrel(clhitId))
+    // 	continue;
+
+    //   for (auto& rechit : recHits) {
+    // 	if (clhitId == rechit.detId()) {
+    // 	  float energy = rechit.energy();
+    // 	  clusterHitDetids_["Reco"].push_back(clhitId);
+    // 	  clusterHitClids_["Reco"].push_back(clusterCounter);
+    // 	  clusterHitEnergies_["Reco"].push_back(energy);
+    // 	  clusterHitFractions_["Reco"].push_back(clhitFrac);
+    // 	  break;
+    // 	}
+    //   }
+    // }
   }
 
   // sim clusters
   clusterCounter = 0;
   for (auto& cl : simClusters) {
-	clusterCounter++;
-	
-	// properties of the clusters
-	clusterEnergies_["Sim"].push_back(cl.energy());
-	clusterEtas_["Sim"].push_back(cl.eta());
-	clusterPhis_["Sim"].push_back(cl.phi());
-	
-	// properties of the hits in each cluster
-	const auto& hits_fractions = cl.hits_and_fractions();
-	const auto& hits_energies = cl.hits_and_energies();
-	
-	auto itF = hits_fractions.begin();
-	auto itE = hits_energies.begin();
-	for (; itF != hits_fractions.end() && itE != hits_energies.end(); ++itF, ++itE) {
-	  DetId clhitId(itF->first);
-	  if (!inBarrel(clhitId))
-		continue;
-	  clusterHitDetids_["Sim"].push_back(clhitId);
-	  clusterHitClids_["Sim"].push_back(clusterCounter);
-	  clusterHitEnergies_["Sim"].push_back(itE->second);
-	  clusterHitFractions_["Sim"].push_back(itF->second);
-	}
+    clusterCounter++;
+
+    // properties of the clusters
+    clusterEnergies_["Sim"].push_back(cl.energy());
+    clusterEtas_["Sim"].push_back(cl.eta());
+    clusterPhis_["Sim"].push_back(cl.phi());
+
+    // properties of the hits in each cluster
+    const auto& hits_fractions = cl.hits_and_fractions();
+    const auto& hits_energies = cl.hits_and_energies();
+
+    auto itF = hits_fractions.begin();
+    auto itE = hits_energies.begin();
+    for (; itF != hits_fractions.end() && itE != hits_energies.end(); ++itF, ++itE) {
+      DetId clhitId(itF->first);
+      if (!inBarrel(clhitId))
+        continue;
+      clusterHitDetids_["Sim"].push_back(clhitId);
+      clusterHitClids_["Sim"].push_back(clusterCounter);
+      clusterHitEnergies_["Sim"].push_back(itE->second);
+      clusterHitFractions_["Sim"].push_back(itF->second);
+    }
   }
-  
 
   eventTree_->Fill();
 }
