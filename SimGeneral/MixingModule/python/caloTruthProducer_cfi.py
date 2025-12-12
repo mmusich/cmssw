@@ -1,33 +1,42 @@
 import FWCore.ParameterSet.Config as cms
 
 caloParticles = cms.PSet(
-	accumulatorType = cms.string('CaloTruthAccumulator'),
-#	createUnmergedCollection = cms.bool(True),
-#	createMergedBremsstrahlung = cms.bool(True),
-#	createInitialVertexCollection = cms.bool(False),
-#	alwaysAddAncestors = cms.bool(True),
-        MinEnergy = cms.double(0.5),
-        MaxPseudoRapidity = cms.double(5.0),
-        premixStage1 = cms.bool(False),
-        doHGCAL = cms.bool(False),
-	maximumPreviousBunchCrossing = cms.uint32(0),
-	maximumSubsequentBunchCrossing = cms.uint32(0),
-	simHitCollections = cms.PSet(
-            hgc = cms.VInputTag(),
-#           hcal = cms.VInputTag(cms.InputTag('g4SimHits','HcalHits')),
-            ecal = cms.VInputTag(
-                cms.InputTag('g4SimHits','EcalHitsEB'),
-            )
-	),
-	simTrackCollection = cms.InputTag('g4SimHits'),
-	simVertexCollection = cms.InputTag('g4SimHits'),
-	genParticleCollection = cms.InputTag('genParticles'),
-	allowDifferentSimHitProcesses = cms.bool(False), # should be True for FastSim, False for FullSim
-	HepMCProductLabel = cms.InputTag('generatorSmeared'),
+    accumulatorType = cms.string('CaloTruthAccumulator'),
+    #	createUnmergedCollection = cms.bool(True),
+    #	createMergedBremsstrahlung = cms.bool(True),
+    #	createInitialVertexCollection = cms.bool(False),
+    #	alwaysAddAncestors = cms.bool(True),
+    MinEnergy = cms.double(0.5),
+    MaxPseudoRapidity = cms.double(5.0),
+    premixStage1 = cms.bool(False),
+    doHGCAL = cms.bool(False),
+    maximumPreviousBunchCrossing = cms.uint32(0),
+    maximumSubsequentBunchCrossing = cms.uint32(0),
+    simHitCollections = cms.PSet(
+        hgc = cms.VInputTag(),
+        #           hcal = cms.VInputTag(cms.InputTag('g4SimHits','HcalHits')),
+        ecal = cms.VInputTag(
+            cms.InputTag('g4SimHits','EcalHitsEB'),
+        )
+    ),
+    simTrackCollection = cms.InputTag('g4SimHits'),
+    simVertexCollection = cms.InputTag('g4SimHits'),
+    genParticleCollection = cms.InputTag('genParticles'),
+    allowDifferentSimHitProcesses = cms.bool(False), # should be True for FastSim, False for FullSim
+    HepMCProductLabel = cms.InputTag('generatorSmeared'),
 )
 
 from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
-phase2_common.toModify(caloParticles, doHGCAL=True)
+phase2_common.toModify(caloParticles,
+                       doHGCAL=True,
+                       simHitCollections=lambda prev: prev.clone(
+                           hgc = cms.VInputTag(
+                               cms.InputTag('g4SimHits', 'HGCHitsEE'),
+                               cms.InputTag('g4SimHits', 'HGCHitsHEfront'),
+                               cms.InputTag('g4SimHits', 'HGCHitsHEback'),
+                           )
+                       )
+                       )
 
 from Configuration.ProcessModifiers.premix_stage1_cff import premix_stage1
 premix_stage1.toModify(caloParticles, premixStage1 = True)
@@ -60,11 +69,11 @@ from Configuration.ProcessModifiers.ticl_barrel_cff import ticl_barrel
 ticl_barrel.toModify(
     caloParticles, 
     simHitCollections = cms.PSet(
-        # hgc = cms.VInputTag(
-        #     cms.InputTag('g4SimHits', 'HGCHitsEE'),
-        #     cms.InputTag('g4SimHits', 'HGCHitsHEfront'),
-        #     cms.InputTag('g4SimHits', 'HGCHitsHEback'),
-        # ),
+        hgc = cms.VInputTag(
+            cms.InputTag('g4SimHits', 'HGCHitsEE'),
+            cms.InputTag('g4SimHits', 'HGCHitsHEfront'),
+            cms.InputTag('g4SimHits', 'HGCHitsHEback'),
+        ),
         # hcal = cms.VInputTag(cms.InputTag('g4SimHits', 'HcalHits')),
         ecal = cms.VInputTag(
             cms.InputTag('g4SimHits', 'EcalHitsEB')
