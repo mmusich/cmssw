@@ -74,28 +74,27 @@ ticl::association LCToSCAssociatorByEnergyScoreImplT<HIT, CLUSTER>::makeConnecti
   edm::MultiSpan<HIT> hitsMS(hits_);
 
   for (const auto& scId : sCIndices) {
-    std::vector<std::pair<uint32_t, float>> hits_and_fractions = simClusters[scId].hits_and_fractions();
-    if constexpr (std::is_same_v<HIT, HGCRecHit>)
-      hits_and_fractions = simClusters[scId].filtered_hits_and_fractions(
-          [this](const DetId& detid) { return !recHitTools_->isBarrel(detid); });
-    else
-      hits_and_fractions = simClusters[scId].filtered_hits_and_fractions(
-          [this](const DetId& detid) { return recHitTools_->isBarrel(detid); });
-    for (const auto& it_haf : hits_and_fractions) {
-      const auto hitid = (it_haf.first);
+    SimCluster::HitsAndFractionsView hafView =
+        (std::is_same_v<HIT, HGCRecHit> ? simClusters[scId].hits_and_fractions_view(DetId::HGCalEE, DetId::HGCalHSc)
+                                        : simClusters[scId].hits_and_fractions_view(DetId::Ecal));
+
+    for (size_t i = 0; i < hafView.hits.size(); ++i) {
+      const uint32_t hitid = hafView.hits[i];
+      const float fraction = hafView.fractions[i];
+
       unsigned int scLayerId = recHitTools_->getLayer(hitid);
+
       if constexpr (std::is_same_v<HIT, HGCRecHit>)
         scLayerId += layers_ * ((recHitTools_->zside(hitid) + 1) >> 1) - 1;
+
       const auto itcheck = hitMap_->find(hitid);
       if (itcheck != hitMap_->end()) {
-        auto hit_find_it = detIdToSimClusterId_Map.find(hitid);
-        if (hit_find_it == detIdToSimClusterId_Map.end()) {
-          detIdToSimClusterId_Map[hitid] = std::vector<ticl::detIdInfoInCluster>();
-        }
-        detIdToSimClusterId_Map[hitid].emplace_back(scId, it_haf.second);
+        auto& vec = detIdToSimClusterId_Map[hitid];
+        vec.emplace_back(scId, fraction);
+
         const HIT* hit = &hitsMS[itcheck->second];
-        lcsInSimCluster[scId][scLayerId].energy += it_haf.second * hit->energy();
-        lcsInSimCluster[scId][scLayerId].hits_and_fractions.emplace_back(hitid, it_haf.second);
+        lcsInSimCluster[scId][scLayerId].energy += fraction * hit->energy();
+        lcsInSimCluster[scId][scLayerId].hits_and_fractions.emplace_back(hitid, fraction);
       }
     }
   }  // end of loop over SimClusters
