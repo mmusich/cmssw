@@ -56,7 +56,7 @@ NanoGenTables = cms.Sequence(
 
 # Store hlt objects for NGT scouting
 NanoHltTables = cms.Sequence(
-    hltTriggerCands
+    hltTriggerCandsTable
     + hltVertexTable
     + hltSecondaryVertexTable
     + hltPixelVertexTable

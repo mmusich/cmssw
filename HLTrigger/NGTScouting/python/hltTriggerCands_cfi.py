@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-hltTriggerCands = cms.EDProducer("HLTTriggerCandidatesTableProducer",
-    triggerSummary = cms.InputTag("hltTriggerSummaryAOD","", "HLT"),
-    triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
-    processName = cms.string("HLT"),
-    keepAllFilters = cms.untracked.bool(False)
-)
+hltTriggerCandsTable = cms.EDProducer("TriggerCandTableProducer",
+                                      triggerSummary = cms.InputTag("hltTriggerSummaryAOD","", "HLT"),
+                                      processName = cms.string("HLT"),
+                                      trigCandsName = cms.string("hltP4s"),
+                                      keepAllFilters = cms.untracked.bool(False)
+                                      )
