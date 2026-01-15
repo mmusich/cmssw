@@ -345,6 +345,8 @@ void TrackToTrackComparisonHists::fillDescriptions(edm::ConfigurationDescription
   descriptions.add("trackToTrackComparisonHists", desc);
 }
 
+#include <unordered_map>
+
 void TrackToTrackComparisonHists::fillMap(const edm::View<reco::Track>& tracks1,
                                           const edm::View<reco::Track>& tracks2,
                                           idx2idxByDoubleColl& map,
@@ -352,29 +354,73 @@ void TrackToTrackComparisonHists::fillMap(const edm::View<reco::Track>& tracks1,
   //
   // loop on tracks1
   //
+
+  // --- binning parameters (local, conservative) ---
+  constexpr float etaBinW = 0.05;
+  constexpr float phiBinW = 0.05;
+
+  auto etaBin = [&](float eta) { return int((eta + 5.f) / etaBinW); };
+
+  auto phiBin = [&](float phi) { return int((phi + M_PI) / phiBinW); };
+
+  // --- index tracks2 in eta-phi bins ---
+  using Bucket = std::vector<int>;
+  std::unordered_map<long long, Bucket> index2;
+  index2.reserve(tracks2.size());
+
+  int j = 0;
+  for (const auto& track2 : tracks2) {
+    long long key =
+        (static_cast<long long>(etaBin(track2.eta())) << 32) | static_cast<unsigned int>(phiBin(track2.phi()));
+    index2[key].push_back(j);
+    ++j;
+  }
+
   int i = 0;
   for (const auto& track1 : tracks1) {
     std::map<double, int> tmp;
-    int j = 0;
     float smallest_dR = 1e9;
     int smallest_dR_j = -1;
 
-    //
-    // loop on tracks2
-    //
-    for (const auto& track2 : tracks2) {
-      double dR = reco::deltaR(track1.eta(), track1.phi(), track2.eta(), track2.phi());
+    const int be = etaBin(track1.eta());
+    const int bp = phiBin(track1.phi());
 
-      if (dR < smallest_dR) {
-        smallest_dR = dR;
-        smallest_dR_j = j;
+    // --- search only neighbouring bins ---
+    for (int de = -1; de <= 1; ++de) {
+      for (int dp = -1; dp <= 1; ++dp) {
+        long long key = (static_cast<long long>(be + de) << 32) | static_cast<unsigned int>(bp + dp);
+
+        auto it = index2.find(key);
+        if (it == index2.end())
+          continue;
+
+        for (int idx2 : it->second) {
+          const auto& track2 = tracks2[idx2];
+          double dR = reco::deltaR(track1.eta(), track1.phi(), track2.eta(), track2.phi());
+
+          if (dR < smallest_dR) {
+            smallest_dR = dR;
+            smallest_dR_j = idx2;
+          }
+
+          if (dR < dRMin) {
+            tmp[dR] = idx2;
+          }
+        }
       }
+    }
 
-      if (dR < dRMin) {
-        tmp[dR] = j;
+    // --- fallback: full scan only if nothing found ---
+    if (tmp.empty()) {
+      int jj = 0;
+      for (const auto& track2 : tracks2) {
+        double dR = reco::deltaR(track1.eta(), track1.phi(), track2.eta(), track2.phi());
+        if (dR < smallest_dR) {
+          smallest_dR = dR;
+          smallest_dR_j = jj;
+        }
+        ++jj;
       }
-
-      j++;
     }
 
     //
