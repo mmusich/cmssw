@@ -102,11 +102,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     desc.add<double>("vmax", 0.0275)->setComment("Largest compatibility region in Z for local density calculations");
     desc.add<double>("localDensityR", 12.)->setComment("Outside these region, absolute in Z, use vmax");
     desc.add<double>("sigmaV", 5.)->setComment("Sigma of the guassian kernel from vmin to vmax");
-    
+
     // Configuration parameters related to vertex clustering and splitting
 
-    desc.add<double>("maxChi2ForFirstFit", 50)->setComment("Reject outlier tracks that contribute more than this to the chi2 of the initial vertex fit");
-    desc.add<double>("maxChi2ForFinalFit", 5000)->setComment("Reject outlier tracks that contribute more than this to the chi2 of the final vertex fit");
+    desc.add<double>("maxChi2ForFirstFit", 50)
+        ->setComment("Reject outlier tracks that contribute more than this to the chi2 of the initial vertex fit");
+    desc.add<double>("maxChi2ForFinalFit", 5000)
+        ->setComment("Reject outlier tracks that contribute more than this to the chi2 of the final vertex fit");
     desc.add<double>("maxChi2ForSplit", 9.)->setComment("Split vertices with a chi2/NDoF greater than this threshold");
 
     desc.add<int>("maxVertices", 256);

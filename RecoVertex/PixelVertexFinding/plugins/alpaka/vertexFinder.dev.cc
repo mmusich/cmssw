@@ -48,7 +48,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
             continue;
 
           // Filter out tracks whose tip is greater than 2mm. No need to use them to compute vertices.
-          if ((reco::tip(tracks_view, idx)*reco::tip(tracks_view, idx))/tracks_view[idx].covariance()(2) > 16)
+          if ((::reco::tip(tracks_view, idx) * ::reco::tip(tracks_view, idx)) / tracks_view[idx].covariance()(2) > 16)
             continue;
 
           auto pt = tracks_view[idx].pt();
@@ -78,14 +78,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                     TrkSoAView trkdata,
                                     WsSoAView ws,
                                     bool doSplit,
-                                    int minT,      // min number of neighbours to be "seed"
-                                    float eps,     // max absolute distance to cluster
-                                    float errmax,  // max error to be "seed"
+                                    int minT,       // min number of neighbours to be "seed"
+                                    float eps,      // max absolute distance to cluster
+                                    float errmax,   // max error to be "seed"
                                     float chi2max,  // max normalized distance to cluster,
                                     float maxChi2ForFirstFit,
                                     float maxChi2ForFinalFit,
-                                    float maxChi2ForSplit
-      ) const {
+                                    float maxChi2ForSplit) const {
         clusterTracksByDensity(acc, data, trkdata, ws, minT, eps, errmax, chi2max);
         alpaka::syncBlockThreads(acc);
         fitVertices(acc, data, trkdata, ws, maxChi2ForFirstFit);
@@ -157,22 +156,22 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const auto splitterFitterWorkDiv = cms::alpakatools::make_workdiv<Acc1D>(1024, 128);
 
       if (oneKernel_) {
-         // implemented only for density clusters
+        // implemented only for density clusters
 #ifndef THREE_KERNELS
-          alpaka::exec<Acc1D>(queue,
-                              finderSorterWorkDiv,
-                              VertexFinderOneKernel{},
-                              data,
-                              trkdata,
-                              ws,
-                              doSplitting_,
-                              minT_,
-                              eps_,
-                              errmax_,
-                              chi2max_,
-                              maxChi2ForFirstFit_,
-                              maxChi2ForFinalFit_,
-                              maxChi2ForSplit_);
+        alpaka::exec<Acc1D>(queue,
+                            finderSorterWorkDiv,
+                            VertexFinderOneKernel{},
+                            data,
+                            trkdata,
+                            ws,
+                            doSplitting_,
+                            minT_,
+                            eps_,
+                            errmax_,
+                            chi2max_,
+                            maxChi2ForFirstFit_,
+                            maxChi2ForFinalFit_,
+                            maxChi2ForSplit_);
 #else
         alpaka::exec<Acc1D>(
             queue, finderSorterWorkDiv, VertexFinderOneKernel{}, data, trkdata, ws, minT_, eps_, errmax_, chi2max_);
@@ -184,18 +183,38 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 #endif
       } else {  // five kernels
         if (useDensity_) {
-        alpaka::exec<Acc1D>(
-          queue, finderSorterWorkDiv, ClusterTracksByDensityKernel{}, data, trkdata, ws, minT_, eps_, errmax_, chi2max_);
+          alpaka::exec<Acc1D>(queue,
+                              finderSorterWorkDiv,
+                              ClusterTracksByDensityKernel{},
+                              data,
+                              trkdata,
+                              ws,
+                              minT_,
+                              eps_,
+                              errmax_,
+                              chi2max_);
         } else if (useDensityClue_) {
-          alpaka::exec<Acc1D>(
-            queue, finderSorterWorkDiv, ClusterTracksByDensityClueKernel{}, data, trkdata, ws, 
-                        minT_, eps_, errmax_, chi2max_, errmaxFollower_, vmin_, vmax_, localDensityR_, sigmaV_);
+          alpaka::exec<Acc1D>(queue,
+                              finderSorterWorkDiv,
+                              ClusterTracksByDensityClueKernel{},
+                              data,
+                              trkdata,
+                              ws,
+                              minT_,
+                              eps_,
+                              errmax_,
+                              chi2max_,
+                              errmaxFollower_,
+                              vmin_,
+                              vmax_,
+                              localDensityR_,
+                              sigmaV_);
         } else if (useDBSCAN_) {
           alpaka::exec<Acc1D>(
-            queue, finderSorterWorkDiv, ClusterTracksDBSCAN{}, data, trkdata, ws, minT_, eps_, errmax_, chi2max_);
+              queue, finderSorterWorkDiv, ClusterTracksDBSCAN{}, data, trkdata, ws, minT_, eps_, errmax_, chi2max_);
         } else if (useIterative_) {
           alpaka::exec<Acc1D>(
-            queue, finderSorterWorkDiv, ClusterTracksIterative{}, data, trkdata, ws, minT_, eps_, errmax_, chi2max_);
+              queue, finderSorterWorkDiv, ClusterTracksIterative{}, data, trkdata, ws, minT_, eps_, errmax_, chi2max_);
         }
         alpaka::exec<Acc1D>(queue, finderSorterWorkDiv, FitVerticesKernel{}, data, trkdata, ws, maxChi2ForFirstFit_);
 

@@ -23,19 +23,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
   // It should be good enough for <10K tracks we have.
   //
   // Based on Rodrighez&Laio algo.
-  ALPAKA_FN_ACC ALPAKA_FN_INLINE void clusterTracksByDensityClue(Acc1D const& acc,
-                                                             VtxSoAView& data,
-                                                             TrkSoAView& trkdata,
-                                                             WsSoAView& ws,
-                                                             int minT,      // min number of neighbours to be "seed"
-                                                             float eps,     // max absolute distance to cluster
-                                                             float errmax,  // max error to be "seed"
-                                                             float chi2max, // max normalized distance to cluster
-                                                             float errmaxFollower, // max error to be a follower of a vertex seed
-                                                             float vmin,    // Smallest compatibility region in Z for local density calculations
-                                                             float vmax,    // Largest compatibility region in Z for local density calculations
-                                                             float localDensityR, // Limit outside of which use vmax
-                                                             float sigmaV   // Sigma of the gaussian kernel from vmin to vmax
+  ALPAKA_FN_ACC ALPAKA_FN_INLINE void clusterTracksByDensityClue(
+      Acc1D const& acc,
+      VtxSoAView& data,
+      TrkSoAView& trkdata,
+      WsSoAView& ws,
+      int minT,              // min number of neighbours to be "seed"
+      float eps,             // max absolute distance to cluster
+      float errmax,          // max error to be "seed"
+      float chi2max,         // max normalized distance to cluster
+      float errmaxFollower,  // max error to be a follower of a vertex seed
+      float vmin,            // Smallest compatibility region in Z for local density calculations
+      float vmax,            // Largest compatibility region in Z for local density calculations
+      float localDensityR,   // Limit outside of which use vmax
+      float sigmaV           // Sigma of the gaussian kernel from vmin to vmax
   ) {
     // workaround for #47808
     debug::do_not_optimise(ws);
@@ -51,11 +52,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
     ALPAKA_ASSERT_ACC(static_cast<int>(nt) <= ws.metadata().size());
     ALPAKA_ASSERT_ACC(static_cast<int>(nt) <= trkdata.metadata().size());
 
-    float const* __restrict__ zt = ws.zt();
-    float const* __restrict__ ezt2 = ws.ezt2();
-    uint8_t* __restrict__ izt = ws.izt();
-    int32_t* __restrict__ iv = ws.iv();
-    int32_t* __restrict__ nn = trkdata.ndof();
+    float const* __restrict__ zt = ws.zt().data();
+    float const* __restrict__ ezt2 = ws.ezt2().data();
+    uint8_t* __restrict__ izt = ws.izt().data();
+    int32_t* __restrict__ iv = ws.iv().data();
+    int32_t* __restrict__ nn = trkdata.ndof().data();
     ALPAKA_ASSERT_ACC(zt);
     ALPAKA_ASSERT_ACC(ezt2);
     ALPAKA_ASSERT_ACC(izt);
@@ -115,22 +116,27 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
     const auto errmaxFollower2 = errmaxFollower * errmaxFollower;
 
     for (auto i : cms::alpakatools::uniform_elements(acc, nt)) {
-      float epsz = 0.;        
+      float epsz = 0.;
       // Outside the domain, clamp to vmax
       if (zt[i] > localDensityR || zt[i] < -localDensityR) {
         epsz = vmax;
       } else {
         float inv2s2 = 0.5 / (sigmaV * sigmaV);
-        float denom  = 1. - std::exp(-(localDensityR * localDensityR) * inv2s2);
+        float denom = 1. - std::exp(-(localDensityR * localDensityR) * inv2s2);
         float num = 1. - std::exp(-(zt[i] * zt[i]) * inv2s2);
-        epsz =  vmin + (vmax - vmin) * (num / denom);
+        epsz = vmin + (vmax - vmin) * (num / denom);
       }
-      if constexpr(verbose)
-        printf("At z %f using epsz %f\n", zt[i], epsz*10000);
+      if constexpr (verbose)
+        printf("At z %f using epsz %f\n", zt[i], epsz * 10000);
 
       if (ezt2[i] > errmax2) {
         if constexpr (verbose)
-          printf("Rejected Track %d at z %f has zError %f vs errmax %f and %d nn\n", i, zt[i], sqrt(ezt2[i])*10000., errmax*10000., nn[i]);
+          printf("Rejected Track %d at z %f has zError %f vs errmax %f and %d nn\n",
+                 i,
+                 zt[i],
+                 sqrt(ezt2[i]) * 10000.,
+                 errmax * 10000.,
+                 nn[i]);
         continue;
       }
       cms::alpakatools::forEachInBins(acc, hist, izt[i], 1, [&](uint32_t j) {
@@ -141,7 +147,14 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
           return;
         nn[i]++;
         if constexpr (verbose)
-          printf("Track %d at z %f has zError %f with other at z %f zError %f(%d) and %d nn\n", i, zt[i], ezt2[i], zt[j], ezt2[j], (ezt2[j]>errmax2), nn[i]);
+          printf("Track %d at z %f has zError %f with other at z %f zError %f(%d) and %d nn\n",
+                 i,
+                 zt[i],
+                 ezt2[i],
+                 zt[j],
+                 ezt2[j],
+                 (ezt2[j] > errmax2),
+                 nn[i]);
       });
       if constexpr (verbose)
         printf("Final Track %d at z %f has zError %f and %d nn\n", i, zt[i], ezt2[i], nn[i]);
@@ -150,18 +163,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
 
     // find closest above me .... (we ignore the possibility of two j at same distance from i)
     for (auto i : cms::alpakatools::uniform_elements(acc, nt)) {
-      float epsz = 0.;        
+      float epsz = 0.;
       // Outside the domain, clamp to vmax
       if (zt[i] > localDensityR || zt[i] < -localDensityR) {
         epsz = vmax;
       } else {
         float inv2s2 = 0.5 / (sigmaV * sigmaV);
-        float denom  = 1. - std::exp(-(localDensityR * localDensityR) * inv2s2);
+        float denom = 1. - std::exp(-(localDensityR * localDensityR) * inv2s2);
         float num = 1. - std::exp(-(zt[i] * zt[i]) * inv2s2);
-        epsz =  vmin + (vmax - vmin) * (num / denom);
+        epsz = vmin + (vmax - vmin) * (num / denom);
       }
-      if constexpr(verbose)
-        printf("At z %f using epsz %f\n", zt[i], epsz*10000);
+      if constexpr (verbose)
+        printf("At z %f using epsz %f\n", zt[i], epsz * 10000);
       float mdist = epsz;
       cms::alpakatools::forEachInBins(acc, hist, izt[i], 1, [&](uint32_t j) {
         if (i == j)
@@ -179,11 +192,17 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
           return;  // (break natural order???)
         mdist = dist;
         iv[i] = j;  // assign to cluster (better be unique??)
-        if constexpr(verbose)
-          printf("Track %d at z %f with density %d is linked to track %d at z %f with density %d\n", i, zt[i], nn[i], j, zt[j], nn[j]);
+        if constexpr (verbose)
+          printf("Track %d at z %f with density %d is linked to track %d at z %f with density %d\n",
+                 i,
+                 zt[i],
+                 nn[i],
+                 j,
+                 zt[j],
+                 nn[j]);
       });
     }
-  alpaka::syncBlockThreads(acc);
+    alpaka::syncBlockThreads(acc);
 
 #ifdef GPU_DEBUG
     //  mini verification
@@ -248,7 +267,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
         if (nn[i] >= minT) {
           auto old = alpaka::atomicInc(acc, &foundClusters, 0xffffffff, alpaka::hierarchy::Threads{});
           iv[i] = -(old + 1);
-          if constexpr(verbose)
+          if constexpr (verbose)
             printf("Track %d with density %d promoted to seed %d\n", i, nn[i], iv[i]);
         } else {  // noise
           iv[i] = -9998;
@@ -288,17 +307,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
                                   VtxSoAView data,
                                   TrkSoAView trkdata,
                                   WsSoAView ws,
-                                  int minT,      // min number of neighbours to be "seed"
-                                  float eps,     // max absolute distance to cluster
-                                  float errmax,  // max error to be "seed"
-                                  float chi2max, // max normalized distance to cluster
-                                  float errmaxFollower, // max error to be a follower of a vertex seed
-                                  float vmin,    // Smallest compatibility region in Z for local density calculations
-                                  float vmax,    // Largest compatibility region in Z for local density calculations
+                                  int minT,              // min number of neighbours to be "seed"
+                                  float eps,             // max absolute distance to cluster
+                                  float errmax,          // max error to be "seed"
+                                  float chi2max,         // max normalized distance to cluster
+                                  float errmaxFollower,  // max error to be a follower of a vertex seed
+                                  float vmin,  // Smallest compatibility region in Z for local density calculations
+                                  float vmax,  // Largest compatibility region in Z for local density calculations
                                   float localDensityR,  // Limit outside of which use vmax
-                                  float sigmaV   // Sigma of the gaussian kernel from vmin to vmax
+                                  float sigmaV          // Sigma of the gaussian kernel from vmin to vmax
     ) const {
-      clusterTracksByDensityClue(acc, data, trkdata, ws, minT, eps, errmax, chi2max, errmaxFollower, vmin, vmax, localDensityR, sigmaV);
+      clusterTracksByDensityClue(
+          acc, data, trkdata, ws, minT, eps, errmax, chi2max, errmaxFollower, vmin, vmax, localDensityR, sigmaV);
     }
   };
 

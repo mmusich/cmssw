@@ -35,25 +35,26 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
     using TkSoAConstView = ::reco::TrackSoAConstView;
 
   public:
-    Producer(bool oneKernel,
-             bool useDensity,
-             bool useDensityClue,
-             bool useDBSCAN,
-             bool useIterative,
-             bool doSplitting,
-             int iminT,      // min number of neighbours to be "core"
-             float ieps,     // max absolute distance to cluster
-             float ierrmax,  // max error to be "seed"
-             float ichi2max,  // max normalized distance to cluster
-             float errmaxFollower,  // max error to be a follower of a vertex seed
-             float vmin,               // Smallest compatibility region in Z for local density calculations
-             float vmax,               // Largest compatibility region in Z for local density calculations
-             float localDensityR,      // Limit outside of which use vmax
-             float sigmaV,             // Sigma of the gaussian kernel from vim to vimx
-             float maxChi2ForFirstFit, // Reject outlier tracks that contribute more than this to the chi2 of the initial vertex fit
-             float maxChi2ForFinalFit, // Reject outlier tracks that contribute more than this to the chi2 of the final vertex fit
-             float maxChi2ForSplit     // Split vertices with a chi2/NDoF greater than this threshold
-             )
+    Producer(
+        bool oneKernel,
+        bool useDensity,
+        bool useDensityClue,
+        bool useDBSCAN,
+        bool useIterative,
+        bool doSplitting,
+        int iminT,             // min number of neighbours to be "core"
+        float ieps,            // max absolute distance to cluster
+        float ierrmax,         // max error to be "seed"
+        float ichi2max,        // max normalized distance to cluster
+        float errmaxFollower,  // max error to be a follower of a vertex seed
+        float vmin,            // Smallest compatibility region in Z for local density calculations
+        float vmax,            // Largest compatibility region in Z for local density calculations
+        float localDensityR,   // Limit outside of which use vmax
+        float sigmaV,          // Sigma of the gaussian kernel from vim to vimx
+        float maxChi2ForFirstFit,  // Reject outlier tracks that contribute more than this to the chi2 of the initial vertex fit
+        float maxChi2ForFinalFit,  // Reject outlier tracks that contribute more than this to the chi2 of the final vertex fit
+        float maxChi2ForSplit  // Split vertices with a chi2/NDoF greater than this threshold
+        )
         : oneKernel_(oneKernel && !(useDBSCAN || useIterative || useDensityClue)),
           useDensity_(useDensity),
           useDensityClue_(useDensityClue),
@@ -79,17 +80,17 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
         Queue &queue, TkSoAConstView const &tracks_view, int maxVertices, float ptMin, float ptMax) const;
 
   private:
-    const bool oneKernel_;      // run everything (cluster,fit,split,sort) in one kernel. Uses only density clusterizer
-    const bool useDensity_;     // use density clusterizer
-    const bool useDensityClue_; // use density clusterizer based on CLUE
-    const bool useDBSCAN_;      // use DBScan clusterizer
-    const bool useIterative_;   // use iterative clusterizer
-    const bool doSplitting_;    //run vertex splitting
+    const bool oneKernel_;       // run everything (cluster,fit,split,sort) in one kernel. Uses only density clusterizer
+    const bool useDensity_;      // use density clusterizer
+    const bool useDensityClue_;  // use density clusterizer based on CLUE
+    const bool useDBSCAN_;       // use DBScan clusterizer
+    const bool useIterative_;    // use iterative clusterizer
+    const bool doSplitting_;     //run vertex splitting
 
-    const int minT_;       // min number of neighbours to be "core"
-    const float eps_;      // max absolute distance to cluster
-    const float errmax_;   // max error to be "seed"
-    const float chi2max_;  // max normalized distance to cluster
+    const int minT_;              // min number of neighbours to be "core"
+    const float eps_;             // max absolute distance to cluster
+    const float errmax_;          // max error to be "seed"
+    const float chi2max_;         // max normalized distance to cluster
     const float errmaxFollower_;  // max error to be a follower of a vertex seed
     const float vmin_;            // Smallest compatibility region in Z for local density calculations
     const float vmax_;            // Largest compatibility region in Z for local density calculations
@@ -100,7 +101,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder {
     const float maxChi2ForFirstFit_;
     const float maxChi2ForFinalFit_;
     const float maxChi2ForSplit_;
-
   };
 
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE::vertexFinder
