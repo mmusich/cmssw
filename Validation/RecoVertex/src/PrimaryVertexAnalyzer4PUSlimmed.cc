@@ -160,15 +160,13 @@ void PrimaryVertexAnalyzer4PUSlimmed::bookHistograms(DQMStore::IBooker& i,
                                                             nPUbins_,
                                                             0.,
                                                             double(nPUbins_));
-    mes_[label]["KindOfSignalPV"] = i.book1D("KindOfSignalPV", "KindOfSignalPV", 9, -0.5, 8.5);
+    mes_[label]["KindOfSignalPV"] = i.book1D("KindOfSignalPV", "KindOfSignalPV", 9, -0.5, 6.5);
     mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(1, "!Highest!Assoc2Any");
     mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(2, "Highest!Assoc2Any");
     mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(3, "!HighestAssoc2First");
     mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(4, "HighestAssoc2First");
     mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(5, "!HighestAssoc2!First");
     mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(6, "HighestAssoc2!First");
-    mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(7, "!HighestAssoc2First");
-    mes_[label]["KindOfSignalPV"]->getTH1()->GetXaxis()->SetBinLabel(8, "HighestAssoc2First");
     mes_[label]["MisTagRate"] = i.book1D("MisTagRate", "MisTagRate", 2, -0.5, 1.5);
     mes_[label]["MisTagRate_vs_PU"] =
         i.bookProfile("MisTagRate_vs_PU", "MisTagRate_vs_PU", int(nPUbins_ / 2), 0., double(nPUbins_), 2, 0., 1.);
@@ -1310,6 +1308,7 @@ void PrimaryVertexAnalyzer4PUSlimmed::analyze(const edm::Event& iEvent, const ed
             kind_of_signal_vertex |= (1 << IS_ASSOC2ANY_RECO);
           }
         }
+	assert(kind_of_signal_vertex<7);
         mes_[label]["KindOfSignalPV"]->Fill(kind_of_signal_vertex);
         mes_[label]["MisTagRate"]->Fill(mistag);
         mes_[label]["MisTagRate_vs_PU"]->Fill(simpv.size(), mistag);
