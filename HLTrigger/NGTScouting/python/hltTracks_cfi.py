@@ -30,9 +30,6 @@ pixelTrackAssoc = trackingAssocValueMapsProducer.clone(
     useMuonAssociators = cms.bool(False)
 )
 
-from Configuration.ProcessModifiers.phase2CAExtension_cff import phase2CAExtension
-phase2CAExtension.toModify(pixelTrackAssoc, trackCollection = "hltPhase2PixelTracksCAExtension")
-
 hltPixelTrackTable = cms.EDProducer(
     "SimpleTriggerTrackFlatTableProducer",
     skipNonExistingSrc = cms.bool(True),
@@ -108,11 +105,6 @@ hltPixelTrackRecHitsTable = cms.EDProducer("HLTTracksRecHitsTableProducer",
                                             maxRecHits = cms.uint32(16),
                                             precision = cms.int32(7)
 )
-
-
-phase2CAExtension.toModify(hltPixelTrackTable, src = "hltPhase2PixelTracksCAExtension")
-phase2CAExtension.toModify(hltPixelTrackExtTable, tracksSrc = "hltPhase2PixelTracksCAExtension")
-phase2CAExtension.toModify(hltPixelTrackRecHitsTable, tracksSrc = "hltPhase2PixelTracksCAExtension")
 
 hltGeneralTrackTable = cms.EDProducer(
     "SimpleTriggerTrackFlatTableProducer",
