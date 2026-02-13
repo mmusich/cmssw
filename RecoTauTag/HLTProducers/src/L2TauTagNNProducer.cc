@@ -137,14 +137,14 @@ struct normDictElement {
   float max;
 };
 
-struct L2TauNNProducerAlpakaCacheData {
-  L2TauNNProducerAlpakaCacheData() : graphDef(nullptr), session(nullptr) {}
+struct L2TauNNProducerCacheData {
+  L2TauNNProducerCacheData() : graphDef(nullptr), session(nullptr) {}
   tensorflow::GraphDef* graphDef;
   tensorflow::Session* session;
   std::vector<normDictElement> normVec;
 };
 
-class L2TauNNProducerAlpaka : public edm::stream::EDProducer<edm::GlobalCache<L2TauNNProducerAlpakaCacheData>> {
+class L2TauNNProducer : public edm::stream::EDProducer<edm::GlobalCache<L2TauNNProducerCacheData>> {
 public:
   using TracksHost = reco::TracksHost;
   using ZVertexHost = reco::ZVertexHost;
@@ -166,10 +166,10 @@ public:
   static constexpr float dEta_width = 2 * L2TauTagNNv1::dR_max / static_cast<float>(L2TauTagNNv1::nCellEta);
   static constexpr float dPhi_width = 2 * L2TauTagNNv1::dR_max / static_cast<float>(L2TauTagNNv1::nCellPhi);
 
-  explicit L2TauNNProducerAlpaka(const edm::ParameterSet&, const L2TauNNProducerAlpakaCacheData*);
+  explicit L2TauNNProducer(const edm::ParameterSet&, const L2TauNNProducerCacheData*);
   static void fillDescriptions(edm::ConfigurationDescriptions&);
-  static std::unique_ptr<L2TauNNProducerAlpakaCacheData> initializeGlobalCache(const edm::ParameterSet&);
-  static void globalEndJob(L2TauNNProducerAlpakaCacheData*);
+  static std::unique_ptr<L2TauNNProducerCacheData> initializeGlobalCache(const edm::ParameterSet&);
+  static void globalEndJob(L2TauNNProducerCacheData*);
 
 private:
   void checknan(tensorflow::Tensor& tensor, int debugLevel);
@@ -221,12 +221,12 @@ private:
   const float trackChi2Max_;
   std::string inputTensorName_;
   std::string outputTensorName_;
-  const L2TauNNProducerAlpakaCacheData* L2cacheData_;
+  const L2TauNNProducerCacheData* L2cacheData_;
 };
 
-std::unique_ptr<L2TauNNProducerAlpakaCacheData> L2TauNNProducerAlpaka::initializeGlobalCache(
+std::unique_ptr<L2TauNNProducerCacheData> L2TauNNProducer::initializeGlobalCache(
     const edm::ParameterSet& cfg) {
-  std::unique_ptr<L2TauNNProducerAlpakaCacheData> cacheData = std::make_unique<L2TauNNProducerAlpakaCacheData>();
+  std::unique_ptr<L2TauNNProducerCacheData> cacheData = std::make_unique<L2TauNNProducerCacheData>();
   cacheData->normVec.reserve(L2TauTagNNv1::nVars);
 
   auto const graphPath = edm::FileInPath(cfg.getParameter<std::string>("graphPath")).fullPath();
@@ -248,13 +248,13 @@ std::unique_ptr<L2TauNNProducerAlpakaCacheData> L2TauNNProducerAlpaka::initializ
   }
   return cacheData;
 }
-void L2TauNNProducerAlpaka::globalEndJob(L2TauNNProducerAlpakaCacheData* cacheData) {
+void L2TauNNProducer::globalEndJob(L2TauNNProducerCacheData* cacheData) {
   if (cacheData->graphDef != nullptr) {
     delete cacheData->graphDef;
   }
   tensorflow::closeSession(cacheData->session);
 }
-void L2TauNNProducerAlpaka::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void L2TauNNProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<int>("debugLevel", 0)->setComment("set debug level for printing out info");
   edm::ParameterSetDescription l1TausPset;
@@ -286,8 +286,8 @@ void L2TauNNProducerAlpaka::fillDescriptions(edm::ConfigurationDescriptions& des
   descriptions.addWithDefaultLabel(desc);
 }
 
-L2TauNNProducerAlpaka::L2TauNNProducerAlpaka(const edm::ParameterSet& cfg,
-                                             const L2TauNNProducerAlpakaCacheData* cacheData)
+L2TauNNProducer::L2TauNNProducer(const edm::ParameterSet& cfg,
+                                             const L2TauNNProducerCacheData* cacheData)
     : debugLevel_(cfg.getParameter<int>("debugLevel")),
       hbheToken_(consumes<HBHERecHitCollection>(cfg.getParameter<edm::InputTag>("hbheInput"))),
       hoToken_(consumes<HORecHitCollection>(cfg.getParameter<edm::InputTag>("hoInput"))),
@@ -323,7 +323,7 @@ L2TauNNProducerAlpaka::L2TauNNProducerAlpaka(const edm::ParameterSet& cfg,
     produces<std::vector<float>>(desc.CollectionName);
 }
 
-void L2TauNNProducerAlpaka::checknan(tensorflow::Tensor& tensor, int debugLevel) {
+void L2TauNNProducer::checknan(tensorflow::Tensor& tensor, int debugLevel) {
   using NNInputs = L2TauTagNNv1::NNInputs;
   std::vector<int> tensor_shape(tensor.shape().dims());
   for (int d = 0; d < tensor.shape().dims(); d++) {
@@ -367,7 +367,7 @@ void L2TauNNProducerAlpaka::checknan(tensorflow::Tensor& tensor, int debugLevel)
   }
 }
 
-void L2TauNNProducerAlpaka::standardizeTensor(tensorflow::Tensor& tensor) {
+void L2TauNNProducer::standardizeTensor(tensorflow::Tensor& tensor) {
   using NNInputs = L2TauTagNNv1::NNInputs;
   std::vector<int> tensor_shape(tensor.shape().dims());
   for (int d = 0; d < tensor.shape().dims(); d++) {
@@ -401,7 +401,7 @@ void L2TauNNProducerAlpaka::standardizeTensor(tensorflow::Tensor& tensor) {
   }
 }
 
-void L2TauNNProducerAlpaka::fillL1TauVars(tensorflow::Tensor& cellGridMatrix, const std::vector<l1t::TauRef>& allTaus) {
+void L2TauNNProducer::fillL1TauVars(tensorflow::Tensor& cellGridMatrix, const std::vector<l1t::TauRef>& allTaus) {
   using NNInputs = L2TauTagNNv1::NNInputs;
 
   const int nTaus = allTaus.size();
@@ -420,7 +420,7 @@ void L2TauNNProducerAlpaka::fillL1TauVars(tensorflow::Tensor& cellGridMatrix, co
 }
 
 template <typename LVec>
-std::tuple<float, float, int, int> L2TauNNProducerAlpaka::getEtaPhiIndices(float eta, float phi, const LVec& tau_p4) {
+std::tuple<float, float, int, int> L2TauNNProducer::getEtaPhiIndices(float eta, float phi, const LVec& tau_p4) {
   const float deta = eta - tau_p4.eta();
   const float dphi = reco::deltaPhi(phi, tau_p4.phi());
   const int eta_idx = static_cast<int>(floor((deta + L2TauTagNNv1::dR_max) / dEta_width));
@@ -429,11 +429,11 @@ std::tuple<float, float, int, int> L2TauNNProducerAlpaka::getEtaPhiIndices(float
 }
 
 template <typename VPos, typename LVec>
-std::tuple<float, float, int, int> L2TauNNProducerAlpaka::getEtaPhiIndices(const VPos& position, const LVec& tau_p4) {
+std::tuple<float, float, int, int> L2TauNNProducer::getEtaPhiIndices(const VPos& position, const LVec& tau_p4) {
   return getEtaPhiIndices(position.eta(), position.phi(), tau_p4);
 }
 
-void L2TauNNProducerAlpaka::fillCaloRecHits(tensorflow::Tensor& cellGridMatrix,
+void L2TauNNProducer::fillCaloRecHits(tensorflow::Tensor& cellGridMatrix,
                                             const std::vector<l1t::TauRef>& allTaus,
                                             const caloRecHitCollections& caloRecHits) {
   using NNInputs = L2TauTagNNv1::NNInputs;
@@ -572,7 +572,7 @@ void L2TauNNProducerAlpaka::fillCaloRecHits(tensorflow::Tensor& cellGridMatrix,
   }
 }
 
-void L2TauNNProducerAlpaka::selectGoodTracksAndVertices(const ZVertexHost& patavtx_soa,
+void L2TauNNProducer::selectGoodTracksAndVertices(const ZVertexHost& patavtx_soa,
                                                         const TracksHost& patatracks_tsoa,
                                                         std::vector<int>& trkGood,
                                                         std::vector<int>& vtxGood) {
@@ -619,7 +619,7 @@ void L2TauNNProducerAlpaka::selectGoodTracksAndVertices(const ZVertexHost& patav
   }
 }
 
-std::pair<float, float> L2TauNNProducerAlpaka::impactParameter(int it,
+std::pair<float, float> L2TauNNProducer::impactParameter(int it,
                                                                const TracksHost& patatracks_tsoa,
                                                                float patatrackPhi,
                                                                const reco::BeamSpot& beamspot,
@@ -650,7 +650,7 @@ std::pair<float, float> L2TauNNProducerAlpaka::impactParameter(int it,
   return std::make_pair(patatrackDxy, patatrackDz);
 }
 
-void L2TauNNProducerAlpaka::fillPatatracks(tensorflow::Tensor& cellGridMatrix,
+void L2TauNNProducer::fillPatatracks(tensorflow::Tensor& cellGridMatrix,
                                            const std::vector<l1t::TauRef>& allTaus,
                                            const TracksHost& patatracks_tsoa,
                                            const ZVertexHost& patavtx_soa,
@@ -728,7 +728,7 @@ void L2TauNNProducerAlpaka::fillPatatracks(tensorflow::Tensor& cellGridMatrix,
   }
 }
 
-std::vector<float> L2TauNNProducerAlpaka::getTauScore(const tensorflow::Tensor& cellGridMatrix) {
+std::vector<float> L2TauNNProducer::getTauScore(const tensorflow::Tensor& cellGridMatrix) {
   const int nTau = cellGridMatrix.shape().dim_size(0);
   if (nTau == 0) {
     return std::vector<float>();
@@ -744,7 +744,7 @@ std::vector<float> L2TauNNProducerAlpaka::getTauScore(const tensorflow::Tensor& 
   }
 }
 
-void L2TauNNProducerAlpaka::produce(edm::Event& event, const edm::EventSetup& eventsetup) {
+void L2TauNNProducer::produce(edm::Event& event, const edm::EventSetup& eventsetup) {
   std::vector<std::vector<size_t>> TauCollectionMap(L1TauDesc_.size());
   l1t::TauVectorRef allTaus;
 
@@ -821,4 +821,4 @@ void L2TauNNProducerAlpaka::produce(edm::Event& event, const edm::EventSetup& ev
 }
 //define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(L2TauNNProducerAlpaka);
+DEFINE_FWK_MODULE(L2TauNNProducer);

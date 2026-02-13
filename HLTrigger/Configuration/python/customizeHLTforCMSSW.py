@@ -210,9 +210,7 @@ def customizeHLTfor49936(process):
       - parameters
       - path and task scheduling
     """
-
-    from HLTrigger.Configuration.common import producers_by_type
-
+    
     type_map = {
         "SiPixelPhase1CompareRecHits": "SiPixelCompareRecHitsSoA",
         "SiPixelPhase1CompareTracks": "SiPixelCompareTracksSoA",
@@ -229,6 +227,17 @@ def customizeHLTfor49936(process):
 
     return process
 
+def customizeHLTforXXXXX(process):
+    type_map = {
+        "L2TauNNProducerAlpaka": "L2TauNNProducer",
+    }
+    
+    for old_type, new_type in type_map.items():
+        for module in producers_by_type(process, old_type):
+            module._TypedParameterizable__type = new_type
+            print("replacing",module)
+            
+    return process
 
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
@@ -240,5 +249,6 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
     # process = customizeHLTfor49436(process)
 
     process = customizeHLTfor49936(process)
-
+    process = customizeHLTforXXXXX(process)
+    
     return process
