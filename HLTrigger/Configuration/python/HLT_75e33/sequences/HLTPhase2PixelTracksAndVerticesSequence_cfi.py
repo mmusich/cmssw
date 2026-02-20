@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+from HeterogeneousCore.AlpakaCore.functions import makeSerialClone
 
 from ..modules.hltPhase2OtRecHitsSoA_cfi import hltPhase2OtRecHitsSoA
 from ..modules.hltPhase2PixelFitterByHelixProjections_cfi import hltPhase2PixelFitterByHelixProjections
@@ -13,7 +14,7 @@ from ..modules.hltPhase2PixelTracksHitSeeds_cfi import hltPhase2PixelTracksHitSe
 from ..modules.hltPhase2PixelTracksSeedLayers_cfi import hltPhase2PixelTracksSeedLayers
 from ..modules.hltPhase2PixelTracksSoA_cfi import hltPhase2PixelTracksSoA
 from ..modules.hltPhase2PixelVertices_cfi import *
-from ..sequences.HLTPhase2PixelVertexingSequence_cfi import HLTPhase2PixelVertexingSequence
+from ..sequences.HLTPhase2PixelVertexingSequence_cfi import *
 from ..sequences.HLTBeamSpotSequence_cfi import HLTBeamSpotSequence
 
 HLTPhase2PixelTracksAndVerticesSequence = cms.Sequence(
@@ -29,6 +30,45 @@ HLTPhase2PixelTracksAndVerticesSequence = cms.Sequence(
     +hltPhase2PixelTracksCutClassifier
     +hltPhase2PixelTracks
 )
+
+
+# Sequence for CPU vs. GPU validation, to be kept in sync with default sequence
+def _makeSerialPhase2PixelTracksAndVerticesSequence(seq):
+    _g = globals()
+    _g["hltPhase2PixelTracksSoASerialSync"] = makeSerialClone(hltPhase2PixelTracksSoA)
+    _g["hltPhase2PixelTracksCAExtensionSerialSync"] = hltPhase2PixelTracksCAExtension.clone(
+        trackSrc = "hltPhase2PixelTracksSoASerialSync"
+    )
+    _g["hltPhase2PixelTracksCutClassifierSerialSync"] = hltPhase2PixelTracksCutClassifier.clone(
+        src = "hltPhase2PixelTracksCAExtensionSerialSync",
+        vertices = "hltPhase2PixelVerticesSerialSync"
+    )
+    _g["hltPhase2PixelTracksSerialSync"] = hltPhase2PixelTracks.clone(
+        originalMVAVals = cms.InputTag("hltPhase2PixelTracksCutClassifierSerialSync","MVAValues"),
+        originalQualVals = cms.InputTag("hltPhase2PixelTracksCutClassifierSerialSync","QualityMasks"),
+        originalSource = cms.InputTag("hltPhase2PixelTracksCAExtensionSerialSync")
+    )
+    _newSeq = cms.Sequence(
+        HLTBeamSpotSequence
+        +hltPhase2PixelTracksAndHighPtStepTrackingRegions # needed by highPtTripletStep iteration
+        +hltPhase2PixelFitterByHelixProjections # needed by tracker muons
+        +hltPhase2PixelTrackFilterByKinematics  # needed by tracker muons
+        +hltPhase2OtRecHitsSoA
+        +hltPhase2PixelRecHitsExtendedSoA
+        +hltPhase2PixelTracksSoASerialSync
+        +hltPhase2PixelTracksCAExtensionSerialSync
+        +HLTPhase2PixelVertexingSequenceSerialSync
+        +hltPhase2PixelTracksCutClassifierSerialSync
+        +hltPhase2PixelTracksSerialSync
+    )
+    seq._seq = _newSeq._seq
+
+# Empty sequence as a placeholder to be filled when alpakaValidationHLT is active
+HLTPhase2PixelTracksAndVerticesSequenceSerialSync = cms.Sequence()
+
+from Configuration.ProcessModifiers.alpakaValidationHLT_cff import alpakaValidationHLT
+alpakaValidationHLT.toModify(HLTPhase2PixelTracksAndVerticesSequenceSerialSync, _makeSerialPhase2PixelTracksAndVerticesSequence)
+
 
 from ..modules.hltPhase2TrimmedPixelVertices_cfi import hltPhase2TrimmedPixelVertices
 _HLTPhase2PixelTracksAndVerticesSequenceTrimming = cms.Sequence(
