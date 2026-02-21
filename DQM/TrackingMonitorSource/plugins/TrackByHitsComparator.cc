@@ -16,7 +16,6 @@
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 
 class TrackByHitsComparator : public DQMEDAnalyzer {
-
 public:
   explicit TrackByHitsComparator(const edm::ParameterSet&);
   ~TrackByHitsComparator() override = default;
@@ -24,12 +23,9 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions&);
 
 protected:
-  void bookHistograms(DQMStore::IBooker&,
-                      edm::Run const&,
-                      edm::EventSetup const&) override;
+  void bookHistograms(DQMStore::IBooker&, edm::Run const&, edm::EventSetup const&) override;
 
-  void analyze(edm::Event const&,
-               edm::EventSetup const&) override;
+  void analyze(edm::Event const&, edm::EventSetup const&) override;
 
 private:
   void extractDetIds(const reco::Track&, std::vector<uint32_t>&);
@@ -53,37 +49,27 @@ private:
   std::vector<unsigned int> touched_;
 };
 
-TrackByHitsComparator::TrackByHitsComparator(
-    const edm::ParameterSet& iConfig)
-    : tracksAToken_(consumes<reco::TrackCollection>(
-          iConfig.getParameter<edm::InputTag>("tracksA"))),
-      tracksBToken_(consumes<reco::TrackCollection>(
-          iConfig.getParameter<edm::InputTag>("tracksB"))),
+TrackByHitsComparator::TrackByHitsComparator(const edm::ParameterSet& iConfig)
+    : tracksAToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracksA"))),
+      tracksBToken_(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracksB"))),
       minSharedFraction_(iConfig.getParameter<double>("minSharedFraction")),
       folder_(iConfig.getParameter<std::string>("folder")),
       h_dpt_(nullptr),
       h_sharedFraction_(nullptr) {}
 
-void TrackByHitsComparator::bookHistograms(
-    DQMStore::IBooker& ibooker,
-    edm::Run const&,
-    edm::EventSetup const&) {
-
+void TrackByHitsComparator::bookHistograms(DQMStore::IBooker& ibooker, edm::Run const&, edm::EventSetup const&) {
   ibooker.setCurrentFolder(folder_);
   h_dpt_ = ibooker.book1D("dpt", "(pT_A - pT_B)/pT_B", 100, -0.5, 0.5);
-  h_sharedFraction_ =
-      ibooker.book1D("sharedFraction", "Shared hit fraction", 100, 0., 1.1);
+  h_sharedFraction_ = ibooker.book1D("sharedFraction", "Shared hit fraction", 100, 0., 1.1);
 }
 
-void TrackByHitsComparator::extractDetIds(
-    const reco::Track& trk,
-    std::vector<uint32_t>& buffer) {
-
+void TrackByHitsComparator::extractDetIds(const reco::Track& trk, std::vector<uint32_t>& buffer) {
   buffer.clear();
   buffer.reserve(trk.recHitsSize());
 
   for (auto const& hit : trk.recHits()) {
-    if (!hit->isValid()) continue;
+    if (!hit->isValid())
+      continue;
     buffer.push_back(hit->geographicalId().rawId());
   }
 
@@ -91,15 +77,13 @@ void TrackByHitsComparator::extractDetIds(
   buffer.erase(std::unique(buffer.begin(), buffer.end()), buffer.end());
 }
 
-void TrackByHitsComparator::analyze(
-    edm::Event const& iEvent,
-    edm::EventSetup const&) {
-
+void TrackByHitsComparator::analyze(edm::Event const& iEvent, edm::EventSetup const&) {
   auto const& tracksA = iEvent.get(tracksAToken_);
   auto const& tracksB = iEvent.get(tracksBToken_);
 
   const unsigned int nB = tracksB.size();
-  if (tracksA.empty() || nB == 0) return;
+  if (tracksA.empty() || nB == 0)
+    return;
 
   // ---- Resize per event buffers once
   detidsB_.resize(nB);
@@ -119,21 +103,19 @@ void TrackByHitsComparator::analyze(
 
   // ---- Loop over A tracks
   for (unsigned int iA = 0; iA < tracksA.size(); ++iA) {
-
     extractDetIds(tracksA[iA], detidsA_);
-    if (detidsA_.empty()) continue;
+    if (detidsA_.empty())
+      continue;
 
-    const unsigned int required =
-        std::ceil(minSharedFraction_ * detidsA_.size());
+    const unsigned int required = std::ceil(minSharedFraction_ * detidsA_.size());
 
     // Count matches via DetId index
     for (auto detid : detidsA_) {
-
       auto it = detIdToB_.find(detid);
-      if (it == detIdToB_.end()) continue;
+      if (it == detIdToB_.end())
+        continue;
 
       for (auto idxB : it->second) {
-
         if (matchCounts_[idxB] == 0)
           touched_.push_back(idxB);
 
@@ -153,17 +135,11 @@ void TrackByHitsComparator::analyze(
     }
 
     if (bestIdx < nB && bestCount >= required) {
-
-      double frac =
-          double(bestCount) /
-          std::min(detidsA_.size(),
-                   detidsB_[bestIdx].size());
+      double frac = double(bestCount) / std::min(detidsA_.size(), detidsB_[bestIdx].size());
 
       h_sharedFraction_->Fill(frac);
 
-      double dpt =
-          (tracksA[iA].pt() - tracksB[bestIdx].pt()) /
-          tracksB[bestIdx].pt();
+      double dpt = (tracksA[iA].pt() - tracksB[bestIdx].pt()) / tracksB[bestIdx].pt();
 
       h_dpt_->Fill(dpt);
     }
@@ -176,9 +152,7 @@ void TrackByHitsComparator::analyze(
   }
 }
 
-void TrackByHitsComparator::fillDescriptions(
-    edm::ConfigurationDescriptions& descriptions) {
-
+void TrackByHitsComparator::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("tracksA");
   desc.add<edm::InputTag>("tracksB");
