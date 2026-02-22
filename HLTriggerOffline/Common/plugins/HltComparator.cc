@@ -1,21 +1,57 @@
-// Originally written by James Jackson
+// Original Author: James Jackson
 // modified by Peter Wittich
 
 // user include files
-#include "FWCore/Common/interface/TriggerNames.h"
-#include "HLTriggerOffline/Common/interface/HltComparator.h"
-//#include "FWCore/Utilities/interface/Exception.h"
-
-//#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/one/EDFilter.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
-#include <TH1.h>
+// system includes
+#include "TH1.h"
 #include <iostream>
 #include <string>
 #include <vector>
 
 typedef std::vector<std::string> StringCollection;
+
+class HltComparator : public edm::one::EDFilter<edm::one::SharedResources> {
+public:
+  explicit HltComparator(const edm::ParameterSet &);
+  ~HltComparator() override = default;
+
+private:
+  const edm::EDGetTokenT<edm::TriggerResults> hltOnlineResults_;
+  const edm::EDGetTokenT<edm::TriggerResults> hltOfflineResults_;
+
+  std::vector<std::string> onlineActualNames_;
+  std::vector<std::string> offlineActualNames_;
+  std::vector<unsigned int> onlineToOfflineBitMappings_;
+
+  std::vector<TH1F *> comparisonHists_;
+  std::map<unsigned int, std::map<std::string, unsigned int>> triggerComparisonErrors_;
+
+  bool init_;
+  const bool verbose_;
+  bool verbose() const { return verbose_; }
+
+  const std::vector<std::string> skipPathList_;
+  const std::vector<std::string> usePathList_;
+
+  unsigned int numTriggers_;
+  
+  bool filter(edm::Event &, const edm::EventSetup &) override;
+  void endJob() override;
+  void initialise(const edm::TriggerResults &, const edm::TriggerResults &, edm::Event &e);
+  std::string formatResult(const unsigned int);
+};
 
 // types of outcomes possible.
 // only some are errors
@@ -45,8 +81,6 @@ HltComparator::HltComparator(const edm::ParameterSet &iConfig)
   // std::cout << " HERE I GO " << std::endl;
   usesResource(TFileService::kSharedResource);
 }
-
-HltComparator::~HltComparator() {}
 
 // Initialises online --> offline trigger bit mappings and histograms
 void HltComparator::initialise(const edm::TriggerResults &onlineResults,
@@ -247,8 +281,6 @@ bool HltComparator::filter(edm::Event &event, const edm::EventSetup &iSetup) {
     return false;
 }
 
-void HltComparator::beginJob() {}
-
 // Print the trigger results
 void HltComparator::endJob() {
 #ifdef NOTDEF
@@ -265,3 +297,6 @@ void HltComparator::endJob() {
   std::cout << "HLT-Compare ------------ End Trigger Comparison ------------" << std::endl;
 #endif  // NOTDEF
 }
+
+#include "FWCore/Framework/interface/MakerMacros.h"
+DEFINE_FWK_MODULE(HltComparator);
