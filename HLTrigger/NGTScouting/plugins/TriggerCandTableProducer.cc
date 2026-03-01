@@ -56,7 +56,7 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
 
   bool changed = true;
   if (!hltConfig_.init(iEvent.getRun(), iSetup, processName_, changed)) {
-    edm::LogWarning("TriggerCandTableProducer")
+    edm::LogError("TriggerCandTableProducer")
         << "HLTConfigProvider initialization failed for process '" << processName_ << "'";
     return;
   }
@@ -70,7 +70,7 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
   Handle<TriggerEvent> triggerObj;
   iEvent.getByToken(triggerSummaryToken_, triggerObj);
   if (!triggerObj.isValid()) {
-    edm::LogInfo("TriggerCandTableProducer") << "TriggerEvent not present in event; producing empty table.";
+    edm::LogError("TriggerCandTableProducer") << "TriggerEvent not present in event; producing empty table.";
     auto empty = std::make_unique<nanoaod::FlatTable>(0, "hltTriggerCands", true);
     iEvent.put(std::move(empty));
     return;
@@ -86,6 +86,7 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
   std::vector<float> col_eta(nFilts, default_value);
   std::vector<float> col_phi(nFilts, default_value);
   std::vector<float> col_mass(nFilts, default_value);
+  std::vector<float> col_id(nFilts, std::numeric_limits<int>::quiet_NaN());
 
   // iterate over HLT paths from the HLT config
   const std::vector<std::string>& paths = hltConfig_.triggerNames();
@@ -122,8 +123,9 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
           std::string mEDMtype = hltConfig_.moduleEDMType(mod);
           bool isSaveTags = hltConfig_.saveTags(mod);
 
-          //std::cout << "module: " << mod << " (moduleType= " << mtype << " , moduleEDMtype= " << mEDMtype
-          //          << " , saveTags=" << isSaveTags << "  ) " << std::endl;
+          LogDebug("TriggerCandTableProducer")
+              << "module: " << mod << " (moduleType= " << mtype << " , moduleEDMtype= " << mEDMtype
+              << " , saveTags=" << isSaveTags << "  ) ";
 
           if (mEDMtype.find("EDFilter") != std::string::npos && isSaveTags) {
             chosenFilterLabel = mod;
@@ -134,7 +136,6 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
           chosenFilterLabel = modules.back();
       }
     }
-    //std::cout << "===================" << std::endl;
 
     // TriggerEvent filterTag expects encoded "module:instance:process" or at least the module label.
     // We must search for a filter with that label in triggerObj.
@@ -142,7 +143,7 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
     int filterIndex = -1;
     for (size_t ifilt = 0; ifilt < triggerObj->sizeFilters(); ++ifilt) {
       std::string fullname = triggerObj->filterTag(ifilt).label();  // just label part
-      //std::cout << "fullname: " << fullname << " chosenFilterLabel: " << chosenFilterLabel << std::endl;
+      LogDebug("TriggerCandTableProducer") << "fullname: " << fullname << " chosenFilterLabel: " << chosenFilterLabel;
       if (fullname == chosenFilterLabel) {
         filterIndex = static_cast<int>(ifilt);
         break;
@@ -156,11 +157,11 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
       if (idx >= 0 && idx < static_cast<int>(triggerObj->sizeFilters()))
         filterIndex = idx;
     }
-    
+
     if (filterIndex < 0) {
       // nothing found for this path; skip but log debug
-      edm::LogWarning("TriggerCandTableProducer") << "No filter found in TriggerEvent for path " << pathName
-                                                           << " (chosen module '" << chosenFilterLabel << "').";
+      edm::LogInfo("TriggerCandTableProducer") << "No filter found in TriggerEvent for path " << pathName
+                                               << " (chosen module '" << chosenFilterLabel << "').";
       continue;
     }
 
@@ -169,21 +170,21 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
     for (const auto& ki : keys) {
       const TriggerObject& to = toc[ki];
 
-      std::cout << "ki = " << ki << ", pt = " << to.pt() << ", eta = " << to.eta() << ", phi = " << to.phi()
-                << ", mass = " << to.mass() << ", id = " << to.id() << ", path = " << pathName << std::endl;
+      LogDebug("TriggerCandTableProducer")
+          << "ki = " << ki << ", pt = " << to.pt() << ", eta = " << to.eta() << ", phi = " << to.phi()
+          << ", mass = " << to.mass() << ", id = " << to.id() << ", path = " << pathName << std::endl;
 
       col_pt[countFilters] = to.pt();
       col_eta[countFilters] = to.eta();
       col_phi[countFilters] = to.phi();
       col_mass[countFilters] = to.mass();
+      col_id[countFilters] = to.id();
     }
     countFilters++;
   }  // end path loop
 
   // Create flat table: rows = number of candidates
   const int nRows = static_cast<int>(col_pt.size());
-  std::cout << "countedFilters: " << countFilters << " nRows: " << nRows << std::endl;
-
   assert(size_t(nRows) <= nFilts);
 
   auto trigTable = std::make_unique<nanoaod::FlatTable>(nFilts, trigCandsName_, true, false);
@@ -191,14 +192,10 @@ void TriggerCandTableProducer::produce(edm::Event& iEvent, const edm::EventSetup
   trigTable->addColumn<float>("eta", col_eta, "candidate eta", 10);
   trigTable->addColumn<float>("phi", col_phi, "candidate phi", 10);
   trigTable->addColumn<float>("mass", col_mass, "candidate mass", 10);
+  trigTable->addColumn<int>("id", col_id, "candidate id", 10);
 
-  std::cout << "just before the put!" << std::endl;
-    
   // put product into event
   iEvent.put(std::move(trigTable));
-
-  std::cout << "just after the put!" << std::endl;
-  
 }
 
 void TriggerCandTableProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
