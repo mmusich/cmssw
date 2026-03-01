@@ -88,6 +88,77 @@ def massReplaceInputTag(process,old="rawDataCollector",new="rawDataRepacker",ver
             massSearchReplaceAnyInputTag(task, old, new, verbose, moduleLabelOnly, skipLabelTest)
     return(process)
 
+class MassSearchReplaceAnyESInputTagVisitor(object):
+    """Visitor that travels within a cms.Sequence, looks for a parameter and replace its value
+       It will climb down within PSets, VPSets to find its target"""
+    def __init__(self,paramSearch,paramReplace,verbose=False,moduleLabelOnly=False,skipLabelTest=False):
+        self._paramSearch  = self.standardizeESInputTagFmt(paramSearch)
+        self._paramReplace = self.standardizeESInputTagFmt(paramReplace)
+        self._moduleName   = ''
+        self._verbose=verbose
+        self._moduleLabelOnly=moduleLabelOnly
+        self._skipLabelTest=skipLabelTest
+    def doIt(self,pset,base):
+        if isinstance(pset, cms._Parameterizable):
+            for name in pset.parameterNames_():
+                # if I use pset.parameters_().items() I get copies of the parameter values
+                # so I can't modify the nested pset
+                value = getattr(pset,name)
+                if isinstance(value, cms.PSet):
+                    self.doIt(value,base+"."+name)
+                elif value.isCompatibleCMSType(cms.VPSet):
+                    for (i,ps) in enumerate(value): self.doIt(ps, "%s.%s[%d]"%(base,name,i) )
+                elif value.isCompatibleCMSType(cms.ESInputTag) and value:
+                    if value == self._paramSearch:
+                        #if self._verbose:print("Replace %s.%s %s ==> %s " % (base, name, self._paramSearch, self._paramReplace))
+                        if not value.isTracked():
+                            # the existing value should stay untracked even if the given parameter is tracked
+                            setattr(pset, name, cms.untracked.ESInputTag(self._paramReplace))                            
+                        else:
+                            setattr(pset, name, self._paramReplace)
+
+    @staticmethod
+    def standardizeESInputTagFmt(inputTag):
+        """Ensure ESInputTag is cms.ESInputTag(module, data)."""
+        if isinstance(inputTag, cms.ESInputTag):
+            return inputTag
+
+        if isinstance(inputTag, str):
+            if ":" in inputTag:
+                module, data = inputTag.split(":", 1)
+                return cms.ESInputTag(module, data)
+            else:
+                # assume module label only
+                return cms.ESInputTag("", inputTag)
+
+        raise TypeError(f"Cannot convert {inputTag} to cms.ESInputTag")
+
+    def enter(self,visitee):
+        label = ''
+        if (not self._skipLabelTest):
+            if hasattr(visitee,"hasLabel_") and visitee.hasLabel_():
+                label = visitee.label_()
+            else: label = '<Module not in a Process>'
+        else:
+            label = '<Module label not tested>'
+        self.doIt(visitee, label)
+    def leave(self,visitee):
+        pass
+
+def massSearchReplaceAnyESInputTag(sequence, oldESInputTag, newESInputTag,verbose=False,moduleLabelOnly=False,skipLabelTest=False) :
+    """Replace ESInputTag oldESInputTag with newESInputTag, at any level of nesting within PSets, VPSets..."""
+    sequence.visit(MassSearchReplaceAnyESInputTagVisitor(oldESInputTag,newESInputTag,verbose=verbose,moduleLabelOnly=moduleLabelOnly,skipLabelTest=skipLabelTest))
+
+def massReplaceESInputTag(process,old="WithAngleAndTemplate",new="WithTrackAngle",verbose=False,moduleLabelOnly=False,skipLabelTest=False):
+    for s in process.paths_().keys():
+        massSearchReplaceAnyESInputTag(getattr(process,s), old, new, verbose, moduleLabelOnly, skipLabelTest)
+    for s in process.endpaths_().keys():
+        massSearchReplaceAnyESInputTag(getattr(process,s), old, new, verbose, moduleLabelOnly, skipLabelTest)
+    if process.schedule_() is not None:
+        for task in process.schedule_()._tasks:
+            massSearchReplaceAnyESInputTag(task, old, new, verbose, moduleLabelOnly, skipLabelTest)
+    return(process)
+
 class MassSearchParamVisitor(object):
     """Visitor that travels within a cms.Sequence, looks for a parameter and returns a list of modules that have it"""
     def __init__(self,paramName,paramSearch):
@@ -113,7 +184,15 @@ class MassSearchReplaceParamVisitor(object):
     def enter(self,visitee):
         self.doIt(visitee, str(visitee))
     def doIt(self, mod, name):
-        if (hasattr(mod,self._paramName)):
+         if (hasattr(mod,self._paramName)):
+            value = getattr(mod,self._paramName)
+            if value.isCompatibleCMSType(cms.ESInputTag):
+                return
+            if value.isCompatibleCMSType(cms.PSet):
+                print("found",value,"in PSet")
+            if isinstance(value, cms.PSet):
+                print("found",value,"in PSet")
+                self.doIt(self,mod+"."+name)
             if getattr(mod,self._paramName) == self._paramSearch:
                 if self._verbose:print("Replaced %s.%s: %s => %s" % (name,self._paramName,getattr(mod,self._paramName),self._paramValue))
                 setattr(mod,self._paramName,self._paramValue)
