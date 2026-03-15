@@ -6,6 +6,8 @@ import FWCore.ParameterSet.Config as cms
 from ..modules.hltPixelTracksSoAMonitorCPU_cfi import *
 from ..modules.hltPixelTracksSoAMonitorGPU_cfi import *
 from ..modules.hltPixelTracksSoACompareGPUvsCPU_cfi import *
+from ..modules.hltPixelTrackToTrackSerialSync_cfi import *
+from ..modules.hltInitialStepSeedsTrackToTrackSerialSync_cfi import *
 #from ..modules.hltPixelVerticesSoAMonitorCPU_cfi import *
 #from ..modules.hltPixelVerticesSoAMonitorGPU_cfi import *
 #from ..modules.hltPixelVerticesSoACompareGPUvsCPU_cfi import *
@@ -15,7 +17,9 @@ HLTDQMPixelReconstruction = cms.Sequence(#hltSiPixelRecHitsSoAMonitorCPU +
     #hltSiPixelRecHitsSoACompareGPUvsCPU +
     hltPixelTracksSoAMonitorCPU +
     hltPixelTracksSoAMonitorGPU +
-    hltPixelTracksSoACompareGPUvsCPU )
+    hltPixelTracksSoACompareGPUvsCPU +
+    hltPixelTrackToTrackSerialSync +
+    hltInitialStepSeedsTrackToTrackSerialSync )
 #process.hltPixelVerticesSoAMonitorCPU +
 #process.hltPixelVerticesSoAMonitorGPU +
 #process.hltPixelVerticesSoACompareGPUvsCPU)
