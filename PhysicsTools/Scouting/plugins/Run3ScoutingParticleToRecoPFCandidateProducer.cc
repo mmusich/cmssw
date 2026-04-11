@@ -1,5 +1,6 @@
 // system include files
 #include <memory>
+#include <cmath>
 
 // user include files
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -19,51 +20,46 @@
 class Run3ScoutingParticleToRecoPFCandidateProducer : public edm::stream::EDProducer<> {
 public:
   explicit Run3ScoutingParticleToRecoPFCandidateProducer(const edm::ParameterSet &);
-  ~Run3ScoutingParticleToRecoPFCandidateProducer() override;
+  ~Run3ScoutingParticleToRecoPFCandidateProducer() override = default;
 
   static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
-  void beginStream(edm::StreamID) override {}
-  void produce(edm::Event &iEvent, edm::EventSetup const &setup) override;
-  void endStream() override {}
 
-  void createPFCandidates(edm::Handle<std::vector<Run3ScoutingParticle>> scoutingparticleHandle,
-                          std::unique_ptr<reco::PFCandidateCollection> &pfcands);
-  void createPFCandidatesSK(edm::Handle<std::vector<Run3ScoutingParticle>> scoutingparticleHandle,
-                            std::unique_ptr<reco::PFCandidateCollection> &pfcands);
-  reco::PFCandidate createPFCand(Run3ScoutingParticle scoutingparticle);
+  void produce(edm::Event &, edm::EventSetup const &) override;
+
+private:
+  void createPFCandidates(const edm::Handle<std::vector<Run3ScoutingParticle>> &, reco::PFCandidateCollection &);
+
+  void createPFCandidatesSK(const edm::Handle<std::vector<Run3ScoutingParticle>> &, reco::PFCandidateCollection &);
+
+  reco::PFCandidate createPFCand(const Run3ScoutingParticle &);
+
   void clearVars();
 
 private:
-  const edm::EDGetTokenT<std::vector<Run3ScoutingParticle>> input_scoutingparticle_token_;
-  const edm::ESGetToken<HepPDT::ParticleDataTable, edm::DefaultRecord> particletable_token_;
+  const edm::EDGetTokenT<std::vector<Run3ScoutingParticle>> input_token_;
+  const edm::ESGetToken<HepPDT::ParticleDataTable, edm::DefaultRecord> pdt_token_;
+
   bool use_softKiller_;
   bool use_CHS_;
+
   const HepPDT::ParticleDataTable *pdTable_;
 
-  std::vector<int8_t> vertexIndex_;
-  std::vector<float> normchi2_;
-  std::vector<float> dz_;
-  std::vector<float> dxy_;
-  std::vector<float> dzsig_;
-  std::vector<float> dxysig_;
-  std::vector<int> lostInnerHits_;
-  std::vector<int> quality_;
-  std::vector<float> trkPt_;
-  std::vector<float> trkEta_;
-  std::vector<float> trkPhi_;
+  // cached output vectors
+  std::vector<int> vertexIndex_;
+  std::vector<float> normchi2_, dz_, dxy_, dzsig_, dxysig_;
+  std::vector<int> lostInnerHits_, quality_;
+  std::vector<float> trkPt_, trkEta_, trkPhi_;
 };
 
-//
-// constructors and destructor
-//
+// constructor
 Run3ScoutingParticleToRecoPFCandidateProducer::Run3ScoutingParticleToRecoPFCandidateProducer(
     const edm::ParameterSet &iConfig)
-    : input_scoutingparticle_token_(consumes(iConfig.getParameter<edm::InputTag>("scoutingparticle"))),
-      particletable_token_(esConsumes<HepPDT::ParticleDataTable, edm::DefaultRecord>()),
+    : input_token_(consumes(iConfig.getParameter<edm::InputTag>("scoutingparticle"))),
+      pdt_token_(esConsumes()),
       use_softKiller_(iConfig.getParameter<bool>("softKiller")),
       use_CHS_(iConfig.getParameter<bool>("CHS")) {
-  //register products
   produces<reco::PFCandidateCollection>();
+
   produces<edm::ValueMap<int>>("vertexIndex");
   produces<edm::ValueMap<float>>("normchi2");
   produces<edm::ValueMap<float>>("dz");
@@ -77,188 +73,164 @@ Run3ScoutingParticleToRecoPFCandidateProducer::Run3ScoutingParticleToRecoPFCandi
   produces<edm::ValueMap<float>>("trkPhi");
 }
 
-Run3ScoutingParticleToRecoPFCandidateProducer::~Run3ScoutingParticleToRecoPFCandidateProducer() = default;
-
-reco::PFCandidate Run3ScoutingParticleToRecoPFCandidateProducer::createPFCand(Run3ScoutingParticle scoutingparticle) {
-  auto m = pdTable_->particle(HepPDT::ParticleID(scoutingparticle.pdgId())) != nullptr
-               ? pdTable_->particle(HepPDT::ParticleID(scoutingparticle.pdgId()))->mass()
-               : -99.f;
-  auto q = pdTable_->particle(HepPDT::ParticleID(scoutingparticle.pdgId())) != nullptr
-               ? pdTable_->particle(HepPDT::ParticleID(scoutingparticle.pdgId()))->charge()
-               : -99.f;
-  if (m < -90 or q < -90) {
-    LogDebug("createPFCand") << "<Run3ScoutingParticleToRecoPFCandidateProducer::createPFCand>:" << std::endl
-                             << "Unrecognisable pdgId - skipping particle" << std::endl;
+// --- create single candidate ---
+reco::PFCandidate Run3ScoutingParticleToRecoPFCandidateProducer::createPFCand(const Run3ScoutingParticle &p) {
+  const auto *particle = pdTable_->particle(HepPDT::ParticleID(p.pdgId()));
+  if (!particle)
     return reco::PFCandidate();
-  }
 
-  float px = scoutingparticle.pt() * cos(scoutingparticle.phi());
-  float py = scoutingparticle.pt() * sin(scoutingparticle.phi());
-  float pz = scoutingparticle.pt() * sinh(scoutingparticle.eta());
-  float p = scoutingparticle.pt() * cosh(scoutingparticle.eta());
-  float energy = std::sqrt(p * p + m * m);
+  const float m = particle->mass();
+  const float q = particle->charge();
+
+  const float pt = p.pt();
+  const float eta = p.eta();
+  const float phi = p.phi();
+
+  const float cosPhi = std::cos(phi);
+  const float sinPhi = std::sin(phi);
+  const float coshEta = std::cosh(eta);
+  const float sinhEta = std::sinh(eta);
+
+  const float px = pt * cosPhi;
+  const float py = pt * sinPhi;
+  const float pz = pt * sinhEta;
+  const float energy = std::sqrt(pt * pt * coshEta * coshEta + m * m);
+
   reco::Particle::LorentzVector p4(px, py, pz, energy);
 
   static const reco::PFCandidate dummy;
-  auto pfcand = reco::PFCandidate(q, p4, dummy.translatePdgIdToType(scoutingparticle.pdgId()));
+  reco::PFCandidate cand(q, p4, dummy.translatePdgIdToType(p.pdgId()));
 
-  bool relativeTrackVars = scoutingparticle.relative_trk_vars();
-  vertexIndex_.push_back(scoutingparticle.vertex());
-  normchi2_.push_back(scoutingparticle.normchi2());
-  dz_.push_back(scoutingparticle.dz());
-  dxy_.push_back(scoutingparticle.dxy());
-  dzsig_.push_back(scoutingparticle.dzsig());
-  dxysig_.push_back(scoutingparticle.dxysig());
-  lostInnerHits_.push_back(scoutingparticle.lostInnerHits());
-  quality_.push_back(scoutingparticle.quality());
-  trkPt_.push_back(relativeTrackVars ? scoutingparticle.trk_pt() + scoutingparticle.pt() : scoutingparticle.trk_pt());
-  trkEta_.push_back(relativeTrackVars ? scoutingparticle.trk_eta() + scoutingparticle.eta()
-                                      : scoutingparticle.trk_eta());
-  trkPhi_.push_back(relativeTrackVars ? scoutingparticle.trk_phi() + scoutingparticle.phi()
-                                      : scoutingparticle.trk_phi());
+  // store extras
+  vertexIndex_.push_back(p.vertex());
+  normchi2_.push_back(p.normchi2());
+  dz_.push_back(p.dz());
+  dxy_.push_back(p.dxy());
+  dzsig_.push_back(p.dzsig());
+  dxysig_.push_back(p.dxysig());
+  lostInnerHits_.push_back(p.lostInnerHits());
+  quality_.push_back(p.quality());
 
-  return pfcand;
+  if (p.relative_trk_vars()) {
+    trkPt_.push_back(p.trk_pt() + pt);
+    trkEta_.push_back(p.trk_eta() + eta);
+    trkPhi_.push_back(p.trk_phi() + phi);
+  } else {
+    trkPt_.push_back(p.trk_pt());
+    trkEta_.push_back(p.trk_eta());
+    trkPhi_.push_back(p.trk_phi());
+  }
+
+  return cand;
 }
 
+// --- standard loop ---
 void Run3ScoutingParticleToRecoPFCandidateProducer::createPFCandidates(
-    edm::Handle<std::vector<Run3ScoutingParticle>> scoutingparticleHandle,
-    std::unique_ptr<reco::PFCandidateCollection> &pfcands) {
-  for (unsigned int icand = 0; icand < scoutingparticleHandle->size(); ++icand) {
-    auto &scoutingparticle = (*scoutingparticleHandle)[icand];
-
-    if (use_CHS_ and scoutingparticle.vertex() > 0)
-      continue;
-
-    auto pfcand = createPFCand(scoutingparticle);
-    if (pfcand.energy() != 0)
-      pfcands->push_back(pfcand);
+    const edm::Handle<std::vector<Run3ScoutingParticle>> &handle, reco::PFCandidateCollection &out) {
+  if (use_CHS_) {
+    for (const auto &p : *handle) {
+      if (p.vertex() > 0)
+        continue;
+      auto cand = createPFCand(p);
+      if (cand.energy() != 0)
+        out.emplace_back(std::move(cand));
+    }
+  } else {
+    for (const auto &p : *handle) {
+      auto cand = createPFCand(p);
+      if (cand.energy() != 0)
+        out.emplace_back(std::move(cand));
+    }
   }
 }
 
+// --- soft killer ---
 void Run3ScoutingParticleToRecoPFCandidateProducer::createPFCandidatesSK(
-    edm::Handle<std::vector<Run3ScoutingParticle>> scoutingparticleHandle,
-    std::unique_ptr<reco::PFCandidateCollection> &pfcands) {
+    const edm::Handle<std::vector<Run3ScoutingParticle>> &handle, reco::PFCandidateCollection &out) {
   std::vector<fastjet::PseudoJet> fj;
+  fj.reserve(handle->size());
 
-  for (auto iter = scoutingparticleHandle->begin(),
-            ibegin = scoutingparticleHandle->begin(),
-            iend = scoutingparticleHandle->end();
-       iter != iend;
-       ++iter) {
-    auto m = pdTable_->particle(HepPDT::ParticleID(iter->pdgId())) != nullptr
-                 ? pdTable_->particle(HepPDT::ParticleID(iter->pdgId()))->mass()
-                 : -99.f;
-    if (m < -90) {
-      LogDebug("createPFCandidatesSK") << "<Run3ScoutingParticleToRecoPFCandidateProducer::createPFCandidatesSK>:"
-                                       << std::endl
-                                       << "Unrecognisable pdgId - skipping particle" << std::endl;
+  size_t idx = 0;
+  for (const auto &p : *handle) {
+    const auto *particle = pdTable_->particle(HepPDT::ParticleID(p.pdgId()));
+    if (!particle) {
+      ++idx;
       continue;
     }
-    math::PtEtaPhiMLorentzVector p4(iter->pt(), iter->eta(), iter->phi(), m);
-    fj.push_back(fastjet::PseudoJet(p4.px(), p4.py(), p4.pz(), p4.energy()));
-    fj.back().set_user_index(iter - ibegin);
+
+    math::PtEtaPhiMLorentzVector p4(p.pt(), p.eta(), p.phi(), particle->mass());
+    fj.emplace_back(p4.px(), p4.py(), p4.pz(), p4.energy());
+    fj.back().set_user_index(idx++);
   }
 
-  fastjet::contrib::SoftKiller soft_killer(5, 0.4);
-  std::vector<fastjet::PseudoJet> soft_killed_particles = soft_killer(fj);
+  fastjet::contrib::SoftKiller sk(5, 0.4);
+  auto filtered = sk(fj);
 
-  for (auto &particle : soft_killed_particles) {
-    const Run3ScoutingParticle scoutingparticle = scoutingparticleHandle->at(particle.user_index());
-    auto pfcand = createPFCand(scoutingparticle);
-    if (pfcand.energy() != 0)
-      pfcands->push_back(pfcand);
+  for (const auto &pj : filtered) {
+    const auto &p = handle->at(pj.user_index());
+    auto cand = createPFCand(p);
+    if (cand.energy() != 0)
+      out.emplace_back(std::move(cand));
   }
 }
 
-// ------------ method called to produce the data  ------------
+// --- produce ---
 void Run3ScoutingParticleToRecoPFCandidateProducer::produce(edm::Event &iEvent, edm::EventSetup const &setup) {
-  using namespace edm;
+  pdTable_ = &setup.getData(pdt_token_);
 
-  auto pdt = setup.getHandle(particletable_token_);
-  pdTable_ = pdt.product();
+  edm::Handle<std::vector<Run3ScoutingParticle>> handle;
+  iEvent.getByToken(input_token_, handle);
 
-  Handle<std::vector<Run3ScoutingParticle>> scoutingparticleHandle;
-  iEvent.getByToken(input_scoutingparticle_token_, scoutingparticleHandle);
+  const size_t n = handle->size();
 
-  auto pfcands = std::make_unique<reco::PFCandidateCollection>();
+  // reserve everything
+  vertexIndex_.reserve(n);
+  normchi2_.reserve(n);
+  dz_.reserve(n);
+  dxy_.reserve(n);
+  dzsig_.reserve(n);
+  dxysig_.reserve(n);
+  lostInnerHits_.reserve(n);
+  quality_.reserve(n);
+  trkPt_.reserve(n);
+  trkEta_.reserve(n);
+  trkPhi_.reserve(n);
 
-  if (use_softKiller_) {
-    createPFCandidatesSK(scoutingparticleHandle, pfcands);
-  } else {
-    createPFCandidates(scoutingparticleHandle, pfcands);
-  }
+  auto out = std::make_unique<reco::PFCandidateCollection>();
+  out->reserve(n);
 
-  edm::OrphanHandle<reco::PFCandidateCollection> oh = iEvent.put(std::move(pfcands));
+  if (use_softKiller_)
+    createPFCandidatesSK(handle, *out);
+  else
+    createPFCandidates(handle, *out);
 
-  std::unique_ptr<edm::ValueMap<int>> vertexIndex_VM(new edm::ValueMap<int>());
-  edm::ValueMap<int>::Filler filler_vertexIndex(*vertexIndex_VM);
-  filler_vertexIndex.insert(oh, vertexIndex_.begin(), vertexIndex_.end());
-  filler_vertexIndex.fill();
-  iEvent.put(std::move(vertexIndex_VM), "vertexIndex");
+  auto oh = iEvent.put(std::move(out));
 
-  std::unique_ptr<edm::ValueMap<float>> normchi2_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_normchi2(*normchi2_VM);
-  filler_normchi2.insert(oh, normchi2_.begin(), normchi2_.end());
-  filler_normchi2.fill();
-  iEvent.put(std::move(normchi2_VM), "normchi2");
+  auto fillVM = [&](auto &vec, auto label) {
+    using T = typename std::decay<decltype(vec[0])>::type;
+    auto vm = std::make_unique<edm::ValueMap<T>>();
+    typename edm::ValueMap<T>::Filler filler(*vm);
+    filler.insert(oh, vec.begin(), vec.end());
+    filler.fill();
+    iEvent.put(std::move(vm), label);
+  };
 
-  std::unique_ptr<edm::ValueMap<float>> dz_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_dz(*dz_VM);
-  filler_dz.insert(oh, dz_.begin(), dz_.end());
-  filler_dz.fill();
-  iEvent.put(std::move(dz_VM), "dz");
-
-  std::unique_ptr<edm::ValueMap<float>> dxy_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_dxy(*dxy_VM);
-  filler_dxy.insert(oh, dxy_.begin(), dxy_.end());
-  filler_dxy.fill();
-  iEvent.put(std::move(dxy_VM), "dxy");
-
-  std::unique_ptr<edm::ValueMap<float>> dzsig_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_dzsig(*dzsig_VM);
-  filler_dzsig.insert(oh, dzsig_.begin(), dzsig_.end());
-  filler_dzsig.fill();
-  iEvent.put(std::move(dzsig_VM), "dzsig");
-
-  std::unique_ptr<edm::ValueMap<float>> dxysig_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_dxysig(*dxysig_VM);
-  filler_dxysig.insert(oh, dxysig_.begin(), dxysig_.end());
-  filler_dxysig.fill();
-  iEvent.put(std::move(dxysig_VM), "dxysig");
-
-  std::unique_ptr<edm::ValueMap<int>> lostInnerHits_VM(new edm::ValueMap<int>());
-  edm::ValueMap<int>::Filler filler_lostInnerHits(*lostInnerHits_VM);
-  filler_lostInnerHits.insert(oh, lostInnerHits_.begin(), lostInnerHits_.end());
-  filler_lostInnerHits.fill();
-  iEvent.put(std::move(lostInnerHits_VM), "lostInnerHits");
-
-  std::unique_ptr<edm::ValueMap<int>> quality_VM(new edm::ValueMap<int>());
-  edm::ValueMap<int>::Filler filler_quality(*quality_VM);
-  filler_quality.insert(oh, quality_.begin(), quality_.end());
-  filler_quality.fill();
-  iEvent.put(std::move(quality_VM), "quality");
-
-  std::unique_ptr<edm::ValueMap<float>> trkPt_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_trkPt(*trkPt_VM);
-  filler_trkPt.insert(oh, trkPt_.begin(), trkPt_.end());
-  filler_trkPt.fill();
-  iEvent.put(std::move(trkPt_VM), "trkPt");
-
-  std::unique_ptr<edm::ValueMap<float>> trkEta_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_trkEta(*trkEta_VM);
-  filler_trkEta.insert(oh, trkEta_.begin(), trkEta_.end());
-  filler_trkEta.fill();
-  iEvent.put(std::move(trkEta_VM), "trkEta");
-
-  std::unique_ptr<edm::ValueMap<float>> trkPhi_VM(new edm::ValueMap<float>());
-  edm::ValueMap<float>::Filler filler_trkPhi(*trkPhi_VM);
-  filler_trkPhi.insert(oh, trkPhi_.begin(), trkPhi_.end());
-  filler_trkPhi.fill();
-  iEvent.put(std::move(trkPhi_VM), "trkPhi");
+  fillVM(vertexIndex_, "vertexIndex");
+  fillVM(normchi2_, "normchi2");
+  fillVM(dz_, "dz");
+  fillVM(dxy_, "dxy");
+  fillVM(dzsig_, "dzsig");
+  fillVM(dxysig_, "dxysig");
+  fillVM(lostInnerHits_, "lostInnerHits");
+  fillVM(quality_, "quality");
+  fillVM(trkPt_, "trkPt");
+  fillVM(trkEta_, "trkEta");
+  fillVM(trkPhi_, "trkPhi");
 
   clearVars();
 }
 
+// clear
 void Run3ScoutingParticleToRecoPFCandidateProducer::clearVars() {
   vertexIndex_.clear();
   normchi2_.clear();
@@ -273,14 +245,14 @@ void Run3ScoutingParticleToRecoPFCandidateProducer::clearVars() {
   trkPhi_.clear();
 }
 
-// ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
+// descriptions
 void Run3ScoutingParticleToRecoPFCandidateProducer::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("scoutingparticle", edm::InputTag("hltScoutingPFPacker"));
   desc.add<bool>("softKiller", false);
   desc.add<bool>("CHS", false);
+
   descriptions.addWithDefaultLabel(desc);
 }
 
-// declare this class as a framework plugin
 DEFINE_FWK_MODULE(Run3ScoutingParticleToRecoPFCandidateProducer);
