@@ -13,8 +13,8 @@ if 'unitTest=True' in sys.argv:
 #----------------------------
 
 if unitTest:
-   process.load("DQM.Integration.config.unittestinputsource_cfi")
-   from DQM.Integration.config.unittestinputsource_cfi import options
+   process.load("DQM.Integration.config.unittestpbsource_cfi")
+   from DQM.Integration.config.unittestpbsource_cfi import options
 else:
    # for live online DQM in P5
    process.load("DQM.Integration.config.pbsource_cfi")
