@@ -5,6 +5,9 @@
 #include <fmt/format.h>
 #include <boost/range/adaptor/indexed.hpp>
 
+// ROOT includes
+#include "TMath.h"
+
 // user includes
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
@@ -150,7 +153,16 @@ private:
   MonitorElement* p_dz_phi;
   MonitorElement* p2_dz_eta_phi;
 
+  // beamspot histograms
   MonitorElement *bsX, *bsY, *bsZ, *bsSigmaZ, *bsDxdz, *bsDydz, *bsBeamWidthX, *bsBeamWidthY, *bsType;
+
+  // vertex histograms
+  MonitorElement *vtxchi2ndf, *vtxprob;
+
+  MonitorElement* h_vtx_sumPt2;
+  MonitorElement* h_vtx_nTracks;
+  MonitorElement* h_vtx_tracksSize;
+  MonitorElement* h_vtx_tracksSizeDiff;
 
   // hit profiles configuration
   std::vector<ProfileConfig> hitProfiles_;
@@ -225,10 +237,25 @@ void ScoutingTrackMonitor::bookHistograms(DQMStore::IBooker& ibooker, edm::Run c
 
   h_vtx_idx = ibooker.book1DD("vertexIndex", "tracks Vertex Index;Vertex index;Tracks", 17, -1.5, 15.5);
 
+  h_vtx_sumPt2 =
+      ibooker.book1DD("vtxSumPt2", "Vertex #Sigma p_{T}^{2};#Sigma p_{T}^{2} [GeV^{2}];Vertices", 100, 0., 10000.);
+
+  h_vtx_nTracks =
+      ibooker.book1DD("vtxNTracks", "Tracks per vertex (from track loop);N_{tracks};Vertices", 50, -0.5, 49.5);
+
+  h_vtx_tracksSize = ibooker.book1DD(
+      "vtxTracksSize", "Tracks per vertex (from Run3ScoutingVertex::tracksSize());N_{tracks};Vertices", 50, -0.5, 49.5);
+
+  h_vtx_tracksSizeDiff = ibooker.book1DD(
+      "vtxTracksSizeDiff", "tracksSize() - N_{tracks from loop};#DeltaN_{tracks};Vertices", 21, -10.5, 10.5);
+
   // 2D eta-phi occupancy histograms
   h2_eta_phi = ibooker.book2I(
       "eta_vs_phi", "Track occupancy;#eta;#phi [rad]", 50, -3.0, 3.0, 50, -std::numbers::pi, std::numbers::pi);
   h2_eta_phi->setOption("colz");
+
+  vtxchi2ndf = ibooker.book1DD("vtxChi2ndf", "PV #chi^{2}/ndof", 100, 0., 20.);
+  vtxprob = ibooker.book1DD("vtxChi2prob", "PV #chi^{2} probability", 100, 0., 1.);
 
   // Profiles
   constexpr int nEtaBins = 50;
@@ -466,7 +493,6 @@ void ScoutingTrackMonitor::bookHistograms(DQMStore::IBooker& ibooker, edm::Run c
   dz_pt10.bookIPMonitor(ibooker, conf_);
 
   // BeamSpot
-
   auto vposx = conf_.getParameter<double>("Xpos");
   auto vposy = conf_.getParameter<double>("Ypos");
 
@@ -666,15 +692,11 @@ bool ScoutingTrackMonitor::getValidHandle(const edm::Event& iEvent,
 void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSetup&) {
   edm::Handle<std::vector<Run3ScoutingVertex>> primaryVerticesH;
   edm::Handle<std::vector<Run3ScoutingTrack>> tracksH;
-  edm::Handle<reco::BeamSpot> beamSpotHandle;
 
   if (!getValidHandle(iEvent, verticesToken_, primaryVerticesH, "primary vertices") ||
-      !getValidHandle(iEvent, tracksToken_, tracksH, "tracks") ||
-      !getValidHandle(iEvent, beamSpotToken_, beamSpotHandle, "beamspot")) {
+      !getValidHandle(iEvent, tracksToken_, tracksH, "tracks")) {
     return;
   }
-
-  iEvent.getByToken(beamSpotToken_, beamSpotHandle);
 
   // derefernce handles when it's safe to do so.
   auto const& tracks = *tracksH;
@@ -683,18 +705,29 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
   if (vertices.empty())
     return;
 
+  for (const auto& vtx : vertices) {
+    vtxchi2ndf->Fill(vtx.chi2() / vtx.ndof());
+    vtxprob->Fill(TMath::Prob(vtx.chi2(), vtx.ndof()));
+  }
+
+  // --- Per-vertex accumulators (indexed by vertex index) ---
+  const unsigned int nVtx = vertices.size();
+  std::vector<double> vtxSumPt2(nVtx, 0.);
+  std::vector<unsigned int> vtxNTracks(nVtx, 0);
+
   for (const auto& trk : tracks) {
     // --- build reco track ---
     reco::Track recoTrk = makeRecoTrack(trk);
-    auto [vtxIndex, closestVtx] = findClosestScoutingVertex(&recoTrk, vertices);
-    if (!closestVtx)
-      continue;
 
-    // // initialize the impact parameters to large values
+    //auto [vtxIndex, closestVtx] = findClosestScoutingVertex(&recoTrk, vertices);
+    //if (!closestVtx)
+    //  continue;
+
+    // initialize the impact parameters to large values
     // std::pair<float, float> best_offset{9999.f, 99999.f};
 
     // // loop on all the vertices and find the closest one
-    // unsigned int vtxIndex = 999;
+    // unsigned int vtxIndex = 9999;
     // unsigned int idx = 0;
     // for (const auto& vtx : vertices) {
     //   const auto offset = trk_vtx_offSet(trk, vtx);
@@ -705,7 +738,19 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     //   idx++;
     // }
 
+    const unsigned int vtxIndex = static_cast<unsigned int>(trk.tk_vtxInd());
+    if (vtxIndex >= vertices.size())
+      continue;
+
+    const Run3ScoutingVertex* closestVtx = &vertices[vtxIndex];
     h_vtx_idx->Fill(vtxIndex);
+
+    // accumulate per-vertex quantities before filling per-track histos
+    if (vtxIndex < nVtx) {
+      const float pt = trk.tk_pt();
+      vtxSumPt2[vtxIndex] += pt * pt;
+      vtxNTracks[vtxIndex]++;
+    }
 
     const float eta = trk.tk_eta();
     const float phi = trk.tk_phi();
@@ -866,8 +911,26 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dz_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, dzErr);
   }
 
+  // --- Per-vertex histograms ---
+  for (unsigned int i = 0; i < nVtx; ++i) {
+    h_vtx_sumPt2->Fill(vtxSumPt2[i]);
+    h_vtx_nTracks->Fill(vtxNTracks[i]);
+
+    const int scoutingTracksSize = static_cast<int>(vertices[i].tracksSize());
+    h_vtx_tracksSize->Fill(scoutingTracksSize);
+    h_vtx_tracksSizeDiff->Fill(scoutingTracksSize - static_cast<int>(vtxNTracks[i]));
+  }
+
   // BeamSpot
-  reco::BeamSpot beamSpot = *beamSpotHandle;
+  edm::Handle<reco::BeamSpot> beamSpotH;
+  std::unique_ptr<Run3ScoutingVertex> beamspotVertex{nullptr};
+  if (!getValidHandle(iEvent, beamSpotToken_, beamSpotH, "beamSpot")) {
+    return;
+  }
+
+  const auto& beamSpot = *beamSpotH;
+  beamspotVertex = std::make_unique<Run3ScoutingVertex>(
+      beamSpot.x0(), beamSpot.y0(), beamSpot.z0(), 0., 0., 0., 0., 0., true, 0., 0., 0., 0);
 
   bsX->Fill(beamSpot.x0());
   bsY->Fill(beamSpot.y0());
@@ -960,7 +1023,7 @@ void ScoutingTrackMonitor::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.add<edm::InputTag>("beamSpotLabel", edm::InputTag("hltOnlineBeamSpot"));
   desc.add<std::string>("topFolderName", "HLT/ScoutingOffline/Tracks");
   desc.add<double>("Xpos", 0.1);
-  desc.add<double>("Ypos", 0.0);
+  desc.add<double>("Ypos", -0.2);
   desc.add<int>("DxyBin", 100);
   desc.add<double>("DxyMin", -5000.0);
   desc.add<double>("DxyMax", 5000.0);
