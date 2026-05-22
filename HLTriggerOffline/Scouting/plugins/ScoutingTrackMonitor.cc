@@ -11,6 +11,7 @@
 // user includes
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
+#include "DataFormats/Scouting/interface/Run3ScoutingMuon.h"
 #include "DataFormats/Scouting/interface/Run3ScoutingTrack.h"
 #include "DataFormats/Scouting/interface/Run3ScoutingVertex.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -85,6 +86,9 @@ public:
     dqm::reco::MonitorElement *IPErrVsPhi_, *IPErrVsEta_, *IPErrVsPt_;
     dqm::reco::MonitorElement *IPVsEtaVsPhi_, *IPErrVsEtaVsPhi_;
 
+    // diagnostics
+    dqm::reco::MonitorElement *IPPullVsEta_, *IPPullVsPt_, *IPPullVsPhi_, *IPPullVsIP_;
+
     void bookIPMonitor(DQMStore::IBooker&, const edm::ParameterSet&);
 
   private:
@@ -135,6 +139,7 @@ private:
   // tokens
   const edm::EDGetTokenT<std::vector<Run3ScoutingTrack>> tracksToken_;
   const edm::EDGetTokenT<std::vector<Run3ScoutingVertex>> verticesToken_;
+  const edm::EDGetTokenT<std::vector<Run3ScoutingMuon>> muonsToken_;
   const edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
 
   const std::string topFolderName_;  // top folder name where to book histograms
@@ -210,6 +215,7 @@ ScoutingTrackMonitor::ScoutingTrackMonitor(const edm::ParameterSet& iConfig)
     : conf_(iConfig),
       tracksToken_{consumes<std::vector<Run3ScoutingTrack>>(iConfig.getParameter<edm::InputTag>("tracks"))},
       verticesToken_{consumes<std::vector<Run3ScoutingVertex>>(iConfig.getParameter<edm::InputTag>("vertices"))},
+      muonsToken_{consumes<std::vector<Run3ScoutingMuon>>(iConfig.getParameter<edm::InputTag>("displacedMuons"))},
       beamSpotToken_{consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpotLabel"))},
       topFolderName_{iConfig.getParameter<std::string>("topFolderName")},
       bsX(nullptr),
@@ -551,6 +557,71 @@ void ScoutingTrackMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
       -5.,
       5.);
 
+  IPPullVsPhi_ = iBooker.book2DD(
+      fmt::format("d{}PullVsPhi_pt{}", varname_, pTcut_),
+      fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} pull VS track #phi;#phi [rad];d_{{{}}}/#sigma_{{d_{{{}}}}}",
+                  pTcut_,
+                  varname_,
+                  varname_,
+                  varname_),
+      PhiBin_,
+      PhiMin_,
+      PhiMax_,
+      100,
+      -5.,
+      5.);
+
+  IPPullVsEta_ = iBooker.book2DD(
+      fmt::format("d{}PullVsEta_pt{}", varname_, pTcut_),
+      fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} pull VS track #eta;#eta;d_{{{}}}/#sigma_{{d_{{{}}}}}",
+                  pTcut_,
+                  varname_,
+                  varname_,
+                  varname_),
+      EtaBin_,
+      EtaMin_,
+      EtaMax_,
+      100,
+      -5.,
+      5.);
+
+  // log x-axis: build TH2F manually then hand it to the booker
+  {
+    auto h = std::make_unique<TH2F>(
+        fmt::format("d{}PullVsPt_pt{}", varname_, pTcut_).c_str(),
+        fmt::format(
+            "PV tracks (p_{{T}} > {}) d_{{{}}} pull VS track p_{{T}};p_{{T}} [GeV];d_{{{}}}/#sigma_{{d_{{{}}}}}",
+            pTcut_,
+            varname_,
+            varname_,
+            varname_)
+            .c_str(),
+        PtBin_,
+        log10(PtMin_),
+        log10(PtMax_),
+        100,
+        -5.,
+        5.);
+    sctTrackMonitor::setBinLogX(h.get());
+    IPPullVsPt_ = iBooker.book2D(fmt::format("d{}PullVsPt_pt{}", varname_, pTcut_), h.release());
+  }
+
+  IPPullVsIP_ = iBooker.book2DD(
+      fmt::format("d{}PullVsIP_pt{}", varname_, pTcut_),
+      fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} pull VS d_{{{}}};d_{{{}}} (#mum);d_{{{}}}/#sigma_{{d_{{{}}}}}",
+                  pTcut_,
+                  varname_,
+                  varname_,
+                  varname_,
+                  varname_,
+                  varname_),
+      VarBin,
+      VarMin,
+      VarMax,
+      100,
+      -5.,
+      5.);
+
   // IP profiles
 
   IPVsPhi_ = iBooker.bookProfile(fmt::format("d{}VsPhi_pt{}", varname_, pTcut_),
@@ -698,6 +769,15 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     return;
   }
 
+  // collect muon (eta, phi) for overlap removal
+  std::vector<std::pair<float, float>> muonEtaPhi;
+  edm::Handle<std::vector<Run3ScoutingMuon>> muonsH;
+  if (getValidHandle(iEvent, muonsToken_, muonsH, "muons")) {
+    for (const auto& mu : *muonsH) {
+      muonEtaPhi.emplace_back(mu.trk_eta(), mu.trk_phi());
+    }
+  }
+
   // derefernce handles when it's safe to do so.
   auto const& tracks = *tracksH;
   auto const& vertices = *primaryVerticesH;
@@ -719,6 +799,20 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     // --- build reco track ---
     reco::Track recoTrk = makeRecoTrack(trk);
 
+    /*
+    bool isMuon = false;
+    for (const auto& [muEta, muPhi] : muonEtaPhi) {
+      const float dEta = trk.tk_eta() - muEta;
+      const float dPhi = reco::deltaPhi(trk.tk_phi(), muPhi);
+      if (std::sqrt(dEta*dEta + dPhi*dPhi) < 0.001) {
+        isMuon = true;
+        break;
+      }
+    }
+    if (isMuon)
+      continue; 
+    */
+
     //auto [vtxIndex, closestVtx] = findClosestScoutingVertex(&recoTrk, vertices);
     //if (!closestVtx)
     //  continue;
@@ -737,6 +831,10 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     //   }
     //   idx++;
     // }
+
+    // discard unassociated tracks
+    if (trk.tk_vtxInd() != 0)
+      continue;
 
     const unsigned int vtxIndex = static_cast<unsigned int>(trk.tk_vtxInd());
     if (vtxIndex >= vertices.size())
@@ -785,6 +883,13 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
 
     //float dxy = best_offset.first;
     //float dz = best_offset.second;
+
+    /*
+    float dxy = trk.tk_dxy() * cmToUm;
+    float dz = trk.tk_dz() * cmToUm;   
+    float dxyErr = trk.tk_dxy_Error() * cmToUm;
+    float dzErr = trk.tk_dz_Error() * cmToUm;
+    */
 
     // --- fill histograms ---
     h_dxy->Fill(dxy);
@@ -864,6 +969,11 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dxy_pt1.IPErrVsPt_->Fill(pt, dxyErr);
     dxy_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, dxyErr);
 
+    dxy_pt1.IPPullVsPhi_->Fill(phi, dxy / dxyErr);
+    dxy_pt1.IPPullVsEta_->Fill(eta, dxy / dxyErr);
+    dxy_pt1.IPPullVsPt_->Fill(pt, dxy / dxyErr);
+    dxy_pt1.IPPullVsIP_->Fill(dxy, dxy / dxyErr);
+
     // dz pT>1
 
     dz_pt1.IP_->Fill(dz);
@@ -878,6 +988,11 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dz_pt1.IPErrVsEta_->Fill(eta, dzErr);
     dz_pt1.IPErrVsPt_->Fill(pt, dzErr);
     dz_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, dzErr);
+
+    dz_pt1.IPPullVsPhi_->Fill(phi, dz / dzErr);
+    dz_pt1.IPPullVsEta_->Fill(eta, dz / dzErr);
+    dz_pt1.IPPullVsPt_->Fill(pt, dz / dzErr);
+    dz_pt1.IPPullVsIP_->Fill(dz, dz / dzErr);
 
     if (pt < 10.)
       continue;
@@ -896,7 +1011,12 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dxy_pt10.IPErrVsPt_->Fill(pt, dxyErr);
     dxy_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, dxyErr);
 
-    // dxz pT>10
+    dxy_pt10.IPPullVsPhi_->Fill(phi, dxy / dxyErr);
+    dxy_pt10.IPPullVsEta_->Fill(eta, dxy / dxyErr);
+    dxy_pt10.IPPullVsPt_->Fill(pt, dxy / dxyErr);
+    dxy_pt10.IPPullVsIP_->Fill(dxy, dxy / dxyErr);
+
+    // dz pT>10
     dz_pt10.IP_->Fill(dz);
     dz_pt10.IPVsPhi_->Fill(phi, dz);
     dz_pt10.IPVsEta_->Fill(eta, dz);
@@ -909,10 +1029,17 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dz_pt10.IPErrVsEta_->Fill(eta, dzErr);
     dz_pt10.IPErrVsPt_->Fill(pt, dzErr);
     dz_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, dzErr);
+
+    dz_pt10.IPPullVsPhi_->Fill(phi, dz / dzErr);
+    dz_pt10.IPPullVsEta_->Fill(eta, dz / dzErr);
+    dz_pt10.IPPullVsPt_->Fill(pt, dz / dzErr);
+    dz_pt10.IPPullVsIP_->Fill(dz, dz / dzErr);
   }
 
   // --- Per-vertex histograms ---
   for (unsigned int i = 0; i < nVtx; ++i) {
+    if (vtxNTracks[i] == 0)
+      continue;
     h_vtx_sumPt2->Fill(vtxSumPt2[i]);
     h_vtx_nTracks->Fill(vtxNTracks[i]);
 
@@ -1020,7 +1147,8 @@ void ScoutingTrackMonitor::fillDescriptions(edm::ConfigurationDescriptions& desc
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("tracks", edm::InputTag("hltScoutingTrackPacker"));
   desc.add<edm::InputTag>("vertices", edm::InputTag("hltScoutingPrimaryVertexPacker", "primaryVtx"));
-  desc.add<edm::InputTag>("beamSpotLabel", edm::InputTag("hltOnlineBeamSpot"));
+  desc.add<edm::InputTag>("displacedMuons", edm::InputTag("hltScoutingMuonPackerNoVtx")),
+      desc.add<edm::InputTag>("beamSpotLabel", edm::InputTag("hltOnlineBeamSpot"));
   desc.add<std::string>("topFolderName", "HLT/ScoutingOffline/Tracks");
   desc.add<double>("Xpos", 0.1);
   desc.add<double>("Ypos", -0.2);
