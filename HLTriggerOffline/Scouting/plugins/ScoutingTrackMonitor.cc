@@ -82,7 +82,7 @@ public:
     float pTcut_;
     dqm::reco::MonitorElement *IP_, *IPErr_, *IPPull_;
     dqm::reco::MonitorElement *IPVsPhi_, *IPVsEta_, *IPVsPt_;
-    dqm::reco::MonitorElement *IPErrVsPhi_, *IPErrVsEta_, *IPErrVsPt_;
+    dqm::reco::MonitorElement *IPErrVsPhi_, *IPErrVsEta_, *IPErrVsPt_, *IPErrVsIP_;
     dqm::reco::MonitorElement *IPVsEtaVsPhi_, *IPErrVsEtaVsPhi_;
 
     // diagnostics
@@ -138,7 +138,6 @@ private:
   // tokens
   const edm::EDGetTokenT<std::vector<Run3ScoutingTrack>> tracksToken_;
   const edm::EDGetTokenT<std::vector<Run3ScoutingVertex>> verticesToken_;
-  const edm::EDGetTokenT<std::vector<Run3ScoutingMuon>> muonsToken_;
   const edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
 
   const std::string topFolderName_;  // top folder name where to book histograms
@@ -210,7 +209,6 @@ ScoutingTrackMonitor::ScoutingTrackMonitor(const edm::ParameterSet& iConfig)
     : conf_(iConfig),
       tracksToken_{consumes<std::vector<Run3ScoutingTrack>>(iConfig.getParameter<edm::InputTag>("tracks"))},
       verticesToken_{consumes<std::vector<Run3ScoutingVertex>>(iConfig.getParameter<edm::InputTag>("vertices"))},
-      muonsToken_{consumes<std::vector<Run3ScoutingMuon>>(iConfig.getParameter<edm::InputTag>("displacedMuons"))},
       beamSpotToken_{consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamSpotLabel"))},
       topFolderName_{iConfig.getParameter<std::string>("topFolderName")},
       h_bsX(nullptr),
@@ -691,6 +689,21 @@ void ScoutingTrackMonitor::IPMonitoring::bookIPMonitor(DQMStore::IBooker& iBooke
   IPErrVsPt_->setAxisTitle("PV track (p_{T} > 1 GeV) p_{T} [GeV]", 1);
   IPErrVsPt_->setAxisTitle(fmt::format("PV tracks (p_{{T}} > {} GeV) d_{{{}}} error (#mum)", pTcut_, varname_), 2);
 
+  IPErrVsIP_ = iBooker.book2DD(
+      fmt::format("d{}ErrVsIP_pt{}", varname_, pTcut_),
+      fmt::format("PV tracks (p_{{T}} > {}) d_{{{}}} error VS d_{{{}}};d_{{{}}} (#mum);d_{{{}}} error (#mum)",
+                  pTcut_,
+                  varname_,
+                  varname_,
+                  varname_,
+                  varname_),
+      VarBin,
+      VarMin,
+      VarMax,
+      100,
+      0.,  // errors are strictly positive
+      ((varname_.find("xy") != std::string::npos) ? 100. : 200.));
+
   // 2D profiles
 
   IPVsEtaVsPhi_ = iBooker.bookProfile2D(
@@ -752,15 +765,6 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
   if (!getValidHandle(iEvent, verticesToken_, primaryVerticesH, "primary vertices") ||
       !getValidHandle(iEvent, tracksToken_, tracksH, "tracks")) {
     return;
-  }
-
-  // collect muon (eta, phi) for overlap removal
-  std::vector<std::pair<float, float>> muonEtaPhi;
-  edm::Handle<std::vector<Run3ScoutingMuon>> muonsH;
-  if (getValidHandle(iEvent, muonsToken_, muonsH, "muons")) {
-    for (const auto& mu : *muonsH) {
-      muonEtaPhi.emplace_back(mu.trk_eta(), mu.trk_phi());
-    }
   }
 
   // derefernce handles when it's safe to do so.
@@ -853,12 +857,11 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     //float dxy = best_offset.first;
     //float dz = best_offset.second;
 
-    /*
-      float dxy = trk.tk_dxy() * cmToUm;
-      float dz = trk.tk_dz() * cmToUm;
-      float dxyErr = trk.tk_dxy_Error() * cmToUm;
-      float dzErr = trk.tk_dz_Error() * cmToUm;
-    */
+    // --- impact parameters (directly from scouting) ---
+    //float dxy = trk.tk_dxy() * cmToUm;
+    //float dz = trk.tk_dz() * cmToUm;
+    //float dxyErr = trk.tk_dxy_Error() * cmToUm;
+    //float dzErr = trk.tk_dz_Error() * cmToUm;
 
     // --- fill histograms ---
     h_dxy->Fill(dxy);
@@ -936,6 +939,7 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dxy_pt1.IPErrVsPhi_->Fill(phi, dxyErr);
     dxy_pt1.IPErrVsEta_->Fill(eta, dxyErr);
     dxy_pt1.IPErrVsPt_->Fill(pt, dxyErr);
+    dxy_pt1.IPErrVsIP_->Fill(dxy, dxyErr);
     dxy_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, dxyErr);
 
     dxy_pt1.IPPullVsPhi_->Fill(phi, dxy / dxyErr);
@@ -956,6 +960,7 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dz_pt1.IPErrVsPhi_->Fill(phi, dzErr);
     dz_pt1.IPErrVsEta_->Fill(eta, dzErr);
     dz_pt1.IPErrVsPt_->Fill(pt, dzErr);
+    dz_pt1.IPErrVsIP_->Fill(dz, dzErr);
     dz_pt1.IPErrVsEtaVsPhi_->Fill(eta, phi, dzErr);
 
     dz_pt1.IPPullVsPhi_->Fill(phi, dz / dzErr);
@@ -978,6 +983,7 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dxy_pt10.IPErrVsPhi_->Fill(phi, dxyErr);
     dxy_pt10.IPErrVsEta_->Fill(eta, dxyErr);
     dxy_pt10.IPErrVsPt_->Fill(pt, dxyErr);
+    dxy_pt10.IPErrVsIP_->Fill(dxy, dxyErr);
     dxy_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, dxyErr);
 
     dxy_pt10.IPPullVsPhi_->Fill(phi, dxy / dxyErr);
@@ -997,6 +1003,7 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     dz_pt10.IPErrVsPhi_->Fill(phi, dzErr);
     dz_pt10.IPErrVsEta_->Fill(eta, dzErr);
     dz_pt10.IPErrVsPt_->Fill(pt, dzErr);
+    dz_pt10.IPErrVsIP_->Fill(dz, dzErr);
     dz_pt10.IPErrVsEtaVsPhi_->Fill(eta, phi, dzErr);
 
     dz_pt10.IPPullVsPhi_->Fill(phi, dz / dzErr);
@@ -1111,8 +1118,7 @@ void ScoutingTrackMonitor::fillDescriptions(edm::ConfigurationDescriptions& desc
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("tracks", edm::InputTag("hltScoutingTrackPacker"));
   desc.add<edm::InputTag>("vertices", edm::InputTag("hltScoutingPrimaryVertexPacker", "primaryVtx"));
-  desc.add<edm::InputTag>("displacedMuons", edm::InputTag("hltScoutingMuonPackerNoVtx")),
-      desc.add<edm::InputTag>("beamSpotLabel", edm::InputTag("hltOnlineBeamSpot"));
+  desc.add<edm::InputTag>("beamSpotLabel", edm::InputTag("hltOnlineBeamSpot"));
   desc.add<std::string>("topFolderName", "HLT/ScoutingOffline/Tracks");
   desc.add<double>("Xpos", 0.1);
   desc.add<double>("Ypos", -0.2);
