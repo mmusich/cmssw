@@ -176,6 +176,23 @@ private:
   IPMonitoring dz_pt1;
   IPMonitoring dz_pt10;
 
+  // diagnostics
+  MonitorElement* h_spike_dz;
+  MonitorElement* h_spike_dzErr;
+  MonitorElement* h_spike_dzErrTrack;
+  MonitorElement* h_spike_dzErrVtx;
+  MonitorElement* h_spike_vtxIndex;
+
+  // book these in bookHistograms
+  MonitorElement* h_spike_vr;         // transverse production radius for spike tracks
+  MonitorElement* h_spike_vz_stored;  // stored vz for spike tracks
+  MonitorElement* h2_dz_vs_vr;        // dz pull vs transverse radius (all tracks)
+  MonitorElement* h2_dz_vs_vr_spike;  // dz vs transverse radius for spike tracks
+  MonitorElement* h_vr_all;           // production radius for all tracks
+
+  MonitorElement* h_dz_stored_raw;
+  MonitorElement* h2_dz_stored_vs_recomputed;
+  
   // profiles
   std::vector<MonitorElement*> vTrackProfiles_;
 
@@ -249,6 +266,37 @@ void ScoutingTrackMonitor::bookHistograms(DQMStore::IBooker& ibooker, edm::Run c
   h_vtx_chi2ndf = ibooker.book1DD("vtxChi2ndf", "PV #chi^{2}/ndof", 100, 0., 20.);
   h_vtx_prob = ibooker.book1DD("vtxChi2prob", "PV #chi^{2} probability", 100, 0., 1.);
 
+  h_spike_dz = ibooker.book1DD("spike_dz", "dz for |pull|<0.1;d_{z} (#mum);Tracks", 100, -100., 100.);
+  h_spike_dzErr = ibooker.book1DD("spike_dzErr", "dzErr for |pull|<0.1;d_{z} err (#mum);Tracks", 100, 0., 5000.);
+  h_spike_dzErrTrack =
+      ibooker.book1DD("spike_dzErrTrack", "track dzErr for |pull|<0.1;d_{z} err (#mum);Tracks", 100, 0., 5000.);
+  h_spike_dzErrVtx = ibooker.book1DD("spike_dzErrVtx", "vtx zErr for |pull|<0.1;z err (#mum);Tracks", 100, 0., 5000.);
+  h_spike_vtxIndex = ibooker.book1DD("spike_vtxIndex", "vtx index for |pull|<0.1;vtx index;Tracks", 17, -1.5, 15.5);
+
+  h_spike_vr = ibooker.book1DD("spike_vr", "Production radius for |pull|<0.1;r_{prod} (cm);Tracks", 200, -1., 1.);
+  h_spike_vz_stored =
+      ibooker.book1DD("spike_vz_stored", "Stored v_{z} for |pull|<0.1;v_{z} (cm);Tracks", 100, -30., 30.);
+  h_vr_all = ibooker.book1DD("vr_all", "Production radius all tracks;r_{prod} (cm);Tracks", 200, -1., 1.);
+  h2_dz_vs_vr = ibooker.bookProfile(
+      "p_dz_vs_vr", "d_{z} vs production radius;r_{prod} (cm);#LT d_{z} #GT (#mum)", 200, -1., 1., -5000., 5000., "");
+  h2_dz_vs_vr_spike = ibooker.book2DD("h2_dz_vs_vr_spike",
+                                      "d_{z} vs production radius for |pull|<0.1;r_{prod} (cm);d_{z} (#mum)",
+                                      100,
+                                      -1.,
+                                      1.,
+                                      100,
+                                      -50.,
+                                      50.);
+
+  h_dz_stored_raw = ibooker.book1DD("dz_stored_raw",
+				    "Stored d_{z} (direct from scouting track);d_{z} (#mum);Tracks",
+				    200, -20000., 20000.);
+  
+  h2_dz_stored_vs_recomputed = ibooker.book2DD("h2_dz_stored_vs_recomputed",
+					       "Stored vs recomputed d_{z};d_{z} stored (#mum);d_{z} recomputed (#mum)",
+					       100, -20000., 20000.,
+					       100, -2000., 2000.);
+  
   // Profiles
   constexpr int nEtaBins = 50;
   constexpr double etaMin = -3.0;
@@ -851,8 +899,39 @@ void ScoutingTrackMonitor::analyze(const edm::Event& iEvent, const edm::EventSet
     // --- impact parameters (standard CMSSW definitions) ---
     float dxy = recoTrk.dxy(recoVtx.position()) * cmToUm;
     float dz = recoTrk.dz(recoVtx.position()) * cmToUm;
-    float dxyErr = recoTrk.dxyError() * cmToUm;
-    float dzErr = recoTrk.dzError() * cmToUm;
+    float dz_stored     = trk.tk_dz()  * cmToUm;
+
+    h_dz_stored_raw->Fill(dz_stored);
+    h2_dz_stored_vs_recomputed->Fill(dz_stored, dz);
+    
+    float dzErr = std::sqrt(recoTrk.dzError() * recoTrk.dzError() + recoVtx.zError() * recoVtx.zError()) * cmToUm;
+    float dxyErr = std::sqrt(recoTrk.dxyError() * recoTrk.dxyError() + recoVtx.xError() * recoVtx.xError() +
+                             recoVtx.yError() * recoVtx.yError()) *
+                   cmToUm;
+
+    float pull = dz / dzErr;
+    if (std::abs(pull) < 0.1f) {
+      h_spike_dz->Fill(dz);
+      h_spike_dzErr->Fill(dzErr);
+      h_spike_dzErrTrack->Fill(recoTrk.dzError() * cmToUm);
+      h_spike_dzErrVtx->Fill(closestVtx->zError() * cmToUm);
+      h_spike_vtxIndex->Fill(vtxIndex);
+    }
+
+    // production radius from stored reference point
+    float vr = std::sqrt(trk.tk_vx() * trk.tk_vx() + trk.tk_vy() * trk.tk_vy());
+
+    h_vr_all->Fill(vr);
+    h2_dz_vs_vr->Fill(vr, dz);
+
+    if (std::abs(pull) < 0.1f) {
+      h_spike_vr->Fill(vr);
+      h_spike_vz_stored->Fill(trk.tk_vz());
+      h2_dz_vs_vr_spike->Fill(vr, dz);
+    }
+
+    //float dxyErr = recoTrk.dxyError() * cmToUm;
+    //float dzErr = recoTrk.dzError() * cmToUm;
 
     //float dxy = best_offset.first;
     //float dz = best_offset.second;
