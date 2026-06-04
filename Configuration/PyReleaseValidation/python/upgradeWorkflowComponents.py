@@ -1978,6 +1978,18 @@ upgradeWFs['HLTTiming75e33TiclV5TrackLinkingGNN'].step3 = {
     '-s':'HARVESTING:@hltValidation'
 }
 
+upgradeWFs['HLTTiming75e33MTDatHLT'] = deepcopy(upgradeWFs['HLTTiming75e33'])
+upgradeWFs['HLTTiming75e33MTDatHLT'].suffix = '_HLT75e33TimingMTDatHLT'
+upgradeWFs['HLTTiming75e33MTDatHLT'].offset = 0.7522
+upgradeWFs['HLTTiming75e33MTDatHLT'].step2 = {
+    '-s':'DIGI:pdigi_valid,L1TrackTrigger,L1,L1P2GT,DIGI2RAW,HLT:75e33_timing,VALIDATION:@hltValidation',
+    '--procModifiers': 'mtd_at_hlt',
+    '--datatier':'GEN-SIM-DIGI-RAW,DQMIO',
+    '--eventcontent':'FEVTDEBUGHLT,DQMIO'
+}
+upgradeWFs['HLTTiming75e33MTDatHLT'].step3 = {
+    '-s':'HARVESTING:@hltValidation'
+}
 
 upgradeWFs['HLTTiming75e33LegacyTracking'] = deepcopy(upgradeWFs['HLTTiming75e33'])
 upgradeWFs['HLTTiming75e33LegacyTracking'].suffix = '_HLT75e33TimingLegacyTracking'
