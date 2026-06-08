@@ -4,7 +4,7 @@ HLTriggerFirstPath
 
 Status_OnCPU   # CMSHLT-2206
 Status_OnGPU   # CMSHLT-2206
-HLT_TestData_v* # CMSHLT-3841
+HLT_HITestData_v* # CMSHLT-3862
 HLT_EcalCalibration_v*
 HLT_HcalCalibration_v*
 HLT_HIPhysics_v*
