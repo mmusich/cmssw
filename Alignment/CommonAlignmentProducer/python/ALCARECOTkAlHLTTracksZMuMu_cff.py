@@ -75,7 +75,6 @@ pp_on_PbPb_run3.toModify(ALCARECOTkAlHLTPixelZMuMuVertexTracks,
                          src = 'hltPixelTracksPPOnAA',
                          vertices = 'hltPixelVerticesPPOnAA')
 
-
 seqALCARECOTkAlHLTTracksZMuMu = cms.Sequence(ALCARECOTkAlHLTTracksZMuMuHLT+
                                              ALCARECOTkAlHLTTracksZMuMuDCSFilter+
                                              ALCARECOTkAlHLTTracksZMuMuGoodMuons+
@@ -83,4 +82,9 @@ seqALCARECOTkAlHLTTracksZMuMu = cms.Sequence(ALCARECOTkAlHLTTracksZMuMuHLT+
                                              ALCARECOTkAlHLTTracksZMuMu+
                                              ALCARECOTkAlHLTPixelZMuMuVertexTracks)
 
-
+pp_on_PbPb_run3.toReplaceWith(
+    seqALCARECOTkAlHLTTracksZMuMu,
+    seqALCARECOTkAlHLTTracksZMuMu.copyAndExclude([
+        ALCARECOTkAlHLTPixelZMuMuVertexTracks
+    ])
+)
