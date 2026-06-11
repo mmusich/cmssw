@@ -110,8 +110,19 @@ PrimaryVertexValidation::PrimaryVertexValidation(const edm::ParameterSet& iConfi
   theBeamspotToken_ = consumes<reco::BeamSpot>(BeamspotTag_);
 
   // select and configure the track filter
-  theTrackFilter_ =
-      std::make_unique<TrackFilterForPVFinding>(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters"));
+  std::string trackSelectionAlgorithm =
+      iConfig.getParameter<edm::ParameterSet>("TkFilterParameters").getParameter<std::string>("algorithm");
+  if (trackSelectionAlgorithm == "filter") {
+    theTrackFilter_ =
+        std::make_unique<TrackFilterForPVFinding>(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters"));
+  } else if (trackSelectionAlgorithm == "filterWithThreshold") {
+    theTrackFilter_ =
+        std::make_unique<HITrackFilterForPVFinding>(iConfig.getParameter<edm::ParameterSet>("TkFilterParameters"));
+  } else {
+    throw VertexException("PrimaryVertexProducerAlgorithm: unknown track selection algorithm: " +
+                          trackSelectionAlgorithm);
+  }
+
   // select and configure the track clusterizer
   std::string clusteringAlgorithm =
       iConfig.getParameter<edm::ParameterSet>("TkClusParameters").getParameter<std::string>("algorithm");
@@ -3693,8 +3704,7 @@ void PrimaryVertexValidation::fillDescriptions(edm::ConfigurationDescriptions& d
 
   // track filtering
   edm::ParameterSetDescription psd0;
-  TrackFilterForPVFinding::fillPSetDescription(psd0);
-  psd0.add<int>("numTracksThreshold", 0);  // HI only
+  HITrackFilterForPVFinding::fillPSetDescription(psd0);
   desc.add<edm::ParameterSetDescription>("TkFilterParameters", psd0);
 
   // PV Clusterization
