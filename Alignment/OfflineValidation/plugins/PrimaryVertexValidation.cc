@@ -288,12 +288,16 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   //edm::Handle<VertexCollection> vertices;
   edm::Handle<std::vector<Vertex>> vertices;
   vertices = iEvent.getHandle(theVertexCollectionToken_);
+  std::vector<Vertex> vsorted;
+  int nvvertex = 0;
+
   if (!vertices.isValid()) {
-    edm::LogError("PrimaryVertexValidation") << "Vertex collection handle is not valid. Aborting!" << std::endl;
-    return;
+    LogTrace("PrimaryVertexValidation") << "Vertex collection handle is not valid.";
+    goto skipVertexAnalysis;
+  } else {
+    vsorted = *(vertices);
   }
 
-  std::vector<Vertex> vsorted = *(vertices);
   // sort the vertices by number of tracks in descending order
   // use chi2 as tiebreaker
   std::sort(vsorted.begin(), vsorted.end(), PrimaryVertexValidation::vtxSort);
@@ -323,10 +327,7 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
   h_yErrOfflineVertex->Fill(yErrOfflineVertex_);
   h_zErrOfflineVertex->Fill(zErrOfflineVertex_);
 
-  unsigned int vertexCollectionSize = vsorted.size();
-  int nvvertex = 0;
-
-  for (unsigned int i = 0; i < vertexCollectionSize; i++) {
+  for (unsigned int i = 0; i < vsorted.size(); i++) {
     const Vertex& vertex = vsorted.at(i);
     if (vertex.isValid())
       nvvertex++;
@@ -406,6 +407,8 @@ void PrimaryVertexValidation::analyze(const edm::Event& iEvent, const edm::Event
       h_recoVtxSumPt_->Fill(sumpt);
     }
   }
+
+skipVertexAnalysis:
 
   //=======================================================
   // Retrieve Beamspot information
