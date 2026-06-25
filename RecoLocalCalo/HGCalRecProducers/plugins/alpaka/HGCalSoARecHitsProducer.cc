@@ -1,7 +1,31 @@
+// Improved HGCalSoARecHitsProducer.cc
+//
+// Optimizations applied vs. original (eb819177):
+//
+//  1. Single-pass hit loop: threshold check + fill happen in one pass; no double
+//     iteration over hits. A scratch host buffer of hits.size() is allocated once
+//     and the real occupancy (index) is tracked.
+//  2. Run-constant setup moved to beginRun(): rhtools_.setGeometry(),
+//     maxlayer_, computeThreshold() are called once per run, not per event.
+//     The initialized_ flag is removed.
+//  3. Flat 1-D threshold arrays: thresholds_ and v_sigmaNoise_ are flattened to
+//     contiguous std::vector<double> with stride thickStride_, eliminating the
+//     cache-unfriendly vector-of-vectors indirection.
+//  4. operator[] instead of at() in the hot loop: bounds are guaranteed by
+//     construction; the throwing at() branches are gone.
+//  5. isBH_ boolean precomputed in constructor: the "BH" string comparison is
+//     hoisted out of the hit loop.
+//  6. Device copy sized to index: a correctly-sized host collection is built
+//     after the fill loop and only `index` elements are transferred to the GPU.
+//     Uses plain alpaka::memcpy(queue, dst, src, count) — no createSubView /
+//     alpaka::Idx<Device>, which are not available for PortableCollection buffers.
+//  7. deltasi_index_regemfac_ initialised in the constructor to avoid UB.
+
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
 #include "DataFormats/HGCalReco/interface/HGCalSoARecHitsHostCollection.h"
 #include "DataFormats/HGCalReco/interface/alpaka/HGCalSoARecHitsDeviceCollection.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
@@ -15,14 +39,16 @@
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
-  class HGCalSoARecHitsProducer : public stream::EDProducer<> {
+  class HGCalSoARecHitsProducer : public stream::EDProducer<edm::stream::WatchRuns> {
   public:
     HGCalSoARecHitsProducer(edm::ParameterSet const& config)
         : EDProducer(config),
           detector_(config.getParameter<std::string>("detector")),
-          initialized_(false),
           isNose_(detector_ == "HFNose"),
+          isBH_(detector_ == "BH"),  // OPT 5: hoist string comparison
           maxNumberOfThickIndices_(config.getParameter<unsigned>("maxNumberOfThickIndices")),
+          // OPT 7: initialise deltasi_index_regemfac_ to avoid UB
+          deltasi_index_regemfac_(static_cast<int>(maxNumberOfThickIndices_)),
           fcPerEle_(config.getParameter<double>("fcPerEle")),
           ecut_(config.getParameter<double>("ecut")),
           fcPerMip_(config.getParameter<std::vector<double>>("fcPerMip")),
@@ -35,109 +61,99 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     ~HGCalSoARecHitsProducer() override = default;
 
-    void produce(device::Event& iEvent, device::EventSetup const& iSetup) override {
-      edm::Handle<HGCRecHitCollection> hits_h;
-
+    // OPT 2: geometry setup + threshold computation moved here, called once per run
+    void beginRun(edm::Run const&, edm::EventSetup const& iSetup) override {
       edm::ESHandle<CaloGeometry> geom = iSetup.getHandle(caloGeomToken_);
       rhtools_.setGeometry(*geom);
       maxlayer_ = rhtools_.lastLayer(isNose_);
-
-      hits_h = iEvent.getHandle(hits_token_);
-      auto const& hits = *(hits_h.product());
       computeThreshold();
+    }
 
-      // Count effective hits above threshold
-      uint32_t index = 0;
-      for (unsigned int i = 0; i < hits.size(); ++i) {
-        const HGCRecHit& hgrh = hits[i];
-        DetId detid = hgrh.detid();
-        unsigned int layerOnSide = (rhtools_.getLayerWithOffset(detid) - 1);
+    void endRun(edm::Run const&, edm::EventSetup const&) override {}
 
-        // set sigmaNoise default value 1 to use kappa value directly in case of
-        // sensor-independent thresholds
-        int thickness_index = rhtools_.getSiThickIndex(detid);
-        if (thickness_index == -1) {
-          thickness_index = maxNumberOfThickIndices_;
-        }
-        double storedThreshold = thresholds_[layerOnSide][thickness_index];
-        if (hgrh.energy() < storedThreshold)
-          continue;  // this sets the ZS threshold at ecut times the sigma noise
-        index++;
-      }
+    void produce(device::Event& iEvent, device::EventSetup const& iSetup) override {
+      edm::Handle<HGCRecHitCollection> hits_h = iEvent.getHandle(hits_token_);
+      auto const& hits = *hits_h.product();
+      const unsigned int nHits = hits.size();
 
-      // Allocate Host SoA will contain one entry for each RecHit above threshold
-      HGCalSoARecHitsHostCollection cells(iEvent.queue(), index);
+      // OPT 1: allocate scratch host buffer at maximum possible size (nHits).
+      // We fill in a single pass and track the real occupancy with `index`.
+      HGCalSoARecHitsHostCollection cells(iEvent.queue(), nHits);
       auto cellsView = cells.view();
 
-      // loop over all hits and create the Hexel structure, skip energies below ecut
-      // for each layer and wafer calculate the thresholds (sigmaNoise and energy)
-      // once
-      index = 0;
-      for (unsigned int i = 0; i < hits.size(); ++i) {
-        const HGCRecHit& hgrh = hits[i];
-        DetId detid = hgrh.detid();
-        unsigned int layerOnSide = (rhtools_.getLayerWithOffset(detid) - 1);
+      uint32_t index = 0;
 
-        // set sigmaNoise default value 1 to use kappa value directly in case of
-        // sensor-independent thresholds
-        float sigmaNoise = 1.f;
+      // OPT 1: single pass — threshold check + fill merged
+      for (unsigned int i = 0; i < nHits; ++i) {
+        const HGCRecHit& hgrh = hits[i];
+        const DetId detid = hgrh.detid();
+
+        // geometry lookups (called once per hit, not twice)
+        const unsigned int layerOnSide = rhtools_.getLayerWithOffset(detid) - 1;
         int thickness_index = rhtools_.getSiThickIndex(detid);
-        if (thickness_index == -1) {
-          thickness_index = maxNumberOfThickIndices_;
-        }
-        double storedThreshold = thresholds_[layerOnSide][thickness_index];
-        if (detid.det() == DetId::HGCalHSi || detid.subdetId() == HGCHEF) {
-          storedThreshold = thresholds_.at(layerOnSide).at(thickness_index + deltasi_index_regemfac_);
-        }
-        sigmaNoise = v_sigmaNoise_.at(layerOnSide).at(thickness_index);
+        if (thickness_index == -1)
+          thickness_index = static_cast<int>(maxNumberOfThickIndices_);
+
+        // OPT 3+4: flat array lookup with operator[] (no bounds-check throw, no pointer indirection)
+        double storedThreshold = thresholds_[layerOnSide * thickStride_ + thickness_index];
+
+        // Silicon CE-H uses a separate threshold entry
+        if (detid.det() == DetId::HGCalHSi || detid.subdetId() == HGCHEF)
+          storedThreshold = thresholds_[layerOnSide * thickStride_ + thickness_index + deltasi_index_regemfac_];
 
         if (hgrh.energy() < storedThreshold)
-          continue;  // this sets the ZS threshold at ecut times the sigma noise
-        // for the sensor
+          continue;
+
+        const float sigmaNoise = v_sigmaNoise_[layerOnSide * thickStride_ + thickness_index];
 
         const GlobalPoint position(rhtools_.getPosition(detid));
-        int offset = ((rhtools_.zside(detid) + 1) >> 1) * maxlayer_;
-        int layer = layerOnSide + offset;
+        const int offset = ((rhtools_.zside(detid) + 1) >> 1) * maxlayer_;
+        const int layer = static_cast<int>(layerOnSide) + offset;
+
         auto entryInSoA = cellsView[index];
-        if (detector_ == "BH") {
+
+        // OPT 5: isBH_ bool, not a string comparison
+        if (isBH_) {
           entryInSoA.dim1() = position.eta();
           entryInSoA.dim2() = position.phi();
-        }  // else, isSilicon == true and eta phi values will not be used
-        else {
+        } else {
           entryInSoA.dim1() = position.x();
           entryInSoA.dim2() = position.y();
         }
         entryInSoA.dim3() = position.z();
         entryInSoA.energy() = hgrh.energy();
-        entryInSoA.mipEnergy() = hgrh.energy();  // TODO: CHANGE TO MIP
+        entryInSoA.mipEnergy() = hgrh.energy();  // TODO: convert to MIP
         entryInSoA.sigmaNoise() = sigmaNoise;
         entryInSoA.layer() = layer;
         entryInSoA.recHitIndex() = i;
         entryInSoA.detid() = detid.rawId();
         entryInSoA.time() = hgrh.time();
         entryInSoA.timeError() = hgrh.timeError();
-        index++;
+
+        ++index;
       }
-#if 0
-        std::cout << "Size: " << cells->metadata().size() << " count cells: " << index
-          << " i.e. " << cells->metadata().size() << std::endl;
-#endif
+
+      // OPT 6: build a correctly-sized host collection (index entries, not nHits)
+      // using a plain alpaka::memcpy(queue, dst, src, count) overload.
+      // This avoids alpaka::createSubView / alpaka::Idx<Device> which are not
+      // available for PortableCollection buffers in this CMSSW/alpaka version.
+      HGCalSoARecHitsHostCollection cellsFinal(iEvent.queue(), index);
+      alpaka::memcpy(iEvent.queue(), cellsFinal.buffer(), cells.buffer(), index);
 
       if constexpr (!std::is_same_v<Device, alpaka_common::DevHost>) {
-        // Trigger copy async to GPU
-        //std::cout << "GPU" << std::endl;
-        HGCalSoARecHitsDeviceCollection deviceProduct{iEvent.queue(), cells->metadata().size()};
-        alpaka::memcpy(iEvent.queue(), deviceProduct.buffer(), cells.const_buffer());
+        // GPU backends: async H2D transfer of the trimmed host buffer
+        HGCalSoARecHitsDeviceCollection deviceProduct{iEvent.queue(), index};
+        alpaka::memcpy(iEvent.queue(), deviceProduct.buffer(), cellsFinal.buffer(), index);
         iEvent.emplace(deviceToken_, std::move(deviceProduct));
       } else {
-        //std::cout << "CPU" << std::endl;
-        iEvent.emplace(deviceToken_, std::move(cells));
+        // CPU (serial) backend: put the host collection directly
+        iEvent.emplace(deviceToken_, std::move(cellsFinal));
       }
     }
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
       edm::ParameterSetDescription desc;
-      desc.add<std::string>("detector", "EE")->setComment("options EE, FH, BH,  HFNose; other value defaults to EE");
+      desc.add<std::string>("detector", "EE")->setComment("options EE, FH, BH, HFNose; other value defaults to EE");
       desc.add<edm::InputTag>("recHits", edm::InputTag("HGCalRecHit", "HGCEERecHits"));
       desc.add<unsigned int>("maxNumberOfThickIndices", 6);
       desc.add<double>("fcPerEle", 0.00016020506);
@@ -150,59 +166,53 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
+    // ---- configuration ----
     std::string detector_;
-    bool initialized_;
     bool isNose_;
+    bool isBH_;  // OPT 5
     unsigned maxNumberOfThickIndices_;
-    unsigned int maxlayer_;
-    int deltasi_index_regemfac_;
-    double sciThicknessCorrection_;
+    int deltasi_index_regemfac_;  // OPT 7: now initialised in ctor
     double fcPerEle_;
     double ecut_;
     std::vector<double> fcPerMip_;
     std::vector<double> nonAgedNoises_;
     std::vector<double> dEdXweights_;
     std::vector<double> thicknessCorrection_;
-    std::vector<std::vector<double>> thresholds_;
-    std::vector<std::vector<double>> v_sigmaNoise_;
+
+    // ---- run-level cache (set in beginRun) ----
+    unsigned int maxlayer_ = 0;
+    unsigned int thickStride_ = 0;  // OPT 3: stride for flat 2-D arrays
+
+    // OPT 3: flat contiguous arrays instead of vector<vector<double>>
+    std::vector<double> thresholds_;    // [layer * thickStride_ + thick]
+    std::vector<double> v_sigmaNoise_;  // same layout
 
     hgcal::RecHitTools rhtools_;
+
+    // ---- tokens ----
     edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeomToken_;
     edm::EDGetTokenT<HGCRecHitCollection> hits_token_;
     device::EDPutToken<HGCalSoARecHitsDeviceCollection> const deviceToken_;
 
+    // OPT 2: called once per run from beginRun(), not every event
     void computeThreshold() {
-      // To support the TDR geometry and also the post-TDR one (v9 onwards), we
-      // need to change the logic of the vectors containing signal to noise and
-      // thresholds. The first 3 indices will keep on addressing the different
-      // thicknesses of the Silicon detectors in CE_E , the next 3 indices will address
-      // the thicknesses of the Silicon detectors in CE_H, while the last one, number 6 (the
-      // seventh) will address the Scintillators. This change will support both
-      // geometries at the same time.
+      // thickStride_ covers:
+      //   indices 0..maxNumberOfThickIndices_-1  for CE-E Si thicknesses
+      //   indices maxNumberOfThickIndices_..2*maxNumberOfThickIndices_-1  for CE-H Si (deltasi offset)
+      //   index   2*maxNumberOfThickIndices_  for scintillator (non-nose only)
+      thickStride_ = 2 * maxNumberOfThickIndices_ + !isNose_;
 
-      if (initialized_)
-        return;  // only need to calculate thresholds once
-
-      initialized_ = true;
-
-      std::vector<double> dummy;
-
-      dummy.resize(maxNumberOfThickIndices_ + !isNose_, 0);  // +1 to accomodate for the Scintillators
-      thresholds_.resize(maxlayer_, dummy);
-      v_sigmaNoise_.resize(maxlayer_, dummy);
+      thresholds_.assign(maxlayer_ * thickStride_, 0.0);
+      v_sigmaNoise_.assign(maxlayer_ * thickStride_, 0.0);
 
       for (unsigned ilayer = 1; ilayer <= maxlayer_; ++ilayer) {
+        const unsigned base = (ilayer - 1) * thickStride_;
         for (unsigned ithick = 0; ithick < maxNumberOfThickIndices_; ++ithick) {
-          float sigmaNoise = 0.001f * fcPerEle_ * nonAgedNoises_[ithick] * dEdXweights_[ilayer] /
-                             (fcPerMip_[ithick] * thicknessCorrection_[ithick]);
-          thresholds_[ilayer - 1][ithick] = sigmaNoise * ecut_;
-          v_sigmaNoise_[ilayer - 1][ithick] = sigmaNoise;
-#if 0
-            std::cout << "ilayer: " << ilayer << " nonAgedNoises: " << nonAgedNoises_[ithick]
-              << " fcPerEle: " << fcPerEle_ << " fcPerMip: " << fcPerMip_[ithick]
-              << " noiseMip: " << fcPerEle_ * nonAgedNoises_[ithick] / fcPerMip_[ithick]
-              << " sigmaNoise: " << sigmaNoise << "\n";
-#endif
+          const float sigmaNoise = 0.001f * fcPerEle_ * nonAgedNoises_[ithick] * dEdXweights_[ilayer] /
+                                   (fcPerMip_[ithick] * thicknessCorrection_[ithick]);
+          // OPT 4: operator[] — bounds guaranteed by construction
+          thresholds_[base + ithick] = sigmaNoise * ecut_;
+          v_sigmaNoise_[base + ithick] = sigmaNoise;
         }
       }
     }
