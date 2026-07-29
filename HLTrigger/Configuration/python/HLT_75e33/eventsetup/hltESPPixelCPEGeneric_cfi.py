@@ -1,0 +1,52 @@
+import FWCore.ParameterSet.Config as cms
+
+hltESPPixelCPEGeneric = cms.ESProducer("PixelCPEGenericESProducer",
+    Alpha2Order = cms.bool(True),
+    ClusterProbComputationFlag = cms.int32(0),
+    ComponentName = cms.string('hltESPPixelCPEGeneric'),
+    DoCosmics = cms.bool(False),
+    EdgeClusterErrorX = cms.double(50),
+    EdgeClusterErrorY = cms.double(85),
+    IrradiationBiasCorrection = cms.bool(False),
+    LoadTemplatesFromDB = cms.bool(True),
+    MagneticFieldRecord = cms.ESInputTag("",""),
+    NoTemplateErrorsWhenNoTrkAngles = cms.bool(False),
+    SmallPitch = cms.bool(False),
+    TruncatePixelCharge = cms.bool(True),
+    UseErrorsFromTemplates = cms.bool(True),
+    appendToDataLabel = cms.string(''),
+    doLorentzFromAlignment = cms.bool(False),
+    eff_charge_cut_highX = cms.double(1),
+    eff_charge_cut_highY = cms.double(1),
+    eff_charge_cut_lowX = cms.double(0),
+    eff_charge_cut_lowY = cms.double(0),
+    inflate_all_errors_no_trk_angle = cms.bool(False),
+    inflate_errors = cms.bool(False),
+    isPhase2 = cms.bool(False),
+    lAOffset = cms.double(0),
+    lAWidthBPix = cms.double(0),
+    lAWidthFPix = cms.double(0),
+    size_cutX = cms.double(3),
+    size_cutY = cms.double(3),
+    useLAFromDB = cms.bool(True),
+    useLAWidthFromDB = cms.bool(True),
+    xerr_barrel_l1 = cms.vdouble(0.00115, 0.0012, 0.00088),
+    xerr_barrel_l1_def = cms.double(0.0103),
+    xerr_barrel_ln = cms.vdouble(0.00115, 0.0012, 0.00088),
+    xerr_barrel_ln_def = cms.double(0.0103),
+    xerr_endcap = cms.vdouble(0.002, 0.002),
+    xerr_endcap_def = cms.double(0.002),
+    yerr_barrel_l1 = cms.vdouble(
+        0.00375, 0.0023, 0.0025, 0.0025, 0.0023,
+        0.0023, 0.0021, 0.0021, 0.0024
+    ),
+    yerr_barrel_l1_def = cms.double(0.0021),
+    yerr_barrel_ln = cms.vdouble(
+        0.00375, 0.0023, 0.0025, 0.0025, 0.0023,
+        0.0023, 0.0021, 0.0021, 0.0024
+    ),
+    yerr_barrel_ln_def = cms.double(0.0021),
+    yerr_endcap = cms.vdouble(0.0021),
+    yerr_endcap_def = cms.double(0.00075)
+)
+

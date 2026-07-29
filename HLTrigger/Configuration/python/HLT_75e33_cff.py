@@ -4,18 +4,18 @@ fragment = cms.ProcessFragment("HLT")
 
 ### Non HLT-specific event-setups
 fragment.load("Configuration/StandardSequences/Accelerators_cff")
-fragment.load("CalibMuon/CSCCalibration/CSCChannelMapper_cfi")
+#fragment.load("CalibMuon/CSCCalibration/CSCChannelMapper_cfi")
 fragment.load("CalibMuon/CSCCalibration/CSCIndexer_cfi")
 fragment.load("RecoJets/Configuration/CaloTowersES_cfi")
 fragment.load("RecoLocalCalo/EcalRecAlgos/EcalSeverityLevelESProducer_cfi")
 fragment.load("RecoLocalCalo/HcalRecAlgos/hcalRecAlgoESProd_cfi")
 fragment.load("RecoLocalCalo/HcalRecAlgos/hcalChannelPropertiesESProd_cfi")
-fragment.load("RecoLocalTracker/Phase2TrackerRecHits/Phase2StripCPEESProducer_cfi")
+#fragment.load("RecoLocalTracker/Phase2TrackerRecHits/Phase2StripCPEESProducer_cfi")
 fragment.load("RecoLocalTracker/SiPixelRecHits/PixelCPEGeneric_cfi")
-fragment.load("RecoTracker/PixelTrackFitting/pixelTrackCleanerBySharedHits_cfi")
+#fragment.load("RecoTracker/PixelTrackFitting/pixelTrackCleanerBySharedHits_cfi")
 fragment.load("RecoTracker/PixelLowPtUtilities/ClusterShapeHitFilterESProducer_cfi")
 fragment.load("RecoTracker/FinalTrackSelectors/trackAlgoPriorityOrder_cfi")
-fragment.load("RecoTracker/MeasurementDet/MeasurementTrackerESProducer_cfi")
+#fragment.load("RecoTracker/MeasurementDet/MeasurementTrackerESProducer_cfi")
 fragment.load("RecoTracker/TkNavigation/NavigationSchoolESProducer_cfi")
 fragment.load("RecoTracker/TkSeedingLayers/TTRHBuilderWithoutAngle4PixelTriplets_cfi")
 fragment.load("RecoTracker/TransientTrackingRecHit/TransientTrackingRecHitBuilder_cfi")
@@ -44,6 +44,14 @@ fragment.load("TrackingTools/TrackFitters/LooperFitters_cff")
 fragment.load("TrackingTools/TrackFitters/RungeKuttaFitters_cff")
 fragment.load("TrackingTools/TrajectoryCleaning/TrajectoryCleanerBySharedHits_cfi")
 fragment.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
+
+# already migrated
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/CSCChannelMapperESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/CSCChannelMapperESSource_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltESPPhase2StripCPE_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltESPMeasurementTracker_cfi")
+#fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltESPPixelCPEGeneric_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltESPPixelTrackCleanerBySharedHits_cfi")
 
 ### Actual changes on top of Phase2
 ### It could come from RecoTracker/IterativeTracking/InitialStep_cff.py
