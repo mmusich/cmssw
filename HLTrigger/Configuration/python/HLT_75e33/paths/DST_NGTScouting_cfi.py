@@ -40,6 +40,7 @@ from ..sequences.HLTPhase2L3MuonGeneralTracksSequence_cfi import *
 from ..sequences.HLTPFClusteringForEgammaUnseededSequence_cfi import *
 from ..sequences.HLTRawToDigiSequence_cfi import *
 from ..sequences.HLTTrackingSequence_cfi import *
+from ..sequences.HLTPFScoutingPackingSequence_cfi import *
 from ..sequences.HLTEndSequence_cfi import *
 
 DST_NGTScouting = cms.Path(
@@ -76,5 +77,6 @@ DST_NGTScouting = cms.Path(
     + hltPFPuppiMHT
     + HLTBtagDeepCSVSequencePFPuppi
     + HLTBtagDeepFlavourSequencePFPuppi
+    + HLTPFScoutingPackingSequence
     + HLTEndSequence
 )
