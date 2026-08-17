@@ -1,0 +1,28 @@
+import FWCore.ParameterSet.Config as cms
+
+hltScoutingEgammaPacker = cms.EDProducer( "HLTScoutingEgammaProducer",
+    EgammaCandidates = cms.InputTag( "hltEgammaCandidatesUnseeded" ),
+    EgammaGsfTracks = cms.InputTag( "hltEgammaGsfTracksUnseeded" ),
+    SigmaIEtaIEtaMap = cms.InputTag( 'hltEgammaClusterShapeUnseeded','sigmaIEtaIEta5x5NoiseCleaned' ),
+    r9Map = cms.InputTag( 'hltEgammaR9IDUnseeded','r95x5' ),
+    HoverEMap = cms.InputTag( "hltEgammaHoverEUnseeded" ),
+    DetaMap = cms.InputTag( 'hltEgammaGsfTrackVarsBestTrkUnseeded','DetaSeed' ),
+    DphiMap = cms.InputTag( 'hltEgammaGsfTrackVarsBestTrkUnseeded','Dphi' ),
+    MissingHitsMap = cms.InputTag( 'hltEgammaGsfTrackVarsBestTrkUnseeded','MissingHits' ),
+    OneOEMinusOneOPMap = cms.InputTag( 'hltEgammaGsfTrackVarsBestTrkUnseeded','OneOESuperMinusOneOP' ),
+    fBremMap = cms.InputTag( 'hltEgammaGsfTrackVarsBestTrkUnseeded','fbrem' ),
+    EcalPFClusterIsoMap = cms.InputTag( "hltEgammaEcalPFClusterIsoUnseeded" ),
+    EleGsfTrackIsoMap = cms.InputTag( "hltEgammaEleGsfTrackIsoUnseeded" ),
+    HcalPFClusterIsoMap = cms.InputTag( "hltEgammaHcalPFClusterIsoUnseeded" ),
+    egammaPtCut = cms.double( 2.0 ),
+    egammaEtaCut = cms.double( 2.5 ),
+    egammaHoverECut = cms.double( 9999.0 ),
+    egammaSigmaIEtaIEtaCut = cms.vdouble( 99999.0, 99999.0 ),
+    absEtaBinUpperEdges = cms.vdouble( 1.479, 5.0 ),
+    saveRecHitTiming = cms.bool( False ),
+    mantissaPrecision = cms.int32( 10 ),
+    rechitMatrixSize = cms.int32( 10 ),
+    rechitZeroSuppression = cms.bool( True ),
+    ecalRechitEB = cms.InputTag( 'hltEcalRecHit','EcalRecHitsEB' ),
+    ecalRechitEE = cms.InputTag( 'hltEcalRecHit','EcalRecHitsEE' )
+)
