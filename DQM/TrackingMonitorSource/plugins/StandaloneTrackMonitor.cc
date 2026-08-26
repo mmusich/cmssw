@@ -1,5 +1,6 @@
 // system includes
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -77,8 +78,9 @@ private:
   const std::string folderName_;
 
   const bool isRECO_;
+  const bool isPhase1_;
 
-  SiStripClusterInfo siStripClusterInfo_;
+  std::optional<SiStripClusterInfo> siStripClusterInfo_;
 
   const edm::InputTag trackTag_;
   const edm::InputTag bsTag_;
@@ -373,6 +375,7 @@ void StandaloneTrackMonitor::fillDescriptions(edm::ConfigurationDescriptions& de
   desc.addUntracked<std::string>("moduleName", "StandaloneTrackMonitor");
   desc.addUntracked<std::string>("folderName", "highPurityTracks");
   desc.addUntracked<bool>("isRECO", false);
+  desc.addUntracked<bool>("isPhase1", false);
   desc.addUntracked<edm::InputTag>("trackInputTag", edm::InputTag("generalTracks"));
   desc.addUntracked<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"));
   desc.addUntracked<edm::InputTag>("vertexTag", edm::InputTag("offlinePrimaryVertices"));
@@ -392,7 +395,7 @@ void StandaloneTrackMonitor::fillDescriptions(edm::ConfigurationDescriptions& de
 
   desc.addUntracked<edm::InputTag>("TCProducer", edm::InputTag("initialStepTrackCandidates"));
   desc.addUntracked<std::string>("AlgoName", "GenTk");
-  desc.addUntracked<bool>("verbose", false);
+  desc.addUntracked<bool>("verbose", true);
 
   {
     edm::ParameterSetDescription TrackEtaHistoPar;
@@ -428,7 +431,7 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps)
     : moduleName_(ps.getUntrackedParameter<std::string>("moduleName", "StandaloneTrackMonitor")),
       folderName_(ps.getUntrackedParameter<std::string>("folderName", "highPurityTracks")),
       isRECO_(ps.getUntrackedParameter<bool>("isRECO", false)),
-      siStripClusterInfo_(consumesCollector()),
+      isPhase1_(ps.getUntrackedParameter<bool>("isPhase1", false)),
       trackTag_(ps.getUntrackedParameter<edm::InputTag>("trackInputTag", edm::InputTag("generalTracks"))),
       bsTag_(ps.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
       vertexTag_(ps.getUntrackedParameter<edm::InputTag>("vertexTag", edm::InputTag("offlinePrimaryVertices"))),
@@ -463,6 +466,10 @@ StandaloneTrackMonitor::StandaloneTrackMonitor(const edm::ParameterSet& ps)
   for (const auto& v : mvaProducers_) {
     mvaQualityTokens_.push_back(std::make_tuple(consumes<MVACollection>(edm::InputTag(v, "MVAValues")),
                                                 consumes<QualityMaskCollection>(edm::InputTag(v, "QualityMasks"))));
+  }
+
+  if (isPhase1_) {
+    siStripClusterInfo_.emplace(consumesCollector());
   }
 
   trackEtaH_ = nullptr;
@@ -1702,8 +1709,10 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
                 else if (subdetId == StripSubdetector::TID)
                   ++nStripTID;
 
-                // Find on-track clusters
-                processHit(hit, iSetup, tkGeom, wfac);
+                // Find on-track clusters (needs siStripClusterInfo_, only valid for isPhase1_)
+                if (isPhase1_) {
+                  processHit(hit, iSetup, tkGeom, wfac);
+                }
               }
             }
           }
@@ -1859,8 +1868,8 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
     }
   }
 
-  // off track cluster properties (only on RECO data-tier)
-  if (isRECO_) {
+  // off track cluster properties (only on RECO data-tier and in Phase-1)
+  if (isRECO_ && isPhase1_) {
     processClusters(iEvent, iSetup, tkGeom, wfac);
   }
 
@@ -1892,9 +1901,9 @@ void StandaloneTrackMonitor::processClusters(edm::Event const& iEvent,
             continue;
         }
 
-        siStripClusterInfo_.setCluster(*clusit, detId);
-        float charge = siStripClusterInfo_.charge();
-        float width = siStripClusterInfo_.width();
+        siStripClusterInfo_->setCluster(*clusit, detId);
+        float charge = siStripClusterInfo_->charge();
+        float width = siStripClusterInfo_->width();
 
         const GeomDetUnit* detUnit = tkGeom.idToDetUnit(detId);
         float thickness = detUnit->surface().bounds().thickness();  // unit cm
@@ -1933,37 +1942,37 @@ void StandaloneTrackMonitor::processHit(const TrackingRecHit& recHit,
     const SiStripMatchedRecHit2D& matchedHit = dynamic_cast<const SiStripMatchedRecHit2D&>(recHit);
 
     auto& clusterM = matchedHit.monoCluster();
-    siStripClusterInfo_.setCluster(clusterM, detid);
+    siStripClusterInfo_->setCluster(clusterM, detid);
 
     if (thickness > 0.035) {
-      hOnTrkClusChargeThickH_->Fill(siStripClusterInfo_.charge(), wfac);
-      hOnTrkClusWidthThickH_->Fill(siStripClusterInfo_.width(), wfac);
+      hOnTrkClusChargeThickH_->Fill(siStripClusterInfo_->charge(), wfac);
+      hOnTrkClusWidthThickH_->Fill(siStripClusterInfo_->width(), wfac);
     } else {
-      hOnTrkClusChargeThinH_->Fill(siStripClusterInfo_.charge(), wfac);
-      hOnTrkClusWidthThinH_->Fill(siStripClusterInfo_.width(), wfac);
+      hOnTrkClusChargeThinH_->Fill(siStripClusterInfo_->charge(), wfac);
+      hOnTrkClusWidthThinH_->Fill(siStripClusterInfo_->width(), wfac);
     }
     addClusterToMap(detid, &clusterM);
 
     auto& clusterS = matchedHit.stereoCluster();
 
-    siStripClusterInfo_.setCluster(clusterS, detid);
+    siStripClusterInfo_->setCluster(clusterS, detid);
     if (thickness > 0.035) {
-      hOnTrkClusChargeThickH_->Fill(siStripClusterInfo_.charge(), wfac);
-      hOnTrkClusWidthThickH_->Fill(siStripClusterInfo_.width(), wfac);
+      hOnTrkClusChargeThickH_->Fill(siStripClusterInfo_->charge(), wfac);
+      hOnTrkClusWidthThickH_->Fill(siStripClusterInfo_->width(), wfac);
     } else {
-      hOnTrkClusChargeThinH_->Fill(siStripClusterInfo_.charge(), wfac);
-      hOnTrkClusWidthThinH_->Fill(siStripClusterInfo_.width(), wfac);
+      hOnTrkClusChargeThinH_->Fill(siStripClusterInfo_->charge(), wfac);
+      hOnTrkClusWidthThinH_->Fill(siStripClusterInfo_->width(), wfac);
     }
     addClusterToMap(detid, &clusterS);
   } else {
     auto& cluster = clus.stripCluster();
-    siStripClusterInfo_.setCluster(cluster, detid);
+    siStripClusterInfo_->setCluster(cluster, detid);
     if (thickness > 0.035) {
-      hOnTrkClusChargeThickH_->Fill(siStripClusterInfo_.charge(), wfac);
-      hOnTrkClusWidthThickH_->Fill(siStripClusterInfo_.width(), wfac);
+      hOnTrkClusChargeThickH_->Fill(siStripClusterInfo_->charge(), wfac);
+      hOnTrkClusWidthThickH_->Fill(siStripClusterInfo_->width(), wfac);
     } else {
-      hOnTrkClusChargeThinH_->Fill(siStripClusterInfo_.charge(), wfac);
-      hOnTrkClusWidthThinH_->Fill(siStripClusterInfo_.width(), wfac);
+      hOnTrkClusChargeThinH_->Fill(siStripClusterInfo_->charge(), wfac);
+      hOnTrkClusWidthThinH_->Fill(siStripClusterInfo_->width(), wfac);
     }
 
     addClusterToMap(detid, &cluster);

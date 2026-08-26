@@ -40,19 +40,19 @@ function runTests {
 #######################################################
 echo "TESTING Tracking DATA/MC comparison codes on RECO ..."
 
-runTests "electrons" "/store/relval/CMSSW_20_0_0/RelValZEE_14/GEN-SIM-RECO/PU_150X_mcRun4_realistic_v1_STD_D127_RegeneratedGS_PU_16Aug26-v2/2590000/191f20ad-4ff7-4341-aaa4-cddd20732ea5.root" "" "True"
-# runTests "muons" "/store/relval/CMSSW_13_3_0_pre2/RelValZMM_14/GEN-SIM-RECO/PU_132X_mcRun3_2023_realistic_v2_RV213-v1/2580000/4096bfe7-bc10-4f7f-81ab-4f4adb59e838.root" "muons" "True"
-# runTests "ttbar" "/store/relval/CMSSW_13_3_0_pre2/RelValTTbar_14TeV/GEN-SIM-RECO/PU_132X_mcRun3_2023_realistic_v2_RV213-v1/2580000/fc1ccb5e-b038-45f2-a06b-e26a6a01681e.root" "ttbar" "True"
-# runTests "minbias" "/store/relval/CMSSW_13_3_0_pre2/RelValNuGun/GEN-SIM-RECO/PU_132X_mcRun3_2023_realistic_v2_RV213-v1/2580000/bc506605-d659-468e-b75a-5d3de82e579f.root" "minbias" "True"
-# runTests "V0s" "/store/relval/CMSSW_13_3_0_pre2/RelValNuGun/GEN-SIM-RECO/PU_132X_mcRun3_2023_realistic_v2_RV213-v1/2580000/bc506605-d659-468e-b75a-5d3de82e579f.root" "V0s" "True"
+runTests "electrons" "/store/relval/CMSSW_20_0_0/RelValZEE_14/GEN-SIM-RECO/PU_150X_mcRun4_realistic_v1_STD_D127_RegeneratedGS_PU_16Aug26-v2/2590000/191f20ad-4ff7-4341-aaa4-cddd20732ea5.root" "" "False"
+runTests "muons" "/store/relval/CMSSW_20_0_0/RelValZMM_14/GEN-SIM-RECO/PU_150X_mcRun4_realistic_v1_STD_D127_RegeneratedGS_PU_16Aug26-v2/2590000/cb25fd77-e854-4cd1-bf84-8f709e8001ee.root" "muons" "False"
+runTests "ttbar" "/store/relval/CMSSW_20_0_0/RelValTTbar_14TeV/GEN-SIM-RECO/PU_150X_mcRun4_realistic_v1_STD_D127_RegeneratedGS_PU_16Aug26-v2/2590000/f7d61e2b-b867-441e-8160-53d5ca60f98c.root" "ttbar" "False"
+runTests "minbias" "/store/relval/CMSSW_20_0_0/RelValNuGun/GEN-SIM-RECO/PU_150X_mcRun4_realistic_v1_STD_D127_RegeneratedGS_PU_16Aug26-v2/2590000/d3aa7899-acfe-4bd2-9aa6-c8933a0c4f06.root" "minbias" "False"
+runTests "V0s" "/store/relval/CMSSW_20_0_0/RelValNuGun/GEN-SIM-RECO/PU_150X_mcRun4_realistic_v1_STD_D127_RegeneratedGS_PU_16Aug26-v2/2590000/d3aa7899-acfe-4bd2-9aa6-c8933a0c4f06.root" "V0s" "False"
 
 # #######################################################
 # # AOD checks
 # #######################################################
 # echo "TESTING Tracking DATA/MC comparison codes on AOD..."
 
-# runTests "electrons (AOD)" "/store/relval/CMSSW_13_0_12/RelValZEE_PU_13p6/AODSIM/PU_130X_mcRun3_2023_realistic_postBPix_v2_RV201-v1/2580000/0d49e310-e06f-4c26-a637-1116b02ef1ce.root" "" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
-# runTests "muons (AOD)" "/store/relval/CMSSW_13_0_12/RelValZMM_PU_13p6/AODSIM/PU_130X_mcRun3_2023_realistic_postBPix_v2_RV201-v1/2580000/d2a2506c-8954-464b-beda-48242472406d.root" "muons" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
-# runTests "ttbar (AOD)" "/store/relval/CMSSW_13_0_12/RelValTTbar_SemiLeptonic_PU_13p6/AODSIM/PU_130X_mcRun3_2023_realistic_postBPix_v2_RV201-v1/2580000/08c015c3-c9bd-4017-b21d-264dbaa06445.root" "ttbar" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
-# runTests "minbias (AOD)" "/store/relval/CMSSW_13_0_12/RelValSingleNuGun_E10_PU/AODSIM/PU_130X_mcRun3_2023_realistic_postBPix_v2_RV201-v1/2580000/37ee5a61-8896-4eb3-8e6c-20ed0ad5b2dc.root" "minbias" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
-# runTests "V0s (AOD)" "/store/relval/CMSSW_13_0_12/RelValSingleNuGun_E10_PU/AODSIM/PU_130X_mcRun3_2023_realistic_postBPix_v2_RV201-v1/2580000/37ee5a61-8896-4eb3-8e6c-20ed0ad5b2dc.root" "V0s" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
+#runTests "electrons (AOD)" "" "" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
+#runTests "muons (AOD)" "" "muons" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
+#runTests "ttbar (AOD)" "" "ttbar" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
+#runTests "minbias (AOD)" "" "minbias" "False" "130X_mcRun3_2023_realistic_postBPix_v2"
+#runTests "V0s (AOD)" "" "V0s" "False" "130X_mcRun3_2023_realistic_postBPix_v2"

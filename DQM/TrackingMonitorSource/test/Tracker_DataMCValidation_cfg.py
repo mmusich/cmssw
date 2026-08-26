@@ -32,6 +32,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryExtendedRun4DefaultReco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi')
 process.load('DQMOffline.Configuration.DQMOffline_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -42,12 +43,16 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-  secondaryFileNames = cms.untracked.vstring(),
-                            fileNames = cms.untracked.vstring(options.inputFiles)
+                            secondaryFileNames = cms.untracked.vstring(),
+                            fileNames = cms.untracked.vstring(options.inputFiles),
+                            inputCommands = cms.untracked.vstring([
+                                "keep *",
+                                "drop ticlSharedEnergyTypefloatstdpairticlAssociationElementssticlTrackstersticlTrackstersticlAssociationMap_*_*_*",
+                                "drop ticlFractionTypeticlAssociationElementsSimClustersCaloParticlesticlAssociationMap_*_*_*",
+                            ]),
 )
 
-process.options = cms.untracked.PSet(
-)
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(

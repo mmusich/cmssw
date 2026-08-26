@@ -52,7 +52,7 @@ selectedAlcaRecoSMTracks = cms.EDFilter("TrackSelector",
 hltPathFilter = cms.EDFilter("HLTPathSelector",
                              processName = cms.string("HLT"),
                              verbose = cms.untracked.bool(False),
-                             hltPathsOfInterest = cms.vstring("HLT_ZeroBias_v"),
+                             hltPathsOfInterest = cms.vstring("HLT_*"),
                              triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
                              triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
                              )
@@ -61,7 +61,7 @@ hltPathFilter = cms.EDFilter("HLTPathSelector",
 hltPathFilterMuon = cms.EDFilter("HLTPathSelector",
                              processName = cms.string("HLT"),
                              verbose = cms.untracked.bool(False),
-                             hltPathsOfInterest = cms.vstring("HLT_IsoMu24_v"),
+                             hltPathsOfInterest = cms.vstring("HLT_IsoMu24_FromL1TkMuon"),
                              triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
                              triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
                              )
@@ -70,7 +70,7 @@ hltPathFilterMuon = cms.EDFilter("HLTPathSelector",
 hltPathFilterElectron = cms.EDFilter("HLTPathSelector",
                              processName = cms.string("HLT"),
                              verbose = cms.untracked.bool(False),
-                             hltPathsOfInterest = cms.vstring("HLT_Ele32_WPTight_Gsf_v"),
+                             hltPathsOfInterest = cms.vstring("HLT_Ele32_WPTight_L1Seeded"),
                              triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
                              triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
                              )
@@ -79,7 +79,7 @@ hltPathFilterElectron = cms.EDFilter("HLTPathSelector",
 hltPathFilterTtbar = cms.EDFilter("HLTPathSelector",
                              processName = cms.string("HLT"),
                              verbose = cms.untracked.bool(False),
-                             hltPathsOfInterest = cms.vstring("HLT_Ele32_WPTight_Gsf_v","HLT_IsoMu24_v"),
+                             hltPathsOfInterest = cms.vstring("HLT_Ele32_WPTight_L1Seeded","HLT_IsoMu24_FromL1TkMuon"),
                              triggerResults = cms.untracked.InputTag("TriggerResults","","HLT"),
                              triggerEvent = cms.untracked.InputTag("hltTriggerSummaryAOD","","HLT")
                              )
