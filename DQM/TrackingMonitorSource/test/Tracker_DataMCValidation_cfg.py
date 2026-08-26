@@ -1,16 +1,14 @@
-# Auto generated configuration file
-# using: 
-# Revision: 1.19 
-# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: step1 -s DQM -n 1 --eventcontent DQM --conditions auto:com10 --filein /store/relval/CMSSW_7_1_2/MinimumBias/RECO/GR_R_71_V7_dvmc_RelVal_mb2012Cdvmc-v1/00000/00209DF4-3708-E411-9FA7-0025905A6126.root --data --no_exec --python_filename=test_step1_cfg.py
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 
-process = cms.Process('DQM')
+import Configuration.Geometry.defaultPhase2ConditionsEra_cff as _settings
+_PH2_GLOBAL_TAG, _PH2_ERA = _settings.get_era_and_conditions(_settings.DEFAULT_VERSION)
+
+process = cms.Process('DQM',_PH2_ERA)
 
 options = VarParsing.VarParsing('analysis')
 options.register('globalTag',
-                 "132X_mcRun3_2023_realistic_v2", # default value
+                 _PH2_GLOBAL_TAG, # default value
                  VarParsing.VarParsing.multiplicity.singleton, # singleton or list
                  VarParsing.VarParsing.varType.string, # string, int, or float
                  "input file name")
@@ -32,7 +30,7 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.Geometry.GeometryExtendedRun4DefaultReco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('DQMOffline.Configuration.DQMOffline_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
