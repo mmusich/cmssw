@@ -110,6 +110,16 @@ fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltSmartPropagatorAn
 fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltChi2EstimatorForRefit_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltKFSmootherForRefitInsideOut_cfi")
 
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalCalibParamESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalDenseIndexInfoESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalDenseIndexTriggerInfoESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalMappingCellESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalMappingModuleESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalMappingModuleTriggerESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalConfigESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalMappingESProducer_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/eventsetup/hltHGCalMappingTriggerESProducer_cfi")
+
 ### Paths
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/HLT_AK4PFPuppiJet520_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/HLT_Diphoton30_23_IsoCaloId_L1Seeded_cfi")

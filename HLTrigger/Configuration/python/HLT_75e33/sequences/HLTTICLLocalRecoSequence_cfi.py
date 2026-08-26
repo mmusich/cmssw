@@ -6,6 +6,7 @@ from ..modules.hltHgcalLayerClustersHSi_cfi import *
 from ..modules.hltMergeLayerClusters_cfi import *
 from ..modules.hltHGCalRecHit_cfi import *
 from ..modules.hltHGCalUncalibRecHit_cfi import *
+from ..modules.hltHGCalSoARecHits_cfi import *
 # Heterogeneous HGCAL EE layer clusters
 from ..modules.hltHgcalSoARecHitsProducer_cfi import *
 from ..modules.hltHgcalSoARecHitsLayerClustersProducer_cfi import *
@@ -25,6 +26,7 @@ from Configuration.ProcessModifiers.ticl_barrel_cff import ticl_barrel
 HLTTICLLocalRecoSequence = cms.Sequence(
         hltHGCalUncalibRecHit+
         hltHGCalRecHit+
+        hltHGCalSoARecHits+
         hltHgcalLayerClustersEE+
         hltHgcalLayerClustersHSci+
         hltHgcalLayerClustersHSi+
