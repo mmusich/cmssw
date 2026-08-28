@@ -31,5 +31,5 @@ _hltSiPixelClusters = cms.EDProducer("SiPixelClusterProducer",
     src = cms.InputTag("simSiPixelDigis","Pixel")
 )
 
-from Configuration.ProcessModifiers.phase2LegacyPixelTracks_cff import phase2LegacyPixelTracks
-phase2LegacyPixelTracks.toReplaceWith(hltSiPixelClusters, _hltSiPixelClusters)
+from Configuration.ProcessModifiers.hltPhase2LegacyTracking_cff import hltPhase2LegacyTracking
+hltPhase2LegacyTracking.toReplaceWith(hltSiPixelClusters, _hltSiPixelClusters)

@@ -10,5 +10,5 @@ _hltSiPixelRecHits = cms.EDProducer("SiPixelRecHitConverter",
     src = cms.InputTag("hltSiPixelClusters")
 )
 
-from Configuration.ProcessModifiers.phase2LegacyPixelTracks_cff import phase2LegacyPixelTracks
-phase2LegacyPixelTracks.toReplaceWith(hltSiPixelRecHits, _hltSiPixelRecHits)
+from Configuration.ProcessModifiers.hltPhase2LegacyTracking_cff import hltPhase2LegacyTracking
+hltPhase2LegacyTracking.toReplaceWith(hltSiPixelRecHits, _hltSiPixelRecHits)

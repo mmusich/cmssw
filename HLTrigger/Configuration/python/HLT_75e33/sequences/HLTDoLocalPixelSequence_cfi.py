@@ -18,5 +18,5 @@ _HLTDoLocalPixelSequence = cms.Sequence(hltSiPixelClusters+
                                         hltSiPixelClusterShapeCache+
                                         hltSiPixelRecHits)
 
-from Configuration.ProcessModifiers.phase2LegacyPixelTracks_cff import phase2LegacyPixelTracks
-phase2LegacyPixelTracks.toReplaceWith(HLTDoLocalPixelSequence,_HLTDoLocalPixelSequence)
+from Configuration.ProcessModifiers.hltPhase2LegacyTracking_cff import hltPhase2LegacyTracking
+hltPhase2LegacyTracking.toReplaceWith(HLTDoLocalPixelSequence,_HLTDoLocalPixelSequence)
