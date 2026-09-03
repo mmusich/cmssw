@@ -12,7 +12,8 @@ is found, making it a hard failure in scram b runtests.
 
 Seeds exercised
 ---------------
-  Single  : SingleTkMuon22     (pSingleTkMuon22)     GMTTkMuons pT >= 22 GeV
+  Single  : SingleTkMuon22     (pSingleTkMuon22)     GMTTkMuons, pT >= 22 GeV
+  Single  : PuppiHT450         (PuppiHT450)          CL2HtSum, HT>450GeV
   Double  : IsoTkEleEGEle22_12 (pIsoTkEleEGEle22_12) CL2Electrons x CL2Photons
   Triple  : TripleTkMuon5_3_3  (pTripleTkMuon5_3_3)  GMTTkMuons x3, thresholds 5/3/3
   Quad    : QuadJet70_55_40_40 (pQuadJet70_55_40_40) CL2JetsSC4 x4, thresholds 70/55/40/40
@@ -106,8 +107,6 @@ def _noPairCuts():
         maxInvMass = cms.double(1e9),
     )
 
-
-
 # ===========================================================================
 #       1. SINGLE OBJECT : SingleTkMuon22 
 #       Reference L1 path: pSingleTkMuon22
@@ -165,7 +164,6 @@ process.testSinglePuppiHT450Filt = cms.EDFilter("HLTP2GTSingleObjectFilter",
         ),
     ),
 )
-
 
 # ===========================================================================
 #       2. DOUBLE OBJECT : IsoTkEleEGEle22_12
@@ -260,9 +258,8 @@ process.testTripleTkMuon533Filt = cms.EDFilter("HLTP2GTTripleObjectFilter",
 # ===========================================================================
 
 process.refQuadJet70554040Filt = cms.EDFilter("PathStatusFilter",
-    logicalExpression = cms.string("pQuadJet70_55_40_40"),
+    logicalExpression = cms.string("pPuppiHT400 and pQuadJet70_55_40_40"),
 )
-
 
 process.testQuadJet70554040Filt = cms.EDFilter("HLTP2GTQuadObjectFilter",
     saveTags         = cms.bool(True),
@@ -376,8 +373,8 @@ process.comparison = cms.EndPath(
     process.cmpSingleA +
     process.cmpSingleB +
     process.cmpDouble +
-    process.cmpTriple
-    #+ process.cmpQuad
+    process.cmpTriple +
+    process.cmpQuad
 )
 
 process.endjob = cms.EndPath(process.endOfProcess)
