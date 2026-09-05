@@ -245,11 +245,11 @@ void FastDMRChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
         } else if (subid == PixelSubdetector::PixelEndcap) {
           DMRHelper::updateOnlineMomenta(resDetailsFPixX_, RawId, resX, pullX);
           DMRHelper::updateOnlineMomenta(resDetailsFPixY_, RawId, resY, pullY);
-        }     // if FPix
+        }  // if FPix
 
         this->fillByLayer(subdetAndLayer, /*isX=*/true, resX, pullX);
         this->fillByLayer(subdetAndLayer, /*isX=*/false, resY, pullY);
-      }       // if Pixel
+      }  // if Pixel
       else {  // these are Strips
         if (subid == StripSubdetector::TIB) {
           DMRHelper::updateOnlineMomenta(resDetailsTIB_, RawId, resX, pullX);
@@ -265,7 +265,7 @@ void FastDMRChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
         this->fillByLayer(subdetAndLayer, /*isX=*/true, resX, pullX);
       }
     }  // loop on hits
-  }    // loop on tracks
+  }  // loop on tracks
 }
 
 void FastDMRChecker::endJob() {

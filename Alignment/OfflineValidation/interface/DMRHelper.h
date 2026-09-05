@@ -245,13 +245,14 @@ namespace DMRHelper {
           baseName.c_str(), baseTitle.c_str(), Traits::byLayerResBins, Traits::byLayerResMin, Traits::byLayerResMax);
 
       const std::string normName = fmt::sprintf("h_%s_layer%d_Pull%s", key.first, key.second, coord);
-      const std::string normTitle = fmt::sprintf(
-          "%s (layer/disk %d) track %s-pulls;res_{%s'}/#sigma_{res_{%s'}};hits", key.first, key.second, coord, coord, coord);
-      hp.normed = dir.make<TH1F>(normName.c_str(),
-                                 normTitle.c_str(),
-                                 Traits::byLayerPullBins,
-                                 Traits::byLayerPullMin,
-                                 Traits::byLayerPullMax);
+      const std::string normTitle = fmt::sprintf("%s (layer/disk %d) track %s-pulls;res_{%s'}/#sigma_{res_{%s'}};hits",
+                                                 key.first,
+                                                 key.second,
+                                                 coord,
+                                                 coord,
+                                                 coord);
+      hp.normed = dir.make<TH1F>(
+          normName.c_str(), normTitle.c_str(), Traits::byLayerPullBins, Traits::byLayerPullMin, Traits::byLayerPullMax);
     }
 
     hp.base->Fill(residual);
