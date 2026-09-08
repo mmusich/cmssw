@@ -42,7 +42,10 @@ namespace HcalObjRepresent {
       PlotMode_ = "Map";
     }
 
-    virtual ~HcalDataContainer() {}
+    virtual ~HcalDataContainer() {
+      for (auto& kv : depths_)
+        delete kv.second;
+    }
     // For easier channel mapping
     typedef std::tuple<int, int, int> Coord;
     typedef std::map<Coord, Item> tHcalValCont;
@@ -98,7 +101,7 @@ namespace HcalObjRepresent {
               histLabel = "run" + std::to_string(run_) + "_" + subDetName + "_d" + std::to_string(depth);
               depths_.insert(
                   std::make_pair(std::make_pair(subDetName, depth),
-                                 new TH2F(histLabel.c_str(), histLabel.c_str(), 83, -42.5, 41.5, 71, 0.5, 71.5)));
+                                 new TH2F(histLabel.c_str(), histLabel.c_str(), 85, -42.5, 42.5, 72, 0.5, 72.5)));
             }
             depths_[depthKey]->Fill(ieta, iphi, getValue(&item));
           }
