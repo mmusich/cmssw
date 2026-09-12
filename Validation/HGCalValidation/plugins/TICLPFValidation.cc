@@ -68,8 +68,11 @@ void TICLPFValidation::dqmAnalyze(edm::Event const& iEvent,
                                   Histograms_TICLPFValidation const& histos) const {
   using namespace edm;
 
-  Handle<reco::PFCandidateCollection> pfCandidatesHandle;
-  iEvent.getByToken(pfCandidates_, pfCandidatesHandle);
+  const auto& pfCandidatesHandle = iEvent.getHandle(pfCandidates_);
+  if (!pfCandidatesHandle.isValid()) {
+    edm::LogWarning("TICLPFValidation") << "Invalid PFCandidateCollection handle, skipping event.";
+    return;
+  }
   reco::PFCandidateCollection const& pfCandidates = *pfCandidatesHandle;
 
   // pfCandidates
