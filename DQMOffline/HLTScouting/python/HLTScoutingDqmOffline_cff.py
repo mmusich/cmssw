@@ -60,7 +60,11 @@ hltScoutingDileptonMonitor = cms.Sequence(ScoutingDileptonMonitor)
 hltScoutingPi0Monitor = cms.Sequence(ScoutingPi0Monitor)
 hltScoutingDiMuonVertexMonitor = cms.Sequence(ScoutingDiMuonVertexMonitor)
 
-hltScoutingDqmOffline = cms.Sequence(hltScoutingTrackMonitor +
+from RecoVertex.BeamSpotProducer.BeamSpotOnline_cfi import onlineBeamSpotProducer as _onlineBeamSpotProducer
+hltOnlineBeamSpot = _onlineBeamSpotProducer.clone()
+
+hltScoutingDqmOffline = cms.Sequence(hltOnlineBeamSpot +
+                                     hltScoutingTrackMonitor +
                                      recoTrackFromScoutingMonitorSequence +
                                      hltScoutingMuonDqmOffline +
                                      hltScoutingEGammaDqmOffline +
