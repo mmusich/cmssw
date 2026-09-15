@@ -222,6 +222,17 @@ hltNanoDQM = DQMEDAnalyzer("NanoAODDQM",
                 Plot1D('t0', 't0', 40, -1, 1, 'muon t0')
             )
         ),
+        hltTrackMuonInfo = cms.PSet(
+            sels = cms.PSet(),
+            plots = cms.VPSet(
+                Plot1D('trackIdx', 'trackIdx', 20, -5, 200, 'index of matched hltGeneralTrack (-1 if unresolved)'),
+                Plot1D('isMuon', 'isMuon', 2, 0, 2, 'passes PFMuonAlgo::isMuon'),
+                Plot1D('isTrackerMuon', 'isTrackerMuon', 2, 0, 2, 'is tracker muon'),
+                Plot1D('muonDtHits', 'muonDtHits', 20, 0, 40, '# valid muon DT hits'),
+                Plot1D('muonCscHits', 'muonCscHits', 20, 0, 40, '# valid muon CSC hits'),
+                Plot1D('muonType', 'muonType', 20, 0, 256, 'reco::Muon type bitmask')
+            )
+        ),
         hltHpsPFTau = cms.PSet(
             sels = cms.PSet(),
             plots = cms.VPSet(
