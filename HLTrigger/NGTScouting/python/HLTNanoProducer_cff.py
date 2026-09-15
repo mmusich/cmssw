@@ -71,6 +71,7 @@ NanoHltTables = cms.Sequence(
     + hltElectronTable
     + hltPhase2L3MuonIdTracks
     + hltMuonTable
+    + hltTrackMuonTable
     + hltPFCandidateTable
     + hltJetTable
     + hltTauTable

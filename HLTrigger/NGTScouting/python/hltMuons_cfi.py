@@ -22,3 +22,12 @@ hltMuonTable = cms.EDProducer(
         nMuHits = Var("hitPattern().numberOfValidMuonHits()", "int16", doc = "")
     )
 )
+
+hltTrackMuonTable = cms.EDProducer(
+    "TrackMuonTableProducer",
+    skipNonExistingSrc = cms.bool(True),
+    tracks=cms.InputTag("hltGeneralTracks"),
+    muons=cms.InputTag("hltPhase2L3MuonIdTracks"),
+    name=cms.string("hltTrackMuonInfo"),
+    doc=cms.string("HLT Muons matched to HLT GeneralTrack")
+)
