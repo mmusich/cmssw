@@ -39,9 +39,10 @@ scoutingCollectionMonitor = DQMEDAnalyzer('ScoutingCollectionMonitor',
 ## Add the scouting rechits monitoring (only for 2025, integrated in menu GRun 2025 V1.3)
 ## See https://its.cern.ch/jira/browse/CMSHLT-3607
 from Configuration.Eras.Modifier_run3_scouting_2025_cff import run3_scouting_2025
-run3_scouting_2025.toModify(scoutingCollectionMonitor,
-                            pfRecHitsEB        = ("hltScoutingRecHitPacker", "EB"),
-                            pfRecHitsEE        = ("hltScoutingRecHitPacker", "EE"),
-                            pfCleanedRecHitsEB = ("hltScoutingRecHitPacker", "EBCleaned"),
-                            pfCleanedRecHitsEE = ("hltScoutingRecHitPacker", "EECleaned"),
-                            pfRecHitsHBHE      = ("hltScoutingRecHitPacker", "HBHE"))
+from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
+(run3_scouting_2025 | phase2_common).toModify(scoutingCollectionMonitor,
+                                              pfRecHitsEB        = ("hltScoutingRecHitPacker", "EB"),
+                                              pfRecHitsEE        = ("hltScoutingRecHitPacker", "EE"),
+                                              pfCleanedRecHitsEB = ("hltScoutingRecHitPacker", "EBCleaned"),
+                                              pfCleanedRecHitsEE = ("hltScoutingRecHitPacker", "EECleaned"),
+                                              pfRecHitsHBHE      = ("hltScoutingRecHitPacker", "HBHE"))
