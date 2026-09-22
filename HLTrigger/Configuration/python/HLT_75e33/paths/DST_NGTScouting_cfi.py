@@ -77,6 +77,10 @@ DST_NGTScouting = cms.Path(
     + hltPFPuppiMHT
     + HLTBtagDeepCSVSequencePFPuppi
     + HLTBtagDeepFlavourSequencePFPuppi
+    + HLTPFPuppiMETReconstruction
+    + hltPFPuppiMETTypeOneCorrector
+    + hltPFPuppiMETTypeOne
+    + hltPFPuppiMHT
     + HLTPFScoutingPackingSequence
     + HLTEndSequence
 )
