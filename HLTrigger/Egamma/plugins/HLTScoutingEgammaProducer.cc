@@ -5,7 +5,8 @@
 //
 /**\class HLTScoutingEgammaProducer HLTScoutingEgammaProducer.cc HLTrigger/Egamma/src/HLTScoutingEgammaProducer.cc
 
-Description: Producer for Run3ScoutingElectron and Run3ScoutingPhoton
+Description: Producer for Run3ScoutingElectron and Run3ScoutingPhoton, or for
+             Phase2ScoutingElectron and Phase2ScoutingPhoton, depending on the "scoutingFormat" parameter
 
 */
 //
@@ -16,7 +17,10 @@ Description: Producer for Run3ScoutingElectron and Run3ScoutingPhoton
 
 #include "HLTScoutingEgammaProducer.h"
 
+#include "FWCore/ParameterSet/interface/allowedValues.h"
+
 #include <cstdint>
+#include <string>
 
 // function to find rechhit associated to detid and return energy
 float recHitE(const DetId id, const EcalRecHitCollection& recHits) {
@@ -70,7 +74,8 @@ HLTScoutingEgammaProducer::HLTScoutingEgammaProducer(const edm::ParameterSet& iC
       rechitMatrixSize(iConfig.getParameter<int>("rechitMatrixSize")),  //(2n+1)^2
       rechitZeroSuppression(iConfig.getParameter<bool>("rechitZeroSuppression")),
       ecalRechitEB_(consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ecalRechitEB"))),
-      ecalRechitEE_(consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ecalRechitEE"))) {
+      ecalRechitEE_(consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("ecalRechitEE"))),
+      format_(scouting::formatFromString(iConfig.getParameter<std::string>(scouting::kFormatParameterName))) {
   // cross-check for compatibility in input vectors
   if (absEtaBinUpperEdges.size() != egammaSigmaIEtaIEtaCut.size()) {
     throw cms::Exception("IncompatibleVects")
@@ -94,8 +99,16 @@ HLTScoutingEgammaProducer::HLTScoutingEgammaProducer(const edm::ParameterSet& iC
   }
 
   //register products
-  produces<Run3ScoutingElectronCollection>();
-  produces<Run3ScoutingPhotonCollection>();
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produces<scouting::Run3Format::ElectronCollection>();
+      produces<scouting::Run3Format::PhotonCollection>();
+      break;
+    case scouting::Format::kPhase2:
+      produces<scouting::Phase2Format::ElectronCollection>();
+      produces<scouting::Phase2Format::PhotonCollection>();
+      break;
+  }
   topologyToken_ = esConsumes();
 }
 
@@ -103,10 +116,22 @@ HLTScoutingEgammaProducer::~HLTScoutingEgammaProducer() = default;
 
 // ------------ method called to produce the data  ------------
 void HLTScoutingEgammaProducer::produce(edm::StreamID sid, edm::Event& iEvent, edm::EventSetup const& setup) const {
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produceImpl<scouting::Run3Format>(iEvent, setup);
+      break;
+    case scouting::Format::kPhase2:
+      produceImpl<scouting::Phase2Format>(iEvent, setup);
+      break;
+  }
+}
+
+template <typename Format>
+void HLTScoutingEgammaProducer::produceImpl(edm::Event& iEvent, edm::EventSetup const& setup) const {
   using namespace edm;
 
-  auto outElectrons = std::make_unique<Run3ScoutingElectronCollection>();
-  auto outPhotons = std::make_unique<Run3ScoutingPhotonCollection>();
+  auto outElectrons = std::make_unique<typename Format::ElectronCollection>();
+  auto outPhotons = std::make_unique<typename Format::PhotonCollection>();
 
   // Get RecoEcalCandidate
   Handle<reco::RecoEcalCandidateCollection> EgammaCandidateCollection;
@@ -423,6 +448,9 @@ void HLTScoutingEgammaProducer::fillDescriptions(edm::ConfigurationDescriptions&
   desc.add<bool>("rechitZeroSuppression", true);
   desc.add<edm::InputTag>("ecalRechitEB", edm::InputTag("hltEcalRecHit:EcalRecHitsEB"));
   desc.add<edm::InputTag>("ecalRechitEE", edm::InputTag("hltEcalRecHit:EcalRecHitsEE"));
+  desc.ifValue(edm::ParameterDescription<std::string>(scouting::kFormatParameterName, scouting::kRun3FormatName, true),
+               edm::allowedValues<std::string>(scouting::kRun3FormatName, scouting::kPhase2FormatName))
+      ->setComment("family of scouting data formats to produce (\"Run3\" or \"Phase2\")");
   descriptions.add("hltScoutingEgammaProducer", desc);
 }
 

@@ -1,6 +1,6 @@
 <use name="DataFormats/Scouting"/>
 
-<library name="testScoutingDataFormats" file="TestReadRun2Scouting.cc,TestWriteRun2Scouting.cc,TestReadRun3Scouting.cc,TestWriteRun3Scouting.cc">
+<library name="testScoutingDataFormats" file="TestReadRun2Scouting.cc,TestWriteRun2Scouting.cc,TestReadRun3Scouting.cc,TestWriteRun3Scouting.cc,TestReadPhase2Scouting.cc,TestWritePhase2Scouting.cc">
   <flags EDM_PLUGIN="1"/>
   <use name="FWCore/Framework"/>
   <use name="FWCore/ParameterSet"/>
@@ -9,4 +9,5 @@
 
 <test name="TestRun2ScoutingDataFormats" command="TestRun2ScoutingFormats.sh"/>
 <test name="TestRun3ScoutingDataFormats" command="TestRun3ScoutingFormats.sh"/>
+<test name="TestPhase2ScoutingDataFormats" command="TestPhase2ScoutingFormats.sh"/>
 

@@ -5,7 +5,8 @@
 //
 /**\class HLTScoutingCaloProducer HLTScoutingCaloProducer.cc HLTrigger/JetMET/plugins/HLTScoutingCaloProducer.cc
 
-Description: Producer for Run3ScoutingCaloJets from reco::CaloJet objects
+Description: Producer for Run3ScoutingCaloJets or Phase2ScoutingCaloJets from reco::CaloJet objects.
+             The family of output data formats is selected via the "scoutingFormat" parameter.
 
 */
 //
@@ -16,6 +17,7 @@ Description: Producer for Run3ScoutingCaloJets from reco::CaloJet objects
 
 // system include files
 #include <memory>
+#include <string>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -23,6 +25,7 @@ Description: Producer for Run3ScoutingCaloJets from reco::CaloJet objects
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/allowedValues.h"
 
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -31,8 +34,7 @@ Description: Producer for Run3ScoutingCaloJets from reco::CaloJet objects
 #include "DataFormats/METReco/interface/CaloMET.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
 
-#include "DataFormats/Scouting/interface/Run3ScoutingCaloJet.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingVertex.h"
+#include "DataFormats/Scouting/interface/ScoutingFormatTraits.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -45,6 +47,10 @@ public:
 
 private:
   void produce(edm::StreamID sid, edm::Event& iEvent, edm::EventSetup const& setup) const final;
+
+  // implementation templated on the family of scouting data formats
+  template <typename Format>
+  void produceImpl(edm::Event& iEvent) const;
 
   const edm::EDGetTokenT<reco::CaloJetCollection> caloJetCollection_;
   const edm::EDGetTokenT<reco::JetTagCollection> caloJetBTagCollection_;
@@ -59,6 +65,8 @@ private:
   const bool doMet;
   const bool doJetBTags;
   const bool doJetIDTags;
+
+  const scouting::Format format_;
 };
 
 //
@@ -77,9 +85,17 @@ HLTScoutingCaloProducer::HLTScoutingCaloProducer(const edm::ParameterSet& iConfi
       caloJetEtaCut(iConfig.getParameter<double>("caloJetEtaCut")),
       doMet(iConfig.getParameter<bool>("doMet")),
       doJetBTags(iConfig.getParameter<bool>("doJetBTags")),
-      doJetIDTags(iConfig.getParameter<bool>("doJetIDTags")) {
+      doJetIDTags(iConfig.getParameter<bool>("doJetIDTags")),
+      format_(scouting::formatFromString(iConfig.getParameter<std::string>(scouting::kFormatParameterName))) {
   //register products
-  produces<Run3ScoutingCaloJetCollection>();
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produces<scouting::Run3Format::CaloJetCollection>();
+      break;
+    case scouting::Format::kPhase2:
+      produces<scouting::Phase2Format::CaloJetCollection>();
+      break;
+  }
   produces<double>("rho");
   produces<double>("caloMetPt");
   produces<double>("caloMetPhi");
@@ -89,11 +105,23 @@ HLTScoutingCaloProducer::~HLTScoutingCaloProducer() = default;
 
 // ------------ method called to produce the data  ------------
 void HLTScoutingCaloProducer::produce(edm::StreamID sid, edm::Event& iEvent, edm::EventSetup const& setup) const {
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produceImpl<scouting::Run3Format>(iEvent);
+      break;
+    case scouting::Format::kPhase2:
+      produceImpl<scouting::Phase2Format>(iEvent);
+      break;
+  }
+}
+
+template <typename Format>
+void HLTScoutingCaloProducer::produceImpl(edm::Event& iEvent) const {
   using namespace edm;
 
   //get calo jets
   Handle<reco::CaloJetCollection> caloJetCollection;
-  std::unique_ptr<Run3ScoutingCaloJetCollection> outCaloJets(new Run3ScoutingCaloJetCollection());
+  auto outCaloJets = std::make_unique<typename Format::CaloJetCollection>();
   if (iEvent.getByToken(caloJetCollection_, caloJetCollection)) {
     //get jet tags
     Handle<reco::JetTagCollection> caloJetBTagCollection;
@@ -190,6 +218,9 @@ void HLTScoutingCaloProducer::fillDescriptions(edm::ConfigurationDescriptions& d
   desc.add<bool>("doMet", true);
   desc.add<bool>("doJetBTags", false);
   desc.add<bool>("doJetIDTags", false);
+  desc.ifValue(edm::ParameterDescription<std::string>(scouting::kFormatParameterName, scouting::kRun3FormatName, true),
+               edm::allowedValues<std::string>(scouting::kRun3FormatName, scouting::kPhase2FormatName))
+      ->setComment("family of scouting data formats to produce (\"Run3\" or \"Phase2\")");
   descriptions.add("hltScoutingCaloProducer", desc);
 }
 

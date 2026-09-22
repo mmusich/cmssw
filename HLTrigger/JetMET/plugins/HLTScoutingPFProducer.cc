@@ -5,7 +5,9 @@
 //
 /**\class HLTScoutingPFProducer HLTScoutingPFProducer.cc HLTrigger/JetMET/plugins/HLTScoutingPFProducer.cc
 
-Description: Producer for ScoutingPFJets from reco::PFJet objects, ScoutingVertexs from reco::Vertexs and ScoutingParticles from reco::PFCandidates
+Description: Producer for ScoutingPFJets from reco::PFJet objects, ScoutingVertexs from reco::Vertexs and ScoutingParticles from reco::PFCandidates.
+             Either the Run3Scouting* or the Phase2Scouting* family of data formats is produced,
+             as selected via the "scoutingFormat" parameter.
 
 */
 //
@@ -16,6 +18,7 @@ Description: Producer for ScoutingPFJets from reco::PFJet objects, ScoutingVerte
 
 // system include files
 #include <memory>
+#include <string>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -23,6 +26,7 @@ Description: Producer for ScoutingPFJets from reco::PFJet objects, ScoutingVerte
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/allowedValues.h"
 
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/METReco/interface/PFMET.h"
@@ -33,9 +37,7 @@ Description: Producer for ScoutingPFJets from reco::PFJet objects, ScoutingVerte
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
 
-#include "DataFormats/Scouting/interface/Run3ScoutingPFJet.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingParticle.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingVertex.h"
+#include "DataFormats/Scouting/interface/ScoutingFormatTraits.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -52,6 +54,10 @@ public:
 
 private:
   void produce(edm::StreamID sid, edm::Event &iEvent, edm::EventSetup const &setup) const final;
+
+  // implementation templated on the family of scouting data formats
+  template <typename Format>
+  void produceImpl(edm::Event &iEvent) const;
 
   const edm::EDGetTokenT<reco::PFJetCollection> pfJetCollection_;
   const edm::EDGetTokenT<reco::JetTagCollection> pfJetTagCollection_;
@@ -72,6 +78,8 @@ private:
   const bool doTrackVars_;
   const bool relativeTrackVars_;
   const bool doCandIndsForJets_;
+
+  const scouting::Format format_;
 };
 
 //
@@ -94,10 +102,19 @@ HLTScoutingPFProducer::HLTScoutingPFProducer(const edm::ParameterSet &iConfig)
       doMet_(iConfig.getParameter<bool>("doMet")),
       doTrackVars_(iConfig.getParameter<bool>("doTrackVars")),
       relativeTrackVars_(iConfig.getParameter<bool>("relativeTrackVars")),
-      doCandIndsForJets_(iConfig.getParameter<bool>("doCandIndsForJets")) {
+      doCandIndsForJets_(iConfig.getParameter<bool>("doCandIndsForJets")),
+      format_(scouting::formatFromString(iConfig.getParameter<std::string>(scouting::kFormatParameterName))) {
   //register products
-  produces<Run3ScoutingPFJetCollection>();
-  produces<Run3ScoutingParticleCollection>();
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produces<scouting::Run3Format::PFJetCollection>();
+      produces<scouting::Run3Format::ParticleCollection>();
+      break;
+    case scouting::Format::kPhase2:
+      produces<scouting::Phase2Format::PFJetCollection>();
+      produces<scouting::Phase2Format::ParticleCollection>();
+      break;
+  }
   produces<double>("rho");
   produces<double>("pfMetPt");
   produces<double>("pfMetPhi");
@@ -107,11 +124,23 @@ HLTScoutingPFProducer::~HLTScoutingPFProducer() = default;
 
 // ------------ method called to produce the data  ------------
 void HLTScoutingPFProducer::produce(edm::StreamID sid, edm::Event &iEvent, edm::EventSetup const &setup) const {
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produceImpl<scouting::Run3Format>(iEvent);
+      break;
+    case scouting::Format::kPhase2:
+      produceImpl<scouting::Phase2Format>(iEvent);
+      break;
+  }
+}
+
+template <typename Format>
+void HLTScoutingPFProducer::produceImpl(edm::Event &iEvent) const {
   using namespace edm;
 
   //get vertices
   Handle<reco::VertexCollection> vertexCollection;
-  auto outVertices = std::make_unique<Run3ScoutingVertexCollection>();
+  auto outVertices = std::make_unique<typename Format::VertexCollection>();
   if (iEvent.getByToken(vertexCollection_, vertexCollection)) {
     for (auto const &vtx : *vertexCollection) {
       outVertices->emplace_back(
@@ -149,7 +178,7 @@ void HLTScoutingPFProducer::produce(edm::StreamID sid, edm::Event &iEvent, edm::
 
   //get PF candidates
   Handle<reco::PFCandidateCollection> pfCandidateCollection;
-  auto outPFCandidates = std::make_unique<Run3ScoutingParticleCollection>();
+  auto outPFCandidates = std::make_unique<typename Format::ParticleCollection>();
   if (doCandidates_ && iEvent.getByToken(pfCandidateCollection_, pfCandidateCollection)) {
     for (auto const &cand : *pfCandidateCollection) {
       if (cand.pt() > pfCandidatePtCut_ && std::abs(cand.eta()) < pfCandidateEtaCut_) {
@@ -220,7 +249,7 @@ void HLTScoutingPFProducer::produce(edm::StreamID sid, edm::Event &iEvent, edm::
 
   //get PF jets
   Handle<reco::PFJetCollection> pfJetCollection;
-  auto outPFJets = std::make_unique<Run3ScoutingPFJetCollection>();
+  auto outPFJets = std::make_unique<typename Format::PFJetCollection>();
   if (iEvent.getByToken(pfJetCollection_, pfJetCollection)) {
     //get PF jet tags
     Handle<reco::JetTagCollection> pfJetTagCollection;
@@ -327,6 +356,9 @@ void HLTScoutingPFProducer::fillDescriptions(edm::ConfigurationDescriptions &des
   desc.add<bool>("doTrackVars", true);
   desc.add<bool>("relativeTrackVars", true);
   desc.add<bool>("doCandIndsForJets", false);
+  desc.ifValue(edm::ParameterDescription<std::string>(scouting::kFormatParameterName, scouting::kRun3FormatName, true),
+               edm::allowedValues<std::string>(scouting::kRun3FormatName, scouting::kPhase2FormatName))
+      ->setComment("family of scouting data formats to produce (\"Run3\" or \"Phase2\")");
   descriptions.addWithDefaultLabel(desc);
 }
 

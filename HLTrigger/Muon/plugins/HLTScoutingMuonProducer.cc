@@ -5,7 +5,7 @@
 //
 /**\class HLTScoutingMuonProducer HLTScoutingMuonProducer.cc HLTScoutingMuonProducer.cc
 
-Description: Producer for ScoutingMuon
+Description: Producer for ScoutingMuon (Run3ScoutingMuon or Phase2ScoutingMuon, see "scoutingFormat" parameter)
 
 */
 //
@@ -16,7 +16,10 @@ Description: Producer for ScoutingMuon
 
 #include "HLTScoutingMuonProducer.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "FWCore/ParameterSet/interface/allowedValues.h"
 #include "TMath.h"
+
+#include <string>
 
 //
 // constructors and destructor
@@ -34,20 +37,41 @@ HLTScoutingMuonProducer::HLTScoutingMuonProducer(const edm::ParameterSet& iConfi
       TrackIsoMap_(consumes<edm::ValueMap<double>>(iConfig.getParameter<edm::InputTag>("TrackIsoMap"))),
       muonPtCut(iConfig.getParameter<double>("muonPtCut")),
       muonEtaCut(iConfig.getParameter<double>("muonEtaCut")),
-      minVtxProbCut(iConfig.getParameter<double>("minVtxProbCut")) {
+      minVtxProbCut(iConfig.getParameter<double>("minVtxProbCut")),
+      format_(scouting::formatFromString(iConfig.getParameter<std::string>(scouting::kFormatParameterName))) {
   //register products
-  produces<Run3ScoutingMuonCollection>();
-  produces<Run3ScoutingVertexCollection>("displacedVtx");
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produces<scouting::Run3Format::MuonCollection>();
+      produces<scouting::Run3Format::VertexCollection>("displacedVtx");
+      break;
+    case scouting::Format::kPhase2:
+      produces<scouting::Phase2Format::MuonCollection>();
+      produces<scouting::Phase2Format::VertexCollection>("displacedVtx");
+      break;
+  }
 }
 
 HLTScoutingMuonProducer::~HLTScoutingMuonProducer() = default;
 
 // ------------ method called to produce the data  ------------
 void HLTScoutingMuonProducer::produce(edm::StreamID sid, edm::Event& iEvent, edm::EventSetup const& setup) const {
+  switch (format_) {
+    case scouting::Format::kRun3:
+      produceImpl<scouting::Run3Format>(iEvent);
+      break;
+    case scouting::Format::kPhase2:
+      produceImpl<scouting::Phase2Format>(iEvent);
+      break;
+  }
+}
+
+template <typename Format>
+void HLTScoutingMuonProducer::produceImpl(edm::Event& iEvent) const {
   using namespace edm;
 
-  std::unique_ptr<Run3ScoutingMuonCollection> outMuons(new Run3ScoutingMuonCollection());
-  std::unique_ptr<Run3ScoutingVertexCollection> dispVertices(new Run3ScoutingVertexCollection());
+  auto outMuons = std::make_unique<typename Format::MuonCollection>();
+  auto dispVertices = std::make_unique<typename Format::VertexCollection>();
 
   // Get RecoChargedCandidate
   Handle<reco::RecoChargedCandidateCollection> ChargedCandidateCollection;
@@ -288,7 +312,7 @@ void HLTScoutingMuonProducer::produce(edm::StreamID sid, edm::Event& iEvent, edm
                            track->vy(),
                            track->vz(),
                            vtxInd,
-                           track->hitPattern().run3ScoutingHitPatternPOD());
+                           Format::hitPatternPOD(track->hitPattern().run3ScoutingHitPatternPOD()));
     vtxInd.clear();
   }
 
@@ -312,6 +336,9 @@ void HLTScoutingMuonProducer::fillDescriptions(edm::ConfigurationDescriptions& d
   desc.add<double>("muonPtCut", 3.0);
   desc.add<double>("muonEtaCut", 2.4);
   desc.add<double>("minVtxProbCut", 0.001);
+  desc.ifValue(edm::ParameterDescription<std::string>(scouting::kFormatParameterName, scouting::kRun3FormatName, true),
+               edm::allowedValues<std::string>(scouting::kRun3FormatName, scouting::kPhase2FormatName))
+      ->setComment("family of scouting data formats to produce (\"Run3\" or \"Phase2\")");
 
   descriptions.add("hltScoutingMuonProducer", desc);
 }

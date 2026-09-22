@@ -8,7 +8,8 @@
 //
 /**\class HLTScoutingMuonProducer HLTScoutingMuonProducer.h HLTScoutingMuonProducer.h
 
-Description: Producer for Run3ScoutingMuon
+Description: Producer for Run3ScoutingMuon or Phase2ScoutingMuon (and the associated displaced vertices).
+             The family of output data formats is selected via the "scoutingFormat" parameter.
 
 */
 //
@@ -39,9 +40,7 @@ Description: Producer for Run3ScoutingMuon
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
-#include "DataFormats/Scouting/interface/Run3ScoutingHitPatternPOD.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingMuon.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingVertex.h"
+#include "DataFormats/Scouting/interface/ScoutingFormatTraits.h"
 
 #include "DataFormats/MuonReco/interface/MuonTrackLinks.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
@@ -60,6 +59,10 @@ public:
 private:
   void produce(edm::StreamID sid, edm::Event& iEvent, edm::EventSetup const& setup) const final;
 
+  // implementation templated on the family of scouting data formats
+  template <typename Format>
+  void produceImpl(edm::Event& iEvent) const;
+
   const edm::EDGetTokenT<reco::RecoChargedCandidateCollection> ChargedCandidateCollection_;
   const edm::EDGetTokenT<reco::VertexCollection> displacedvertexCollection_;
   const edm::EDGetTokenT<reco::MuonCollection> MuonCollection_;
@@ -72,6 +75,8 @@ private:
   const double muonPtCut;
   const double muonEtaCut;
   const double minVtxProbCut;
+
+  const scouting::Format format_;
 };
 
 #endif

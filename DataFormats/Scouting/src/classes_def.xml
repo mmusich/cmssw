@@ -74,6 +74,43 @@
       <version ClassVersion="3" checksum="1840081356"/>
       <version ClassVersion="4" checksum="3439505242"/> 
   </class>
+  <!-- Phase 2 scouting data formats -->
+  <class name="Phase2ScoutingCaloJet" ClassVersion="3">
+      <version ClassVersion="3" checksum="168081928"/>
+  </class>
+  <class name="Phase2ScoutingElectron" ClassVersion="3">
+      <version ClassVersion="3" checksum="3915968788"/>
+  </class>
+  <class name="Phase2ScoutingHitPatternPOD" ClassVersion="3">
+      <version ClassVersion="3" checksum="403810963"/>
+  </class>
+  <class name="Phase2ScoutingMuon" ClassVersion="3">
+      <version ClassVersion="3" checksum="2681590935"/>
+  </class>
+  <class name="Phase2ScoutingParticle" ClassVersion="3">
+      <version ClassVersion="3" checksum="3091034073"/>
+  </class>
+  <class name="Phase2ScoutingPFJet" ClassVersion="3">
+      <version ClassVersion="3" checksum="2273888859"/>
+  </class>
+  <class name="Phase2ScoutingPhoton" ClassVersion="3">
+      <version ClassVersion="3" checksum="3231157605"/>
+  </class>
+  <class name="Phase2ScoutingTrack" ClassVersion="3">
+      <version ClassVersion="3" checksum="2531507962"/>
+  </class>
+  <class name="Phase2ScoutingVertex" ClassVersion="3">
+      <version ClassVersion="3" checksum="1826654130"/>
+  </class>
+  <class name="Phase2ScoutingEBRecHit" ClassVersion="3">
+      <version ClassVersion="3" checksum="130653391"/>
+  </class>
+  <class name="Phase2ScoutingEERecHit" ClassVersion="3">
+      <version ClassVersion="3" checksum="674410494"/>
+  </class>
+  <class name="Phase2ScoutingHBHERecHit" ClassVersion="3">
+      <version ClassVersion="3" checksum="2121893169"/>
+  </class>
   <class name="ScoutingCaloJet" ClassVersion="3">
       <version ClassVersion="2" checksum="2705685116"/>
       <version ClassVersion="3" checksum="631496401"/>
@@ -113,6 +150,17 @@
   <class name="std::vector<Run3ScoutingEBRecHit>"/>
   <class name="std::vector<Run3ScoutingEERecHit>"/>
   <class name="std::vector<Run3ScoutingHBHERecHit>"/>
+  <class name="std::vector<Phase2ScoutingCaloJet>"/>
+  <class name="std::vector<Phase2ScoutingElectron>"/>
+  <class name="std::vector<Phase2ScoutingMuon>"/>
+  <class name="std::vector<Phase2ScoutingParticle>"/>
+  <class name="std::vector<Phase2ScoutingPFJet>"/>
+  <class name="std::vector<Phase2ScoutingPhoton>"/>
+  <class name="std::vector<Phase2ScoutingTrack>"/>
+  <class name="std::vector<Phase2ScoutingVertex>"/>
+  <class name="std::vector<Phase2ScoutingEBRecHit>"/>
+  <class name="std::vector<Phase2ScoutingEERecHit>"/>
+  <class name="std::vector<Phase2ScoutingHBHERecHit>"/>
   <class name="std::vector<ScoutingCaloJet>"/>
   <class name="std::vector<ScoutingElectron>"/>
   <class name="std::vector<ScoutingMuon>"/>
@@ -132,6 +180,17 @@
   <class name="edm::Wrapper<std::vector<Run3ScoutingEBRecHit> >"/>
   <class name="edm::Wrapper<std::vector<Run3ScoutingEERecHit> >"/>
   <class name="edm::Wrapper<std::vector<Run3ScoutingHBHERecHit> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingCaloJet> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingElectron> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingMuon> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingParticle> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingPFJet> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingPhoton> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingTrack> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingVertex> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingEBRecHit> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingEERecHit> >"/>
+  <class name="edm::Wrapper<std::vector<Phase2ScoutingHBHERecHit> >"/>
   <class name="edm::Wrapper<std::vector<ScoutingCaloJet> >"/>
   <class name="edm::Wrapper<std::vector<ScoutingElectron> >"/>
   <class name="edm::Wrapper<std::vector<ScoutingMuon> >"/>

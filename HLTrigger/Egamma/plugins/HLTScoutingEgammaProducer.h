@@ -8,7 +8,9 @@
 //
 /**\class HLTScoutingEgammaProducer HLTScoutingEgammaProducer.h HLTScoutingEgammaProducer.h
 
-Description: Producer for ScoutingElectron and ScoutingPhoton
+Description: Producer for ScoutingElectron and ScoutingPhoton.
+             Either the Run3Scouting* or the Phase2Scouting* family of data formats is produced,
+             as selected via the "scoutingFormat" parameter.
 
 */
 //
@@ -38,8 +40,7 @@ Description: Producer for ScoutingElectron and ScoutingPhoton
 #include "DataFormats/RecoCandidate/interface/RecoEcalCandidate.h"
 #include "DataFormats/TrajectorySeed/interface/TrajectorySeedCollection.h"
 
-#include "DataFormats/Scouting/interface/Run3ScoutingElectron.h"
-#include "DataFormats/Scouting/interface/Run3ScoutingPhoton.h"
+#include "DataFormats/Scouting/interface/ScoutingFormatTraits.h"
 
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
@@ -63,6 +64,10 @@ public:
 
 private:
   void produce(edm::StreamID sid, edm::Event& iEvent, edm::EventSetup const& setup) const final;
+
+  // implementation templated on the family of scouting data formats
+  template <typename Format>
+  void produceImpl(edm::Event& iEvent, edm::EventSetup const& setup) const;
 
   const edm::EDGetTokenT<reco::RecoEcalCandidateCollection> EgammaCandidateCollection_;
   const edm::EDGetTokenT<reco::GsfTrackCollection> EgammaGsfTrackCollection_;
@@ -93,6 +98,8 @@ private:
   const edm::EDGetTokenT<EcalRecHitCollection> ecalRechitEB_;
   const edm::EDGetTokenT<EcalRecHitCollection> ecalRechitEE_;
   edm::ESGetToken<CaloTopology, CaloTopologyRecord> topologyToken_;
+
+  const scouting::Format format_;
 };
 
 #endif
