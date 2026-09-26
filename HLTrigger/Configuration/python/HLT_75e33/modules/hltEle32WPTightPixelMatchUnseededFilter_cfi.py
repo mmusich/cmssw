@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 hltEle32WPTightPixelMatchUnseededFilter = cms.EDFilter("HLTElectronPixelMatchFilter",
     candTag = cms.InputTag("hltEle32WPTightHcalIsoUnseededFilter"),
     l1EGCand = cms.InputTag("hltEgammaCandidatesUnseeded"),
-    l1PixelSeedsTag = cms.InputTag("hltEgammaElectronPixelSeedsUnseeded"),
+    l1PixelSeedsTag = cms.InputTag("hltEgammaFittedElectronPixelSeedsUnseeded"),
     ncandcut = cms.int32(1),
     npixelmatchcut = cms.double(1.0),
     pixelVeto = cms.bool(False),

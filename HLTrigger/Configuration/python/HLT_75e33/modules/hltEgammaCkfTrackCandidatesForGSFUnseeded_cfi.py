@@ -18,6 +18,6 @@ hltEgammaCkfTrackCandidatesForGSFUnseeded = cms.EDProducer("CkfTrackCandidateMak
     maxNSeeds = cms.uint32(1000000),
     maxSeedsBeforeCleaning = cms.uint32(1000),
     reverseTrajectories = cms.bool(False),
-    src = cms.InputTag("hltEgammaElectronPixelSeedsUnseeded"),
+    src = cms.InputTag("hltEgammaFittedElectronPixelSeedsUnseeded"),
     useHitsSplitting = cms.bool(True)
 )
