@@ -15,6 +15,7 @@ from HLTriggerOffline.Scouting.RecoTrackFromScoutingMonitor_cff import *
 from HLTriggerOffline.Scouting.ScoutingMuonTriggerAnalyzer_cfi import *
 from HLTriggerOffline.Scouting.ScoutingMuonTagProbeAnalyzer_cfi import *
 from HLTriggerOffline.Scouting.ScoutingMuonPropertiesMonitoring_cfi import *
+from HLTriggerOffline.Scouting.HLTScoutingDiMuonAlignmentMonitor_cfi import *
 
 ### Egamma monitoring
 from HLTriggerOffline.Scouting.HLTScoutingEGammaDqmOffline_cff import *
@@ -61,13 +62,19 @@ hltScoutingPi0Monitor = cms.Sequence(ScoutingPi0Monitor)
 hltScoutingDiMuonVertexMonitor = cms.Sequence(ScoutingDiMuonVertexMonitor)
 
 hltDqmOnlyScouting = cms.Sequence(recoTrackFromScoutingMonitorSequence +
-                                    hltScoutingTrackMonitor +
-                                    run3ScoutingElectronBestTrack +
-                                    hltScoutingDileptonMonitor +
-                                    ScoutingMuonPropertiesMonitor +
-                                    hltScoutingDiMuonVertexMonitor +
-                                    hltScoutingPi0Monitor +
-                                    hltScoutingCollectionMonitor)
+                                  hltScoutingTrackMonitor +
+                                  run3ScoutingElectronBestTrack +
+                                  hltScoutingDileptonMonitor +
+                                  ScoutingMuonPropertiesMonitor +
+                                  ScoutingDiMuonAlignmentMonitor +
+                                  ScoutingDiMuonAlignmentMonitorJpsi +
+                                  hltScoutingDiMuonVertexMonitor +
+                                  hltScoutingPi0Monitor +
+                                  jetPreDQMSeqScouting +
+                                  dqmAk4PFScoutingL1FastL2L3ResidualCorrector +
+                                  jetDQMAnalyzerAk4ScoutingUncleaned +
+                                  jetDQMAnalyzerAk4ScoutingCleaned +
+                                  hltScoutingCollectionMonitor)
 
 hltDqmScoutingAndReco = cms.Sequence(hltScoutingMuonDqmOffline +
                                      hltScoutingEGammaDqmOffline +
