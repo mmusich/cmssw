@@ -109,6 +109,10 @@ upgradeKeys['Run4'] = [
     'Run4D128PU',
     'Run4D129',
     'Run4D129PU',
+    'Run4D130',
+    'Run4D130PU',
+    'Run4D131',
+    'Run4D131PU',
 ]
 
 # pre-generation of WF numbers
@@ -4243,6 +4247,20 @@ upgradeProperties['Run4'] = {
     },
     'Run4D129' : {
         'Geom' : 'ExtendedRun4D129',
+        'HLTmenu': '@relvalRun4',
+        'GT' : 'auto:phase2_realistic_T38',
+        'Era' : 'Phase2C26I13M9',
+        'ScenToRun' : ['GenSimHLBeamSpot','DigiTrigger','RecoGlobal', 'HARVESTGlobal', 'ALCAPhase2'],
+    },
+    'Run4D130' : {
+        'Geom' : 'ExtendedRun4D130',
+        'HLTmenu': '@relvalRun4',
+        'GT' : 'auto:phase2_realistic_T38',
+        'Era' : 'Phase2C26I13M9',
+        'ScenToRun' : ['GenSimHLBeamSpot','DigiTrigger','RecoGlobal', 'HARVESTGlobal', 'ALCAPhase2'],
+    },
+    'Run4D131' : {
+        'Geom' : 'ExtendedRun4D131',
         'HLTmenu': '@relvalRun4',
         'GT' : 'auto:phase2_realistic_T38',
         'Era' : 'Phase2C26I13M9',
