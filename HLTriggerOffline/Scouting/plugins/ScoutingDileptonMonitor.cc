@@ -524,7 +524,7 @@ void ScoutingDileptonMonitor::fillDescriptions(edm::ConfigurationDescriptions& d
   desc.add<double>("jpsiEleTrackPtMin", 5.0)
       ->setComment("min pT of the best GSF track (the EGM scouting NanoAOD uses 12 GeV)");
   desc.add<double>("jpsiEleTrackDPhiMax", 0.3)
-      ->setComment("max signed deltaPhi(SC, track at vertex); 0.06 (NanoAOD) rejects e- below ~12 GeV");
+      ->setComment("max |deltaPhi(SC, track at vertex)| after subtracting the expected bending (NanoAOD: 0.06)");
   desc.add<double>("jpsiEleTrackEtaMax", 2.5);
   desc.add<bool>("jpsiEleLeadingPairOnly", true)->setComment("false = all opposite-charge pairs");
   desc.add<std::string>("jpsiEleWP", "Loose")->setComment("cut-based ID: Veto, Loose, Medium or Tight");

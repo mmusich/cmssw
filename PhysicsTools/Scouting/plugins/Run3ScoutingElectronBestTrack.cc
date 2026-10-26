@@ -15,6 +15,8 @@
 //
 
 // system include files
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -32,6 +34,20 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/Scouting/interface/Run3ScoutingElectron.h"
+
+namespace {
+  // Expected phi(SC) - phi(track at vertex) from the bending in the solenoid up to the ECAL front face:
+  // -q * asin(0.3 * B * r / (2 pT)), i.e. ~ -q * 0.74/pT[GeV] rad in the barrel
+  // (same as scoutingDQMUtils::expectedDeltaPhiSCTrack in HLTriggerOffline/Scouting)
+  double expectedDeltaPhiSCTrack(double trkPt, int trkCharge, double scEta) {
+    constexpr double kBField = 3.8;     // T
+    constexpr double kRadiusEB = 1.29;  // m, ECAL barrel front face
+    constexpr double kZEE = 3.15;       // m, ECAL endcap front face
+    const double absEta = std::abs(scEta);
+    const double radius = absEta < 1.479 ? kRadiusEB : kZEE / std::sinh(absEta);
+    return -trkCharge * std::asin(std::min(1., 0.3 * kBField * radius / (2. * trkPt)));
+  }
+}  // namespace
 
 //
 // class declaration
@@ -143,7 +159,11 @@ void Run3ScoutingElectronBestTrackProducer::produce(edm::Event& iEvent, const ed
       const math::PtEtaPhiMLorentzVector gsftrack(
           electron.trkpt()[i], electron.trketa()[i], electron.trkphi()[i], 0.0005);
 
-      if (deltaPhi(cluster.phi(), gsftrack.phi()) > deltaPhiMax_[eta_idx])
+      // symmetric in charge, after subtracting the expected bending (otherwise e- below ~12 GeV fail
+      // a 0.06 cut and e+ are never constrained)
+      const double dPhi = std::abs(deltaPhi(cluster.phi(), gsftrack.phi()) -
+                                   expectedDeltaPhiSCTrack(gsftrack.pt(), electron.trkcharge()[i], electron.eta()));
+      if (dPhi > deltaPhiMax_[eta_idx])
         continue;
 
       const double track_ediff = std::abs((cluster.energy() - gsftrack.energy()) / cluster.energy());

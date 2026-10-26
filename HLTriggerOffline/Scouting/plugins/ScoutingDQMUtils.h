@@ -66,14 +66,27 @@ namespace scoutingDQMUtils {
     }
   }
 
-  // dPhiMax is applied to the signed deltaPhi(SC, track at vertex): e- bend to positive values,
-  // ~0.74/pT[GeV] rad at the ECAL barrel face, so the default 0.06 matches trackPtMin = 12 GeV
+  // Expected phi(SC) - phi(track at vertex) from the bending in the solenoid up to the ECAL front face:
+  // -q * asin(0.3 * B * r / (2 pT)), i.e. ~ -q * 0.74/pT[GeV] rad in the barrel
+  inline double expectedDeltaPhiSCTrack(double trkPt, int trkCharge, double scEta) {
+    constexpr double kBField = 3.8;     // T
+    constexpr double kRadiusEB = 1.29;  // m, ECAL barrel front face
+    constexpr double kZEE = 3.15;       // m, ECAL endcap front face
+    const double absEta = std::abs(scEta);
+    const double radius = absEta < ELE_etaEB ? kRadiusEB : kZEE / std::sinh(absEta);
+    return -trkCharge * std::asin(std::min(1., 0.3 * kBField * radius / (2. * trkPt)));
+  }
+
+  // dPhiMax is applied to |deltaPhi(SC, track at vertex)| after subtracting the expected bending,
+  // so the cut is symmetric in charge and does not reject low-pT tracks
   inline bool scoutingElectronGsfTrackID(const Run3ScoutingElectron& el,
                                          size_t trackIdx,
                                          double trackPtMin = 12.,
                                          double dPhiMax = 0.06) {
-    if (trackIdx > el.trkpt().size())
+    if (trackIdx >= el.trkpt().size()) {
       edm::LogError("ScoutingDQMUtils") << "Invalid track index for electron: Exceeds the number of tracks";
+      return false;
+    }
 
     math::PtEtaPhiMLorentzVector particleSC(el.pt(), el.eta(), el.phi(), scoutingDQMUtils::ELECTRON_MASS);
     math::PtEtaPhiMLorentzVector particleTrk(
@@ -82,7 +95,8 @@ namespace scoutingDQMUtils {
     double scEnergy = particleSC.energy();
     double trkEnergy = particleTrk.energy();
     double relEnergyDiff = std::abs(scEnergy - trkEnergy) / scEnergy;
-    double dPhi = deltaPhi(particleSC.phi(), particleTrk.phi());
+    double dPhi = std::abs(deltaPhi(particleSC.phi(), particleTrk.phi()) -
+                           expectedDeltaPhiSCTrack(el.trkpt()[trackIdx], el.trkcharge()[trackIdx], el.eta()));
 
     bool isEB = (std::abs(el.eta()) < scoutingDQMUtils::ELE_etaEB);
     if (isEB) {
