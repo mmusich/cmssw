@@ -66,7 +66,12 @@ namespace scoutingDQMUtils {
     }
   }
 
-  inline bool scoutingElectronGsfTrackID(const Run3ScoutingElectron& el, size_t trackIdx) {
+  // dPhiMax is applied to the signed deltaPhi(SC, track at vertex): e- bend to positive values,
+  // ~0.74/pT[GeV] rad at the ECAL barrel face, so the default 0.06 matches trackPtMin = 12 GeV
+  inline bool scoutingElectronGsfTrackID(const Run3ScoutingElectron& el,
+                                         size_t trackIdx,
+                                         double trackPtMin = 12.,
+                                         double dPhiMax = 0.06) {
     if (trackIdx > el.trkpt().size())
       edm::LogError("ScoutingDQMUtils") << "Invalid track index for electron: Exceeds the number of tracks";
 
@@ -81,21 +86,21 @@ namespace scoutingDQMUtils {
 
     bool isEB = (std::abs(el.eta()) < scoutingDQMUtils::ELE_etaEB);
     if (isEB) {
-      if (el.trkpt()[trackIdx] < 12)
+      if (el.trkpt()[trackIdx] < trackPtMin)
         return false;
       if (relEnergyDiff > 1)
         return false;
-      if (dPhi > 0.06)
+      if (dPhi > dPhiMax)
         return false;
       if (el.trkchi2overndf()[trackIdx] > 3)
         return false;
       return true;
     } else {
-      if (el.trkpt()[trackIdx] < 12)
+      if (el.trkpt()[trackIdx] < trackPtMin)
         return false;
       if (relEnergyDiff > 1)
         return false;
-      if (dPhi > 0.06)
+      if (dPhi > dPhiMax)
         return false;
       if (el.trkchi2overndf()[trackIdx] > 2)
         return false;
@@ -103,10 +108,13 @@ namespace scoutingDQMUtils {
     }
   }
 
-  inline bool scoutingElectronGsfTrackIdx(const Run3ScoutingElectron& el, size_t& trackIdx) {
+  inline bool scoutingElectronGsfTrackIdx(const Run3ScoutingElectron& el,
+                                          size_t& trackIdx,
+                                          double trackPtMin = 12.,
+                                          double dPhiMax = 0.06) {
     bool foundGoodGsfTrkIdx = false;
     for (size_t i = 0; i < el.trkpt().size(); ++i) {
-      if (scoutingDQMUtils::scoutingElectronGsfTrackID(el, i)) {
+      if (scoutingDQMUtils::scoutingElectronGsfTrackID(el, i, trackPtMin, dPhiMax)) {
         if (!foundGoodGsfTrkIdx) {
           foundGoodGsfTrkIdx = true;
           trackIdx = i;

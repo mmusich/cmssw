@@ -21,7 +21,10 @@ ScoutingDileptonMonitor = DQMEDAnalyzer("ScoutingDileptonMonitor",
                                         electronID = cms.bool(True),
                                         # J/Psi -> ee with the selection of the EGM scouting studies
                                         doJpsiElectrons = cms.bool(True),
-                                        jpsiEleTriggers = cms.vstring("DST_PFScouting_DoubleEG"),
+                                        jpsiEleTriggers = cms.vstring("DST_PFScouting_DoubleEG", "DST_PFScouting_SinglePhotonEB"),
                                         jpsiElePtMin = cms.double(5.0),
+                                        jpsiEleTrackPtMin = cms.double(5.0),
+                                        jpsiEleTrackDPhiMax = cms.double(0.3), # 0.06 would reject e- below ~12 GeV
+                                        jpsiEleLeadingPairOnly = cms.bool(True),
                                         jpsiEleWP = cms.string("Loose"),
                                         jpsiEleUseIso = cms.bool(False))
