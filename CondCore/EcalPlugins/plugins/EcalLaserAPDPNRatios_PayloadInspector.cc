@@ -735,17 +735,22 @@ namespace {
       std::unique_ptr<TH1F> hist[2][kParams][kParts];
       for (int i = 0; i < kParams; i++) {
         for (int part = 0; part < kParts; part++) {
+	  /*
           float vmin = std::min(*std::min_element(values[0][i][part].begin(), values[0][i][part].end()),
                                 *std::min_element(values[1][i][part].begin(), values[1][i][part].end()));
           float vmax = std::max(*std::max_element(values[0][i][part].begin(), values[0][i][part].end()),
                                 *std::max_element(values[1][i][part].begin(), values[1][i][part].end()));
           float margin = (vmax > vmin) ? 0.05 * (vmax - vmin) : 0.01;
+	  */
           for (int irun = 0; irun < 2; irun++) {
             hist[irun][i][part] = std::make_unique<TH1F>(Form("%s_p%i_%i", partName[part], i + 1, irun),
                                                          Form(";p%i;Crystals", i + 1),
                                                          kBins,
-                                                         vmin - margin,
-                                                         vmax + margin);
+                                                         //vmin - margin,
+                                                         //vmax + margin
+							 0.,
+							 1.01
+							 );
             hist[irun][i][part]->SetDirectory(nullptr);
             for (float v : values[irun][i][part])
               hist[irun][i][part]->Fill(v);
@@ -779,7 +784,12 @@ namespace {
 
           TH1F* h1 = hist[0][i][part].get();
           TH1F* h2 = hist[1][i][part].get();
-          h1->SetMaximum(1.5 * std::max(h1->GetMaximum(), h2->GetMaximum()));  // leave room for the legend
+          //h1->SetMaximum(1.5 * std::max(h1->GetMaximum(), h2->GetMaximum()));  // leave room for the legend
+	   if(part==0 || part==2){
+	    hist[0][i][part]->SetMaximum(500);
+	  } else {
+	    hist[0][i][part]->SetMaximum(5000);
+	  }
           h1->SetMinimum(0.);
           for (auto* axis : {h1->GetXaxis(), h1->GetYaxis()}) {
             axis->SetLabelFont(43);
