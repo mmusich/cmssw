@@ -1,12 +1,15 @@
 #ifndef HLTriggerOffline_Scouting_ScoutingDQMUtils_h
 #define HLTriggerOffline_Scouting_ScoutingDQMUtils_h
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "DataFormats/Scouting/interface/Run3ScoutingElectron.h"
 #include "DataFormats/Scouting/interface/Run3ScoutingMuon.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "FWCore/Common/interface/TriggerNames.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 namespace scoutingDQMUtils {
 
@@ -63,9 +66,27 @@ namespace scoutingDQMUtils {
     }
   }
 
-  inline bool scoutingElectronGsfTrackID(const Run3ScoutingElectron& el, size_t trackIdx) {
-    if (trackIdx > el.trkpt().size())
+  // Expected phi(SC) - phi(track at vertex) from the bending in the solenoid up to the ECAL front face:
+  // -q * asin(0.3 * B * r / (2 pT)), i.e. ~ -q * 0.74/pT[GeV] rad in the barrel
+  inline double expectedDeltaPhiSCTrack(double trkPt, int trkCharge, double scEta) {
+    constexpr double kBField = 3.8;     // T
+    constexpr double kRadiusEB = 1.29;  // m, ECAL barrel front face
+    constexpr double kZEE = 3.15;       // m, ECAL endcap front face
+    const double absEta = std::abs(scEta);
+    const double radius = absEta < ELE_etaEB ? kRadiusEB : kZEE / std::sinh(absEta);
+    return -trkCharge * std::asin(std::min(1., 0.3 * kBField * radius / (2. * trkPt)));
+  }
+
+  // dPhiMax is applied to |deltaPhi(SC, track at vertex)| after subtracting the expected bending,
+  // so the cut is symmetric in charge and does not reject low-pT tracks
+  inline bool scoutingElectronGsfTrackID(const Run3ScoutingElectron& el,
+                                         size_t trackIdx,
+                                         double trackPtMin = 12.,
+                                         double dPhiMax = 0.06) {
+    if (trackIdx >= el.trkpt().size()) {
       edm::LogError("ScoutingDQMUtils") << "Invalid track index for electron: Exceeds the number of tracks";
+      return false;
+    }
 
     math::PtEtaPhiMLorentzVector particleSC(el.pt(), el.eta(), el.phi(), scoutingDQMUtils::ELECTRON_MASS);
     math::PtEtaPhiMLorentzVector particleTrk(
@@ -74,25 +95,26 @@ namespace scoutingDQMUtils {
     double scEnergy = particleSC.energy();
     double trkEnergy = particleTrk.energy();
     double relEnergyDiff = std::abs(scEnergy - trkEnergy) / scEnergy;
-    double dPhi = deltaPhi(particleSC.phi(), particleTrk.phi());
+    double dPhi = std::abs(deltaPhi(particleSC.phi(), particleTrk.phi()) -
+                           expectedDeltaPhiSCTrack(el.trkpt()[trackIdx], el.trkcharge()[trackIdx], el.eta()));
 
     bool isEB = (std::abs(el.eta()) < scoutingDQMUtils::ELE_etaEB);
     if (isEB) {
-      if (el.trkpt()[trackIdx] < 12)
+      if (el.trkpt()[trackIdx] < trackPtMin)
         return false;
       if (relEnergyDiff > 1)
         return false;
-      if (dPhi > 0.06)
+      if (dPhi > dPhiMax)
         return false;
       if (el.trkchi2overndf()[trackIdx] > 3)
         return false;
       return true;
     } else {
-      if (el.trkpt()[trackIdx] < 12)
+      if (el.trkpt()[trackIdx] < trackPtMin)
         return false;
       if (relEnergyDiff > 1)
         return false;
-      if (dPhi > 0.06)
+      if (dPhi > dPhiMax)
         return false;
       if (el.trkchi2overndf()[trackIdx] > 2)
         return false;
@@ -100,10 +122,13 @@ namespace scoutingDQMUtils {
     }
   }
 
-  inline bool scoutingElectronGsfTrackIdx(const Run3ScoutingElectron& el, size_t& trackIdx) {
+  inline bool scoutingElectronGsfTrackIdx(const Run3ScoutingElectron& el,
+                                          size_t& trackIdx,
+                                          double trackPtMin = 12.,
+                                          double dPhiMax = 0.06) {
     bool foundGoodGsfTrkIdx = false;
     for (size_t i = 0; i < el.trkpt().size(); ++i) {
-      if (scoutingDQMUtils::scoutingElectronGsfTrackID(el, i)) {
+      if (scoutingDQMUtils::scoutingElectronGsfTrackID(el, i, trackPtMin, dPhiMax)) {
         if (!foundGoodGsfTrkIdx) {
           foundGoodGsfTrkIdx = true;
           trackIdx = i;
@@ -116,6 +141,84 @@ namespace scoutingDQMUtils {
       }
     }
     return foundGoodGsfTrkIdx;
+  }
+
+  // Cut-based scouting electron ID (122X-tuned working points) of the EGM scouting studies
+  enum class ElectronWP { Veto = 0, Loose, Medium, Tight };
+
+  inline ElectronWP electronWPFromString(const std::string& wp) {
+    if (wp == "Veto")
+      return ElectronWP::Veto;
+    if (wp == "Loose")
+      return ElectronWP::Loose;
+    if (wp == "Medium")
+      return ElectronWP::Medium;
+    if (wp == "Tight")
+      return ElectronWP::Tight;
+    throw cms::Exception("Configuration")
+        << "Unknown electron working point '" << wp << "', allowed: Veto, Loose, Medium, Tight";
+  }
+
+  struct ElectronCutBasedCuts {
+    float sieie;
+    float dEtaIn;
+    float dPhiIn;
+    float hoeC0, hoeCE, hoeCr;  // H/E < C0 + CE/E_SC + Cr*rho/E_SC
+    float isoC0, isoCpt;        // relIso < C0 + Cpt/pT
+    float ooEmooP;
+    int missingHits;
+  };
+
+  // [working point][0 = EB, 1 = EE]
+  inline constexpr ElectronCutBasedCuts electronCutBasedCuts[4][2] = {
+      {{0.0117, 0.0071, 0.208, 0.05, 1.28, 0.0422, 0.406, 0.535, 0.178, 2},
+       {0.0298, 0.0173, 0.234, 0.05, 2.3, 0.262, 0.342, 0.519, 0.137, 3}},
+      {{0.0107, 0.00691, 0.175, 0.05, 1.28, 0.0422, 0.194, 0.535, 0.138, 1},
+       {0.0275, 0.0121, 0.228, 0.05, 2.3, 0.262, 0.184, 0.519, 0.127, 1}},
+      {{0.0103, 0.00481, 0.127, 0.0241, 1.28, 0.0422, 0.0837, 0.535, 0.0966, 1},
+       {0.0272, 0.00951, 0.221, 0.05, 2.3, 0.262, 0.0741, 0.519, 0.111, 1}},
+      {{0.0101, 0.00411, 0.116, 0.02, 1.16, 0.0422, 0.0388, 0.535, 0.023, 1},
+       {0.027, 0.00938, 0.164, 0.02, 0.5, 0.262, 0.0544, 0.519, 0.018, 1}}};
+
+  inline double electronEffectiveArea(double absEta) {
+    if (absEta < 1.0)
+      return 0.1243;
+    if (absEta < 1.479)
+      return 0.1458;
+    if (absEta < 2.0)
+      return 0.0992;
+    if (absEta < 2.2)
+      return 0.0794;
+    if (absEta < 2.3)
+      return 0.0762;
+    if (absEta < 2.4)
+      return 0.0766;
+    return 0.1003;
+  }
+
+  inline bool scoutingElectronCutBasedID(const Run3ScoutingElectron& el, double rho, ElectronWP wp, bool useIso) {
+    const double absEta = std::abs(el.eta());
+    const auto& c = electronCutBasedCuts[static_cast<int>(wp)][absEta <= scoutingDQMUtils::ELE_etaEB ? 0 : 1];
+    const double eSC = el.rawEnergy();
+    if (el.sigmaIetaIeta() >= c.sieie)
+      return false;
+    if (std::abs(el.dEtaIn()) >= c.dEtaIn)
+      return false;
+    if (std::abs(el.dPhiIn()) >= c.dPhiIn)
+      return false;
+    if (el.hOverE() >= c.hoeC0 + c.hoeCE / eSC + c.hoeCr * rho / eSC)
+      return false;
+    if (std::abs(el.ooEMOop()) >= c.ooEmooP)
+      return false;
+    if (el.missingHits() > c.missingHits)
+      return false;
+    if (useIso) {
+      const double neutralIso = el.ecalIso() + el.hcalIso() - rho * electronEffectiveArea(absEta);
+      const double relIso = (std::max(neutralIso, 0.) + el.trackIso()) / el.pt();
+      if (relIso >= c.isoC0 + c.isoCpt / el.pt())
+        return false;
+    }
+    return true;
   }
 
   inline bool hasPatternInHLTPath(const edm::TriggerNames& triggerNames, const std::string& pattern) {
