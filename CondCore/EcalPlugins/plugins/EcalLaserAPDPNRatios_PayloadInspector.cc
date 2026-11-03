@@ -1224,7 +1224,8 @@ namespace {
     }
 
     // CMS label on top of the frames, tag labels above it
-    void drawHeader(TCanvas& canvas) const {
+    // with colored = false the labels are black, for the plots where the tags have no line of their own
+    void drawHeader(TCanvas& canvas, bool colored = true) const {
       canvas.cd();
       const auto& params = cond::payloadInspector::PlotBase::inputParamValues();
       drawLaserCMSLabel(kLeftMargin,
@@ -1236,7 +1237,7 @@ namespace {
       std::vector<int> colors;
       for (int itag = 0; itag < ntags; itag++) {
         lines.push_back((ntags == 1) ? m_label[itag] : Form("(%i) %s", itag + 1, m_label[itag].c_str()));
-        colors.push_back((ntags == 1) ? int(kBlack) : m_style[itag].color);
+        colors.push_back((ntags == 1 || !colored) ? int(kBlack) : m_style[itag].color);
       }
       drawLaserTagLines(kLeftMargin, 0.99, kHeaderStep, kHeaderSize, lines, colors);
     }
@@ -1531,7 +1532,7 @@ namespace {
           band->SetBinContent(i + 1, 0.5 * (up[i] + down[i]));
           band->SetBinError(i + 1, 0.5 * (up[i] - down[i]));
         }
-        band->SetFillColorAlpha(laserTagStyle("", 0).color, 0.45);
+        band->SetFillColor(kGray);
         band->SetLineWidth(0);
         band->SetMarkerSize(0);
         band->Draw("E2 SAME");
@@ -1567,7 +1568,7 @@ namespace {
         Base::redrawAxes(frame);
       }
 
-      this->drawHeader(canvas);
+      this->drawHeader(canvas, false);
 
       std::string ImageName(this->m_imageFileName);
       canvas.SaveAs(ImageName.c_str());
