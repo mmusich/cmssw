@@ -152,7 +152,7 @@ namespace {
       setSingleIov(true);
     }
 
-    bool fill(const std::vector<std::tuple<cond::Time_t, cond::Hash> >& iovs) override {
+    bool fill(const std::vector<std::tuple<cond::Time_t, cond::Hash>>& iovs) override {
       TH2F** barrel = new TH2F*[3];
       TH2F** endc_p = new TH2F*[3];
       TH2F** endc_m = new TH2F*[3];
@@ -1377,6 +1377,7 @@ namespace {
 
       std::string ImageName(this->m_imageFileName);
       canvas.SaveAs(ImageName.c_str());
+      canvas.SaveAs((ImageName + ".pdf").c_str());
       return true;
     }  // fill method
   };  // class EcalLaserAPDPNRatiosStatHistory
@@ -1572,6 +1573,7 @@ namespace {
 
       std::string ImageName(this->m_imageFileName);
       canvas.SaveAs(ImageName.c_str());
+      canvas.SaveAs((ImageName + ".pdf").c_str());
       return true;
     }  // fill method
   };  // class EcalLaserAPDPNRatiosDiffHistory
