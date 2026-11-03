@@ -660,11 +660,6 @@ namespace {
     return (it == known.end()) ? tagName : it->second;
   }
 
-  // "<label>: <tagName>" or the tag name alone if it has no label
-  inline std::string laserTagTitle(const std::string& label, const std::string& tagName) {
-    return (label == tagName) ? tagName : label + ": " + tagName;
-  }
-
   // "CMS <cmsLabel>" left aligned at xLeft and rightLabel right aligned at xRight, baseline at y (NDC of the current pad).
   // No CMS label if cmsLabel is empty, "CMS" alone if cmsLabel is "CMS"
   inline void drawLaserCMSLabel(
@@ -755,13 +750,11 @@ namespace {
       }
       // with one tag the two IOVs are styled by index, with two tags by their labels
       const auto& params = cond::payloadInspector::PlotBase::inputParamValues();
-      std::array<std::string, 2> l_label = {{l_tagname[0], l_tagname[1]}};
-      std::array<EcalLaserTagStyle, 2> l_style = {{laserTagStyle("", 0), laserTagStyle("", 1)}};
-      if constexpr (ntags == 2) {
-        for (int irun = 0; irun < 2; irun++) {
-          l_label[irun] = laserTagLabel(params, irun, l_tagname[irun]);
-          l_style[irun] = laserTagStyle(l_label[irun], irun);
-        }
+      std::array<std::string, 2> l_label;
+      std::array<EcalLaserTagStyle, 2> l_style;
+      for (int irun = 0; irun < 2; irun++) {
+        l_label[irun] = laserTagLabel(params, (ntags == 2) ? irun : 0, l_tagname[irun]);
+        l_style[irun] = (ntags == 2) ? laserTagStyle(l_label[irun], irun) : laserTagStyle("", irun);
       }
 
       // values[iov][param][partition]
@@ -822,7 +815,7 @@ namespace {
 
       // CMS style: text sizes in pixels (precision 3 fonts), one pad per parameter (rows) and partition (columns),
       // below the tag names and the CMS label
-      constexpr double kGridTop = 0.914;
+      constexpr double kGridTop = 0.905;
       constexpr double kLeft = 0.17, kRight = 0.04, kTop = 0.04, kBottom = 0.15;  // pad margins
       gStyle->SetOptStat(0);
       TCanvas canvas("CC hist", "CC hist", 2400, 2400);
@@ -893,13 +886,11 @@ namespace {
       std::vector<std::string> lines;
       std::vector<int> colors;
       for (int irun = 0; irun < 2; irun++) {
-        lines.push_back(Form("(%i) %s, IOV %s",
-                             irun + 1,
-                             laserTagTitle(l_label[irun], l_tagname[irun]).c_str(),
-                             laserIOVLabel(std::get<0>(theIOVs[irun])).c_str()));
+        lines.push_back(Form(
+            "(%i) %s, IOV %s", irun + 1, l_label[irun].c_str(), laserIOVLabel(std::get<0>(theIOVs[irun])).c_str()));
         colors.push_back(l_style[irun].color);
       }
-      drawLaserTagLines(kLeft / kParts, 0.99, 0.018, 34, lines, colors);
+      drawLaserTagLines(kLeft / kParts, 0.99, 0.022, 48, lines, colors);
 
       std::string ImageName(this->m_imageFileName);
       canvas.SaveAs(ImageName.c_str());
@@ -1030,12 +1021,12 @@ namespace {
     static constexpr int kLabelSize = 40;
     static constexpr int kTitleSize = 44;
     static constexpr int kLegendSize = 38;
-    static constexpr int kHeaderSize = 34;
+    static constexpr int kHeaderSize = 48;
+    static constexpr double kHeaderStep = 0.024;  // between two header lines
 
     std::array<std::string, ntags> m_tagName;
     std::array<std::string, ntags> m_label;  // e.g. "HLT conditions", the tag name if there is no label
     std::array<EcalLaserTagStyle, ntags> m_style;
-    std::array<std::string, ntags> m_iovRange;  // human readable first - last IOV of each tag
     // one entry per IOV, x is the start of the IOV on the common axis
     std::array<std::vector<double>, ntags> m_x;
     std::array<std::vector<cond::Hash>, ntags> m_hash;
@@ -1066,7 +1057,6 @@ namespace {
           return false;
         const cond::Time_t first = std::max(tag.boundary.first, std::get<0>(tag.iovs.front()));
         const cond::Time_t last = std::get<0>(tag.iovs.back());
-        m_iovRange[itag] = laserIOVLabel(first) + " - " + laserIOVLabel(last);
 
         // position of an IOV since on the axis, none if a run or lumi based IOV starts after the last run in RunInfo
         cond::persistency::RunInfoProxy runInfo;
@@ -1130,7 +1120,7 @@ namespace {
     }
 
     // top of the pads, above there are the tag names and the CMS label
-    static constexpr double padsTop() { return 0.985 - 0.018 * ntags - 0.035; }
+    static constexpr double padsTop() { return 0.985 - kHeaderStep * ntags - 0.035; }
 
     // one pad per partition, the frames have the same height and share the x axis of the bottom one
     void makePads(TCanvas& canvas) const {
@@ -1233,7 +1223,7 @@ namespace {
       return static_cast<TLegend*>(keep.back().get());
     }
 
-    // CMS label on top of the frames, tag names above it
+    // CMS label on top of the frames, tag labels above it
     void drawHeader(TCanvas& canvas) const {
       canvas.cd();
       const auto& params = cond::payloadInspector::PlotBase::inputParamValues();
@@ -1245,12 +1235,10 @@ namespace {
       std::vector<std::string> lines;
       std::vector<int> colors;
       for (int itag = 0; itag < ntags; itag++) {
-        const std::string title = laserTagTitle(m_label[itag], m_tagName[itag]);
-        lines.push_back((ntags == 1) ? Form("%s, IOVs %s", title.c_str(), m_iovRange[itag].c_str())
-                                     : Form("(%i) %s, IOVs %s", itag + 1, title.c_str(), m_iovRange[itag].c_str()));
+        lines.push_back((ntags == 1) ? m_label[itag] : Form("(%i) %s", itag + 1, m_label[itag].c_str()));
         colors.push_back((ntags == 1) ? int(kBlack) : m_style[itag].color);
       }
-      drawLaserTagLines(kLeftMargin, 0.99, 0.018, kHeaderSize, lines, colors);
+      drawLaserTagLines(kLeftMargin, 0.99, kHeaderStep, kHeaderSize, lines, colors);
     }
 
     // appends to the graph the steps of y(x): the value holds until the next point, the last one until xend
@@ -1352,7 +1340,7 @@ namespace {
           auto averageLine = std::make_unique<TLine>(xmin, average, xmax, average);
           averageLine->SetLineColor(color);
           averageLine->SetLineStyle(kDashed);
-          averageLine->SetLineWidth(2);
+          averageLine->SetLineWidth(4);
           averageLine->Draw();
           // step graph (the value holds until the next IOV) and markers at the start of each IOV
           auto steps = std::make_unique<TGraph>();
@@ -1362,9 +1350,10 @@ namespace {
             g->SetLineColor(color);
             g->SetMarkerColor(color);
           }
-          steps->SetLineWidth(2);
+          steps->SetLineWidth(5);
+          points->SetLineWidth(5);  // for the legend
           points->SetMarkerStyle(style.marker);
-          points->SetMarkerSize(1.4 * style.markerScale);
+          points->SetMarkerSize(2.2 * style.markerScale);
           steps->Draw("L SAME");
           points->Draw("P SAME");
           // the label of the tag if it has one, (1) or (2) otherwise
@@ -1549,12 +1538,12 @@ namespace {
         auto zero = std::make_unique<TLine>(xmin, 0., xmax, 0.);
         zero->SetLineColor(kGray + 2);
         zero->SetLineStyle(kDashed);
-        zero->SetLineWidth(2);
+        zero->SetLineWidth(4);
         zero->Draw();
         auto line = std::make_unique<TGraph>();
         Base::addSteps(*line, xd, median, xmax);
         line->SetLineColor(kBlack);
-        line->SetLineWidth(2);
+        line->SetLineWidth(5);
         line->Draw("L SAME");
 
         const double averageMedian = std::accumulate(median.begin(), median.end(), 0.) / xd.size();
