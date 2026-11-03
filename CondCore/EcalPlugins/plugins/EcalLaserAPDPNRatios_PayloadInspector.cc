@@ -712,7 +712,7 @@ namespace {
 
   // default labels, they can be changed with the plot input parameters cmsLabel and rightLabel:
   // the CMS label is drawn only on request, e.g. cmsLabel=Preliminary for "CMS Preliminary"
-  constexpr const char* kLaserCMSLabel = "";
+  constexpr const char* kLaserCMSLabel = "Preliminary";
   constexpr const char* kLaserRightLabel = "13.6 TeV";
 
   /************************************************************************
