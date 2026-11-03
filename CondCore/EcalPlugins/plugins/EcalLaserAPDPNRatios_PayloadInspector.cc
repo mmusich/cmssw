@@ -1,5 +1,6 @@
 #include "CondCore/Utilities/interface/PayloadInspectorModule.h"
 #include "CondCore/Utilities/interface/PayloadInspector.h"
+#include "CondCore/CondDB/interface/RunInfoProxy.h"
 #include "CondCore/CondDB/interface/Time.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
@@ -29,6 +30,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -614,8 +616,26 @@ namespace {
      CMS publication style helpers, shared by the distribution comparison
      and the history plots. The text sizes are in pixels (precision 3 fonts)
   *************************************************************************/
-  // colors of the two tags or IOVs, from the CMS recommended (Petroff) palette
-  inline int laserTagColor(int itag) { return (itag == 0) ? TColor::GetColor("#5790fc") : TColor::GetColor("#e42536"); }
+  // drawing style of a tag or IOV, the same as in the CMS ECAL validation plots of the HLT, NGT and prompt conditions
+  struct EcalLaserTagStyle {
+    int color;
+    int marker;
+    double markerScale;  // the diamonds and the triangles look smaller than the circles
+  };
+
+  // style from the tag label (HLT, NGT or Prompt conditions), otherwise from the index of the tag or IOV
+  inline EcalLaserTagStyle laserTagStyle(const std::string& label, int itag) {
+    const EcalLaserTagStyle hlt{TColor::GetColor("#5790fc"), kFullCircle, 1.};
+    const EcalLaserTagStyle ngt{TColor::GetColor("#f89c20"), kFullDiamond, 1.6};
+    const EcalLaserTagStyle prompt{kBlack, kFullTriangleDown, 1.2};
+    if (label.rfind("HLT", 0) == 0)
+      return hlt;
+    if (label.rfind("NGT", 0) == 0)
+      return ngt;
+    if (label.rfind("Prompt", 0) == 0)
+      return prompt;
+    return (itag == 0) ? hlt : ngt;
+  }
 
   // value of an input parameter of the plot, def if it is not set
   inline std::string laserInputParam(const std::map<std::string, std::string>& values,
@@ -625,25 +645,48 @@ namespace {
     return (it == values.end()) ? def : it->second;
   }
 
-  // "CMS <cmsLabel>" left aligned at xLeft and rightLabel right aligned at xRight, baseline at y (NDC of the current pad)
+  // label of a tag in the plots: the input parameter tagLabel (first tag) or tagTwoLabel (second tag) if set,
+  // a short name for the tags of the HLT and NGT conditions, the tag name otherwise
+  inline std::string laserTagLabel(const std::map<std::string, std::string>& values,
+                                   int itag,
+                                   const std::string& tagName) {
+    const std::string label = laserInputParam(values, (itag == 0) ? "tagLabel" : "tagTwoLabel", "");
+    if (!label.empty())
+      return label;
+    static const std::map<std::string, std::string> known = {
+        {"EcalLaserAPDPNRatios_weekly_hlt", "HLT conditions"},
+        {"EcalLaserAPDPNRatios_prompt_v3_inRunLSIoVs", "NGT conditions"}};
+    auto it = known.find(tagName);
+    return (it == known.end()) ? tagName : it->second;
+  }
+
+  // "<label>: <tagName>" or the tag name alone if it has no label
+  inline std::string laserTagTitle(const std::string& label, const std::string& tagName) {
+    return (label == tagName) ? tagName : label + ": " + tagName;
+  }
+
+  // "CMS <cmsLabel>" left aligned at xLeft and rightLabel right aligned at xRight, baseline at y (NDC of the current pad).
+  // No CMS label if cmsLabel is empty, "CMS" alone if cmsLabel is "CMS"
   inline void drawLaserCMSLabel(
       double xLeft, double xRight, double y, const std::string& cmsLabel, const std::string& rightLabel) {
-    TLatex cms;
-    cms.SetNDC();
-    cms.SetTextAlign(11);
-    cms.SetTextFont(63);
-    cms.SetTextSize(62);
-    cms.DrawLatex(xLeft, y, "CMS");
     if (!cmsLabel.empty()) {
-      TLatex width(0., 0., "CMS ");
-      width.SetTextFont(63);
-      width.SetTextSize(62);
-      TLatex extra;
-      extra.SetNDC();
-      extra.SetTextAlign(11);
-      extra.SetTextFont(53);
-      extra.SetTextSize(48);
-      extra.DrawLatex(xLeft + width.GetXsize(), y, cmsLabel.c_str());
+      TLatex cms;
+      cms.SetNDC();
+      cms.SetTextAlign(11);
+      cms.SetTextFont(63);
+      cms.SetTextSize(62);
+      cms.DrawLatex(xLeft, y, "CMS");
+      if (cmsLabel != "CMS") {
+        TLatex width(0., 0., "CMS ");
+        width.SetTextFont(63);
+        width.SetTextSize(62);
+        TLatex extra;
+        extra.SetNDC();
+        extra.SetTextAlign(11);
+        extra.SetTextFont(53);
+        extra.SetTextSize(48);
+        extra.DrawLatex(xLeft + width.GetXsize(), y, cmsLabel.c_str());
+      }
     }
     TLatex right;
     right.SetNDC();
@@ -653,21 +696,28 @@ namespace {
     right.DrawLatex(xRight, y, rightLabel.c_str());
   }
 
-  // one line per tag, left aligned at x from yTop down, TText instead of TLatex to keep the underscores
-  inline void drawLaserTagLines(double x, double yTop, double step, int size, const std::vector<std::string>& lines) {
+  // one line per tag in the color of the tag, left aligned at x from yTop down,
+  // TText instead of TLatex to keep the underscores
+  inline void drawLaserTagLines(double x,
+                                double yTop,
+                                double step,
+                                int size,
+                                const std::vector<std::string>& lines,
+                                const std::vector<int>& colors) {
     TText text;
     text.SetNDC();
     text.SetTextAlign(13);
     text.SetTextFont(43);
     text.SetTextSize(size);
     for (size_t i = 0; i < lines.size(); i++) {
-      text.SetTextColor((lines.size() == 1) ? int(kBlack) : laserTagColor(i));
+      text.SetTextColor(colors[i]);
       text.DrawText(x, yTop - step * i, lines[i].c_str());
     }
   }
 
-  // default labels, they can be changed with the plot input parameters cmsLabel and rightLabel
-  constexpr const char* kLaserCMSLabel = "Preliminary";
+  // default labels, they can be changed with the plot input parameters cmsLabel and rightLabel:
+  // the CMS label is drawn only on request, e.g. cmsLabel=Preliminary for "CMS Preliminary"
+  constexpr const char* kLaserCMSLabel = "";
   constexpr const char* kLaserRightLabel = "13.6 TeV";
 
   /************************************************************************
@@ -681,9 +731,12 @@ namespace {
     EcalLaserAPDPNRatiosHistCompareBase()
         : cond::payloadInspector::PlotImage<EcalLaserAPDPNRatios, nIOVs, ntags>(
               "ECAL Laser APDPNRatios distributions comparison") {
-      // text after "CMS" and on the top right of the plot
+      // text after "CMS" (no CMS label if not set, "CMS" alone if set to CMS) and on the top right of the plot
       cond::payloadInspector::PlotBase::addInputParam("cmsLabel");
       cond::payloadInspector::PlotBase::addInputParam("rightLabel");
+      // labels of the two tags, e.g. "HLT conditions"
+      cond::payloadInspector::PlotBase::addInputParam("tagLabel");
+      cond::payloadInspector::PlotBase::addInputParam("tagTwoLabel");
     }
 
     bool fill() override {
@@ -699,6 +752,16 @@ namespace {
         auto tag2 = cond::payloadInspector::PlotBase::getTag<1>();
         l_tagname[1] = tag2.name;
         theIOVs[1] = tag2.iovs.front();
+      }
+      // with one tag the two IOVs are styled by index, with two tags by their labels
+      const auto& params = cond::payloadInspector::PlotBase::inputParamValues();
+      std::array<std::string, 2> l_label = {{l_tagname[0], l_tagname[1]}};
+      std::array<EcalLaserTagStyle, 2> l_style = {{laserTagStyle("", 0), laserTagStyle("", 1)}};
+      if constexpr (ntags == 2) {
+        for (int irun = 0; irun < 2; irun++) {
+          l_label[irun] = laserTagLabel(params, irun, l_tagname[irun]);
+          l_style[irun] = laserTagStyle(l_label[irun], irun);
+        }
       }
 
       // values[iov][param][partition]
@@ -749,11 +812,11 @@ namespace {
             hist[irun][i][part]->SetDirectory(nullptr);
             for (float v : values[irun][i][part])
               hist[irun][i][part]->Fill(v);
-            hist[irun][i][part]->SetLineColor(laserTagColor(irun));
+            hist[irun][i][part]->SetLineColor(l_style[irun].color);
             hist[irun][i][part]->SetLineWidth(3);
           }
           // (1) filled, (2) as a line on top of it
-          hist[0][i][part]->SetFillColorAlpha(laserTagColor(0), 0.35);
+          hist[0][i][part]->SetFillColorAlpha(l_style[0].color, 0.35);
         }
       }
 
@@ -822,17 +885,21 @@ namespace {
 
       // CMS label on top of the pads, tag names and IOVs above it
       canvas.cd();
-      const auto& params = cond::payloadInspector::PlotBase::inputParamValues();
       drawLaserCMSLabel(kLeft / kParts,
                         1. - kRight / kParts,
                         kGridTop + 0.006,
                         laserInputParam(params, "cmsLabel", kLaserCMSLabel),
                         laserInputParam(params, "rightLabel", kLaserRightLabel));
       std::vector<std::string> lines;
-      for (int irun = 0; irun < 2; irun++)
-        lines.push_back(Form(
-            "(%i) %s, IOV %s", irun + 1, l_tagname[irun].c_str(), laserIOVLabel(std::get<0>(theIOVs[irun])).c_str()));
-      drawLaserTagLines(kLeft / kParts, 0.99, 0.018, 34, lines);
+      std::vector<int> colors;
+      for (int irun = 0; irun < 2; irun++) {
+        lines.push_back(Form("(%i) %s, IOV %s",
+                             irun + 1,
+                             laserTagTitle(l_label[irun], l_tagname[irun]).c_str(),
+                             laserIOVLabel(std::get<0>(theIOVs[irun])).c_str()));
+        colors.push_back(l_style[irun].color);
+      }
+      drawLaserTagLines(kLeft / kParts, 0.99, 0.018, 34, lines, colors);
 
       std::string ImageName(this->m_imageFileName);
       canvas.SaveAs(ImageName.c_str());
@@ -928,6 +995,10 @@ namespace {
      on a common run number axis (the lumi sections are squeezed in the
      [run, run+1) slot), time based IOVs can only be compared with other
      time based IOVs.
+     With the input parameter xAxis=time the x axis is the IOV start time
+     for all the tags: run and lumi based IOVs are placed at the start time
+     of their run, from the RunInfo of the conditions DB, plus the lumi
+     sections; then time based tags can be compared with run or lumi based ones.
   *************************************************************************/
   template <int param, int ntags>
   class EcalLaserAPDPNRatiosHistoryBase
@@ -935,9 +1006,14 @@ namespace {
   public:
     explicit EcalLaserAPDPNRatiosHistoryBase(const std::string& title)
         : cond::payloadInspector::PlotImage<EcalLaserAPDPNRatios, cond::payloadInspector::MULTI_IOV, ntags>(title) {
-      // text after "CMS" and on the top right of the plot
+      // text after "CMS" (no CMS label if not set, "CMS" alone if set to CMS) and on the top right of the plot
       cond::payloadInspector::PlotBase::addInputParam("cmsLabel");
       cond::payloadInspector::PlotBase::addInputParam("rightLabel");
+      // labels of the tags, e.g. "HLT conditions"
+      cond::payloadInspector::PlotBase::addInputParam("tagLabel");
+      cond::payloadInspector::PlotBase::addInputParam("tagTwoLabel");
+      // "run" (default) or "time"
+      cond::payloadInspector::PlotBase::addInputParam("xAxis");
     }
 
   protected:
@@ -957,6 +1033,8 @@ namespace {
     static constexpr int kHeaderSize = 34;
 
     std::array<std::string, ntags> m_tagName;
+    std::array<std::string, ntags> m_label;  // e.g. "HLT conditions", the tag name if there is no label
+    std::array<EcalLaserTagStyle, ntags> m_style;
     std::array<std::string, ntags> m_iovRange;  // human readable first - last IOV of each tag
     // one entry per IOV, x is the start of the IOV on the common axis
     std::array<std::vector<double>, ntags> m_x;
@@ -970,26 +1048,55 @@ namespace {
         return (itag == 0) ? cond::payloadInspector::PlotBase::getTag<0>()
                            : cond::payloadInspector::PlotBase::getTag<1>();
       };
+      const auto& params = cond::payloadInspector::PlotBase::inputParamValues();
+      const std::string xAxis = laserInputParam(params, "xAxis", "run");
+      if (xAxis != "run" && xAxis != "time")
+        cond::throwException("the input parameter xAxis must be run or time, not " + xAxis,
+                             "EcalLaserAPDPNRatiosHistoryBase::collect");
+      const bool timeRequested = (xAxis == "time");
+
       std::array<cond::TimeType, ntags> l_timeType;
       for (int itag = 0; itag < ntags; itag++) {
         auto tag = tagRef(itag);
         m_tagName[itag] = tag.name;
+        m_label[itag] = laserTagLabel(params, itag, tag.name);
+        m_style[itag] = laserTagStyle(m_label[itag], itag);
         l_timeType[itag] = this->getTagInfo(tag.name).timeType;
         if (tag.iovs.empty())
           return false;
+        const cond::Time_t first = std::max(tag.boundary.first, std::get<0>(tag.iovs.front()));
+        const cond::Time_t last = std::get<0>(tag.iovs.back());
+        m_iovRange[itag] = laserIOVLabel(first) + " - " + laserIOVLabel(last);
+
+        // position of an IOV since on the axis, none if a run or lumi based IOV starts after the last run in RunInfo
+        cond::persistency::RunInfoProxy runInfo;
+        const bool fromRunInfo = timeRequested && l_timeType[itag] != cond::timestamp;
+        if (fromRunInfo) {
+          const bool lumi = (l_timeType[itag] == cond::lumiid);
+          runInfo = this->dbSession().getRunInfo(lumi ? first >> 32 : first, lumi ? last >> 32 : last);
+        }
+        auto toAxis = [&](cond::Time_t since) -> std::optional<double> {
+          return fromRunInfo ? iovToTime(runInfo, since, l_timeType[itag]) : iovToAxis(since, l_timeType[itag]);
+        };
+
         // the first IOV can start well before the requested range (e.g. since = 1), clamp it
-        const double xstart = iovToAxis(tag.boundary.first, l_timeType[itag]);
+        const double xstart = toAxis(tag.boundary.first).value_or(std::numeric_limits<double>::lowest());
         for (const auto& iov : tag.iovs) {
-          m_x[itag].push_back(std::max(xstart, iovToAxis(std::get<0>(iov), l_timeType[itag])));
+          const auto x = toAxis(std::get<0>(iov));
+          if (!x)
+            continue;
+          m_x[itag].push_back(std::max(xstart, *x));
           m_hash[itag].push_back(std::get<1>(iov));
         }
-        m_iovRange[itag] = laserIOVLabel(std::max(tag.boundary.first, std::get<0>(tag.iovs.front()))) + " - " +
-                           laserIOVLabel(std::get<0>(tag.iovs.back()));
+        if (m_x[itag].empty())
+          cond::throwException("no run of the IOVs of " + tag.name + " found in RunInfo",
+                               "EcalLaserAPDPNRatiosHistoryBase::collect");
       }
-      m_timeAxis = (l_timeType[0] == cond::timestamp);
-      if ((l_timeType[ntags - 1] == cond::timestamp) != m_timeAxis) {
-        cond::throwException("cannot compare a time based tag with a run or lumi based tag",
-                             "EcalLaserAPDPNRatiosHistoryBase::collect");
+      m_timeAxis = timeRequested || (l_timeType[0] == cond::timestamp);
+      if (!timeRequested && (l_timeType[ntags - 1] == cond::timestamp) != m_timeAxis) {
+        cond::throwException(
+            "cannot compare a time based tag with a run or lumi based tag on a run number axis, use xAxis=time",
+            "EcalLaserAPDPNRatiosHistoryBase::collect");
       }
       return true;
     }
@@ -1136,11 +1243,14 @@ namespace {
                         laserInputParam(params, "cmsLabel", kLaserCMSLabel),
                         laserInputParam(params, "rightLabel", kLaserRightLabel));
       std::vector<std::string> lines;
-      for (int itag = 0; itag < ntags; itag++)
-        lines.push_back((ntags == 1)
-                            ? Form("%s, IOVs %s", m_tagName[itag].c_str(), m_iovRange[itag].c_str())
-                            : Form("(%i) %s, IOVs %s", itag + 1, m_tagName[itag].c_str(), m_iovRange[itag].c_str()));
-      drawLaserTagLines(kLeftMargin, 0.99, 0.018, kHeaderSize, lines);
+      std::vector<int> colors;
+      for (int itag = 0; itag < ntags; itag++) {
+        const std::string title = laserTagTitle(m_label[itag], m_tagName[itag]);
+        lines.push_back((ntags == 1) ? Form("%s, IOVs %s", title.c_str(), m_iovRange[itag].c_str())
+                                     : Form("(%i) %s, IOVs %s", itag + 1, title.c_str(), m_iovRange[itag].c_str()));
+        colors.push_back((ntags == 1) ? int(kBlack) : m_style[itag].color);
+      }
+      drawLaserTagLines(kLeftMargin, 0.99, 0.018, kHeaderSize, lines, colors);
     }
 
     // appends to the graph the steps of y(x): the value holds until the next point, the last one until xend
@@ -1154,6 +1264,25 @@ namespace {
   private:
     // the lumi sections of a run are squeezed in the [run, run+1) slot of the run number axis
     static constexpr double kLumisPerRunSlot = 10000.;
+    // duration of a lumi section, 2^18 LHC orbits
+    static constexpr double kSecondsPerLumi = 23.31;
+
+    // unix time of the start of a run or lumi based IOV: start time of the run from RunInfo, plus the lumi sections.
+    // An IOV starting on a run not in RunInfo starts with the following run, none if there is no following run
+    static std::optional<double> iovToTime(const cond::persistency::RunInfoProxy& runInfo,
+                                           cond::Time_t since,
+                                           cond::TimeType timeType) {
+      const bool lumi = (timeType == cond::lumiid);
+      const cond::Time_t run = lumi ? since >> 32 : since;
+      auto it = runInfo.find(run);
+      if (it == runInfo.end())
+        return std::nullopt;
+      const cond::RunInfo_t runInfoEntry = *it;
+      double time = double(cond::time::from_boost(runInfoEntry.start) >> 32);
+      if (lumi && runInfoEntry.run == run)
+        time += kSecondsPerLumi * std::max(double(since & 0xFFFFFFFF) - 1., 0.);
+      return time;
+    }
 
     // position of an IOV since on the common axis: run number for run and lumi based IOVs, unix time otherwise
     static double iovToAxis(cond::Time_t since, cond::TimeType timeType) {
@@ -1184,7 +1313,6 @@ namespace {
     bool fill() override {
       if (!this->collect() || !this->computeStats())
         return false;
-      const std::array<int, 2> marker = {{kFullCircle, kFullSquare}};
       const auto& x = this->m_x;
       double xfirst = x[0].front();
       for (int itag = 1; itag < ntags; itag++)
@@ -1218,7 +1346,8 @@ namespace {
                                       ymax + 4 * ymargin);  // leave room for the legend
         TLegend* legend = this->drawLegend(keep);
         for (int itag = 0; itag < ntags; itag++) {
-          const int color = laserTagColor(itag);
+          const EcalLaserTagStyle& style = this->m_style[itag];
+          const int color = style.color;
           const double average = std::accumulate(y[itag].begin(), y[itag].end(), 0.) / y[itag].size();
           auto averageLine = std::make_unique<TLine>(xmin, average, xmax, average);
           averageLine->SetLineColor(color);
@@ -1234,13 +1363,18 @@ namespace {
             g->SetMarkerColor(color);
           }
           steps->SetLineWidth(2);
-          points->SetMarkerStyle(marker[itag]);
-          points->SetMarkerSize(1.1);
+          points->SetMarkerStyle(style.marker);
+          points->SetMarkerSize(1.4 * style.markerScale);
           steps->Draw("L SAME");
           points->Draw("P SAME");
-          const std::string prefix = (ntags == 1) ? "" : Form("(%i) ", itag + 1);
+          // the label of the tag if it has one, (1) or (2) otherwise
+          std::string prefix = "";
+          if (this->m_label[itag] != this->m_tagName[itag])
+            prefix = this->m_label[itag] + ", ";
+          else if (ntags == 2)
+            prefix = Form("(%i) ", itag + 1);
           legend->AddEntry(points.get(), Form("%s%zu IOVs", prefix.c_str(), x[itag].size()), "lp");
-          legend->AddEntry(averageLine.get(), Form("%sAverage %.4f", prefix.c_str(), average), "l");
+          legend->AddEntry(averageLine.get(), Form("%saverage %.4f", prefix.c_str(), average), "l");
           keep.push_back(std::move(averageLine));
           keep.push_back(std::move(steps));
           keep.push_back(std::move(points));
@@ -1408,7 +1542,7 @@ namespace {
           band->SetBinContent(i + 1, 0.5 * (up[i] + down[i]));
           band->SetBinError(i + 1, 0.5 * (up[i] - down[i]));
         }
-        band->SetFillColorAlpha(laserTagColor(0), 0.45);
+        band->SetFillColorAlpha(laserTagStyle("", 0).color, 0.45);
         band->SetLineWidth(0);
         band->SetMarkerSize(0);
         band->Draw("E2 SAME");
