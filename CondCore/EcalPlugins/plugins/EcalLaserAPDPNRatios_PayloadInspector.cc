@@ -612,6 +612,35 @@ namespace {
     return std::string(buf);
   }
 
+  // unix time of the start of a run or lumi based IOV: start time of the run from RunInfo, plus the lumi sections
+  // (2^18 LHC orbits each). An IOV starting on a run not in RunInfo starts with the following run, none if there
+  // is no following run
+  inline std::optional<double> laserIOVTime(const cond::persistency::RunInfoProxy& runInfo,
+                                            cond::Time_t since,
+                                            cond::TimeType timeType) {
+    constexpr double kSecondsPerLumi = 23.31;
+    const bool lumi = (timeType == cond::lumiid);
+    const cond::Time_t run = lumi ? since >> 32 : since;
+    auto it = runInfo.find(run);
+    if (it == runInfo.end())
+      return std::nullopt;
+    const cond::RunInfo_t runInfoEntry = *it;
+    double time = double(cond::time::from_boost(runInfoEntry.start) >> 32);
+    if (lumi && runInfoEntry.run == run)
+      time += kSecondsPerLumi * std::max(double(since & 0xFFFFFFFF) - 1., 0.);
+    return time;
+  }
+
+  // UTC date of a unix time, e.g. "5 Jul 2025"
+  inline std::string laserDate(double time) {
+    const time_t t = static_cast<time_t>(time);
+    struct tm utc;
+    gmtime_r(&t, &utc);
+    char buf[64];
+    strftime(buf, sizeof(buf), "%d %b %Y", &utc);
+    return (buf[0] == '0') ? std::string(buf + 1) : std::string(buf);
+  }
+
   /************************************************************************
      CMS publication style helpers, shared by the distribution comparison
      and the history plots. The text sizes are in pixels (precision 3 fonts)
@@ -738,6 +767,9 @@ namespace {
       constexpr int kParams = 3;  // p1, p2, p3
       constexpr int kParts = 3;   // EE-, EB, EE+
       constexpr int kBins = 100;
+      // fixed axis ranges, the same for all the plots
+      constexpr double kXMin = 0., kXMax = 1.01;
+      const std::array<double, kParts> yMax = {{500., 5000., 500.}};  // EE-, EB, EE+
       const std::array<const char*, kParts> partName = {{"EE-", "EB", "EE+"}};
 
       auto tag1 = cond::payloadInspector::PlotBase::getTag<0>();
@@ -787,24 +819,25 @@ namespace {
         }  // loop over cellid
       }  // loop over IOVs
 
-      // book the histograms with a common range for the two IOVs, covering all the values
+      // book the histograms on the fixed x range, the mean and RMS in the legends are computed from all the
+      // crystals, also the ones outside of the range
       std::unique_ptr<TH1F> hist[2][kParams][kParts];
+      double mean[2][kParams][kParts], rms[2][kParams][kParts];
       for (int i = 0; i < kParams; i++) {
         for (int part = 0; part < kParts; part++) {
-          float vmin = std::min(*std::min_element(values[0][i][part].begin(), values[0][i][part].end()),
-                                *std::min_element(values[1][i][part].begin(), values[1][i][part].end()));
-          float vmax = std::max(*std::max_element(values[0][i][part].begin(), values[0][i][part].end()),
-                                *std::max_element(values[1][i][part].begin(), values[1][i][part].end()));
-          float margin = (vmax > vmin) ? 0.05 * (vmax - vmin) : 0.01;
           for (int irun = 0; irun < 2; irun++) {
-            hist[irun][i][part] = std::make_unique<TH1F>(Form("%s_p%i_%i", partName[part], i + 1, irun),
-                                                         Form(";p%i;Crystals", i + 1),
-                                                         kBins,
-                                                         vmin - margin,
-                                                         vmax + margin);
+            hist[irun][i][part] = std::make_unique<TH1F>(
+                Form("%s_p%i_%i", partName[part], i + 1, irun), Form(";p%i;Crystals", i + 1), kBins, kXMin, kXMax);
             hist[irun][i][part]->SetDirectory(nullptr);
-            for (float v : values[irun][i][part])
+            double sum = 0., sum2 = 0.;
+            for (float v : values[irun][i][part]) {
               hist[irun][i][part]->Fill(v);
+              sum += v;
+              sum2 += double(v) * v;
+            }
+            const double n = values[irun][i][part].size();
+            mean[irun][i][part] = sum / n;
+            rms[irun][i][part] = std::sqrt(std::max(sum2 / n - mean[irun][i][part] * mean[irun][i][part], 0.));
             hist[irun][i][part]->SetLineColor(l_style[irun].color);
             hist[irun][i][part]->SetLineWidth(3);
           }
@@ -835,7 +868,7 @@ namespace {
 
           TH1F* h1 = hist[0][i][part].get();
           TH1F* h2 = hist[1][i][part].get();
-          h1->SetMaximum(2. * std::max(h1->GetMaximum(), h2->GetMaximum()));  // leave room for the legend
+          h1->SetMaximum(yMax[part]);
           h1->SetMinimum(0.);
           for (auto* axis : {h1->GetXaxis(), h1->GetYaxis()}) {
             axis->SetLabelFont(43);
@@ -868,9 +901,8 @@ namespace {
             legend->AddEntry(hist[irun][i][part].get(),
                              (ntags == 2) ? l_label[irun].c_str() : Form("(%i)", irun + 1),
                              (irun == 0) ? "f" : "l");
-            legend->AddEntry((TObject*)nullptr,
-                             Form("mean %.4f, RMS %.4f", hist[irun][i][part]->GetMean(), hist[irun][i][part]->GetRMS()),
-                             "");
+            legend->AddEntry(
+                (TObject*)nullptr, Form("mean %.4f, RMS %.4f", mean[irun][i][part], rms[irun][i][part]), "");
           }
           legend->Draw();
           keep.push_back(std::move(label));
@@ -879,12 +911,35 @@ namespace {
       }
 
       // CMS label on top of the pads, tag names and IOVs above it
+      // UTC date of the two IOVs, from RunInfo for run and lumi based IOVs, shown once if it is the same
+      std::vector<std::string> dates;
+      for (int irun = 0; irun < 2; irun++) {
+        const cond::Time_t since = std::get<0>(theIOVs[irun]);
+        const cond::TimeType timeType = this->getTagInfo(l_tagname[irun]).timeType;
+        std::optional<double> time;
+        if (timeType == cond::timestamp) {
+          time = double(since >> 32);
+        } else {
+          const cond::Time_t run = (timeType == cond::lumiid) ? since >> 32 : since;
+          time = laserIOVTime(this->dbSession().getRunInfo(run, run), since, timeType);
+        }
+        if (time && std::find(dates.begin(), dates.end(), laserDate(*time)) == dates.end())
+          dates.push_back(laserDate(*time));
+      }
+      std::string rightLabel = laserInputParam(params, "rightLabel", kLaserRightLabel);
+      if (!dates.empty()) {
+        std::string date = dates[0];
+        for (size_t i = 1; i < dates.size(); i++)
+          date += " / " + dates[i];
+        rightLabel = rightLabel.empty() ? date : date + " (" + rightLabel + ")";
+      }
+
       canvas.cd();
       drawLaserCMSLabel(kLeft / kParts,
                         1. - kRight / kParts,
                         kGridTop + 0.006,
                         laserInputParam(params, "cmsLabel", kLaserCMSLabel),
-                        laserInputParam(params, "rightLabel", kLaserRightLabel));
+                        rightLabel);
       std::vector<std::string> lines;
       std::vector<int> colors;
       for (int irun = 0; irun < 2; irun++) {
@@ -1072,7 +1127,7 @@ namespace {
           runInfo = this->dbSession().getRunInfo(lumi ? first >> 32 : first, lumi ? last >> 32 : last);
         }
         auto toAxis = [&](cond::Time_t since) -> std::optional<double> {
-          return fromRunInfo ? iovToTime(runInfo, since, l_timeType[itag]) : iovToAxis(since, l_timeType[itag]);
+          return fromRunInfo ? laserIOVTime(runInfo, since, l_timeType[itag]) : iovToAxis(since, l_timeType[itag]);
         };
 
         // the first IOV can start well before the requested range (e.g. since = 1), clamp it
@@ -1259,25 +1314,6 @@ namespace {
   private:
     // the lumi sections of a run are squeezed in the [run, run+1) slot of the run number axis
     static constexpr double kLumisPerRunSlot = 10000.;
-    // duration of a lumi section, 2^18 LHC orbits
-    static constexpr double kSecondsPerLumi = 23.31;
-
-    // unix time of the start of a run or lumi based IOV: start time of the run from RunInfo, plus the lumi sections.
-    // An IOV starting on a run not in RunInfo starts with the following run, none if there is no following run
-    static std::optional<double> iovToTime(const cond::persistency::RunInfoProxy& runInfo,
-                                           cond::Time_t since,
-                                           cond::TimeType timeType) {
-      const bool lumi = (timeType == cond::lumiid);
-      const cond::Time_t run = lumi ? since >> 32 : since;
-      auto it = runInfo.find(run);
-      if (it == runInfo.end())
-        return std::nullopt;
-      const cond::RunInfo_t runInfoEntry = *it;
-      double time = double(cond::time::from_boost(runInfoEntry.start) >> 32);
-      if (lumi && runInfoEntry.run == run)
-        time += kSecondsPerLumi * std::max(double(since & 0xFFFFFFFF) - 1., 0.);
-      return time;
-    }
 
     // position of an IOV since on the common axis: run number for run and lumi based IOVs, unix time otherwise
     static double iovToAxis(cond::Time_t since, cond::TimeType timeType) {
