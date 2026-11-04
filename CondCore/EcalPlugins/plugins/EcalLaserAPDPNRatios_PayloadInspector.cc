@@ -835,19 +835,19 @@ namespace {
 
           TH1F* h1 = hist[0][i][part].get();
           TH1F* h2 = hist[1][i][part].get();
-          h1->SetMaximum(1.5 * std::max(h1->GetMaximum(), h2->GetMaximum()));  // leave room for the legend
+          h1->SetMaximum(2. * std::max(h1->GetMaximum(), h2->GetMaximum()));  // leave room for the legend
           h1->SetMinimum(0.);
           for (auto* axis : {h1->GetXaxis(), h1->GetYaxis()}) {
             axis->SetLabelFont(43);
             axis->SetTitleFont(43);
             axis->SetLabelSize(32);
-            axis->SetTitleSize(36);
+            axis->SetTitleSize(48);
           }
           h1->GetXaxis()->SetNdivisions(505);
           h1->GetYaxis()->SetNdivisions(505);
           h1->GetYaxis()->SetMaxDigits(4);
-          h1->GetXaxis()->SetTitleOffset(1.2);
-          h1->GetYaxis()->SetTitleOffset(1.9);
+          h1->GetXaxis()->SetTitleOffset(1.0);
+          h1->GetYaxis()->SetTitleOffset(1.3);
           h1->Draw("HIST");
           h2->Draw("HIST SAME");
           h1->Draw("AXIS SAME");
@@ -858,18 +858,20 @@ namespace {
           label->SetTextFont(63);
           label->SetTextSize(40);
           label->Draw();
-          auto legend = std::make_unique<TLegend>(0.36, 0.78, 1. - kRight - 0.02, 1. - kTop - 0.03);
+          auto legend = std::make_unique<TLegend>(0.36, 0.64, 1. - kRight - 0.02, 1. - kTop - 0.03);
           legend->SetBorderSize(0);
           legend->SetFillStyle(0);
           legend->SetTextFont(43);
           legend->SetTextSize(28);
-          for (int irun = 0; irun < 2; irun++)
+          // label of the tag ((1) or (2) for two IOVs of one tag), and below it the mean and RMS
+          for (int irun = 0; irun < 2; irun++) {
             legend->AddEntry(hist[irun][i][part].get(),
-                             Form("(%i) mean %.4f, RMS %.4f",
-                                  irun + 1,
-                                  hist[irun][i][part]->GetMean(),
-                                  hist[irun][i][part]->GetRMS()),
+                             (ntags == 2) ? l_label[irun].c_str() : Form("(%i)", irun + 1),
                              (irun == 0) ? "f" : "l");
+            legend->AddEntry((TObject*)nullptr,
+                             Form("mean %.4f, RMS %.4f", hist[irun][i][part]->GetMean(), hist[irun][i][part]->GetRMS()),
+                             "");
+          }
           legend->Draw();
           keep.push_back(std::move(label));
           keep.push_back(std::move(legend));
@@ -886,8 +888,12 @@ namespace {
       std::vector<std::string> lines;
       std::vector<int> colors;
       for (int irun = 0; irun < 2; irun++) {
-        lines.push_back(Form(
-            "(%i) %s, IOV %s", irun + 1, l_label[irun].c_str(), laserIOVLabel(std::get<0>(theIOVs[irun])).c_str()));
+        // the label of each tag, with one tag the IOV tells the two histograms apart
+        lines.push_back((ntags == 2) ? Form("(%i) %s", irun + 1, l_label[irun].c_str())
+                                     : Form("(%i) %s, IOV %s",
+                                            irun + 1,
+                                            l_label[irun].c_str(),
+                                            laserIOVLabel(std::get<0>(theIOVs[irun])).c_str()));
         colors.push_back(l_style[irun].color);
       }
       drawLaserTagLines(kLeft / kParts, 0.99, 0.022, 48, lines, colors);
