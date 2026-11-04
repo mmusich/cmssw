@@ -769,7 +769,7 @@ namespace {
       constexpr int kBins = 100;
       // fixed axis ranges, the same for all the plots
       constexpr double kXMin = 0., kXMax = 1.01;
-      const std::array<double, kParts> yMax = {{500., 5000., 500.}};  // EE-, EB, EE+
+      const std::array<double, kParts> yMax = {{500., 7000., 500.}};  // EE-, EB, EE+
       const std::array<const char*, kParts> partName = {{"EE-", "EB", "EE+"}};
 
       auto tag1 = cond::payloadInspector::PlotBase::getTag<0>();
@@ -929,7 +929,7 @@ namespace {
       std::string rightLabel = laserInputParam(params, "rightLabel", kLaserRightLabel);
       if (!dates.empty()) {
         std::string date = dates[0];
-        for (size_t i = 1; i < dates.size(); i++)
+        for (size_t i = 1; i < 1; i++)
           date += " / " + dates[i];
         rightLabel = rightLabel.empty() ? date : date + " (" + rightLabel + ")";
       }
@@ -955,6 +955,7 @@ namespace {
 
       std::string ImageName(this->m_imageFileName);
       canvas.SaveAs(ImageName.c_str());
+      canvas.SaveAs((ImageName + ".pdf").c_str());
       return true;
     }  // fill method
   };  // class EcalLaserAPDPNRatiosHistCompareBase
