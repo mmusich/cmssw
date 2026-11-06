@@ -637,7 +637,7 @@ namespace {
     struct tm utc;
     gmtime_r(&t, &utc);
     char buf[64];
-    strftime(buf, sizeof(buf), "%d %b %Y", &utc);
+    strftime(buf, sizeof(buf), "%d %B %Y", &utc);
     return (buf[0] == '0') ? std::string(buf + 1) : std::string(buf);
   }
 
@@ -944,7 +944,7 @@ namespace {
       std::vector<int> colors;
       for (int irun = 0; irun < 2; irun++) {
         // the label of each tag, with one tag the IOV tells the two histograms apart
-        lines.push_back((ntags == 2) ? Form("(%i) %s", irun + 1, l_label[irun].c_str())
+        lines.push_back((ntags == 2) ? Form("%s", l_label[irun].c_str())
                                      : Form("(%i) %s, IOV %s",
                                             irun + 1,
                                             l_label[irun].c_str(),
@@ -1298,7 +1298,8 @@ namespace {
       std::vector<std::string> lines;
       std::vector<int> colors;
       for (int itag = 0; itag < ntags; itag++) {
-        lines.push_back((ntags == 1) ? m_label[itag] : Form("(%i) %s", itag + 1, m_label[itag].c_str()));
+        //lines.push_back((ntags == 1) ? m_label[itag] : Form("(%i) %s", itag + 1, m_label[itag].c_str()));
+        lines.push_back((ntags == 1) ? m_label[itag] : Form("%s", m_label[itag].c_str()));
         colors.push_back((ntags == 1 || !colored) ? int(kBlack) : m_style[itag].color);
       }
       drawLaserTagLines(kLeftMargin, 0.99, kHeaderStep, kHeaderSize, lines, colors);
