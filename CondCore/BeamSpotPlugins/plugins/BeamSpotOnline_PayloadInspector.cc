@@ -4,7 +4,18 @@
 #include "CondCore/Utilities/interface/PayloadInspectorModule.h"
 #include "CondFormats/BeamSpotObjects/interface/BeamSpotOnlineObjects.h"
 
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TH1F.h>
+#include <TLegend.h>
+#include <TLine.h>
+#include <TPad.h>
 #include <TStyle.h>
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <map>
 
 namespace {
 
@@ -259,6 +270,342 @@ namespace {
   typedef DisplayParametersDiff<BeamSpotOnlineObjects, cond::payloadInspector::SINGLE_IOV, 2>
       BeamSpotOnlineParametersDiffTwoTags;
 
+  /************************************************
+    Comparison of two (lumi-based) tags over an IOV range,
+    e.g. BeamSpotOnlineHLT_NGT vs BeamSpotOnlineHLT.
+    The IOV boundaries of the two tags are merged: at each boundary
+    the payload valid in each tag is used, so that the two tags are
+    compared lumi-section by lumi-section even if they were updated
+    at different times. Top pad: overlay; bottom pad: A - B.
+  *************************************************/
+
+  template <parameters my_param>
+  class BeamSpotOnline_TwoTagsComparison
+      : public cond::payloadInspector::PlotImage<BeamSpotOnlineObjects, cond::payloadInspector::MULTI_IOV, 2> {
+  public:
+    typedef cond::payloadInspector::PlotImage<BeamSpotOnlineObjects, cond::payloadInspector::MULTI_IOV, 2> Base;
+    typedef std::vector<std::tuple<cond::Time_t, cond::Hash> > IOVs;
+
+    BeamSpotOnline_TwoTagsComparison()
+        : Base("BeamSpotOnline " + getStringFromParamEnum(my_param) + " comparison of two tags") {}
+
+    bool fill() override {
+      auto tagA = cond::payloadInspector::PlotBase::getTag<0>();
+      auto tagB = cond::payloadInspector::PlotBase::getTag<1>();
+      const IOVs& iovsA = tagA.iovs;
+      const IOVs& iovsB = tagB.iovs;
+
+      if (iovsA.empty() || iovsB.empty()) {
+        edm::LogError("BeamSpotOnline_TwoTagsComparison")
+            << "no IOVs found in the requested range for tag " << (iovsA.empty() ? tagA.name : tagB.name);
+        return false;
+      }
+
+      // the range selection also returns the IOV valid at the start of the range,
+      // whose since can lie before it: clamp to the requested start
+      const cond::Time_t rangeStart = std::max(tagA.boundary.first, tagB.boundary.first);
+      const cond::Time_t rangeEnd = std::min(tagA.boundary.second, tagB.boundary.second);
+
+      const auto valuesA = getValues(iovsA);
+      const auto valuesB = getValues(iovsB);
+
+      // union of the IOV boundaries of the two tags
+      std::vector<cond::Time_t> sinces;
+      sinces.reserve(iovsA.size() + iovsB.size());
+      for (const auto* iovs : {&iovsA, &iovsB}) {
+        for (const auto& iov : *iovs) {
+          const auto since = std::max(std::get<0>(iov), rangeStart);
+          if (since <= rangeEnd)
+            sinces.push_back(since);
+        }
+      }
+      std::sort(sinces.begin(), sinces.end());
+      sinces.erase(std::unique(sinces.begin(), sinces.end()), sinces.end());
+
+      if (sinces.empty()) {
+        edm::LogError("BeamSpotOnline_TwoTagsComparison") << "no common IOV boundaries in the requested range";
+        return false;
+      }
+
+      const double scale = unitScale();
+      const int nPoints = sinces.size();
+      auto gA = std::make_unique<TGraphErrors>();
+      auto gB = std::make_unique<TGraphErrors>();
+      auto gDiff = std::make_unique<TGraph>();
+
+      double yMin = std::numeric_limits<double>::max(), yMax = std::numeric_limits<double>::lowest();
+      double dMin = std::numeric_limits<double>::max(), dMax = std::numeric_limits<double>::lowest();
+      double sumDiff(0.), sumDiff2(0.);
+
+      // run boundaries (index in the union, run number) for the axis labels
+      std::vector<std::pair<int, unsigned int> > runStarts;
+
+      for (int i = 0; i < nPoints; i++) {
+        const auto since = sinces[i];
+        const unsigned int run = unpack(since).first;
+        if (runStarts.empty() || runStarts.back().second != run)
+          runStarts.emplace_back(i, run);
+
+        const double x = i + 0.5;
+        const int iA = validIndex(iovsA, since);
+        const int iB = validIndex(iovsB, since);
+
+        if (iA >= 0) {
+          const auto& [val, err] = valuesA[iA];
+          gA->AddPoint(x, val * scale);
+          gA->SetPointError(gA->GetN() - 1, 0., err * scale);
+          yMin = std::min(yMin, val * scale), yMax = std::max(yMax, val * scale);
+        }
+        if (iB >= 0) {
+          const auto& [val, err] = valuesB[iB];
+          gB->AddPoint(x, val * scale);
+          gB->SetPointError(gB->GetN() - 1, 0., err * scale);
+          yMin = std::min(yMin, val * scale), yMax = std::max(yMax, val * scale);
+        }
+        if (iA >= 0 && iB >= 0) {
+          const double diff = (valuesA[iA].first - valuesB[iB].first) * scale;
+          gDiff->AddPoint(x, diff);
+          dMin = std::min(dMin, diff), dMax = std::max(dMax, diff);
+          sumDiff += diff, sumDiff2 += diff * diff;
+        }
+      }
+
+      if (gA->GetN() == 0 || gB->GetN() == 0) {
+        edm::LogError("BeamSpotOnline_TwoTagsComparison") << "no valid payloads in the requested range";
+        return false;
+      }
+
+      gStyle->SetOptStat(0);
+      TCanvas canvas("BeamSpotOnline comparison", "BeamSpotOnline comparison", 2000, 1000);
+
+      TPad padTop("padTop", "", 0., 0.3, 1., 1.);
+      padTop.SetTopMargin(0.08);
+      padTop.SetBottomMargin(0.02);
+      padTop.SetLeftMargin(0.08);
+      padTop.SetRightMargin(0.02);
+      padTop.SetGridy();
+      padTop.Draw();
+
+      TPad padBottom("padBottom", "", 0., 0., 1., 0.3);
+      padBottom.SetTopMargin(0.02);
+      padBottom.SetBottomMargin(0.30);
+      padBottom.SetLeftMargin(0.08);
+      padBottom.SetRightMargin(0.02);
+      padBottom.SetGridy();
+      padBottom.Draw();
+
+      // frames, x-axis labelled with the run number at the run boundaries
+      const std::string yTitle = getStringFromParamEnum(my_param) + " " + unitLabel();
+      TH1F hFrameTop("hFrameTop", "", nPoints, 0., nPoints);
+      TH1F hFrameBottom("hFrameBottom", "", nPoints, 0., nPoints);
+
+      constexpr unsigned int kMaxLabels = 40;
+      const unsigned int labelEvery = std::max<std::size_t>(1, (runStarts.size() + kMaxLabels - 1) / kMaxLabels);
+      for (unsigned int r = 0; r < runStarts.size(); r += labelEvery) {
+        hFrameBottom.GetXaxis()->SetBinLabel(runStarts[r].first + 1, std::to_string(runStarts[r].second).c_str());
+      }
+
+      const double yPad = (yMax > yMin) ? 0.1 * (yMax - yMin) : 0.1 * std::abs(yMax) + 1e-6;
+      const double yLow = yMin - yPad, yHigh = yMax + 0.35 * (yMax - yMin + yPad);  // room for the legend
+      hFrameTop.SetMinimum(yLow);
+      hFrameTop.SetMaximum(yHigh);
+      hFrameTop.GetYaxis()->SetTitle(yTitle.c_str());
+      hFrameTop.GetYaxis()->SetTitleSize(0.05);
+      hFrameTop.GetYaxis()->SetTitleOffset(0.75);
+      hFrameTop.GetYaxis()->SetLabelSize(0.04);
+      hFrameTop.GetYaxis()->SetTickLength(0.01);
+      hFrameTop.GetXaxis()->SetLabelSize(0.);
+      hFrameTop.GetXaxis()->SetTickLength(0.);
+
+      const double dPad = (dMax > dMin) ? 0.1 * (dMax - dMin) : 0.1 * std::abs(dMax) + 1e-6;
+      hFrameBottom.SetMinimum(dMin - dPad);
+      hFrameBottom.SetMaximum(dMax + dPad);
+      hFrameBottom.GetYaxis()->SetTitle(("#Delta " + unitLabel() + " (A - B)").c_str());
+      hFrameBottom.GetYaxis()->SetTitleSize(0.10);
+      hFrameBottom.GetYaxis()->SetTitleOffset(0.37);
+      hFrameBottom.GetYaxis()->SetLabelSize(0.08);
+      hFrameBottom.GetYaxis()->SetNdivisions(505);
+      hFrameBottom.GetYaxis()->SetTickLength(0.01);
+      hFrameBottom.GetXaxis()->SetTitle("run number");
+      hFrameBottom.GetXaxis()->SetTitleSize(0.10);
+      hFrameBottom.GetXaxis()->SetTitleOffset(1.35);
+      hFrameBottom.GetXaxis()->SetLabelSize(0.07);
+      hFrameBottom.GetXaxis()->LabelsOption("v");
+      hFrameBottom.GetXaxis()->SetTickLength(0.);
+
+      gA->SetMarkerStyle(20);
+      gA->SetMarkerSize(0.5);
+      gA->SetMarkerColor(kBlue);
+      gA->SetLineColor(kBlue);
+      gB->SetMarkerStyle(24);
+      gB->SetMarkerSize(0.5);
+      gB->SetMarkerColor(kRed);
+      gB->SetLineColor(kRed);
+      gDiff->SetMarkerStyle(20);
+      gDiff->SetMarkerSize(0.5);
+      gDiff->SetMarkerColor(kBlack);
+
+      // light vertical lines at the labelled run boundaries
+      std::vector<std::unique_ptr<TLine> > lines;
+      auto drawRunLines = [&](double ymin, double ymax) {
+        for (unsigned int r = 0; r < runStarts.size(); r += labelEvery) {
+          auto& line = lines.emplace_back(std::make_unique<TLine>(runStarts[r].first, ymin, runStarts[r].first, ymax));
+          line->SetLineColor(kGray);
+          line->SetLineStyle(kDotted);
+          line->Draw();
+        }
+      };
+
+      padTop.cd();
+      hFrameTop.Draw("AXIS");
+      drawRunLines(yLow, yHigh);
+      gB->Draw("P SAME");
+      gA->Draw("P SAME");
+
+      TLegend legend(0.10, 0.76, 0.55, 0.90);
+      legend.SetBorderSize(0);
+      legend.SetFillStyle(0);
+      legend.SetTextSize(0.04);
+      legend.AddEntry(gA.get(), ("A: " + tagA.name).c_str(), "PE");
+      legend.AddEntry(gB.get(), ("B: " + tagB.name).c_str(), "PE");
+      legend.Draw();
+
+      const auto firstRunLS = unpack(sinces.front());
+      const auto lastRunLS = unpack(sinces.back());
+      TLatex ltx;
+      ltx.SetNDC();
+      ltx.SetTextFont(62);
+      ltx.SetTextSize(0.045);
+      ltx.SetTextAlign(11);
+      ltx.DrawLatex(padTop.GetLeftMargin(),
+                    1 - padTop.GetTopMargin() + 0.02,
+                    fmt::sprintf("BeamSpot %s, runs %u (LS %u) - %u (LS %u), %d IOV boundaries",
+                                 getStringFromParamEnum(my_param),
+                                 firstRunLS.first,
+                                 firstRunLS.second,
+                                 lastRunLS.first,
+                                 lastRunLS.second,
+                                 nPoints)
+                        .c_str());
+
+      padBottom.cd();
+      hFrameBottom.Draw("AXIS");
+      drawRunLines(dMin - dPad, dMax + dPad);
+      TLine zero(0., 0., nPoints, 0.);
+      zero.SetLineColor(kRed);
+      zero.SetLineStyle(kDashed);
+      zero.Draw();
+      gDiff->Draw("P SAME");
+
+      const int nDiff = gDiff->GetN();
+      const double meanDiff = sumDiff / nDiff;
+      const double rmsDiff = std::sqrt(std::max(0., sumDiff2 / nDiff - meanDiff * meanDiff));
+      TLatex ltxDiff;
+      ltxDiff.SetNDC();
+      ltxDiff.SetTextFont(42);
+      ltxDiff.SetTextSize(0.09);
+      ltxDiff.SetTextAlign(13);
+      ltxDiff.DrawLatex(
+          padBottom.GetLeftMargin() + 0.01,
+          1 - padBottom.GetTopMargin() - 0.04,
+          fmt::sprintf("#LT#Delta#GT = %.3g %s, RMS = %.3g %s", meanDiff, unitLabel(), rmsDiff, unitLabel()).c_str());
+
+      std::string fileName(this->m_imageFileName);
+      canvas.SaveAs(fileName.c_str());
+
+      return true;
+    }
+
+  private:
+    // (value, error) of the plotted parameter for each IOV, payloads cached by hash
+    std::vector<std::pair<double, double> > getValues(const IOVs& iovs) {
+      std::vector<std::pair<double, double> > ret;
+      ret.reserve(iovs.size());
+      for (const auto& iov : iovs) {
+        const auto& hash = std::get<1>(iov);
+        auto it = m_cache.find(hash);
+        if (it == m_cache.end()) {
+          auto payload = this->fetchPayload(hash);
+          it = m_cache.emplace(hash, getFromPayload(*payload)).first;
+        }
+        ret.push_back(it->second);
+      }
+      return ret;
+    }
+
+    std::pair<double, double> getFromPayload(const BeamSpotOnlineObjects& payload) const {
+      switch (my_param) {
+        case X:
+          return std::make_pair(payload.x(), payload.xError());
+        case Y:
+          return std::make_pair(payload.y(), payload.yError());
+        case Z:
+          return std::make_pair(payload.z(), payload.zError());
+        case sigmaX:
+          return std::make_pair(payload.beamWidthX(), payload.beamWidthXError());
+        case sigmaY:
+          return std::make_pair(payload.beamWidthY(), payload.beamWidthYError());
+        case sigmaZ:
+          return std::make_pair(payload.sigmaZ(), payload.sigmaZError());
+        case dxdz:
+          return std::make_pair(payload.dxdz(), payload.dxdzError());
+        case dydz:
+          return std::make_pair(payload.dydz(), payload.dydzError());
+        default:
+          return std::make_pair(-9999., -9999.);
+      }
+    }
+
+    // index of the IOV valid at a given time, -1 if none (iovs are sorted by since)
+    static int validIndex(const IOVs& iovs, cond::Time_t time) {
+      auto it = std::upper_bound(
+          iovs.begin(), iovs.end(), time, [](cond::Time_t t, const auto& iov) { return t < std::get<0>(iov); });
+      return (it == iovs.begin()) ? -1 : static_cast<int>(std::distance(iovs.begin(), it)) - 1;
+    }
+
+    // transverse positions and widths in um, slopes in urad, longitudinal quantities in cm
+    static double unitScale() {
+      switch (my_param) {
+        case X:
+        case Y:
+        case sigmaX:
+        case sigmaY:
+          return 1.e4;
+        case dxdz:
+        case dydz:
+          return 1.e6;
+        default:
+          return 1.;
+      }
+    }
+
+    static std::string unitLabel() {
+      switch (my_param) {
+        case X:
+        case Y:
+        case sigmaX:
+        case sigmaY:
+          return "[#mum]";
+        case dxdz:
+        case dydz:
+          return "[#murad]";
+        default:
+          return "[cm]";
+      }
+    }
+
+    std::map<cond::Hash, std::pair<double, double> > m_cache;
+  };
+
+  typedef BeamSpotOnline_TwoTagsComparison<X> BeamSpotOnline_TwoTagsComparisonX;
+  typedef BeamSpotOnline_TwoTagsComparison<Y> BeamSpotOnline_TwoTagsComparisonY;
+  typedef BeamSpotOnline_TwoTagsComparison<Z> BeamSpotOnline_TwoTagsComparisonZ;
+  typedef BeamSpotOnline_TwoTagsComparison<sigmaX> BeamSpotOnline_TwoTagsComparisonSigmaX;
+  typedef BeamSpotOnline_TwoTagsComparison<sigmaY> BeamSpotOnline_TwoTagsComparisonSigmaY;
+  typedef BeamSpotOnline_TwoTagsComparison<sigmaZ> BeamSpotOnline_TwoTagsComparisonSigmaZ;
+  typedef BeamSpotOnline_TwoTagsComparison<dxdz> BeamSpotOnline_TwoTagsComparisondXdZ;
+  typedef BeamSpotOnline_TwoTagsComparison<dydz> BeamSpotOnline_TwoTagsComparisondYdZ;
+
 }  // namespace
 
 PAYLOAD_INSPECTOR_MODULE(BeamSpotOnline) {
@@ -290,4 +637,12 @@ PAYLOAD_INSPECTOR_MODULE(BeamSpotOnline) {
   PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TimeHistorySigmaZ);
   PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TimeHistorydXdZ);
   PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TimeHistorydYdZ);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisonX);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisonY);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisonZ);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisonSigmaX);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisonSigmaY);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisonSigmaZ);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisondXdZ);
+  PAYLOAD_INSPECTOR_CLASS(BeamSpotOnline_TwoTagsComparisondYdZ);
 }
