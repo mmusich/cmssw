@@ -33,6 +33,11 @@ options.register('writeLGpayload',
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.bool,
                 "Write old payload type used for LG thresholds")
+options.register('writePhase2HGpayload',
+                False,
+                VarParsing.VarParsing.multiplicity.singleton,
+                VarParsing.VarParsing.varType.bool,
+                "Write HG thresholds including the Phase-2 pixel endcap disks (TPEPanelDisk4-12, M4-M12)")
 options.parseArguments()
 
 ##
@@ -72,7 +77,7 @@ import CondFormats.PCLConfig.ThresholdsHG_cff as ThresholdsHG
 ## Example on how to add to the default extra degrees of freedom
 ##
 AddSurfaceThresholds = copy.deepcopy(Thresholds.default)
-AddSurfaceThresholdsHG = copy.deepcopy(ThresholdsHG.default)
+AddSurfaceThresholdsHG = copy.deepcopy(ThresholdsHG.phase2 if options.writePhase2HGpayload else ThresholdsHG.default)
 
 BPixSurface= cms.VPSet(
     cms.PSet(alignableId       = cms.string("TPBModule"),

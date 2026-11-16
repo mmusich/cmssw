@@ -960,3 +960,27 @@ default = cms.VPSet(
              )
     )
 
+
+# -----------------------------------------------------------------------
+# Phase-2 configuration
+#
+# The Phase-2 Inner Tracker has up to 12 pixel endcap disks per side
+# (TFPX + TEPX), while the default (Run-3) configuration only covers
+# TPEPanelDisk1-3 / TPEPanelDiskM1-3. Alignables missing from the payload
+# end up with all thresholds at 0 in the MillePedeFileReader, so any
+# movement aborts the payload creation. Extend the default by cloning the
+# outermost Run-3 disk thresholds (Disk3 / DiskM3) to the extra disks.
+
+PHASE2_MAX_PIXEL_DISK = 12
+
+def _extendToPhase2Disks(thresholds, maxDisk = PHASE2_MAX_PIXEL_DISK):
+    extended = copy.deepcopy(thresholds)
+    for templateId, prefix in (("TPEPanelDisk3", "TPEPanelDisk"),
+                               ("TPEPanelDiskM3", "TPEPanelDiskM")):
+        templates = [pset for pset in thresholds if pset.alignableId.value() == templateId]
+        for disk in range(4, maxDisk + 1):
+            for template in templates:
+                extended.append(template.clone(alignableId = "%s%d" % (prefix, disk)))
+    return extended
+
+phase2 = _extendToPhase2Disks(default)
