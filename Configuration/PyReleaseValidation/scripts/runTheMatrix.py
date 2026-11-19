@@ -181,7 +181,8 @@ if __name__ == '__main__':
                      prefixDet+34.772,   # HLT phase-2 NGT Scouting menu, with NANO:@NGTScouting
                      prefixDet+34.7721,  # HLT phase-2 NGT Scouting menu, with NANO:@NGTScouting + DQM
                      prefixDet+34.7722,  # HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal
-                     prefixDet+34.7723], # HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal+@Phase2L1DPGwithGen
+                     prefixDet+34.7723,  # HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal+@Phase2L1DPGwithGen
+                     prefixDet+34.7724], # HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal + DQM
     }
 
     predefinedSet['limited'] = (

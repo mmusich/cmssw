@@ -81,6 +81,7 @@ The offsets currently in use are:
 * 0.7721: HLT phase-2 NGT Scouting menu, with NANO:@NGTScouting (and nanoDQM)
 * 0.7722: HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal
 * 0.7723: HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal+@Phase2L1DPGwithGen (L1+HLT objects)
+* 0.7724: HLT phase-2 NGT Scouting menu, with NANO:@NGTScoutingVal (and nanoDQM)
 * 0.778 L3 Tracker Muons reconstruction Outside-In first, HLT Muon NanoAOD
 * 0.78: Complete L1 workflow
 * 0.781: Complete L1 workflow, producing FEVT and NANO output L1/P2GT objects

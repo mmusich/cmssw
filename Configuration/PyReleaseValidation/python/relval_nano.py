@@ -670,3 +670,4 @@ workflows[_wfn()]  = _upgrade_workflows[prefixDet+34.772]  # NGTScouting + HLT N
 workflows[_wfn()]  = _upgrade_workflows[prefixDet+34.7721] # NGTScouting + HLT NANO (with DQM)
 workflows[_wfn()]  = _upgrade_workflows[prefixDet+34.7722] # NGTScouting + HLT NANO (including validation)
 workflows[_wfn()]  = _upgrade_workflows[prefixDet+34.7723] # NGTScouting + HLT NANO (including validation) + L1 NANO
+workflows[_wfn()]  = _upgrade_workflows[prefixDet+34.7724] # NGTScouting + HLT NANO (including validation, with DQM)

@@ -2349,6 +2349,17 @@ upgradeWFs['NGTScoutingWithNanoAndDQM'].step3['-s'] =  upgradeWFs['NGTScoutingWi
 
 upgradeWFs['NGTScoutingWithNanoAndDQM'].step3['--procModifiers'] = 'ngtScouting'
 
+# as NGTScoutingWithNanoAndDQM, but with the validation NANO flavour (and the HLT validation it needs)
+upgradeWFs['NGTScoutingWithNanoValidAndDQM'] = deepcopy(upgradeWFs['NGTScoutingWithNanoAndDQM'])
+upgradeWFs['NGTScoutingWithNanoValidAndDQM'].suffix = '_NGTScoutingWithNanoValidAndDQM'
+upgradeWFs['NGTScoutingWithNanoValidAndDQM'].offset = 0.7724
+upgradeWFs['NGTScoutingWithNanoValidAndDQM'].step3['-s'] = upgradeWFs['NGTScoutingWithNanoValidAndDQM'].step3['-s'].replace(
+    'NANO:@NGTScouting,DQM:@nanohltDQM', 'VALIDATION:@hltValidation,NANO:@NGTScoutingVal,DQM:@nanohltDQM'
+)
+upgradeWFs['NGTScoutingWithNanoValidAndDQM'].step4['-s'] = upgradeWFs['NGTScoutingWithNanoValidAndDQM'].step4['-s'].replace(
+    'HARVESTING:@nanohltDQM', 'HARVESTING:@hltValidation+@nanohltDQM'
+)
+
 class UpgradeWorkflow_HLTwDIGI75e33(UpgradeWorkflow):
     def setup_(self, step, stepName, stepDict, k, properties):
         if 'DigiTrigger' in step:

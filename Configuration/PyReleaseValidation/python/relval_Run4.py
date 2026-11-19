@@ -90,6 +90,7 @@ numWFIB.extend([prefixDet+34.772])  # NGTScouting + NANO
 numWFIB.extend([prefixDet+34.7721]) # NGTScouting + NANO (with separate DQM step)
 numWFIB.extend([prefixDet+34.7722]) # NGTScouting + NANO (including validation)
 numWFIB.extend([prefixDet+34.7723]) # NGTScouting + NANO containing both L1 and HLT objects (including validation)
+numWFIB.extend([prefixDet+34.7724]) # NGTScouting + NANO (including validation, with nanoDQM and harvesting)
 
 for numWF in numWFIB:
     workflows[numWF] = _upgrade_workflows[numWF]
